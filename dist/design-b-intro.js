@@ -6,13 +6,32 @@
   const byId = id => document.getElementById(id);
   const themeButtons = [...document.querySelectorAll('[data-intro-option]')];
   const themePanels = [...section.querySelectorAll('.b-intro-panel')];
+  const siteHeader = document.querySelector('.b-header');
+  const headerHome = siteHeader?.parentElement;
+  const headerNext = siteHeader?.nextSibling;
+  const majesticFrame = byId('bt-majestic-frame');
+  const sharedCalendar = section.querySelector('.bt-calendar-main');
+  const sharedPlanner = sharedCalendar?.closest('.bt-planner');
+  const plannerHome = sharedPlanner?.parentElement;
+  const plannerNext = sharedPlanner?.nextSibling;
+  const sharedComposer = byId('bt-task-composer');
+  const composerHome = sharedComposer?.parentElement;
+  const composerNext = sharedComposer?.nextSibling;
+  const majesticCalendar = byId('bt-majestic-calendar');
+  const sceneButtons = [...document.querySelectorAll('[data-majestic-scene]')];
+  const sceneImages = [...document.querySelectorAll('[data-majestic-image]')];
+  const backdrop = document.querySelector('.bt-majestic-backdrop');
+  const playbackButton = document.querySelector('.bt-majestic-playback');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let sceneIndex = 0, sceneTimer, playbackPaused = reducedMotion.matches;
   const themes = {
     1: { theme: 'business', panel: 'intro-option-1', label: 'الأعمال', labelledBy: 'workspace-title' },
     2: { theme: 'official', panel: 'intro-option-2', label: 'الوطنية', labelledBy: 'bt-official-title' },
-    3: { theme: 'formal', panel: 'intro-option-3', label: 'الرسمية', labelledBy: 'bt-formal-title' }
+    3: { theme: 'formal', panel: 'intro-option-3', label: 'الرسمية', labelledBy: 'bt-formal-title' },
+    4: { theme: 'majestic', panel: 'intro-option-4', label: 'الشامخة', labelledBy: 'bt-majestic-title' }
   };
   function selectTheme(option) {
-    option = Object.hasOwn(themes, option) ? option : '1';
+    option = Object.hasOwn(themes, option) && byId(themes[option].panel) ? option : '1';
     const selected = themes[option];
     section.dataset.theme = selected.theme;
     document.body.dataset.siteTheme = selected.theme;
@@ -21,12 +40,62 @@
       button.setAttribute('aria-pressed', String(active));
     });
     themePanels.forEach(panel => { panel.hidden = panel.id !== selected.panel; });
+    if (siteHeader && headerHome && majesticFrame) {
+      if (option === '4') majesticFrame.prepend(siteHeader);
+      else headerHome.insertBefore(siteHeader, headerNext);
+    }
+    if (sharedPlanner && plannerHome && majesticCalendar) {
+      if (option === '4') {
+        majesticCalendar.append(sharedPlanner);
+        if (sharedComposer) majesticCalendar.append(sharedComposer);
+      } else {
+        plannerHome.insertBefore(sharedPlanner, plannerNext);
+        if (sharedComposer && composerHome) composerHome.insertBefore(sharedComposer, composerNext);
+      }
+    }
     section.setAttribute('aria-labelledby', selected.labelledBy);
     byId('bt-theme-name').textContent = selected.label;
     save('clerio-opening-theme', option);
+    syncMajesticPlayback();
   }
   const themeMenu = byId('b-theme-options')?.closest('details');
   themeButtons.forEach(button => button.addEventListener('click', () => { selectTheme(button.dataset.introOption); if (themeMenu) themeMenu.open = false; }));
+  function showMajesticScene(index) {
+    sceneIndex = index;
+    const scene = sceneButtons[index]?.dataset.majesticScene;
+    sceneButtons.forEach((button, i) => button.setAttribute('aria-pressed', String(i === index)));
+    sceneImages.forEach(image => image.classList.toggle('is-active', image.dataset.majesticImage === scene));
+  }
+  function syncMajesticPlayback() {
+    clearTimeout(sceneTimer);
+    if (!backdrop || !sceneButtons.length) return;
+    const paused = playbackPaused;
+    const running = !paused && !document.hidden && document.body.dataset.siteTheme === 'majestic';
+    backdrop.dataset.paused = String(!running);
+    playbackButton?.setAttribute('aria-pressed', String(paused));
+    if (playbackButton) {
+      playbackButton.textContent = paused ? 'تشغيل الحركة' : 'إيقاف الحركة';
+    }
+    if (running) sceneTimer = setTimeout(() => {
+      showMajesticScene((sceneIndex + 1) % sceneButtons.length);
+      syncMajesticPlayback();
+    }, 8000);
+  }
+  sceneButtons.forEach((button, index) => button.addEventListener('click', () => {
+    showMajesticScene(index);
+    syncMajesticPlayback();
+  }));
+  playbackButton?.addEventListener('click', () => {
+    playbackPaused = !playbackPaused;
+    syncMajesticPlayback();
+  });
+  if (backdrop) {
+    document.addEventListener('visibilitychange', syncMajesticPlayback);
+    reducedMotion.addEventListener('change', () => {
+      playbackPaused = reducedMotion.matches;
+      syncMajesticPlayback();
+    });
+  }
   selectTheme(read('clerio-opening-theme', '1'));
   const today = new Date();
   const dateKey = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;

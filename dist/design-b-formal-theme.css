@@ -1,0 +1,196 @@
+/* Formal site theme: maroon-led palette with Oxford blue, platinum and restrained tangerine. */
+body[data-site-theme="formal"] {
+  --formal-maroon: #800000;
+  --formal-blue: #002147;
+  --formal-platinum: #e5e4e2;
+  --formal-tangerine: #f28500;
+  --system-icon-ink: var(--formal-maroon);
+  --system-icon-surface: #f3e8e7;
+}
+
+body[data-site-theme="formal"] .b-header .b-nav a,
+body[data-site-theme="formal"] .b-media-subnav-links a,
+body[data-site-theme="formal"] .b-alert-toolbar > span,
+body[data-site-theme="formal"] .b-work-heading h2,
+body[data-site-theme="formal"] .sc-heading h2,
+body[data-site-theme="formal"] .sc-card h3,
+body[data-site-theme="formal"] .b-section-heading h2,
+body[data-site-theme="formal"] .b-digital-book h3,
+body[data-site-theme="formal"] #systems :is(.bt-news-summary h2,.bt-planner h2,.bt-agenda h2) {
+  color: var(--formal-maroon) !important;
+}
+
+body[data-site-theme="formal"] .b-header .b-nav a::after {
+  background: var(--formal-maroon);
+}
+
+body[data-site-theme="formal"] .b-media-subnav-links a:hover {
+  background: #f7efee;
+}
+
+body[data-site-theme="formal"] .b-media-subnav-links a[aria-current="location"] {
+  border-bottom-color: var(--formal-maroon);
+  background: var(--formal-maroon);
+  color: #fff !important;
+}
+
+body[data-site-theme="formal"] .b-personal-zone::before {
+  background:
+    radial-gradient(ellipse 42% 70% at 8% 62%, #80000032 0%, #80000012 52%, transparent 82%),
+    radial-gradient(ellipse 48% 74% at 92% 20%, #0021472e 0%, #0021470d 55%, transparent 84%),
+    radial-gradient(ellipse 34% 48% at 54% 4%, #f2850024 0%, #f285000a 52%, transparent 82%),
+    radial-gradient(ellipse 38% 55% at 66% 92%, #ffffffc7 0%, transparent 82%),
+    linear-gradient(122deg, #f7f3f1, var(--formal-platinum) 50%, #f2f4f6);
+}
+
+body[data-site-theme="formal"] #systems[data-theme="formal"] {
+  background: transparent;
+}
+
+body[data-site-theme="formal"] #systems[data-theme="formal"]::before,
+body[data-site-theme="formal"] #systems[data-theme="formal"]::after {
+  display: none;
+}
+
+body[data-site-theme="formal"] #intro-option-3:not([hidden]) {
+  display: grid;
+  min-height: clamp(176.4px, 23.52vw, 303.8px);
+  place-content: center;
+  justify-items: center;
+  padding: clamp(12px, 2vw, 28px) 24px;
+  text-align: center;
+}
+
+body[data-site-theme="formal"] .bt-formal-oman .bt-eyebrow {
+  color: var(--formal-tangerine);
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+
+body[data-site-theme="formal"] #systems .bt-formal-oman h2 {
+  max-width: 980px;
+  margin: 8px auto;
+  color: var(--formal-maroon) !important;
+  font-size: clamp(36px, 4.6vw, 68px);
+  line-height: 1.35;
+}
+
+body[data-site-theme="formal"] .bt-formal-oman p {
+  margin-bottom: 0;
+  color: var(--formal-blue);
+  font-size: clamp(17px, 1.7vw, 24px);
+}
+
+body[data-site-theme="formal"] #systems .bt-formal-oman .bt-national-mark {
+  margin-top: 12px;
+}
+
+@media (max-width: 600px) {
+  body[data-site-theme="formal"] #intro-option-3:not([hidden]) {
+    min-height: 210.7px;
+    padding-block: 0;
+    padding-inline: 18px;
+  }
+
+  body[data-site-theme="formal"] #systems .bt-formal-oman h2 {
+    width: 100%;
+    font-size: 36px;
+    line-height: 1.2;
+    margin-block: 4px;
+  }
+
+  body[data-site-theme="formal"] #systems .bt-formal-oman .bt-national-mark {
+    margin-top: 0;
+  }
+
+  body[data-site-theme="formal"] .bt-formal-oman h2 br {
+    display: none;
+  }
+}
+
+body[data-site-theme="formal"] #systems .bt-news-headlines button {
+  color: var(--formal-blue) !important;
+}
+
+body[data-site-theme="formal"] #systems .bt-news-headlines button > span {
+  background: #f1e5e4;
+  color: var(--formal-maroon) !important;
+}
+
+body[data-site-theme="formal"] #systems .bt-news-headlines button:hover {
+  color: var(--formal-maroon) !important;
+}
+
+body[data-site-theme="formal"] #systems .bt-planner,
+body[data-site-theme="formal"] #systems .bt-agenda {
+  border-color: #80000020;
+}
+
+body[data-site-theme="formal"] #systems .bt-month-grid button[aria-current="date"] {
+  border-color: var(--formal-maroon);
+}
+
+body[data-site-theme="formal"] #systems .bt-month-grid button[aria-pressed="true"] {
+  background: var(--formal-blue) !important;
+  color: #fff !important;
+}
+
+body[data-site-theme="formal"] #systems .bt-month-grid button.has-tasks::after,
+body[data-site-theme="formal"] #systems .bt-calendar-key i,
+body[data-site-theme="formal"] .b-section-float-dot {
+  background: var(--formal-tangerine);
+}
+
+body[data-site-theme="formal"] #systems #bt-task-add-toggle,
+body[data-site-theme="formal"] .b-work-footer button,
+body[data-site-theme="formal"] .sc-details {
+  color: var(--formal-maroon) !important;
+}
+
+body[data-site-theme="formal"] .b-work-icon,
+body[data-site-theme="formal"] .sc-icon {
+  border: 1px solid #80000018;
+  background: #f2e6e5;
+  color: var(--formal-maroon) !important;
+}
+
+body[data-site-theme="formal"] .b-work-icon > :is(i,svg),
+body[data-site-theme="formal"] .sc-icon > i,
+body[data-site-theme="formal"] .b-service-links i,
+body[data-site-theme="formal"] .b-book-cover i {
+  color: inherit !important;
+}
+
+body[data-site-theme="formal"] .b-work-card,
+body[data-site-theme="formal"] .sc-card {
+  border-color: #d8d3d1;
+  background: #fffdfc;
+}
+
+body[data-site-theme="formal"] .b-workspace-section {
+  background: linear-gradient(180deg, #ffffff 0%, #e5e4e246 100%);
+}
+
+body[data-site-theme="formal"] .sc-categories button[aria-pressed="true"],
+body[data-site-theme="formal"] .sc-pinned-filter[aria-pressed="true"] {
+  background: var(--formal-maroon) !important;
+  color: #fff !important;
+}
+
+body[data-site-theme="formal"] .b-section.b-editorial {
+  background: radial-gradient(ellipse at 85% 0%, #80000035, transparent 44%), linear-gradient(145deg, #001a39, var(--formal-blue) 65%, #00152e);
+}
+
+body[data-site-theme="formal"] .b-editorial .ed-on-dark :is(h2,h3),
+body[data-site-theme="formal"] .b-editorial .ed-heading-icon {
+  color: var(--formal-platinum) !important;
+}
+
+body[data-site-theme="formal"] .b-editorial .ed-on-dark :is(.ed-eyebrow,p,small),
+body[data-site-theme="formal"] .b-editorial .ed-title-dot {
+  color: #f5b45e !important;
+}
+
+body[data-site-theme="formal"] :is(button,a,input):focus-visible {
+  outline-color: var(--formal-tangerine);
+}

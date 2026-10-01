@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="430" viewBox="0 0 1800 430" fill="none">
+<defs><pattern id="grid" width="42" height="42" patternUnits="userSpaceOnUse"><path d="M42 0H0v42" stroke="#7e8ea1" stroke-opacity=".24"/><circle cx="1" cy="1" r="1.2" fill="#76869a"/></pattern><linearGradient id="tile" x2="1" y2="1"><stop stop-color="#c5cddf" stop-opacity=".6"/><stop offset="1" stop-color="#e3ddd0" stop-opacity=".15"/></linearGradient></defs>
+<rect width="1800" height="430" fill="url(#grid)"/>
+<g stroke="#7e8da4" stroke-width="1.6"><path d="M198 100h148q28 0 28 28v100q0 22 24 22h110m-134-90h247m-100 90h173q30 0 30-30V88h161m-161 145h193q22 0 22 22v63h160m-1086-55h163q22 0 22-22V128" stroke-dasharray="5 8" opacity=".75"/>
+<g transform="translate(110 50) rotate(-9 60 60)"><rect width="125" height="125" rx="25" fill="url(#tile)"/><rect x="34" y="31" width="58" height="64" rx="9"/><path d="M46 47h34m-34 14h34m-34 14h24"/></g>
+<g transform="translate(438 207) rotate(8 60 60)"><rect width="125" height="125" rx="25" fill="url(#tile)"/><path d="M30 48h24l9 9h36v38H30z"/><path d="M31 43h42"/></g>
+<g transform="translate(585 54)"><rect width="125" height="125" rx="25" fill="url(#tile)"/><circle cx="52" cy="47" r="13"/><path d="M28 91v-9a24 24 0 0 1 48 0v9M80 39a13 13 0 0 1 0 25m5 9a20 20 0 0 1 13 19"/></g>
+<g transform="translate(905 9) rotate(8 60 60)"><rect width="125" height="125" rx="25" fill="url(#tile)"/><rect x="29" y="36" width="67" height="58" rx="8"/><path d="M29 52h67M44 28v16m37-16v16M44 66h13m11 0h13m-37 13h13"/></g>
+<g transform="translate(1073 267) rotate(-8 60 60)"><rect width="125" height="125" rx="25" fill="url(#tile)"/><path d="M29 92h69"/><rect x="37" y="61" width="11" height="22" rx="3"/><rect x="57" y="44" width="11" height="39" rx="3"/><rect x="77" y="31" width="11" height="52" rx="3"/></g></g>
+<g fill="#b49b70"><circle cx="375" cy="160" r="4"/><circle cx="754" cy="233" r="4"/><circle cx="949" cy="318" r="4"/></g>
+<g stroke="#b09a77" opacity=".65"><circle cx="1318" cy="117" r="60"/><circle cx="1318" cy="117" r="77" stroke-dasharray="3 9"/><path d="M1289 117h58m-29-29v58M70 340h28m-14-14v28M1580 75h30m-15-15v30"/></g>
+</svg>

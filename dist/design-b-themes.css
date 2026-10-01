@@ -1,0 +1,250 @@
+/* Themes affect only the opening workspace section. */
+#systems[data-theme="business"] { background: #eef1ed; }
+#systems[data-theme="business"]::before { height: 430px; background: linear-gradient(90deg,#46634c09 1px,transparent 1px),linear-gradient(#46634c09 1px,transparent 1px); background-size:32px 32px; opacity:1; }
+#systems[data-theme="business"]::after { display:none; }
+#systems .b-intro-options { display:block; min-height:0; padding:32px 0 32px 110px; }
+#systems .bt-business { display:grid; grid-template-columns:1.2fr 1fr; align-items:center; gap:40px; }
+#systems .bt-eyebrow { font-size:11px; letter-spacing:.3px; }
+#systems .bt-copy h1 { font-size:clamp(30px,3.8vw,58px); line-height:1.3; margin:20px 0 12px; }
+#systems .bt-copy p,#systems .bt-official p { font-size:13px; line-height:1.9; }
+#systems .bt-shortcuts { display:flex; gap:10px; margin-top:24px; }
+#systems .bt-shortcuts button { display:flex; align-items:center; gap:18px; border:1px solid #cbd4ca; background:#ffffffa8; border-radius:10px; padding:12px 16px; font-size:13px; }
+#systems .bt-shortcuts button:hover { background:#fff; border-color:#718970; }
+#systems .bt-day { padding:24px; background:#fffffff0; border:1px solid #d7dfd4; border-radius:20px; box-shadow:0 18px 40px #29432909; }
+#systems .bt-day-top { display:flex; justify-content:space-between; gap:10px; font-size:10px; }
+#systems .bt-day h2 { font-size:23px; margin:24px 0 18px; }
+#bt-task-form { display:flex; gap:8px; padding:6px; border:1px solid #d5ddd2; border-radius:10px; background:#f5f7f3; }
+#bt-task-input { min-width:0; width:100%; background:transparent; border:0; padding:6px; font:inherit; font-size:12px; }
+body #bt-task-form button { flex-shrink:0; width:34px; height:34px; border-radius:8px; background:#294b39; color:white!important; font-size:24px; }
+#systems .bt-local { display:block; margin-top:16px; font-size:9px; }
+.bt-task-row { display:flex; align-items:center; gap:10px; padding:12px 0; border-bottom:1px solid #dbe0d8; font-size:12px; overflow-wrap:anywhere; }
+.bt-task-row input { accent-color:#385d44; flex-shrink:0; }.bt-task-row:has(input:checked) span { text-decoration:line-through; opacity:.6; }
+.bt-empty { font-size:12px; line-height:1.8; padding:10px 0; }
+#systems[data-theme="official"] { background:#e9e6df; }
+#systems[data-theme="official"]::before { height:510px; background:linear-gradient(90deg,#e9e6df08,#eeeae1f5 85%),linear-gradient(0deg,#e9e6df,transparent 45%),url('./assets/hero-oman-mosque.png') center 45% / cover no-repeat; opacity:1; mask-image:none; }
+#systems[data-theme="official"]::after { display:none; }
+#systems .bt-official { min-height:310px; padding:35px 0; }
+#systems .bt-official h2 { font-size:clamp(36px,4.6vw,68px); line-height:1.35; margin:20px 0 14px; }
+#systems .bt-national-mark { display:flex; width:90px; height:4px; margin-top:28px; }.bt-national-mark i { flex:1; background:#b43e3b; }.bt-national-mark i:nth-child(2) { background:#fff; }.bt-national-mark i:nth-child(3) { background:#387255; }
+#systems .b-intro-switch small { font-size:10px; }
+.bt-sr { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+.bt-dialog { width:min(520px,calc(100% - 28px)); max-height:85dvh; overflow:auto; border:1px solid #d6ddd1; border-radius:20px; padding:26px; background:#fafbf8; }
+.bt-dialog::backdrop { background:#1e2b265e; }.bt-dialog header { display:flex; justify-content:space-between; align-items:center; gap:15px; }.bt-dialog h2 { font-size:23px; }.bt-dialog button { background:#e6ece2; border-radius:8px; padding:8px 12px; }.bt-dialog header button { font-size:20px; }
+.bt-calendar-nav { display:flex; justify-content:space-between; align-items:center; margin:20px 0; }.bt-calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; text-align:center; }.bt-calendar-grid span { display:grid; place-items:center; min-height:36px; font-size:12px; }.bt-calendar-grid .bt-current { background:#dae6d5; border-radius:50%; font-weight:bold; }.bt-dialog p { font-size:12px; line-height:1.9; }
+@media(max-width:1000px) { #systems .bt-business { grid-template-columns:1fr; gap:24px; } #systems .bt-day { max-width:520px; } }
+@media(max-width:760px) { #systems .b-intro-options { padding:80px 0 24px; } #systems .b-intro-switch { top:0; } #systems .bt-official { min-height:280px; } #systems .bt-day { padding:18px; } }
+
+#systems .b-intro-panel[hidden] { display: none !important; }
+/* Inline calendar and dated agenda. */
+#systems .bt-business { grid-template-columns:minmax(0,1fr) minmax(340px,1fr); gap:30px; }
+#systems .bt-planner { padding:0; overflow:hidden; width:100%; max-width:520px; background:#fffefa; border-radius:22px; border:1px solid #d7ddcf; box-shadow:0 18px 45px #3043320d; }
+#systems .bt-planner-head { display:flex; justify-content:space-between; align-items:center; padding:20px 22px 12px; border-top:4px solid #58715b; }
+#systems .bt-planner-head span { font-size:10px; }
+#systems .bt-planner-head h2 { margin:5px 0 0; font-size:21px; }
+#systems .bt-planner-head button { background:#edf1e7; border:1px solid #dde4d5; padding:7px 12px; border-radius:8px; font-size:11px; }
+#systems .bt-month-nav { display:flex; align-items:center; justify-content:space-between; padding:8px 22px; }
+#systems .bt-month-nav strong { font-size:13px; }
+#systems .bt-month-nav button { width:30px; height:30px; border-radius:50%; background:transparent; }
+#systems .bt-month-nav button:hover { background:#edf1e7; }
+#systems .bt-month-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:3px; padding:0 20px 16px; text-align:center; }
+#systems .bt-weekday { font-size:9px; padding:8px 0; }
+#systems .bt-month-grid button { position:relative; min-height:34px; background:transparent; border:1px solid transparent; border-radius:9px; font-size:12px; }
+#systems .bt-month-grid button:hover { background:#edf1e7; }
+#systems .bt-month-grid button[aria-current="date"] { border-color:#789276; }
+body #systems .bt-month-grid button[aria-pressed="true"] { background:#304e3b; color:white!important; box-shadow:0 3px 8px #304e3b22; }
+#systems .bt-month-grid button.has-tasks::after { content:''; position:absolute; width:4px; height:4px; border-radius:50%; background:#ba8d40; bottom:3px; left:calc(50% - 2px); }
+#systems .bt-agenda { border-top:1px solid #e0e4d9; background:#f4f6ef; padding:16px 20px; }
+#systems .bt-agenda-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+#systems .bt-agenda-heading strong { font-size:11px; } #systems .bt-agenda-heading small { font-size:9px; white-space:nowrap; }
+#systems #bt-task-preview { max-height:150px; overflow:auto; margin:5px 0 10px; }
+#systems .bt-empty { margin:0; font-size:11px; }
+.bt-task-row span { min-width:0; flex:1; }.bt-task-row small { font-size:10px; }
+#systems #bt-task-form { background:white; gap:4px; }
+#systems #bt-task-time { width:88px; min-width:0; border:0; border-inline-start:1px solid #e0e4da; padding:3px; background:transparent; font-size:11px; }
+#systems .bt-local { margin-top:9px; line-height:1.6; }
+@media(max-width:1100px) { #systems .bt-business { grid-template-columns:1fr; } }
+@media(max-width:480px) { #systems .bt-month-grid { padding-inline:12px; } #systems .bt-agenda { padding:14px 12px; } #systems .bt-planner-head { padding-inline:14px; } #systems #bt-task-form { flex-wrap:wrap; } #systems #bt-task-input { flex-basis:100%; } #systems #bt-task-form button { margin-inline-start:auto; } }
+.bt-task-remove { padding:2px 6px; background:transparent; font-size:16px; border-radius:5px; }.bt-task-remove:hover { background:#eadbd3; }
+/* Business refresh: personal welcome and a spacious split planner. */
+#systems[data-theme="business"] { background:#f7f9f8; }
+#systems[data-theme="business"]::before {
+  height:100%; max-height:1000px; opacity:.5;
+  background:
+    radial-gradient(ellipse 24% 72% at 15% 35%,#f0e3cce6 0%,#f0e3cc80 42%,transparent 100%),
+    radial-gradient(ellipse 38% 38% at 63% 8%,#ef9890e6 0%,#edaaa180 48%,transparent 100%),
+    radial-gradient(ellipse 48% 35% at 94% 51%,#74a7adcc 0%,#89adb180 48%,transparent 100%),
+    radial-gradient(ellipse 32% 29% at 44% 43%,#a79aa6b3 0%,#b4a4ad66 48%,transparent 100%),
+    radial-gradient(ellipse 30% 28% at 39% 73%,#efb2a580 0%,transparent 100%),
+    linear-gradient(125deg,#eee3d2,#f1dfd9 52%,#dfe8e5);
+  mask-image:linear-gradient(to bottom,#000 0%,#000 50%,transparent 100%);
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 50%,transparent 100%);
+}
+#systems[data-theme="business"] .b-intro-options { padding:56px 0 30px; }
+#systems[data-theme="business"] .b-intro-switch { top:0; left:0; flex-direction:row; gap:10px; }
+#systems[data-theme="business"] .b-intro-switch > div { padding:3px; border-radius:12px; }
+#systems[data-theme="business"] .b-intro-switch button { width:29px; height:29px; border-radius:9px; }
+#systems .bt-business { grid-template-columns:minmax(220px,.72fr) minmax(0,2fr); gap:32px; align-items:center; }
+#systems .bt-person { --text-primary:#133f3b; --text-secondary:#375e59; padding:4px 0; }
+#systems .bt-person-photo { position:relative; width:112px; height:126px; margin-bottom:20px; }
+#systems .bt-person-photo img { width:100%; height:100%; object-fit:cover; object-position:center 40%; border-radius:28px; border:4px solid #ffffffa6; box-shadow:0 12px 25px #154c3f15; }
+#systems .bt-person-badge { position:absolute; bottom:-8px; right:14px; white-space:nowrap; padding:5px 10px; border-radius:6px; background:#e8f4ca; font-size:9px; }
+#systems .bt-person h1 { font-size:clamp(27px,3vw,42px); margin:6px 0; line-height:1.3; letter-spacing:-1px; }
+#systems .bt-person h1 span { color:#248579!important; }
+#systems .bt-person p { margin:8px 0; font-size:11px; }
+#systems .bt-shortcuts { margin-top:22px; gap:8px; flex-wrap:wrap; }
+#systems .bt-shortcuts button { gap:12px; padding:10px 13px; border-radius:11px; border-color:#699c8f50; background:#ffffff61; font-size:11px; }
+#systems .bt-shortcuts button:first-child { background:#164f48; --text-secondary:#fff; color:white!important; border-color:#164f48; }
+#systems .bt-shortcuts b { display:grid; place-items:center; min-width:21px; height:21px; background:#ffffffaa; border-radius:6px; font-size:10px; }
+#systems .bt-planner { max-width:none; border:1px solid #ffffffbf; border-radius:24px; background:#fffefa; box-shadow:0 16px 42px #1b63521a; --text-primary:#183f3a; --text-secondary:#526a64; }
+#systems .bt-planner-head { border:0; padding:23px 24px 18px; }
+#systems .bt-planner-head span { font-size:10px; }
+#systems .bt-planner-head h2 { display:flex; align-items:center; gap:10px; font-size:23px; margin-top:3px; }
+#systems .bt-heading-dot { width:8px; height:8px; border-radius:50%; background:#b9d984; }
+#systems .bt-planner-head button { font-size:10px; padding:9px 12px; border-radius:20px; background:#edf4ef; border-color:#dae6df; }
+#systems .bt-planner-body { display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,1fr); }
+#systems .bt-month-panel { padding:0 16px 17px; }
+#systems .bt-month-nav { padding:8px 4px 14px; }
+#systems .bt-month-nav button { border:1px solid #e0e9e1; border-radius:10px; width:30px; height:30px; }
+#systems .bt-month-grid { padding:0; gap:4px; }
+#systems .bt-weekday { font-size:10px; padding:3px 0 9px; }
+#systems .bt-month-grid button { min-height:36px; font-size:12px; border-radius:11px; transition:background .15s; }
+#systems .bt-month-grid button[aria-current="date"] { border-color:#3d8a7b; }
+body #systems .bt-month-grid button[aria-pressed="true"] { background:#16574d; box-shadow:0 4px 10px #16574d22; }
+#systems .bt-month-grid button.has-tasks::after { background:#bf8a30; }
+#systems .bt-calendar-key { display:flex; justify-content:center; gap:18px; margin-top:17px; font-size:9px; }
+#systems .bt-calendar-key span { display:flex; align-items:center; gap:6px; }
+#systems .bt-calendar-key i { width:7px; height:7px; border-radius:50%; background:#16574d; }
+#systems .bt-calendar-key span+span i { background:#bf8a30; }
+#systems .bt-agenda { display:flex; flex-direction:column; min-width:0; background:#eff4ed; border:0; border-inline-start:1px solid #e0e8dc; padding:18px; border-radius:0 20px 0 23px; }
+#systems .bt-agenda-title { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; font-size:15px; font-weight:700; }
+#systems .bt-agenda-title > span:last-child { font-size:24px; color:#78956a!important; }
+#systems .bt-agenda-heading { flex-wrap:wrap; gap:7px; }
+#systems .bt-agenda-heading strong { font-size:11px; line-height:1.7; }
+#systems .bt-agenda-heading small { padding:4px 7px; border-radius:5px; background:#e0ead9; font-size:9px; }
+#systems #bt-task-preview { flex:1; min-height:112px; max-height:168px; margin:10px 0; }
+#systems .bt-empty { display:flex; align-items:center; justify-content:center; min-height:106px; padding:18px; text-align:center; border:1px dashed #cbdac5; border-radius:12px; color:#526a64!important; line-height:1.9; }
+#systems .bt-task-row { gap:7px; font-size:11px; padding:11px 0; }
+#systems .bt-task-row input { accent-color:#16574d; }
+#systems #bt-task-form { display:grid; grid-template-columns:1fr 34px; padding:6px; gap:5px; border-color:#d5e0cd; border-radius:12px; }
+#systems #bt-task-input { grid-column:1/-1; font-size:11px; padding:6px; }
+#systems #bt-task-time { width:100%; border:0; padding:5px; }
+body #systems #bt-task-form button { background:#16574d; }
+#systems .bt-local { font-size:8px; margin-top:8px; }
+#systems .bt-business :is(button,input):focus-visible { outline:2px solid #278777; outline-offset:3px; }
+@media(min-width:1450px) { #systems .bt-month-grid button { min-height:41px; } #systems .bt-month-panel { padding-inline:24px; } }
+@media(max-width:1100px) { #systems .bt-business { grid-template-columns:210px minmax(0,1fr); gap:20px; } #systems .bt-planner-body { grid-template-columns:1fr; } #systems .bt-agenda { border-radius:0; border-inline-start:0; border-top:1px solid #e0e8dc; } #systems #bt-task-preview { min-height:0; max-height:130px; } #systems .bt-empty { min-height:60px; } }
+@media(max-width:760px) { #systems .bt-business { grid-template-columns:1fr; gap:24px; } #systems .bt-person { display:grid; grid-template-columns:86px minmax(0,1fr); column-gap:18px; align-items:center; } #systems .bt-person-photo { grid-row:1/4; width:86px; height:100px; margin:0; } #systems .bt-person h1 { font-size:29px; margin:0; } #systems .bt-person p { font-size:10px; margin:0; } #systems .bt-person .bt-shortcuts { grid-column:1/-1; margin-top:20px; } #systems .bt-planner-body { grid-template-columns:minmax(0,1fr) minmax(0,1fr); } #systems .bt-agenda { border-top:0; border-inline-start:1px solid #e0e8dc; } }
+@media(max-width:580px) { #systems .bt-planner-body { grid-template-columns:1fr; } #systems .bt-planner-head { padding:18px 16px 12px; } #systems .bt-planner-head h2 { font-size:21px; } #systems .bt-month-panel { padding-inline:16px; } #systems .bt-agenda { border-top:1px solid #e0e8dc; border-inline-start:0; } #systems .bt-month-grid button { min-height:38px; } #systems #bt-task-input { flex-basis:auto; } }
+@media(prefers-reduced-motion:reduce) { #systems .bt-month-grid button { transition:none; } }
+@media(max-width:580px) { #systems .bt-planner-head { gap:8px; padding-inline:14px; } #systems .bt-planner-head h2 { font-size:18px; white-space:nowrap; } #systems .bt-heading-dot { display:none; } #systems .bt-planner-head button { flex-shrink:0; font-size:9px; padding:8px; } #systems .bt-person-badge { font-size:8px; right:2px; } }
+
+/* Compact glass calendar with the daily list on its left (RTL). */
+#systems .bt-business { grid-template-columns:minmax(220px,1fr) minmax(0,1.8fr); }
+#systems .bt-planner { max-width:660px; justify-self:end; background:linear-gradient(135deg,#ffffff59,#ffffff24); border:1px solid #ffffff85; box-shadow:0 8px 28px #245b4810,inset 0 1px 0 #ffffff80; backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); border-radius:22px; }
+#systems .bt-planner-head { padding:16px 20px 12px; }
+#systems .bt-planner-head h2 { font-size:19px; }
+#systems .bt-planner-head button { background:#ffffff45; border-color:#ffffff80; }
+#systems .bt-planner-body { grid-template-columns:minmax(220px,.9fr) minmax(0,1.1fr); padding:0 8px 12px; }
+#systems .bt-month-panel { padding:0 12px 6px; }
+#systems .bt-month-nav { padding:3px 0 9px; }
+#systems .bt-month-nav strong { font-size:11px; }
+#systems .bt-month-nav button { width:26px; height:26px; background:#ffffff30; border-color:#ffffff80; }
+#systems .bt-month-grid { gap:2px; padding:0; }
+#systems .bt-month-grid button { min-height:29px; font-size:11px; border-radius:8px; }
+#systems .bt-weekday { font-size:8px; padding:4px 0 6px; }
+#systems .bt-calendar-key { margin-top:10px; gap:12px; font-size:8px; }
+#systems .bt-agenda { background:transparent; border:0; border-inline-start:1px solid #ffffff70; border-radius:0; padding:10px 16px; justify-content:flex-start; }
+#systems .bt-agenda-title { font-size:13px; margin-bottom:8px; }
+#systems .bt-agenda-title > span:last-child { font-size:19px; }
+#systems .bt-agenda-heading strong { font-size:10px; }
+#systems .bt-agenda-heading small { background:#ffffff45; font-size:8px; }
+#systems #bt-task-preview { flex:0 1 auto; min-height:0; max-height:150px; margin:9px 0; }
+#systems .bt-task-row { background:#ffffff32; border:1px solid #ffffff60; border-radius:10px; margin-bottom:6px; padding:9px 7px; }
+#systems .bt-task-row small { font-size:9px; }
+#systems .bt-agenda.is-empty { justify-content:center; align-items:center; }
+#systems .bt-agenda.is-empty :is(.bt-agenda-title,.bt-agenda-heading,#bt-task-preview) { display:none; }
+#systems #bt-task-add-toggle { display:flex; align-items:center; justify-content:center; gap:9px; align-self:stretch; padding:11px 14px; border:1px solid #ffffff95; border-radius:12px; background:#ffffff45; font-size:11px; box-shadow:0 3px 10px #285d4606; }
+#systems #bt-task-add-toggle span { font-size:20px; line-height:1; }
+#systems #bt-task-add-toggle:hover { background:#ffffff80; }
+#systems #bt-task-composer { width:100%; }
+#systems #bt-task-form { background:#ffffff50; border-color:#ffffff80; }
+#systems #bt-task-cancel { font-size:10px; padding:5px 0; background:transparent; text-decoration:underline; }
+#systems #bt-task-status { margin-top:6px; }
+#systems :is(#bt-task-composer,#bt-task-add-toggle)[hidden] { display:none!important; }
+@media(max-width:1100px) { #systems .bt-business { grid-template-columns:200px minmax(0,1fr); gap:20px; } #systems .bt-planner-body { grid-template-columns:minmax(200px,1fr) minmax(140px,.85fr); } #systems .bt-agenda { padding-inline:10px; } }
+@media(max-width:900px) { #systems .bt-business { grid-template-columns:1fr; } #systems .bt-planner { max-width:none; } }
+@media(max-width:580px) { #systems .bt-planner-body { grid-template-columns:minmax(0,1fr); } #systems .bt-month-panel { max-width:280px; width:100%; justify-self:center; } #systems .bt-agenda { border-inline-start:0; border-top:1px solid #ffffff70; margin:8px 6px 0; padding:12px 4px 2px; } #systems .bt-month-grid button { min-height:31px; } #systems .bt-planner-head { padding:14px 14px 10px; } #systems .bt-planner-head h2 { font-size:18px; } }
+
+/* Equal medium panels: personal welcome, independent agenda, glass calendar. */
+#systems .bt-business { grid-template-columns:minmax(190px,1fr) repeat(2,minmax(0,360px)); gap:24px; }
+#systems .bt-person { grid-area:1 / 1; display:flex; align-items:center; gap:14px; min-width:0; }
+#systems .bt-person-photo { flex:0 0 72px; width:72px; height:78px; margin:0; }
+#systems .bt-person-photo img { display:block; border-radius:46%; border:1px solid #ffffff80; box-shadow:none; }
+#systems .bt-person-info { min-width:0; }
+#systems .bt-person .bt-eyebrow { font-size:10px; }
+#systems .bt-person h1 { font-size:clamp(20px,1.7vw,26px); margin:4px 0; line-height:1.4; letter-spacing:0; }
+#systems .bt-person p { margin:0; font-size:10px; line-height:1.8; text-wrap:pretty; }
+#systems .bt-agenda { grid-area:1 / 2; }
+#systems .bt-planner { grid-area:1 / 3; }
+#systems :is(.bt-planner,.bt-agenda) { width:100%; max-width:none; height:360px; min-height:0; margin:0; align-self:center; justify-self:stretch; box-sizing:border-box; }
+#systems .bt-planner { display:flex; flex-direction:column; }
+#systems .bt-planner-head { padding:20px 22px 14px; }
+#systems .bt-planner-head h2 { margin:0; font-size:20px; }
+#systems .bt-planner-body { display:block; padding:0 10px 12px; }
+#systems .bt-month-panel { max-width:none; padding:0 10px; }
+#systems .bt-month-grid button { min-height:31px; font-size:12px; }
+#systems .bt-month-nav strong { font-size:12px; }
+#systems .bt-weekday { font-size:9px; }
+#systems .bt-calendar-key { margin-top:12px; }
+#systems .bt-agenda { padding:20px 12px; border:0; background:transparent; border-radius:0; --text-primary:#183f3a; --text-secondary:#46645c; overflow:hidden; }
+#systems .bt-agenda-title { margin:0 0 9px; font-size:20px; }
+#systems .bt-agenda-mark { display:grid; place-items:center; width:28px; height:28px; border-radius:50%; background:#ffffff45; }
+#systems .bt-agenda-heading { gap:6px; padding-bottom:12px; border-bottom:1px solid #ffffff80; flex-shrink:0; }
+#systems .bt-agenda-heading strong { font-size:10px; }
+#systems .bt-agenda-heading small { border-radius:20px; padding:5px 8px; }
+#systems .bt-timeline-window { position:relative; flex:1; min-height:0; margin:10px 0 12px; }
+#systems #bt-task-preview { height:100%; max-height:none; min-height:0; margin:0; padding:2px 2px 3px; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; scrollbar-color:#467b6644 transparent; }
+#systems .bt-timeline-window::after { content:''; position:absolute; bottom:0; inset-inline:0; height:44px; pointer-events:none; opacity:0; backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); background:linear-gradient(transparent,#cce6dfb8); mask-image:linear-gradient(transparent,#000 80%); -webkit-mask-image:linear-gradient(transparent,#000 80%); transition:opacity .18s; }
+#systems .bt-timeline-window.has-more::after { opacity:1; }
+#systems .bt-task-row { position:relative; display:grid; grid-template-columns:42px 16px minmax(0,1fr) 22px; align-items:center; gap:8px; padding:12px 0; margin:0; border:0; border-radius:0; background:transparent; min-height:65px; }
+#systems .bt-task-row::before { content:''; position:absolute; inset-inline-start:57px; width:1px; top:0; bottom:0; background:#7eaa9970; }
+#systems .bt-task-row:first-child::before { top:50%; }
+#systems .bt-task-row:last-child::before { bottom:50%; }
+#systems .bt-task-hour { font-size:11px; font-variant-numeric:tabular-nums; text-align:center; direction:ltr; }
+#systems .bt-task-row input { position:relative; z-index:1; margin:0; width:16px; height:16px; cursor:pointer; }
+#systems .bt-task-copy { display:flex; flex-direction:column; gap:4px; padding:8px 10px; border:1px solid #ffffff80; border-radius:11px; background:#ffffff38; }
+#systems .bt-task-copy strong { font-size:11px; font-weight:500; line-height:1.7; }
+#systems .bt-task-copy small { font-size:9px; }
+#systems .bt-task-row:has(input:checked) .bt-task-copy { opacity:.55; }
+#systems .bt-task-row:has(input:checked) .bt-task-copy strong { text-decoration:line-through; }
+#systems .bt-task-remove { padding:0; width:22px; height:26px; opacity:.65; }
+#systems .bt-task-remove:hover,#systems .bt-task-remove:focus-visible { opacity:1; }
+#systems .bt-agenda.is-empty .bt-timeline-window { display:none; }
+#systems #bt-task-add-toggle { flex-shrink:0; border-style:dashed; background:#ffffff25; min-height:42px; }
+#systems #bt-task-composer { flex-shrink:0; }
+@media(max-width:1050px) {
+  #systems .bt-business { grid-template-columns:repeat(2,minmax(0,360px)); justify-content:center; gap:24px; }
+  #systems .bt-person { grid-area:1 / 1 / 2 / -1; }
+  #systems .bt-agenda { grid-area:2 / 1; }
+  #systems .bt-planner { grid-area:2 / 2; }
+}
+@media(max-width:620px) {
+  #systems .bt-business { grid-template-columns:minmax(0,360px); gap:20px; }
+  #systems .bt-person { grid-area:1 / 1; }
+  #systems .bt-planner { grid-area:2 / 1; }
+  #systems .bt-agenda { grid-area:3 / 1; }
+}
+@media(prefers-reduced-motion:reduce) { #systems .bt-timeline-window::after { transition:none; } }
+
+/* Near-white business palette with clear glass edges and controls. */
+#systems[data-theme="business"] .bt-planner { background:linear-gradient(135deg,#ffffffb3,#ffffff66); border-color:#d4dfd9; box-shadow:0 8px 28px #294c3e0a,inset 0 1px 0 #fff; }
+#systems[data-theme="business"] .bt-month-nav button { background:#ffffff80; border-color:#d4dfd9; }
+#systems[data-theme="business"] .bt-heading-dot { background:#397e6d; }
+#systems[data-theme="business"] .bt-agenda-heading { border-bottom-color:#d8e2dc; }
+#systems[data-theme="business"] .bt-agenda-heading small,
+#systems[data-theme="business"] .bt-agenda-mark { background:#e7eee9; }
+#systems[data-theme="business"] .bt-task-copy { background:#ffffff80; border-color:#d7e2db; }
+#systems[data-theme="business"] #bt-task-add-toggle { background:#ffffff70; border-color:#9eb8aa; }
+#systems[data-theme="business"] #bt-task-add-toggle:hover { background:#edf3ef; border-color:#6d9381; }
+#systems[data-theme="business"] #bt-task-form { background:#ffffffb3; border-color:#b7cbbf; }
+#systems[data-theme="business"] .bt-timeline-window::after { background:linear-gradient(transparent,#f7f9f8e6); }

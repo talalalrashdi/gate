@@ -1,0 +1,112 @@
+/* Shared brand palette. Semantic notification and status colors stay independent. */
+:root {
+  --brand-primary:#0a2947;
+  --brand-secondary:#d3d4c0;
+  --brand-cream:#f3e4c9;
+  --brand-accent:#8b5e3c;
+  --surface-white:#fff;
+  --surface-cream:#faf5eb;
+  --surface-olive:#f1f1e9;
+  --surface-navy:#edf1f5;
+  --brand-line:#deded1;
+  --text-primary:var(--brand-primary);
+  --text-secondary:#526170;
+  --ink:var(--brand-primary);
+  --muted:var(--text-secondary);
+  --deep:var(--brand-primary);
+  --sage:var(--brand-secondary);
+  --terra:var(--brand-accent);
+  --paper:var(--surface-white);
+  --line:var(--brand-line);
+  --system-icon-ink:var(--brand-accent);
+  --system-icon-surface:var(--brand-cream);
+}
+
+/* White navigation with navy selection and restrained brown accents. */
+.b-media-subnav-label { --text-secondary:var(--brand-accent); }
+.b-media-subnav-links :is(a,button) { --text-primary:var(--brand-primary); }
+.b-media-subnav-links a:hover { background:var(--surface-cream); --text-primary:var(--brand-primary); }
+.b-media-subnav-links a[aria-current="location"] { background:var(--brand-primary); border-bottom-color:var(--brand-primary); --text-primary:#fff; }
+.b-media-subnav-links a:focus-visible { outline-color:var(--brand-accent); }
+.b-header .b-nav a::after { background:var(--brand-accent); }
+.b-header .b-search { background:var(--surface-cream); }
+.b-avatar { background:var(--brand-cream); }
+.b-alert-visibility { background:var(--surface-olive); border-color:var(--brand-secondary); }
+.b-alert-visibility:hover { background:var(--brand-secondary); }
+
+/* The opening mesh uses diluted brand colors, retaining its soft glass treatment. */
+#systems[data-theme="business"] { background:#fafbf9; }
+#systems[data-theme="business"]::before {
+  background:
+    radial-gradient(ellipse 24% 72% at 15% 35%,#f3e4c9e6 0%,#f3e4c980 42%,transparent 100%),
+    radial-gradient(ellipse 38% 38% at 63% 8%,#8b5e3c66 0%,#f3e4c980 48%,transparent 100%),
+    radial-gradient(ellipse 48% 35% at 94% 51%,#0a294766 0%,#0a294724 48%,transparent 100%),
+    radial-gradient(ellipse 32% 29% at 44% 43%,#d3d4c0cc 0%,#d3d4c066 48%,transparent 100%),
+    linear-gradient(125deg,#faf5eb,#f1f1e9 52%,#edf1f5);
+}
+#systems :is(.bt-person,.bt-planner,.bt-agenda) { --text-primary:var(--brand-primary); --text-secondary:#526170; }
+body .b-intro-switch button[aria-pressed="true"],body #systems .bt-month-grid button[aria-pressed="true"],body #systems #bt-task-form button { background:var(--brand-primary); color:#fff!important; box-shadow:0 3px 9px #0a294718; }
+#systems .bt-month-grid button[aria-current="date"] { border-color:var(--brand-accent); }
+#systems .bt-month-grid button.has-tasks::after { background:var(--brand-accent); }
+#systems .bt-calendar-key i,#systems[data-theme="business"] .bt-heading-dot { background:var(--brand-primary); }
+#systems .bt-calendar-key span+span i { background:var(--brand-accent); }
+#systems .bt-task-row input { accent-color:var(--brand-primary); }
+#systems .bt-business :is(button,input):focus-visible { outline-color:var(--brand-accent); }
+#systems[data-theme="business"] :is(.bt-planner,.bt-month-nav button,.bt-task-copy) { border-color:#0a294721; }
+#systems[data-theme="business"] :is(.bt-agenda-heading small,.bt-agenda-mark) { background:var(--brand-secondary); }
+#systems .bt-task-row::before { background:#8b5e3c50; }
+#systems[data-theme="business"] #bt-task-add-toggle { border-color:#8b5e3c66; }
+#systems[data-theme="business"] #bt-task-add-toggle:hover { background:var(--surface-cream); border-color:var(--brand-accent); }
+#systems[data-theme="business"] #bt-task-form { border-color:var(--brand-secondary); }
+#systems[data-theme="business"] .bt-timeline-window::after { background:linear-gradient(transparent,#fafbf9e6); }
+
+/* Everyday workspace cards and the systems directory. */
+.b-work-card,.b-workspace-grid > .b-work-library { background:var(--surface-white); border-color:var(--brand-line); }
+.b-work-docs .b-doc-type,.b-work-docs [data-category="reports"] .b-doc-type { background:var(--brand-cream); }
+.b-work-docs [data-category="policies"] .b-doc-type { background:var(--brand-secondary); }
+.b-doc-surface,.b-inbox-surface { background:var(--surface-olive); }
+.b-request-summary > div,.b-service-links button { background:var(--surface-olive); }
+.b-service-links button:hover { background:var(--brand-secondary); }
+.b-message-purpose.is-info { background:var(--surface-navy); }
+.b-message-purpose.is-action { background:var(--brand-cream); }
+.b-doc-categories button:hover { background:var(--surface-cream); }
+body .b-doc-categories button[aria-pressed="true"] { background:var(--brand-primary); }
+.b-work-footer button,.sc-details { --text-primary:var(--brand-accent); }
+.b-library.sc-section { background:linear-gradient(135deg,var(--surface-cream),var(--surface-olive)); }
+.sc-card,.sc-card.is-pinned { background:var(--surface-white); border-color:var(--brand-line); }
+.sc-card.is-pinned { background:var(--surface-olive); }
+.sc-pin,.sc-work-category,.b-group-plus { background:var(--brand-cream); border-color:var(--brand-secondary); }
+.sc-pin[aria-pressed="true"],.sc-categories button:hover { background:var(--brand-secondary); border-color:var(--brand-secondary); }
+body .sc-categories button[aria-pressed="true"],body .sc-categories button[aria-pressed="true"] span,body .sc-pinned-filter[aria-pressed="true"] { background:var(--brand-primary); }
+.sc-search:focus-within { border-color:var(--brand-primary); outline-color:#0a294724; }
+.b-policy-grid article { background:var(--surface-cream); border-color:var(--brand-accent); }
+.b-policy-grid article:nth-child(2) { background:var(--surface-olive); border-color:var(--brand-secondary); }
+.b-policy-grid article:nth-child(3) { border-color:var(--brand-primary); }
+
+/* Navy editorial canvas, cream stories, olive reading cards. */
+.b-section.b-editorial { background:radial-gradient(ellipse at 85% 0%,#d3d4c021,transparent 43%),linear-gradient(145deg,#173c5d,var(--brand-primary) 65%,#102d47); }
+body .b-editorial .ed-on-dark,body .b-editorial .ed-on-dark :is(h2,h3,p,span,small,strong,a,button) { color:#fff!important; }
+body .b-editorial .ed-on-dark :is(p,small),body .b-editorial .ed-on-dark .ed-eyebrow { color:var(--brand-secondary)!important; }
+body .b-editorial .ed-on-dark .ed-title-dot,body .b-editorial .ed-heading-icon { color:var(--brand-cream)!important; }
+.ed-lead-story,.ed-news-note,.ed-book-pick { background:var(--brand-cream); }
+.ed-news-note.ed-note-sand,.ed-summary-panel { background:var(--brand-secondary); }
+.b-editorial .ed-article-card { background:var(--surface-olive); }
+.b-editorial .ed-article-peach,.b-editorial .ed-tech-grid > .ed-article-card:nth-child(even) { background:var(--surface-cream); }
+.ed-kicker,.ed-card-footer button,.ed-lead-copy button,.ed-news-note button { --text-primary:var(--brand-accent); --text-secondary:var(--brand-accent); }
+.ed-save[aria-pressed="true"] { background:var(--brand-secondary); border-color:var(--brand-accent); }
+.ed-upload,.ed-mini-book,.ed-magazine-reader { background:var(--brand-secondary); }
+.ed-mini-book.ed-cover-clay { background:var(--brand-accent); --text-primary:#fff; --text-secondary:#fff; }
+.ed-mini-book.ed-cover-lilac { background:var(--brand-primary); --text-primary:#fff; --text-secondary:var(--brand-cream); }
+.ed-page.ed-mag-cover { background:var(--brand-cream); }
+.ed-reader-top button,.ed-reader-controls button { background:var(--surface-cream); border-color:var(--brand-secondary); }
+.ed-reader-controls button:focus-visible,.ed-tech-grid:focus-visible,.ed-tech-carousel-controls button:focus-visible { outline-color:var(--brand-cream); }
+
+/* Supporting navigation and dialogs share the same restrained accents. */
+.b-section-float-dot { background:var(--brand-primary); }
+.b-section-float-track > span { background:linear-gradient(90deg,var(--brand-secondary),var(--brand-primary)); }
+.b-section-step-icon,.b-section-float-top button { background:var(--surface-olive); }
+.bf-notice { background:var(--surface-cream); border-color:var(--brand-line); }
+.bf-notice-icon,.bf-notice-decision .bf-notice-icon { background:var(--brand-cream); }
+.bf-notice-icon i,.bf-notice-decision .bf-notice-icon i { color:var(--brand-accent); }
+:is(.b-doc-dialog,.ed-dialog,.sc-system-dialog,.b-group-dialog) { background:var(--surface-cream); }
+body .b-group-dialog .b-group-save { background:var(--brand-primary); }

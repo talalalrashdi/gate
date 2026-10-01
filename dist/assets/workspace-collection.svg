@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="560" viewBox="0 0 1040 560" fill="none">
+<defs>
+<linearGradient id="glass" x2="1" y2="1"><stop stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#f7f4ff" stop-opacity=".36"/></linearGradient>
+<linearGradient id="ribbon" x2="1" y2="1"><stop stop-color="#718cec" stop-opacity=".22"/><stop offset=".5" stop-color="#b398e6" stop-opacity=".17"/><stop offset="1" stop-color="#f4b289" stop-opacity=".28"/></linearGradient>
+<pattern id="dots" width="18" height="18" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#7779ac" opacity=".16"/></pattern>
+</defs>
+<ellipse cx="405" cy="293" rx="359" ry="200" transform="rotate(-14 405 293)" fill="url(#ribbon)"/>
+<ellipse cx="405" cy="293" rx="315" ry="165" transform="rotate(-14 405 293)" stroke="#fff" stroke-opacity=".65" stroke-width="2"/>
+<ellipse cx="405" cy="293" rx="394" ry="231" transform="rotate(-14 405 293)" stroke="#818bbb" stroke-opacity=".2"/>
+<rect x="42" y="62" width="700" height="430" rx="90" fill="url(#dots)"/>
+<g stroke="#8b8db5" stroke-width="1.5" stroke-dasharray="4 7" opacity=".65"><path d="M190 185C240 50 526 38 594 171M571 298c76 131-153 212-283 88M176 242c-107 81-34 172 73 157M592 275c134-56 120-116 67-139"/></g>
+<!-- A small systems dashboard, the centre of the workspace. -->
+<g transform="translate(226 157) rotate(-7 137 102)">
+<rect x="8" y="12" width="283" height="217" rx="25" fill="#778ac2" opacity=".13"/>
+<rect width="283" height="217" rx="25" fill="url(#glass)" stroke="#fff" stroke-width="2"/>
+<path d="M0 43h283" stroke="#9badd8" stroke-opacity=".5"/>
+<g fill="#7d91c6"><circle cx="22" cy="23" r="3"/><circle cx="33" cy="23" r="3"/><circle cx="44" cy="23" r="3"/></g>
+<path d="M206 23h54" stroke="#939ecd" stroke-width="5" stroke-linecap="round"/>
+<g stroke-width="1.4"><rect x="23" y="62" width="67" height="58" rx="13" fill="#d7e5ff" stroke="#aec5ef"/><rect x="109" y="62" width="67" height="58" rx="13" fill="#f3d9c4" stroke="#e6baa3"/><rect x="195" y="62" width="67" height="58" rx="13" fill="#ded5f5" stroke="#c7b5e9"/><rect x="23" y="138" width="67" height="58" rx="13" fill="#e0d8f3" stroke="#c7bbe4"/><rect x="109" y="138" width="67" height="58" rx="13" fill="#d2e8e8" stroke="#acd1d1"/><rect x="195" y="138" width="67" height="58" rx="13" fill="#f4e2b9" stroke="#dfc791"/></g>
+<g stroke="#6a76a2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="44" y="78" width="23" height="27" rx="4"/><path d="M50 86h11m-11 8h11m69-13h28v23h-28zm0 0 14 12 14-12"/><circle cx="228" cy="85" r="6"/><path d="M216 105v-4a12 12 0 0 1 24 0M45 155h23v23H45zM44 161h24m-17-10v9m11-9v9M132 177v-11m11 11v-21m11 21v-15M217 155h24v26l-12-6-12 6z"/></g>
+</g>
+<!-- Editorial: a photo story and its reading lines. -->
+<g transform="translate(529 79) rotate(12 106 109)"><rect x="5" y="8" width="201" height="232" rx="18" fill="#8d8dc0" opacity=".1"/><rect width="201" height="232" rx="18" fill="url(#glass)" stroke="#fff" stroke-width="2"/><rect x="18" y="18" width="165" height="104" rx="10" fill="#bfd8eb"/><circle cx="146" cy="43" r="14" fill="#ffe7b3"/><path d="m18 105 46-45 37 29 26-24 56 48v9H18z" fill="#859dc5"/><path d="m49 122 59-38 39 38" fill="#a6b3d7"/><g stroke="#9295b9" stroke-linecap="round"><path d="M23 148h112" stroke-width="6"/><path d="M23 165h149m-149 14h149m-149 14h95" stroke-width="3" opacity=".65"/></g><rect x="135" y="205" width="45" height="7" rx="3.5" fill="#d5b3c4"/></g>
+<!-- Correspondence and notifications. -->
+<g transform="translate(95 67) rotate(-16 73 62)"><rect width="146" height="123" rx="24" fill="#f6dfcb" fill-opacity=".8" stroke="#fff" stroke-width="2"/><rect x="33" y="33" width="80" height="58" rx="9" stroke="#ba937e" stroke-width="2.5"/><path d="m34 36 39 31 39-31" stroke="#ba937e" stroke-width="2.5"/><circle cx="124" cy="15" r="14" fill="#d48b90"/><circle cx="124" cy="15" r="5" fill="#fff4e8"/></g>
+<!-- An open magazine, paired with the document library. -->
+<g transform="translate(123 355) rotate(10 110 67)"><path d="M11 16q51-21 101 3 47-22 97-3v116q-49-20-97 0-51-19-101 0z" fill="#ede7fc" fill-opacity=".88" stroke="#fff" stroke-width="2"/><path d="M112 19v113" stroke="#b6a9d5" stroke-width="2"/><g stroke="#aca0c6" stroke-width="3" stroke-linecap="round"><path d="M33 43h53m-53 17h53m-53 17h42m54-34h53m-53 17h53m-53 17h39"/></g></g>
+<g transform="translate(578 359) rotate(8 76 62)"><path d="M8 33V16q0-8 8-8h46l15 16h64q10 0 10 10v78q0 10-10 10H18q-10 0-10-10z" fill="#cbdfe9" fill-opacity=".88" stroke="#fff" stroke-width="2"/><rect x="28" y="39" width="101" height="60" rx="8" fill="#f8fcff" fill-opacity=".6"/><path d="M44 57h68m-68 14h48m-48 14h59" stroke="#8fadc2" stroke-width="3" stroke-linecap="round"/></g>
+<!-- Quiet supporting sparks tie the separate subjects together. -->
+<g stroke="#ad95c1" stroke-width="2" opacity=".7"><path d="M420 89h20m-10-10v20M73 300h18m-9-9v18M767 322h22m-11-11v22"/><circle cx="476" cy="463" r="7"/><circle cx="783" cy="155" r="5"/></g><g fill="#b2bbde"><circle cx="68" cy="234" r="4"/><circle cx="355" cy="83" r="3"/><circle cx="405" cy="500" r="4"/></g>
+</svg>

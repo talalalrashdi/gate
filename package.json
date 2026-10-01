@@ -1,0 +1,11 @@
+{
+  "name": "clerio-glass",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dist --config vite.config.js"
+  },
+  "devDependencies": {
+    "vite": "8.0.13"
+  }
+}

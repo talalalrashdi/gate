@@ -10,7 +10,7 @@
     }catch{return [];}
   }
   let groups=[];try{groups=decode(localStorage.getItem(storageKey));}catch{}
-  const add=make('button','b-work-card b-workspace-add-group');add.type='button';add.setAttribute('aria-label','إضافة بطاقة مجموعة أنظمة');
+  const add=make('button','b-work-card b-workspace-add-group');add.type='button';add.dataset.widgetCategory='applications';add.setAttribute('aria-label','إضافة بطاقة مجموعة أنظمة');
   const plus=make('span','b-group-plus','+');plus.setAttribute('aria-hidden','true');add.append(plus,make('strong',null,'بطاقة جديدة'),make('small',null,'اجمع أنظمتك في مكان واحد'));workspace.append(add);
   const dialog=make('dialog','b-group-dialog');dialog.setAttribute('aria-labelledby','group-dialog-title');
   dialog.innerHTML='<form><header><h2 id="group-dialog-title">بطاقة جديدة</h2><button type="button" data-group-close aria-label="إغلاق">×</button></header><label class="b-group-name-label" for="group-name">اسم البطاقة</label><input id="group-name" name="name" maxlength="60" required placeholder="مثلاً: أنظمتي اليومية" autocomplete="off"><fieldset><legend>اختر الأنظمة</legend><input type="search" id="group-system-search" aria-label="البحث عن نظام" placeholder="ابحث عن نظام…"><div class="b-group-choices"></div><p class="b-group-no-results" hidden>لا توجد أنظمة مطابقة.</p></fieldset><p class="b-group-count" aria-live="polite"></p><p class="b-group-error" role="alert" hidden></p><footer><button type="button" class="b-group-delete" hidden>حذف البطاقة</button><button type="button" data-group-close>إلغاء</button><button type="submit" class="b-group-save">حفظ البطاقة</button></footer></form>';
@@ -23,11 +23,11 @@
   function render(){
     workspace.querySelectorAll('[data-work-group]').forEach(card=>card.remove());
     groups.forEach(group=>{
-      const card=make('article','b-work-card b-system-group');card.dataset.workSystem=group.id;card.dataset.workGroup=group.id;
+      const card=make('article','b-work-card b-system-group');card.dataset.workSystem=group.id;card.dataset.workGroup=group.id;card.dataset.widgetCategory='applications';
       const heading=make('header','b-work-heading'),icon=make('div','b-work-icon');icon.innerHTML='<i class="iconsax" icon-name="folder-2" aria-hidden="true"></i>';
       const copy=make('div'),title=make('h2',null,group.name);title.id=group.id+'-title';card.setAttribute('aria-labelledby',title.id);copy.append(title);heading.append(icon,copy);
       const actions=make('div','sc-work-label'),edit=make('button','b-group-edit','✎');edit.type='button';edit.setAttribute('aria-label',`تعديل ${group.name}`);edit.title=`تعديل ${group.name}`;edit.addEventListener('click',()=>open(group.id));actions.append(edit);heading.append(actions);
-      const list=make('ul','b-group-system-list');
+      const list=make('ul','b-group-system-list');list.dataset.widgetPreview='';
       group.systems.forEach(id=>{const system=byId.get(id);if(!system)return;const row=make('li'),title=make('span',null,system.title),button=make('button',null,'فتح النظام ↗');button.type='button';button.dataset.scDetails=id;button.setAttribute('aria-label',`فتح نظام ${system.title}`);row.append(title,button);list.append(row);});
       card.append(heading,list);if(!list.children.length)card.append(make('p','b-group-empty','أضف أنظمة من زر تعديل البطاقة.'));
       workspace.insertBefore(card,add);

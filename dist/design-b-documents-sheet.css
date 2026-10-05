@@ -13,16 +13,21 @@
   border-radius: 24px 24px 0 0;
   background: #fff;
   color: #183d55;
+  overflow: hidden;
 }
 .b-documents-sheet::backdrop { background: #17334740; backdrop-filter: blur(3px); }
 .b-documents-sheet[open] { display: flex; flex-direction: column; animation: documents-sheet-enter .22s ease-out; }
 .b-documents-sheet-heading { flex-shrink: 0; }
 .b-documents-content { display: flex; flex-direction: column; min-height: 0; flex: 1; }
-.b-documents-filters { display: grid; grid-template-columns: minmax(0, 1fr) minmax(180px, .4fr); gap: 16px; padding-top: 20px; }
+.b-documents-categories { display: flex; flex-shrink: 0; gap: 8px; padding-top: 20px; }
+.b-documents-categories button { padding: 9px 13px; border: 1px solid #d8e1e5; border-radius: 999px; background: #fff; color: #183d55; font: inherit; font-size: 11px; cursor: pointer; }
+.b-documents-categories button[aria-pressed="true"] { background: #173f58; border-color: #173f58; color: #fff !important; }
+.b-documents-categories button:focus-visible { outline: 2px solid #1764a0; outline-offset: 2px; }
+.b-documents-filters { display: grid; flex-shrink: 0; grid-template-columns: minmax(0, 1fr) minmax(180px, .4fr); gap: 16px; padding-top: 16px; }
 .b-documents-filters label { display: grid; gap: 8px; min-width: 0; font-size: 12px; font-weight: 700; }
 .b-documents-filters input, .b-documents-filters select { width: 100%; min-width: 0; height: 46px; padding: 0 14px; font: inherit; font-weight: 400; border: 1px solid #dce4e9; border-radius: 10px; background: #f8fafb; color: #26465b; }
 .b-documents-filters :is(input, select):focus-visible { outline: 2px solid #1764a0; outline-offset: 2px; }
-.b-documents-summary { display: flex; justify-content: space-between; align-items: center; padding-block: 16px 10px; font-size: 12px; }
+.b-documents-summary { display: flex; flex-shrink: 0; justify-content: space-between; align-items: center; padding-block: 16px 10px; font-size: 12px; }
 .b-documents-summary small { color: #788893; font-size: 11px; }
 .b-documents-list { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; list-style: none; padding: 0; margin: 0; scrollbar-width: thin; }
 .b-document-row { display: flex; align-items: center; gap: 14px; padding: 15px 8px; border-bottom: 1px solid #edf0f2; }

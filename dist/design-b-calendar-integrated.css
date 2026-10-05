@@ -40,6 +40,14 @@ body .b-arrow-controls { display: flex; align-items: center; width: max-content;
 body .b-arrow-controls button.b-arrow-button { display: grid; place-items: center; flex-shrink: 0; width: 30px; height: 30px; min-height: 0; padding: 6px; border: 0; border-radius: 50%; background: transparent; color: #344554 !important; box-shadow: none; }
 body .b-arrow-controls button:disabled { opacity: .35; cursor: default; }
 body .b-arrow-controls button.b-arrow-button:not(:disabled):hover { background: #ffffff; }
+body .b-workspace-toolbar .b-arrow-controls,
+#systems .bt-month-nav.b-arrow-controls,
+.b-dashboard .b-widget-pages { width: max-content; max-width: 100%; padding: 3px; gap: 2px; border: 1px solid #dce4ea99; border-radius: 999px; background: linear-gradient(135deg,#eef3f7aa,#ffffff66); backdrop-filter: blur(14px) saturate(120%); -webkit-backdrop-filter: blur(14px) saturate(120%); box-shadow: inset 0 1px 0 #ffffffb3; }
+body .b-workspace-toolbar .b-arrow-controls button.b-arrow-button,
+#systems .bt-month-nav button.b-arrow-button { width: 40px; height: 40px; border: 0; background: transparent; color: #000 !important; }
+body .b-workspace-toolbar .b-arrow-controls button.b-arrow-button:not(:disabled):hover,
+#systems .bt-month-nav button.b-arrow-button:hover,
+.b-dashboard .b-widget-pages button:hover { background: #ffffffb3; }
 .b-arrow-button svg { width: 18px; height: 18px; }
 .b-personal-slides { display: flex; direction: ltr; gap: 24px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none; padding-block: 0; }
 .b-personal-slides::-webkit-scrollbar { display: none; }
@@ -59,7 +67,7 @@ body .b-arrow-controls button.b-arrow-button:not(:disabled):hover { background: 
 #systems .bt-business {
   width: 90%;
   margin-inline: auto;
-  grid-template-columns: minmax(190px, 240px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(190px, 240px);
   grid-template-rows: auto;
   gap: 32px;
   align-items: start;
@@ -71,7 +79,7 @@ body .b-arrow-controls button.b-arrow-button:not(:disabled):hover { background: 
   -webkit-backdrop-filter: blur(22px) saturate(125%);
   box-shadow: 0 12px 36px #3455740a, inset 0 1px 0 #ffffffcc;
 }
-#systems .bt-person { grid-area: 1 / 1; }
+#systems .bt-person { grid-area: 1 / 2; }
 #systems .bt-news-summary { display: block; min-width: 0; padding: 0; }
 #systems .bt-news-summary header { padding-bottom: 10px; border-bottom: 1px solid #e4e8e8; }
 #systems .bt-news-summary header > span { color: #667982; font-size: 9px; }
@@ -82,13 +90,13 @@ body .b-arrow-controls button.b-arrow-button:not(:disabled):hover { background: 
 #systems .bt-news-headlines button > span { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #e7f0f3; color: #376779; font-size: 8px; }
 #systems .bt-news-headlines button:hover { color: #17628a; }
 #systems .bt-business > .bt-planner {
-  grid-area: 1 / 2;
+  grid-area: 1 / 1;
   width: min(100%, 866px);
   display: grid;
   grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.15fr);
   gap: 18px;
   align-items: start;
-  justify-self: end;
+  justify-self: start;
   max-width: 100%;
   height: auto;
   min-height: 0;
@@ -113,7 +121,7 @@ body .b-arrow-controls button.b-arrow-button:not(:disabled):hover { background: 
 #systems .bt-empty-day svg { width: 46px; height: 46px; color: #aaa69f; flex-shrink: 0; }
 #systems .bt-empty-day p { margin: 0; color: #777169; font-size: 11px; line-height: 1.8; }
 #systems .bt-planner-head { min-height: 34px; margin-bottom: 10px; padding-bottom: 8px; }
-#systems .bt-month-nav { padding-bottom: 8px; }
+#systems .bt-month-nav { margin-bottom: 8px; }
 #systems .bt-month-nav strong { font-size: 13px; }
 #systems .bt-month-grid { gap: 2px; grid-auto-rows: auto; }
 #systems .bt-weekday { font-size: 10px; font-weight: 700; padding: 4px 0; }

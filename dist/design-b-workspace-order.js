@@ -41,14 +41,18 @@
     const bounds=workspace.getBoundingClientRect();
     drag.valid=drag.y>=bounds.top-35&&drag.y<=bounds.bottom+35&&drag.x>=bounds.left-60&&drag.x<=bounds.right+60;
     drag.before=null;if(!drag.valid||!others.length)return;
-    drag.before=others.find(card=>{const box=card.getBoundingClientRect();return drag.x>box.left+box.width/2;})||null;
+    const grid=getComputedStyle(workspace).display==='grid';
+    drag.before=others.find(card=>{const box=card.getBoundingClientRect();return grid?(drag.y<box.top||(drag.y<=box.bottom&&drag.x>box.left+box.width/2)):drag.x>box.left+box.width/2;})||null;
     (drag.before||others.at(-1)).classList.add(drag.before?'drop-before':'drop-after');
   }
   function tick(time){
     if(!drag?.active)return;
     const box=workspace.getBoundingClientRect(),elapsed=Math.min(32,time-(drag.time||time));drag.time=time;
     const speed=drag.x<box.left+48?-1:drag.x>box.right-48?1:0;
-    if(drag.y>=box.top-35&&drag.y<=box.bottom+35&&speed)workspace.scrollLeft+=speed*elapsed*.65;
+    if(getComputedStyle(workspace).display==='grid'){
+      const vertical=drag.y<80?-1:drag.y>window.innerHeight-80?1:0;
+      if(vertical)window.scrollBy(0,vertical*elapsed*.65);
+    }else if(drag.y>=box.top-35&&drag.y<=box.bottom+35&&speed)workspace.scrollLeft+=speed*elapsed*.65;
     locate();frame=requestAnimationFrame(tick);
   }
   function finish(commit){
@@ -92,7 +96,7 @@
     });
     handle.addEventListener('pointerdown',event=>{
       if(event.button!==0||!event.isPrimary||drag)return;
-      drag={card,handle,pointer:event.pointerId,startX:event.clientX,startY:event.clientY,x:event.clientX,y:event.clientY,active:false,valid:false};handle.setPointerCapture(event.pointerId);
+      drag={card:card,handle,pointer:event.pointerId,startX:event.clientX,startY:event.clientY,x:event.clientX,y:event.clientY,active:false,valid:false};handle.setPointerCapture(event.pointerId);
     });
     handle.addEventListener('pointermove',event=>{
       if(!drag||event.pointerId!==drag.pointer)return;drag.x=event.clientX;drag.y=event.clientY;

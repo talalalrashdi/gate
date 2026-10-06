@@ -113,7 +113,6 @@ function renderLibrary(){
     button.hidden=!matches;if(matches)count++;
   });
   categoryButtons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.docCategory===activeDocCategory)));
-  document.getElementById('work-library-count').textContent=`${count.toLocaleString('ar-EG')} من ٣ مستندات`;
   document.querySelector('.b-doc-empty').hidden=count>0;
 }
 libraryInput.addEventListener('input',renderLibrary);
@@ -122,13 +121,28 @@ const docDialog=document.querySelector('.b-doc-dialog');
 const docSamples={
   guide:'مرحبًا بك في مساحة العمل. استخدم مكتبة العمل للعثور على الأدلة والسياسات، وتابع المراسلات والطلبات من البطاقات المخصصة. يمكنك الجمع بين البحث والتصنيف للوصول إلى المستند المطلوب.',
   policy:'يقدّم هذا النموذج إرشادات عامة لحماية معلومات العمل: استخدام كلمات مرور قوية، ومشاركة المستندات مع الجهات المخوّلة فقط، والإبلاغ عن الرسائل المشبوهة عبر القنوات المعتمدة.',
+  leave:'نموذج توضيحي لقرار تنظيم الإجازات السنوية وإجراءات تقديم الطلبات واعتمادها.',
+  training:'نموذج توضيحي لقرار اعتماد خطة التدريب وتنسيق مشاركة الموظفين في البرامج.',
+  delegation:'نموذج توضيحي لقرار تفويض الصلاحيات الإدارية وتحديد مسؤوليات متابعة الإجراءات.',
   report:'يعرض هذا النموذج ملخصًا توضيحيًا للأداء الشهري: تقدم الطلبات، ومستوى إنجاز الخدمات، وأبرز فرص التحسين. تُضاف البيانات الفعلية عند ربط المكتبة بمصدر المستندات.'
 };
+function paintDecisionState(button){
+  const labels={new:'غير مفتوح',unread:'غير مقروء',read:'مقروء'};
+  let status=button.querySelector('.b-decision-state');
+  if(!status){status=document.createElement('span');status.className='b-decision-state';button.querySelector('.b-item-meta').append(status);}
+  status.textContent=labels[button.dataset.state]||labels.unread;
+  const ageLabels={today:'اليوم',yesterday:'أمس',older:'سابق'};
+  const time=button.querySelector('time');
+  time.textContent=(ageLabels[button.dataset.decisionAge]||'')+' · '+time.textContent.split(' · ').at(-1);
+  button.setAttribute('aria-label',button.querySelector('b').textContent+' — '+time.textContent+' — '+status.textContent);
+}
+docButtons.forEach(paintDecisionState);
 docButtons.forEach(button=>button.addEventListener('click',()=>{
   document.getElementById('doc-preview-title').textContent=button.querySelector('b').textContent;
   document.getElementById('doc-preview-copy').textContent=docSamples[button.dataset.docId].replace('مكتبة العمل',document.getElementById('work-library-title')?.textContent.trim()||'مكتبة العمل');
   docDialog.showModal();
   button.dataset.state='read';
+  paintDecisionState(button);
 }));
 document.querySelector('.b-doc-close').addEventListener('click',()=>docDialog.close());
 renderLibrary();
@@ -169,6 +183,10 @@ const workspaceTrack=document.getElementById('workspace-cards');
 const workspacePrev=document.querySelector('.b-workspace-prev');
 const workspaceNext=document.querySelector('.b-workspace-next');
 function updateWorkspaceNavigation(){
+  const grid=getComputedStyle(workspaceTrack).display==='grid';
+  const controls=workspacePrev.closest('.b-alert-controls');
+  if(controls)controls.hidden=grid;
+  workspaceTrack.setAttribute('aria-label',grid?'بطاقات مساحة العمل':'بطاقات مساحة العمل، استخدم سهمي اليمين واليسار للتصفح');
   const max=Math.max(0,workspaceTrack.scrollWidth-workspaceTrack.clientWidth);
   const position=Math.abs(workspaceTrack.scrollLeft);
   workspacePrev.disabled=position<2;workspaceNext.disabled=position>=max-2;
@@ -181,7 +199,7 @@ function moveWorkspace(direction){
 workspacePrev.addEventListener('click',()=>moveWorkspace(1));
 workspaceNext.addEventListener('click',()=>moveWorkspace(-1));
 workspaceTrack.addEventListener('keydown',event=>{
-  if(event.target!==workspaceTrack)return;
+  if(event.target!==workspaceTrack||getComputedStyle(workspaceTrack).display==='grid')return;
   if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();moveWorkspace(event.key==='ArrowLeft'?-1:1);}
 });
 workspaceTrack.addEventListener('scroll',updateWorkspaceNavigation,{passive:true});

@@ -23,11 +23,11 @@
   systems.forEach(system=>{
     let card=workCards.get(system.id);
     if(!card){
-      card=make('article','b-work-card sc-work-added');card.dataset.workSystem=system.id;
+      card=make('article','b-work-card sc-work-added');card.dataset.workSystem=system.id;card.dataset.widgetCategory=({daily:'communication',people:'attendance',operations:'services',finance:'forms',knowledge:'applications'})[system.category]||'applications';
       const heading=make('header','b-work-heading'),badge=make('div','b-work-icon'),copy=make('div'),title=make('h2',null,system.title);
       title.id=`work-system-${system.id}`;card.setAttribute('aria-labelledby',title.id);badge.append(icon(system.icon));copy.append(title);heading.append(badge,copy);
       const details=make('button','sc-details','تشغيل النظام ←');details.type='button';details.dataset.scDetails=system.id;
-      card.append(heading,make('p',null,system.description),make('span','sc-work-category',system.categoryName),details);workspace.append(card);workCards.set(system.id,card);
+      card.append(heading,make('span','sc-work-category',system.categoryName),details);workspace.append(card);workCards.set(system.id,card);
     }
     const label=make('div','sc-work-label');label.append(pinButton(system.id));card.querySelector(':scope > .b-work-heading').append(label);
   });
@@ -46,11 +46,13 @@
     categoryNames.forEach((label,id)=>{const button=make('button',null,label);button.type='button';button.dataset.sheetCategory=id;button.setAttribute('aria-pressed',String(id==='all'));sheetCategories.append(button);});
     const sheetCount=make('span','b-systems-sheet-count'),sheetGrid=make('div','sc-grid b-systems-sheet-grid'),sheetEmpty=make('p','b-systems-sheet-empty','لا توجد أنظمة مطابقة للبحث.');sheetEmpty.hidden=true;
     cards.forEach(card=>{const clone=card.cloneNode(true);clone.removeAttribute('aria-labelledby');clone.querySelector('h3')?.removeAttribute('id');sheetGrid.append(clone);});
-    sheetContent.append(sheetSearch,sheetCategories,sheetCount,sheetGrid,sheetEmpty);
+    const sheetFilters=make('div','b-systems-sheet-filters');sheetFilters.append(sheetSearch,sheetCategories);
+    sheetContent.append(sheetFilters,sheetCount,sheetGrid,sheetEmpty);
     let sheetCategory='all';const sheetInput=sheetSearch.querySelector('input');
     function filterSheet(){const terms=normalize(sheetInput.value).split(/\s+/).filter(Boolean);let count=0;[...sheetGrid.children].forEach(card=>{const system=systems.get(card.dataset.systemId),visible=(sheetCategory==='all'||system.category===sheetCategory)&&terms.every(term=>normalize(`${system.title} ${system.description} ${system.categoryName}`).includes(term));card.hidden=!visible;if(visible)count++;});sheetCategories.querySelectorAll('button').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.sheetCategory===sheetCategory)));sheetCount.textContent=`${number(count)} من ${number(systems.size)} نظامًا`;sheetEmpty.hidden=count!==0;}
     sheetTrigger.addEventListener('click',event=>{event.preventDefault();filterSheet();if(!sheet.open)sheet.showModal();});
     sheet.querySelector('.b-systems-sheet-close').addEventListener('click',()=>sheet.close());
+    sheet.addEventListener('click',event=>{const bounds=sheet.getBoundingClientRect();if(event.target===sheet&&(event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom))sheet.close();});
     sheet.addEventListener('close',()=>sheetTrigger.focus());sheetInput.addEventListener('input',filterSheet);
     sheetCategories.addEventListener('click',event=>{const button=event.target.closest('[data-sheet-category]');if(!button)return;sheetCategory=button.dataset.sheetCategory;filterSheet();});
   }

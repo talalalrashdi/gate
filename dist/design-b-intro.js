@@ -18,17 +18,15 @@
   const composerHome = sharedComposer?.parentElement;
   const composerNext = sharedComposer?.nextSibling;
   const majesticCalendar = byId('bt-majestic-calendar');
-  const sceneButtons = [...document.querySelectorAll('[data-majestic-scene]')];
   const sceneImages = [...document.querySelectorAll('[data-majestic-image]')];
   const backdrop = document.querySelector('.bt-majestic-backdrop');
-  const playbackButton = document.querySelector('.bt-majestic-playback');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let sceneIndex = 0, sceneTimer, playbackPaused = reducedMotion.matches;
   const themes = {
     1: { theme: 'business', panel: 'intro-option-1', label: 'الأعمال', labelledBy: 'workspace-title' },
     2: { theme: 'official', panel: 'intro-option-2', label: 'الوطنية', labelledBy: 'bt-official-title' },
     3: { theme: 'formal', panel: 'intro-option-3', label: 'الرسمية', labelledBy: 'bt-formal-title' },
-    4: { theme: 'majestic', panel: 'intro-option-4', label: 'الشامخة', labelledBy: 'bt-majestic-title' }
+    4: { theme: 'majestic', panel: 'intro-option-4', label: 'الشامخة', labelledBy: 'bt-calendar-title' }
   };
   function selectTheme(option) {
     option = Object.hasOwn(themes, option) && byId(themes[option].panel) ? option : '1';
@@ -62,33 +60,20 @@
   themeButtons.forEach(button => button.addEventListener('click', () => { selectTheme(button.dataset.introOption); if (themeMenu) themeMenu.open = false; }));
   function showMajesticScene(index) {
     sceneIndex = index;
-    const scene = sceneButtons[index]?.dataset.majesticScene;
-    sceneButtons.forEach((button, i) => button.setAttribute('aria-pressed', String(i === index)));
+    const scene = sceneImages[index]?.dataset.majesticImage;
     sceneImages.forEach(image => image.classList.toggle('is-active', image.dataset.majesticImage === scene));
   }
   function syncMajesticPlayback() {
     clearTimeout(sceneTimer);
-    if (!backdrop || !sceneButtons.length) return;
+    if (!backdrop || !sceneImages.length) return;
     const paused = playbackPaused;
     const running = !paused && !document.hidden && document.body.dataset.siteTheme === 'majestic';
     backdrop.dataset.paused = String(!running);
-    playbackButton?.setAttribute('aria-pressed', String(paused));
-    if (playbackButton) {
-      playbackButton.textContent = paused ? 'تشغيل الحركة' : 'إيقاف الحركة';
-    }
     if (running) sceneTimer = setTimeout(() => {
-      showMajesticScene((sceneIndex + 1) % sceneButtons.length);
+      showMajesticScene((sceneIndex + 1) % sceneImages.length);
       syncMajesticPlayback();
     }, 8000);
   }
-  sceneButtons.forEach((button, index) => button.addEventListener('click', () => {
-    showMajesticScene(index);
-    syncMajesticPlayback();
-  }));
-  playbackButton?.addEventListener('click', () => {
-    playbackPaused = !playbackPaused;
-    syncMajesticPlayback();
-  });
   if (backdrop) {
     document.addEventListener('visibilitychange', syncMajesticPlayback);
     reducedMotion.addEventListener('change', () => {

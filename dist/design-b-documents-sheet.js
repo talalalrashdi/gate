@@ -11,22 +11,25 @@
   };
   const panel = document.createElement('div');
   panel.className = 'b-documents-content';
-  panel.innerHTML = `<div class="b-documents-filters"><label class="b-documents-search">البحث عن ملف<input type="search" placeholder="ابحث باسم الاستمارة أو الوثيقة…" aria-controls="documents-list"></label><label>الجهة<select aria-controls="documents-list"><option value="">جميع الجهات</option></select></label></div><div class="b-documents-summary"><span role="status" aria-live="polite"></span><small>مسميات توضيحية</small></div><ul id="documents-list" class="b-documents-list" aria-label="الاستمارات والوثائق المتاحة"></ul><p class="b-documents-empty" hidden>لا توجد ملفات مطابقة للبحث.</p>`;
+  panel.innerHTML = `<div class="b-documents-categories" role="group" aria-label="تصفية حسب تصنيف الملف"><button type="button" data-category="" aria-pressed="true" aria-controls="documents-list">الكل</button><button type="button" data-category="forms" aria-pressed="false" aria-controls="documents-list">استمارات</button><button type="button" data-category="documents" aria-pressed="false" aria-controls="documents-list">وثائق</button></div><div class="b-documents-filters"><label class="b-documents-search">البحث عن ملف<input type="search" placeholder="ابحث باسم الاستمارة أو الوثيقة…" aria-controls="documents-list"></label><label>الجهة<select aria-controls="documents-list"><option value="">جميع الجهات</option></select></label></div><div class="b-documents-summary"><span role="status" aria-live="polite"></span><small>مسميات توضيحية</small></div><ul id="documents-list" class="b-documents-list" aria-label="الاستمارات والوثائق المتاحة"></ul><p class="b-documents-empty" hidden>لا توجد ملفات مطابقة للبحث.</p>`;
   sheet.append(panel);
   const search = panel.querySelector('input');
   const department = panel.querySelector('select');
   const list = panel.querySelector('ul');
   const count = panel.querySelector('[role="status"]');
   const empty = panel.querySelector('.b-documents-empty');
+  const categories = panel.querySelectorAll('[data-category]');
+  let category = '';
   const files = [];
   Object.entries(departments).forEach(([name, titles]) => {
     department.add(new Option(name, name));
-    titles.forEach((title, index) => files.push({ title, department: name, type: index % 3 === 1 ? 'PDF' : 'Word' }));
+    titles.forEach((title, index) => files.push({ title, department: name, category: /^(دليل|محضر)/.test(title) ? 'documents' : 'forms', type: index % 3 === 1 ? 'PDF' : 'Word' }));
   });
   const normalize = text => text.trim().replace(/[أإآ]/g, 'ا').replace(/[\u064B-\u065F\u0640]/g, '').toLowerCase();
   function render() {
     const query = normalize(search.value);
-    const matches = files.filter(file => (!department.value || file.department === department.value) && normalize(`${file.title} ${file.department} ${file.type}`).includes(query));
+    const matches = files.filter(file => (!category || file.category === category) && (!department.value || file.department === department.value) && normalize(`${file.title} ${file.department} ${file.type}`).includes(query));
+    list.scrollTop = 0;
     list.replaceChildren(...matches.map(file => {
       const row = document.createElement('li');
       row.className = 'b-document-row';
@@ -51,6 +54,11 @@
   }
   search.addEventListener('input', render);
   department.addEventListener('change', render);
+  categories.forEach(button => button.addEventListener('click', () => {
+    category = button.dataset.category;
+    categories.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+    render();
+  }));
   render();
   trigger.addEventListener('click', event => {
     event.preventDefault();

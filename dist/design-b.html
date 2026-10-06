@@ -22,6 +22,7 @@
   <link rel="stylesheet" href="./design-b-documents-sheet.css">
   <link rel="stylesheet" href="./design-b-formal-theme.css">
   <link rel="stylesheet" href="./design-b-majestic-theme.css">
+  <link rel="stylesheet" href="./design-b-library.css">
 </head>
 <body class="b-dashboard">
   <header class="b-header">
@@ -42,6 +43,7 @@
           <input id="b-search-input" type="search" autocomplete="off" placeholder="عن ماذا تبحث اليوم؟" aria-label="البحث في محتوى الصفحة" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="b-search-results">
           <button class="b-search-close" type="button" aria-label="إغلاق البحث">✕</button>
         </div>
+        <fieldset class="b-search-scope"><legend>نطاق البحث</legend><label><input type="radio" name="b-search-scope" value="all" checked><span>البحث الشامل</span></label><label><input type="radio" name="b-search-scope" value="phone"><span>البحث في دليل الهاتف فقط</span></label></fieldset>
         <div class="b-search-dropdown">
           <div class="b-search-caption"><span id="b-search-status" role="status">وصول سريع</span><small>كل شيء أقرب</small></div>
           <div id="b-search-results" role="listbox" aria-label="نتائج البحث"></div>
@@ -57,8 +59,7 @@
     </section>
     <nav class="b-media-subnav" aria-label="أقسام الأخبار والوسائط">
       <div class="b-media-subnav-links">
-        <span class="b-media-subnav-label">الأخبار والوسائط</span>
-        <a href="#ed-news">أخبار عامة</a><a href="#ed-events">فعاليات المؤسسة</a><a href="#digital-library">المكتبة الرقمية</a><a href="#safety">تعليمات السلامة</a><a href="#ed-magazine">مجلة الشهر <span class="b-media-new">جديد</span></a>
+        <a href="#ed-news">أخبار عامة</a><a href="#ed-events">اخبارانا</a><a href="#digital-library">وثائق تهمك</a><a href="#safety">تعليمات السلامة</a><a href="#ed-magazine">مجلة الشهر <span class="b-media-new">جديد</span></a>
       </div>
     </nav>
   </header>
@@ -129,6 +130,12 @@
         <div id="intro-option-3" class="b-intro-panel bt-official bt-formal-oman" hidden><span class="bt-eyebrow">سلطنة عُمان</span><h2 id="bt-formal-title">عُمانُ وطنٌ راسخٌ،<br>ومستقبلٌ نصنعه بإتقان.</h2><p>بالعمل والمسؤولية نمضي نحو غدٍ أكثر ازدهارًا.</p></div>
         <div id="intro-option-4" class="b-intro-panel bt-majestic" hidden>
           <aside id="bt-majestic-calendar" class="bt-majestic-calendar" aria-label="تقويم الأعمال والمهام"></aside>
+          <div class="bt-majestic-story" aria-label="حكاية المشهد">
+            <span class="bt-majestic-story-label" id="bt-majestic-story-label">جديد مطعم الشركة</span>
+            <h2 id="bt-majestic-story-title">منيو جديد، لخيارات أكثر.</h2>
+            <p id="bt-majestic-story-description">اكتشف خيارات الفطور والغداء في مطعم الشركة، وخطّط لاستراحتك القادمة.</p>
+            <button type="button" class="bt-majestic-story-action" id="bt-majestic-story-action" aria-haspopup="dialog" aria-controls="bt-announcement-dialog">استعرض المنيو <span aria-hidden="true">←</span></button>
+          </div>
         </div>
       </div>
     </section>
@@ -237,8 +244,15 @@
           <button type="button" class="ed-book-pick" data-ed-read="book-time"><span class="ed-mini-book"><small>أدلة كليريو / ٠٦</small><strong>مساحة<br>لوقتك</strong><span>دليل توضيحي</span></span><span class="ed-book-caption"><b>مساحة لوقتك</b><small>أولويات أقل، تركيز أكبر</small><span>ابدأ القراءة ↗</span></span></button>
         </div></section>
 
-        <section class="ed-magazine" id="ed-magazine" aria-labelledby="ed-magazine-title"><div class="ed-magazine-intro ed-on-dark"><span class="ed-eyebrow">مساحة تستحق التوقّف</span><h3 id="ed-magazine-title">مجلة الشهر<span>وُجهات.</span></h3><p>قصص وأفكار من مساحة العمل، في عدد تقلب صفحاته على مهل.</p><span class="ed-issue">سبتمبر ٢٠٢٦ · العدد التجريبي الأول</span></div>
-          <div class="ed-magazine-reader" id="ed-magazine-reader"><div class="ed-reader-top"><span>وُجهات / العدد ٠١</span><button type="button" id="ed-reader-expand" aria-label="تكبير قارئ المجلة" aria-pressed="false">توسيع القراءة ↗</button></div><div class="ed-book-stage" id="ed-book-stage" tabindex="0" aria-label="صفحات مجلة الشهر، استخدم سهمي اليمين واليسار للتقليب"><div class="ed-spread" id="ed-spread"></div></div><div class="ed-reader-controls"><button type="button" id="ed-book-prev" aria-label="الصفحتان السابقتان" disabled>→</button><span id="ed-book-status" role="status" aria-live="polite"></span><button type="button" id="ed-book-next" aria-label="الصفحتان التاليتان">←</button></div></div>
+        <section class="ed-magazine" id="ed-magazine" aria-labelledby="ed-magazine-title">
+          <div class="ed-magazine-intro ed-on-dark"><span class="ed-eyebrow">مساحة تستحق التوقّف</span><h3 id="ed-magazine-title">مجلة الشهر<span>وُجهات.</span></h3><p>تصفّح المجلة صفحةً بصفحة، وكبّر تفاصيلها لتستمتع بالقراءة.</p><span class="ed-issue">العدد الحالي · ٢٥٨ صفحة</span><a class="ed-magazine-pdf" href="./assets/magazines/39.pdf" target="_blank" rel="noopener">فتح ملف PDF ↗</a></div>
+          <div class="ed-local-reader" id="monthly-reader" aria-label="قارئ مجلة وُجهات" data-pages="./assets/magazines/39-pages/manifest.json">
+            <header class="ed-local-toolbar"><span>وُجهات / مجلة الشهر</span><div><button type="button" data-mag-thumbnails aria-expanded="false" aria-controls="monthly-thumbnails" aria-label="عرض مصغرات الصفحات">▦</button><button type="button" data-mag-zoom aria-pressed="false" aria-label="تكبير الصفحات">＋</button><button type="button" data-mag-fullscreen aria-label="ملء الشاشة">⛶</button></div></header>
+            <div class="ed-local-thumbnails" id="monthly-thumbnails" aria-label="اختيار صفحة" hidden></div>
+            <div class="ed-local-stage" tabindex="0" aria-label="صفحات المجلة؛ استخدم سهمي اليمين واليسار للتقليب"><div class="ed-local-spread"></div><p class="ed-local-message" role="status">جارٍ تجهيز المجلة…</p></div>
+            <footer class="ed-local-controls"><button type="button" data-mag-prev aria-label="الصفحات السابقة" disabled>→</button><output data-mag-status aria-live="polite"></output><button type="button" data-mag-next aria-label="الصفحات التالية" disabled>←</button><label>الصفحة <input data-mag-page type="number" min="1" value="1" inputmode="numeric" aria-label="الانتقال إلى صفحة" disabled></label></footer>
+            <input class="ed-local-range" data-mag-range type="range" min="1" value="1" aria-label="تصفح صفحات المجلة" disabled>
+          </div>
         </section>
         <footer class="ed-endnote ed-on-dark"><span>كليريو — مساحة للخبر والفكرة والحكاية.</span><small>جميع المواد والصور المعروضة نماذج توضيحية، وليست أخبارًا منشورة عن المؤسسة.</small></footer>
       </div>
@@ -253,7 +267,7 @@
       </div>
     </section>
 
-    <section class="b-section b-library sc-section" id="library" aria-labelledby="library-title" data-search-category="دليل الأنظمة">
+    <section class="b-section b-library sc-section" id="library" aria-labelledby="library-title" data-search-category="دليل الأنظمة" hidden>
       <header class="sc-heading"><div><span class="sc-eyebrow">٠٤ / دليل الأنظمة</span><h2 id="library-title">الأنظمة الإلكترونية</h2><p>كل أدواتك في مكان واحد. اختر ما تحتاجه، واجعله أقرب في مساحة العمل.</p></div></header>
       <div class="sc-discovery"><label class="sc-search"><i class="iconsax" icon-name="search-normal-1" aria-hidden="true"></i><span class="sc-sr-only">ابحث عن نظام بالاسم أو الخدمة</span><input type="search" id="sc-search" placeholder="ما الذي تريد إنجازه؟ ابحث عن نظام أو خدمة…" autocomplete="off" aria-controls="sc-grid"></label><button type="button" class="sc-pinned-filter" id="sc-pinned-filter" aria-pressed="false" aria-controls="sc-grid"><i class="iconsax" icon-name="archive-book" aria-hidden="true"></i> في مساحة العمل <span id="sc-filter-count">٤</span></button></div>
       <div class="sc-categories" role="group" aria-label="تصنيفات الأنظمة"><button type="button" data-sc-category="all" aria-pressed="true">الكل <span>٢٠</span></button><button type="button" data-sc-category="daily" aria-pressed="false"><i class="iconsax" icon-name="calendar-2" aria-hidden="true"></i>العمل اليومي <span>٤</span></button><button type="button" data-sc-category="people" aria-pressed="false"><i class="iconsax" icon-name="people" aria-hidden="true"></i>الموظفون <span>٤</span></button><button type="button" data-sc-category="operations" aria-pressed="false"><i class="iconsax" icon-name="briefcase" aria-hidden="true"></i>التشغيل والخدمات <span>٤</span></button><button type="button" data-sc-category="finance" aria-pressed="false"><i class="iconsax" icon-name="receipt-text" aria-hidden="true"></i>المالية والمشتريات <span>٤</span></button><button type="button" data-sc-category="knowledge" aria-pressed="false"><i class="iconsax" icon-name="folder-2" aria-hidden="true"></i>المعرفة والتقنية <span>٤</span></button></div>
@@ -284,12 +298,20 @@
       <p class="sc-local-note">تفضيلات التثبيت تُحفظ على هذا المتصفح. أسماء الأنظمة وخدماتها نماذج توضيحية.</p>
     </section>
     <section class="b-section b-digital-library" id="digital-library" aria-labelledby="digital-library-title">
-      <header class="b-section-heading"><div><span>٠٥</span><h2 id="digital-library-title">المكتبة الرقمية</h2></div><p>كتيبات مرجعية مختصرة للاطلاع السريع والرجوع إليها عند الحاجة.</p></header>
-      <div class="b-digital-books">
-        <article class="b-digital-book"><span class="b-book-cover is-rules" aria-hidden="true"><i class="iconsax" icon-name="document-text-1"></i><small>قوانين</small></span><div><small>الدليل المؤسسي</small><h3>قوانين المؤسسة</h3><p>مرجع موحّد للأنظمة والسياسات والقواعد المنظمة لبيئة العمل.</p><button type="button" data-b-action="قوانين المؤسسة">فتح الكتيب <span aria-hidden="true">←</span></button></div></article>
-        <article class="b-digital-book"><span class="b-book-cover is-retirement" aria-hidden="true"><i class="iconsax" icon-name="receipt-text"></i><small>التقاعد</small></span><div><small>الحقوق والمزايا</small><h3>قانون التقاعد</h3><p>ملخص واضح لأحكام التقاعد والاستحقاقات والإجراءات المرتبطة بها.</p><button type="button" data-b-action="قانون التقاعد">فتح الكتيب <span aria-hidden="true">←</span></button></div></article>
-        <article class="b-digital-book"><span class="b-book-cover is-safety" aria-hidden="true"><i class="iconsax" icon-name="shield-tick"></i><small>السلامة</small></span><div><small>إرشادات الطوارئ</small><h3>تعليمات الإخلاء</h3><p>خطوات الإخلاء الآمن ونقاط التجمع والإرشادات الواجب اتباعها.</p><button type="button" data-b-action="تعليمات الإخلاء">فتح الكتيب <span aria-hidden="true">←</span></button></div></article>
+      <header class="b-section-heading"><div><span>٠٥</span><h2 id="digital-library-title">وثائق تهمك</h2></div><p>مراجعك في مكان واحد. اختر التصنيف، وابحث عن الوثيقة التي تحتاجها.</p></header>
+      <div class="dl-categories" aria-label="تصنيفات الوثائق">
+        <button type="button" data-dl-category="rules" aria-pressed="true"><span class="dl-symbol" aria-hidden="true">§</span><strong>قوانين المؤسسة</strong><small>الأنظمة والسياسات الداخلية</small><span aria-hidden="true">←</span></button>
+        <button type="button" data-dl-category="guides" aria-pressed="false"><span class="dl-symbol" aria-hidden="true">▤</span><strong>كتيبات</strong><small>أدلة تساعدك في يوم العمل</small><span aria-hidden="true">←</span></button>
+        <button type="button" data-dl-category="social" aria-pressed="false"><span class="dl-symbol" aria-hidden="true">◇</span><strong>قانون الحماية الاجتماعية</strong><small>مرجع الحقوق والحماية الاجتماعية</small><span aria-hidden="true">←</span></button>
+        <button type="button" data-dl-category="pdf" aria-pressed="false"><span class="dl-symbol dl-pdf" aria-hidden="true">PDF</span><strong>ملفات PDF متنوعة</strong><small>تقارير وملفات للرجوع إليها</small><span aria-hidden="true">←</span></button>
       </div>
+      <div class="dl-browser">
+        <div class="dl-tools"><div><span class="dl-eyebrow">استعرض المراجع</span><h3 id="dl-current-title">قوانين المؤسسة</h3></div><label class="dl-search"><span aria-hidden="true">⌕</span><input id="dl-search" type="search" placeholder="ابحث في هذا التصنيف…" aria-label="البحث في وثائق تهمك"></label><label class="dl-upload">إضافة ملف PDF <span aria-hidden="true">＋</span><input id="dl-upload" type="file" accept="application/pdf,.pdf" multiple></label></div>
+        <div class="dl-results-bar"><span id="dl-count" role="status"></span><span>العنوان · نبذة · استعراض</span></div>
+        <div id="dl-results" class="dl-results"></div>
+        <p class="dl-local-note">الوثائق المعروضة نماذج للتصنيف. أضف ملفاتك لاستعراضها هنا؛ تبقى على جهازك طوال الجلسة.</p>
+      </div>
+      <dialog class="dl-dialog" id="dl-dialog" aria-labelledby="dl-dialog-title"><header><div><small id="dl-dialog-category"></small><h3 id="dl-dialog-title"></h3></div><button type="button" id="dl-close" aria-label="إغلاق استعراض الوثيقة">×</button></header><p id="dl-dialog-description"></p><div id="dl-dialog-body"></div></dialog>
     </section>
     <section class="b-section b-safety" id="safety" aria-labelledby="safety-title" data-search-category="تعليمات السلامة">
       <div class="b-safety-surface">
@@ -340,6 +362,8 @@
   <dialog class="ed-dialog ed-gallery-dialog" id="ed-gallery-dialog" aria-label="ألبوم صور عُمان"><div class="ed-dialog-top"><span id="ed-gallery-caption"></span><button type="button" data-ed-close aria-label="إغلاق الصور">✕</button></div><img id="ed-gallery-image" alt=""><div class="ed-gallery-controls"><button type="button" id="ed-gallery-prev" aria-label="الصورة السابقة">→</button><span id="ed-gallery-status" role="status"></span><button type="button" id="ed-gallery-next" aria-label="الصورة التالية">←</button></div></dialog>
   <script src="./design-b-notice-strip.js"></script>
   <script src="./design-b-editorial.js"></script>
+  <script src="./design-b-magazine.js"></script>
+  <script src="./design-b-library.js"></script>
   <script src="./design-b-intro.js"></script>
   <script src="./design-b-personal-carousel.js"></script>
   <script src="./design-b-section-nav.js"></script>
@@ -347,5 +371,12 @@
   <script src="./design-b-workspace-groups.js"></script>
   <script src="./design-b-workspace-order.js"></script>
   <script src="./design-b-widget-layout.js"></script>
+  <dialog class="bt-announcement-dialog" id="bt-announcement-dialog" aria-labelledby="bt-announcement-title" aria-describedby="bt-announcement-description">
+    <header><span id="bt-announcement-label"></span><form method="dialog"><button type="submit" aria-label="إغلاق الإعلان">✕</button></form></header>
+    <h2 id="bt-announcement-title"></h2>
+    <p id="bt-announcement-description"></p>
+    <div id="bt-announcement-details"></div>
+    <small>محتوى توضيحي لتجربة الإعلانات.</small>
+  </dialog>
 </body>
 </html>

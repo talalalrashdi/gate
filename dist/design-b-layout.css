@@ -1,4 +1,5 @@
 /* Design B layout refinements: stable header and compact business workspace. */
+.b-dashboard .sc-section[hidden] { display: none !important; }
 .b-header,
 .b-header.is-scrolled {
   position: fixed;
@@ -25,8 +26,6 @@
 .b-header:has(#documents-sheet-trigger) { grid-template-columns: minmax(260px,1fr) minmax(620px,auto) minmax(260px,1fr); }
 .b-header:has(#documents-sheet-trigger) .b-navigation { display: flex; justify-content: center; }
 .b-header:has(#documents-sheet-trigger) .b-nav { max-width: calc(100% - 52px); justify-content: center; }
-.b-header.is-profile-open,
-.b-header.is-scrolled.is-profile-open { grid-template-rows: 88px auto; border-radius: 0; }
 .b-header .b-nav a,
 .b-header .b-nav a::after,
 .b-header .b-search,
@@ -35,7 +34,7 @@
 .b-header-profile,
 .b-header .b-search-dropdown { animation: none !important; transition: none !important; }
 .b-header .b-search-icon { transform: none; }
-.b-header-profile { border-radius: 0 0 18px 18px; }
+.b-header-profile { border-radius: 22px; }
 .b-section, [data-b-search-target] { scroll-margin-top: 104px; }
 body { overflow-x: clip; }
 
@@ -334,7 +333,6 @@ body { overflow-x: clip; }
   .b-header, .b-header.is-scrolled { height: 88px; padding-inline: 20px; }
   .b-header:has(#documents-sheet-trigger) { grid-template-columns: minmax(150px,1fr) minmax(520px,auto) minmax(150px,1fr); }
   .b-header .b-brand img,.b-header.is-scrolled .b-brand img { width: calc(122px * var(--b-logo-scale, 1)); height: calc(40px * var(--b-logo-scale, 1)); }
-  .b-header.is-profile-open, .b-header.is-scrolled.is-profile-open { grid-template-rows: 88px auto; }
   #systems .bt-business { grid-template-columns: repeat(2, minmax(0, 360px)); grid-template-rows: auto minmax(400px, auto); justify-content: end; column-gap: 0; row-gap: 24px; }
   #systems .bt-person { grid-area: 1 / 1 / 2 / -1; }
   #systems .bt-agenda { grid-area: 2 / 1; }
@@ -346,7 +344,6 @@ body { overflow-x: clip; }
   .b-header, .b-header.is-scrolled { height: 132px; padding-inline: 12px; grid-template-columns: 90px minmax(0,1fr); grid-template-rows: 72px 60px; gap: 0 8px; }
   .b-header:has(#documents-sheet-trigger) { grid-template-columns: 180px minmax(0,1fr); }
   .b-header .b-brand img,.b-header.is-scrolled .b-brand img { width: calc(90px * var(--b-logo-scale, 1)); height: calc(34px * var(--b-logo-scale, 1)); }
-  .b-header.is-profile-open, .b-header.is-scrolled.is-profile-open { grid-template-rows: 72px 60px auto; }
   .b-header.is-searching .b-brand { display: block; }
   .b-header.is-searching .b-header-center { grid-column: 1 / -1; }
   .b-header .b-search { width: 36px; height: 36px; }

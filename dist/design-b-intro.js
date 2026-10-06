@@ -10,6 +10,9 @@
   const headerHome = siteHeader?.parentElement;
   const headerNext = siteHeader?.nextSibling;
   const majesticFrame = byId('bt-majestic-frame');
+  const alertsSection = byId('b-alerts-section');
+  const alertsHome = alertsSection?.parentElement;
+  const alertsNext = alertsSection?.nextSibling;
   const sharedCalendar = section.querySelector('.bt-calendar-main');
   const sharedPlanner = sharedCalendar?.closest('.bt-planner');
   const plannerHome = sharedPlanner?.parentElement;
@@ -19,6 +22,52 @@
   const composerNext = sharedComposer?.nextSibling;
   const majesticCalendar = byId('bt-majestic-calendar');
   const sceneImages = [...document.querySelectorAll('[data-majestic-image]')];
+  const sceneStories = {
+    fort: ['منيو جديد، لخيارات أكثر.', 'اكتشف خيارات الفطور والغداء في مطعم الشركة، وخطّط لاستراحتك القادمة.', 'جديد مطعم الشركة', 'استعرض المنيو', [['الفطور', 'ساندويتشات طازجة، فواكه موسمية، وقهوة وشاي.'], ['الغداء', 'أطباق رئيسية متنوعة، سلطات، وخيارات نباتية.'], ['قبل الطلب', 'اسأل فريق المطعم عن مكونات الوجبات ومسببات الحساسية.']]],
+    mosque: ['خدمات الموظفين، أقرب إليك.', 'تعرّف على خطوات الوصول إلى الاستمارات والوثائق التي تحتاجها في يومك.', 'توضيح للموظفين', 'اعرف التفاصيل', [['وصول سريع', 'افتح الاستمارات والوثائق من القائمة الرئيسية واختر الخدمة المطلوبة.'], ['قبل إرسال الطلب', 'راجع البيانات والمرفقات اللازمة لضمان اكتمال الطلب.']]],
+    desert: ['استراحة قصيرة، ويوم أكثر نشاطًا.', 'خطوات بسيطة تساعدك على ترتيب يومك والمحافظة على نشاطك أثناء العمل.', 'تنبيه يهمك', 'اطّلع على النصائح', [['نظّم يومك', 'رتّب مهامك في تقويم الأعمال وحدّد وقتًا للاستراحة.'], ['جدّد نشاطك', 'تحرّك قليلًا بين فترات العمل واحرص على شرب الماء.']]]
+  };
+  const sceneIconPaths = {
+    fort: 'M7 3c-2 2 2 3 0 5m5-5c-2 2 2 3 0 5m5-5c-2 2 2 3 0 5M4 11h16a8 8 0 0 1-16 0Zm2 0h12M8 18l-2 4m10-4 2 4M7 20h10',
+    mosque: 'M8 4H5v17h14V8l-4-4H8Zm6 0v5h5M8 13h8m-8 4h6',
+    desert: 'M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4M12 2V1'
+  };
+  function createSceneIcon(scene) {
+    const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    icon.classList.add('bt-majestic-story-icon');
+    icon.setAttribute('viewBox', '0 0 24 24');
+    icon.setAttribute('fill', 'none');
+    icon.setAttribute('stroke', 'currentColor');
+    icon.setAttribute('stroke-width', '1.5');
+    icon.setAttribute('stroke-linecap', 'round');
+    icon.setAttribute('stroke-linejoin', 'round');
+    icon.setAttribute('aria-hidden', 'true');
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', sceneIconPaths[scene]);
+    icon.append(path);
+    return icon;
+  }
+  const announcementDialog = byId('bt-announcement-dialog');
+  byId('bt-majestic-story-action')?.addEventListener('click', () => {
+    const story = sceneStories[sceneImages[sceneIndex]?.dataset.majesticImage];
+    if (!story || !announcementDialog) return;
+    byId('bt-announcement-label').textContent = story[2];
+    byId('bt-announcement-title').textContent = story[0];
+    byId('bt-announcement-description').textContent = story[1];
+    const details = byId('bt-announcement-details');
+    details.replaceChildren();
+    story[4].forEach(([title, description]) => {
+      const item = document.createElement('section'), heading = document.createElement('h3'), copy = document.createElement('p');
+      heading.textContent = title; copy.textContent = description; item.append(heading, copy); details.append(item);
+    });
+    announcementDialog.showModal();
+    syncMajesticPlayback();
+  });
+  announcementDialog?.addEventListener('close', syncMajesticPlayback);
+  announcementDialog?.addEventListener('click', event => {
+    const bounds = announcementDialog.getBoundingClientRect();
+    if (event.target === announcementDialog && (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom)) announcementDialog.close();
+  });
   const backdrop = document.querySelector('.bt-majestic-backdrop');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let sceneIndex = 0, sceneTimer, playbackPaused = reducedMotion.matches;
@@ -42,6 +91,10 @@
       if (option === '4') majesticFrame.prepend(siteHeader);
       else headerHome.insertBefore(siteHeader, headerNext);
     }
+    if (alertsSection && alertsHome && majesticFrame) {
+      if (option === '4') byId('intro-option-4').prepend(alertsSection);
+      else alertsHome.insertBefore(alertsSection, alertsNext);
+    }
     if (sharedPlanner && plannerHome && majesticCalendar) {
       if (option === '4') {
         majesticCalendar.append(sharedPlanner);
@@ -62,12 +115,19 @@
     sceneIndex = index;
     const scene = sceneImages[index]?.dataset.majesticImage;
     sceneImages.forEach(image => image.classList.toggle('is-active', image.dataset.majesticImage === scene));
+    const story = sceneStories[scene];
+    if (story && byId('bt-majestic-story-title')) {
+      byId('bt-majestic-story-title').replaceChildren(createSceneIcon(scene), document.createTextNode(story[0]));
+      byId('bt-majestic-story-description').textContent = story[1];
+      byId('bt-majestic-story-label').textContent = story[2];
+      byId('bt-majestic-story-action').replaceChildren(document.createTextNode(story[3] + ' ←'));
+    }
   }
   function syncMajesticPlayback() {
     clearTimeout(sceneTimer);
     if (!backdrop || !sceneImages.length) return;
     const paused = playbackPaused;
-    const running = !paused && !document.hidden && document.body.dataset.siteTheme === 'majestic';
+    const running = !paused && !document.hidden && !announcementDialog?.open && document.body.dataset.siteTheme === 'majestic';
     backdrop.dataset.paused = String(!running);
     if (running) sceneTimer = setTimeout(() => {
       showMajesticScene((sceneIndex + 1) % sceneImages.length);
@@ -81,6 +141,7 @@
       syncMajesticPlayback();
     });
   }
+  showMajesticScene(0);
   selectTheme(read('clerio-opening-theme', '1'));
   const today = new Date();
   const dateKey = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;

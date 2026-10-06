@@ -98,6 +98,7 @@
   video.addEventListener('error',()=>{if(videoURL)document.getElementById('ed-video-note').textContent='تعذّر تشغيل هذا الملف. جرّب فيديو MP4 متوافقًا مع المتصفح.';});
   window.addEventListener('pagehide',()=>{if(videoURL)URL.revokeObjectURL(videoURL);});
 
+  if(!document.getElementById('ed-book-stage'))return;
   const pages=[
     {cover:true,kicker:'مجلة كليريو / سبتمبر ٢٠٢٦',title:'وُجهات.',text:['من تفاصيل يومنا، تبدأ الحكاية.'],image:'./assets/hero-oman-fort.png'},
     {kicker:'رسالة العدد',title:'نفتح صفحة جديدة',text:['هذا العدد مساحة للتأمل في طريقة عملنا، والتعلّم من تفاصيل المكان والناس.','اقلب الصفحات على مهل؛ كل موضوع دعوة لفكرة أو خطوة جديدة.'],list:['ثقافة العمل — الصفحتان ٣ و٤','من عُمان — الصفحتان ٥ و٦','أفكار للغد — الصفحتان ٧ و٨']},

@@ -29,7 +29,7 @@
 .b-media-subnav-links a[aria-current="location"] { background:var(--brand-primary); border-bottom-color:var(--brand-primary); --text-primary:#fff; }
 .b-media-subnav-links a:focus-visible { outline-color:var(--brand-accent); }
 .b-header .b-nav a::after { background:var(--brand-accent); }
-.b-header .b-search { background:var(--surface-cream); }
+body.b-dashboard .b-header .b-search { background:#fff; --text-primary:#000; }
 .b-avatar { background:var(--brand-cream); }
 .b-alert-visibility { background:var(--surface-olive); border-color:var(--brand-secondary); }
 .b-alert-visibility:hover { background:var(--brand-secondary); }

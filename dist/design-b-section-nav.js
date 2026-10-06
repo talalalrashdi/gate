@@ -1,7 +1,7 @@
 (() => {
   const widget=document.querySelector('.b-section-float');if(!widget)return;
   const labels={systems:'مساحة العمل',media:'الأخبار والوسائط',policies:'توجيهات وقوانين',library:document.getElementById('library-title')?.textContent.trim()||'الأنظمة الرقمية'};
-  const sections=[...document.querySelectorAll('main > .b-section[id], main > .b-personal-zone > .b-section[id]')].map(node=>({node,title:labels[node.id]||node.querySelector('h2,h1')?.textContent.trim()||node.id}));
+  const sections=[...document.querySelectorAll('main > .b-section[id], main > .b-personal-zone > .b-section[id]')].filter(node=>!node.hidden).map(node=>({node,title:labels[node.id]||node.querySelector('h2,h1')?.textContent.trim()||node.id}));
   if(!sections.length){widget.hidden=true;return;}
   const previous=document.getElementById('b-section-previous'),next=document.getElementById('b-section-next'),toggle=document.getElementById('b-section-float-toggle'),body=document.getElementById('b-section-float-body'),progress=document.getElementById('b-section-progress');
   const number=value=>value.toLocaleString('ar-EG',{minimumIntegerDigits:2});

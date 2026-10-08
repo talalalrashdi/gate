@@ -33,7 +33,7 @@
   function save(card){
     let saved=true;try{localStorage.setItem(key,JSON.stringify([...workspace.querySelectorAll('[data-work-system]')].map(item=>item.dataset.workSystem)));}catch{saved=false;}
     refresh();const position=visible().indexOf(card)+1;
-    if(typeof showToast==='function')showToast(`تم نقل ${card.querySelector('h2').textContent} إلى الموضع ${position.toLocaleString('ar-EG')}${saved?'':' · تعذّر حفظ الترتيب؛ متاح لهذه الجلسة فقط'}`);
+    if(typeof showToast==='function')showToast(`تم نقل ${card.querySelector('h2').textContent} إلى الموضع ${position.toLocaleString('ar-EG-u-nu-latn')}${saved?'':' · تعذّر حفظ الترتيب؛ متاح لهذه الجلسة فقط'}`);
   }
   function clearMarkers(){cards.forEach(card=>card.classList.remove('drop-before','drop-after'));}
   function locate(){

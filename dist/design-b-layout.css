@@ -104,6 +104,17 @@ body { overflow-x: clip; }
 .b-dashboard .b-workspace-grid > [data-widget-category="services"] { --widget-accent: #466f70; --widget-tint: #edf4f3; }
 .b-dashboard .b-workspace-grid > [data-widget-category="applications"] { --widget-accent: var(--text-secondary); --widget-tint: var(--surface-olive); }
 .b-dashboard .b-work-card .b-work-icon { background: var(--widget-tint); color: var(--widget-accent) !important; }
+.b-electronic-service-form { display: grid; gap: 8px; }
+.b-electronic-service-form label { font-size: 13px; font-weight: 700; }
+.b-electronic-service-form :is(select, textarea) { width: 100%; min-width: 0; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--brand-line); border-radius: 10px; background: var(--surface-white); color: var(--text-primary); font: inherit; }
+.b-electronic-service-form select { min-height: 44px; }
+.b-electronic-service-form select:disabled { background: var(--widget-tint); color: var(--text-secondary); }
+.b-electronic-service-form textarea { min-height: 110px; resize: vertical; }
+.b-electronic-service-form :is(select, textarea, button):focus-visible { outline: 2px solid var(--widget-accent); outline-offset: 3px; }
+.b-electronic-service-form > button { --text-primary: #fff; --text-secondary: #fff; display: flex; align-items: center; justify-content: space-between; min-height: 44px; margin-top: 4px; padding: 10px 14px; border: 0; border-radius: 10px; background: var(--widget-accent); color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+.b-electronic-service-form small { color: var(--text-secondary); }
+.b-electronic-service-status { margin: 0; font-size: 13px; line-height: 1.6; color: var(--widget-accent); }
+.b-electronic-service-status:empty { display: none; }
 .b-dashboard [data-widget-preview] { max-height: 340px; overflow-y: auto; overscroll-behavior-y: contain; scrollbar-width: thin; }
 .b-dashboard [data-widget-preview] > [data-page-hidden] { display: none !important; }
 .b-dashboard [data-widget-preview] :is(h3, strong, .b-doc-copy b, .b-inbox-copy p, .b-group-system-list li > span) { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
@@ -185,7 +196,7 @@ body { overflow-x: clip; }
 }
 .b-header .b-user { gap: 8px; min-width: max-content; }
 .b-theme-menu { position: relative; display: grid; flex: 0 0 auto; place-items: center; }
-.b-theme-trigger { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid #ded9e5; border-radius: 50%; background: #fff; color: #44403b; cursor: pointer; list-style: none; font-size: 20px; }
+.b-theme-trigger,.b-notifications-trigger { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid #ded9e5; border-radius: 50%; background: #fff; color: #44403b; cursor: pointer; list-style: none; font-size: 20px; }
 .b-theme-trigger::-webkit-details-marker { display: none; }
 .b-theme-menu[open] .b-theme-trigger { background: #f5f3f1; }
 .b-header .b-theme-menu .b-intro-switch,

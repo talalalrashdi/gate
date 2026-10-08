@@ -32,7 +32,7 @@
     previous.disabled = active === 0;
     next.disabled = active === cards.length - 1;
     cards.forEach((card, index) => { card.inert = index !== active; });
-    status.textContent = `البطاقة ${(active + 1).toLocaleString('ar-EG')} من ${cards.length.toLocaleString('ar-EG')}`;
+    status.textContent = `البطاقة ${(active + 1).toLocaleString('ar-EG-u-nu-latn')} من ${cards.length.toLocaleString('ar-EG-u-nu-latn')}`;
   }
   function move(delta) {
     const index = Math.max(0, Math.min(cards.length - 1, active + delta));

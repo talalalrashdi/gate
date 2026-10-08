@@ -10,7 +10,7 @@
   const mobile = matchMedia('(max-width:760px)'), reduced = matchMedia('(prefers-reduced-motion:reduce)');
   let pages = [], current = 0, turning = false, turnTimer, touch;
   const manifestURL = new URL(reader.dataset.pages, document.baseURI);
-  const number = value => value.toLocaleString('ar-EG');
+  const number = value => value.toLocaleString('ar-EG-u-nu-latn');
   const normalize = index => mobile.matches || index === 0 ? index : (index % 2 ? index : index - 1);
   const indexes = () => mobile.matches || current === 0 || current === pages.length - 1 ? [current] : [current, current + 1];
   function imageFor(index, thumbnail = false) {

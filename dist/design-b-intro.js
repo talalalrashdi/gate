@@ -21,6 +21,13 @@
   const composerHome = sharedComposer?.parentElement;
   const composerNext = sharedComposer?.nextSibling;
   const majesticCalendar = byId('bt-majestic-calendar');
+  const sharedNews = section.querySelector('.bt-majestic-news');
+  const floatingCalendar = byId('b-floating-calendar');
+  const floatingBody = byId('b-floating-calendar-body');
+  if (floatingCalendar) {
+    section.append(floatingCalendar);
+    floatingCalendar.showPopover?.();
+  }
   const sceneImages = [...document.querySelectorAll('[data-majestic-image]')];
   const sceneStories = {
     fort: ['منيو جديد، لخيارات أكثر.', 'اكتشف خيارات الفطور والغداء في مطعم الشركة، وخطّط لاستراحتك القادمة.', 'جديد مطعم الشركة', 'استعرض المنيو', [['الفطور', 'ساندويتشات طازجة، فواكه موسمية، وقهوة وشاي.'], ['الغداء', 'أطباق رئيسية متنوعة، سلطات، وخيارات نباتية.'], ['قبل الطلب', 'اسأل فريق المطعم عن مكونات الوجبات ومسببات الحساسية.']]],
@@ -75,7 +82,8 @@
     1: { theme: 'business', panel: 'intro-option-1', label: 'الأعمال', labelledBy: 'workspace-title' },
     2: { theme: 'official', panel: 'intro-option-2', label: 'الوطنية', labelledBy: 'bt-official-title' },
     3: { theme: 'formal', panel: 'intro-option-3', label: 'الرسمية', labelledBy: 'bt-formal-title' },
-    4: { theme: 'majestic', panel: 'intro-option-4', label: 'الشامخة', labelledBy: 'bt-calendar-title' }
+    4: { theme: 'majestic', panel: 'intro-option-4', label: 'الشامخة', labelledBy: 'bt-calendar-title' },
+    5: { theme: 'news', panel: 'intro-option-5', label: 'النشرة', labelledBy: 'bn-news-title' }
   };
   function selectTheme(option) {
     option = Object.hasOwn(themes, option) && byId(themes[option].panel) ? option : '1';
@@ -87,16 +95,21 @@
       button.setAttribute('aria-pressed', String(active));
     });
     themePanels.forEach(panel => { panel.hidden = panel.id !== selected.panel; });
+    if (sharedNews) byId(option === '3' ? 'intro-option-3' : 'intro-option-4')?.append(sharedNews);
     if (siteHeader && headerHome && majesticFrame) {
       if (option === '4') majesticFrame.prepend(siteHeader);
       else headerHome.insertBefore(siteHeader, headerNext);
     }
     if (alertsSection && alertsHome && majesticFrame) {
-      if (option === '4') byId('intro-option-4').prepend(alertsSection);
+      if (option === '4') (sharedNews?.querySelector('.bt-news-bottom') || byId('intro-option-4')).append(alertsSection);
+      else if (option === '5') section.after(alertsSection);
       else alertsHome.insertBefore(alertsSection, alertsNext);
     }
     if (sharedPlanner && plannerHome && majesticCalendar) {
-      if (option === '4') {
+      if (floatingBody) {
+        floatingBody.append(sharedPlanner);
+        if (sharedComposer) floatingCalendar.append(sharedComposer);
+      } else if (option === '4') {
         majesticCalendar.append(sharedPlanner);
         if (sharedComposer) majesticCalendar.append(sharedComposer);
       } else {
@@ -108,6 +121,7 @@
     byId('bt-theme-name').textContent = selected.label;
     save('clerio-opening-theme', option);
     syncMajesticPlayback();
+    document.dispatchEvent(new CustomEvent('clerio:theme-change', { detail: { theme: selected.theme } }));
   }
   const themeMenu = byId('b-theme-options')?.closest('details');
   themeButtons.forEach(button => button.addEventListener('click', () => { selectTheme(button.dataset.introOption); if (themeMenu) themeMenu.open = false; }));
@@ -127,7 +141,8 @@
     clearTimeout(sceneTimer);
     if (!backdrop || !sceneImages.length) return;
     const paused = playbackPaused;
-    const running = !paused && !document.hidden && !announcementDialog?.open && document.body.dataset.siteTheme === 'majestic';
+    const photoTheme = document.body.dataset.siteTheme === 'majestic' || (document.body.dataset.siteTheme === 'formal' && document.querySelector('.b-news-personal'));
+    const running = !paused && !document.hidden && !announcementDialog?.open && photoTheme;
     backdrop.dataset.paused = String(!running);
     if (running) sceneTimer = setTimeout(() => {
       showMajesticScene((sceneIndex + 1) % sceneImages.length);
@@ -148,9 +163,9 @@
   const todayKey = dateKey(today);
   const validDate = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && dateKey(new Date(value + 'T12:00:00')) === value;
   const validTime = value => typeof value === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
-  const dateLabel = value => new Date(value + 'T12:00:00').toLocaleDateString('ar-OM', { weekday: 'long', day: 'numeric', month: 'long' });
-  const number = value => value.toLocaleString('ar-EG');
-  const types = { task: 'مهمة', meeting: 'اجتماع', call: 'اتصال', delivery: 'تسليم مشروع', note: 'ملاحظة' };
+  const dateLabel = value => new Date(value + 'T12:00:00').toLocaleDateString('ar-OM-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'long' });
+  const number = value => value.toLocaleString('ar-EG-u-nu-latn');
+  const types = { task: 'مهمة', meeting: 'اجتماع', call: 'اتصال', delivery: 'تسليم مشروع', note: 'ملاحظة', event: 'حدث أو مناسبة' };
   const validType = type => Object.hasOwn(types, type) ? type : 'task';
   function taskIcon(type) {
     const paths = {
@@ -170,7 +185,7 @@
   if (!Array.isArray(tasks)) tasks = [];
   tasks = tasks.filter(task => task && typeof task.title === 'string' && typeof task.done === 'boolean').map(task => ({
     ...task, date: validDate(task.date) ? task.date : todayKey,
-    time: validTime(task.time) ? task.time : '', type: validType(task.type), body: typeof task.body === 'string' ? task.body : ''
+    time: validTime(task.time) ? task.time : '', type: task.id === 'floating-national-day-demo' && task.type === 'note' ? 'event' : validType(task.type), body: typeof task.body === 'string' ? task.body : ''
   }));
   let notes = read('clerio-business-notes', {});
   if (!notes || Array.isArray(notes) || typeof notes !== 'object') notes = {};
@@ -179,10 +194,21 @@
   if (!validDate(demoDate)) { demoDate = todayKey; save('clerio-business-demo-date', demoDate); }
   const offsetDate = offset => { const date = new Date(demoDate + 'T12:00:00'); date.setDate(date.getDate() + offset); return dateKey(date); };
   const occasions = [
+    ...(floatingCalendar ? [{ date: '2026-10-08', title: 'اليوم الوطني العماني', symbol: '✦', detail: 'حدث تجريبي لليوم، وليس تاريخ المناسبة الرسمي.' }] : []),
     { date: demoDate, title: 'يوم القلب', symbol: '♡', detail: 'تذكير بالعناية بصحتك خلال يوم العمل.' },
     { date: offsetDate(3), title: 'يوم مشاركة المعرفة', symbol: '✦', detail: 'فكرة أو تجربة تستحق المشاركة مع الفريق.' },
     { date: offsetDate(7), title: 'مبادرة تطوعية', symbol: '◇', detail: 'مساحة للمشاركة وصناعة أثر إيجابي.' }
   ];
+  if (floatingCalendar && !read('clerio-floating-calendar-examples-v1', false)) {
+    const examples = [
+      { id: 'floating-national-day-demo', title: 'اليوم الوطني العماني', type: 'event', time: '', body: 'حدث تجريبي لليوم، وليس تاريخ المناسبة الرسمي.' },
+      { id: 'floating-meeting-seven-demo', title: 'اجتماع الساعة 7', type: 'meeting', time: '07:00', body: '' }
+    ];
+    examples.forEach(example => {
+      if (!tasks.some(task => task.id === example.id)) tasks.push({ ...example, date: '2026-10-08', done: false, demo: true });
+    });
+    if (save('clerio-personal-tasks', tasks)) save('clerio-floating-calendar-examples-v1', true);
+  }
   if (!read('clerio-business-examples-v1', false)) {
     if (!tasks.length) {
       tasks = [
@@ -213,6 +239,53 @@
   const announce = message => { const status = byId('bt-task-status'); if (status) status.textContent = message; };
   function persistTasks(message) {
     announce(save('clerio-personal-tasks', tasks) ? message : 'تعذّر الحفظ في المتصفح؛ التغييرات متاحة حتى إغلاق الصفحة.');
+    renderFloatingSummary();
+  }
+  let floatingExpanded = false;
+  let floatingContentCollapsed = false;
+  function syncFloatingContent() {
+    if (!floatingCalendar) return;
+    const expanded = floatingExpanded && !floatingContentCollapsed;
+    floatingBody.hidden = !expanded;
+    byId('b-calendar-summary').hidden = floatingExpanded || floatingContentCollapsed;
+    floatingCalendar.classList.toggle('is-expanded', expanded);
+    const toggle = byId('b-calendar-toggle');
+    toggle.setAttribute('aria-expanded', String(expanded));
+    toggle.setAttribute('aria-label', expanded ? 'طي تقويم الأعمال' : 'توسيع تقويم الأعمال');
+    toggle.textContent = expanded ? '−' : '＋';
+    const contentToggle = byId('b-calendar-content-toggle');
+    contentToggle.setAttribute('aria-expanded', String(!floatingContentCollapsed));
+    contentToggle.setAttribute('aria-label', floatingContentCollapsed ? 'عرض محتوى التقويم' : 'طي محتوى التقويم');
+    contentToggle.querySelector('path')?.setAttribute('d', floatingContentCollapsed ? 'm6 10 6 6 6-6' : 'm6 14 6-6 6 6');
+  }
+  function setFloatingExpanded(expanded) {
+    floatingExpanded = expanded;
+    floatingContentCollapsed = false;
+    syncFloatingContent();
+  }
+  byId('b-calendar-content-toggle')?.addEventListener('click', () => {
+    floatingContentCollapsed = !floatingContentCollapsed;
+    syncFloatingContent();
+  });
+  byId('b-calendar-toggle')?.addEventListener('click', () => setFloatingExpanded(floatingBody.hidden));
+  function renderFloatingSummary() {
+    const summary = byId('b-calendar-summary');
+    if (!summary) return;
+    summary.replaceChildren();
+    const upcoming = tasks.filter(task => !task.done && task.date >= todayKey).sort((a,b) => a.date.localeCompare(b.date) || (a.time || '99').localeCompare(b.time || '99')).slice(0,3);
+    if (!upcoming.length) {
+      const empty = document.createElement('p'); empty.textContent = 'لا توجد مواعيد أو تذكيرات قادمة.'; summary.append(empty); return;
+    }
+    upcoming.forEach(task => {
+      const button = document.createElement('button'); button.type = 'button'; button.className = 'b-calendar-summary-item';
+      button.dataset.kind = task.type === 'event' ? 'event' : 'work';
+      const title = document.createElement('strong'), detail = document.createElement('small');
+      title.textContent = task.title;
+      detail.textContent = `${dateLabel(task.date)}${task.time ? ' · ' + task.time : ''} · ${types[task.type]}${task.demo ? ' · نموذج' : ''}`;
+      button.append(title, detail);
+      button.addEventListener('click', () => { selected = task.date; month = new Date(task.date + 'T12:00:00'); month.setDate(1); render(); setFloatingExpanded(true); });
+      summary.append(button);
+    });
   }
   function updateFade() { timeline.parentElement.classList.toggle('has-more', timeline.scrollHeight - timeline.clientHeight - timeline.scrollTop > 2); }
   timeline.addEventListener('scroll', updateFade, { passive: true });
@@ -226,7 +299,7 @@
     if (counter) counter.textContent = summary.join(' · ') || 'يوم متاح';
   }
   function draw() {
-    byId('bt-month-label').textContent = month.toLocaleDateString('ar-OM', { month: 'long', year: 'numeric' });
+    byId('bt-month-label').textContent = month.toLocaleDateString('ar-OM-u-nu-latn', { month: 'long', year: 'numeric' });
     const grid = byId('bt-month-grid'); grid.replaceChildren();
     ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'].forEach(day => { const label = document.createElement('span'); label.className = 'bt-weekday'; label.textContent = day; grid.append(label); });
     for (let i = 0; i < month.getDay(); i++) { const blank = document.createElement('span'); blank.setAttribute('aria-hidden', 'true'); grid.append(blank); }
@@ -238,7 +311,7 @@
       const label = dateLabel(date) + (daily.length ? `، ${number(daily.length)} عناصر في جدول اليوم` : '') + (occasion ? `، ${occasion.title} — مناسبة توضيحية` : '');
       button.setAttribute('aria-label', label); button.title = label; button.setAttribute('aria-pressed', String(selected === date));
       if (date === todayKey) button.setAttribute('aria-current', 'date');
-      button.classList.toggle('has-tasks', daily.length > 0); button.classList.toggle('has-occasion', Boolean(occasion));
+      button.classList.toggle('has-tasks', daily.some(task => task.type !== 'event')); button.classList.toggle('has-occasion', Boolean(occasion) || daily.some(task => task.type === 'event'));
       button.addEventListener('click', () => { selected = date; render(); grid.querySelector(`[data-date="${date}"]`).focus({ preventScroll: true }); });
       grid.append(button);
     }
@@ -254,7 +327,7 @@
     copy.append(title, detail); box.append(symbol, copy);
   }
   function updateComposerType() {
-    const type = validType(byId('bt-task-type').value), isNote = type === 'note';
+    const type = validType(byId('bt-task-type').value), isNote = type === 'note' || type === 'event';
     byId('bt-note-field').hidden = !isNote;
     byId('bt-time-field').hidden = isNote;
     byId('bt-task-time').disabled = isNote;
@@ -272,6 +345,7 @@
     composer.showModal(); byId('bt-task-input').focus();
   }
   function renderTasks() {
+    renderFloatingSummary();
     const daily = tasks.filter(task => task.date === selected).sort((a, b) => Number(b.type === 'note') - Number(a.type === 'note') || (a.time || '99').localeCompare(b.time || '99'));
     timeline.replaceChildren(); section.querySelector('.bt-agenda').classList.toggle('is-empty', !daily.length);
     if (!daily.length) {
@@ -291,8 +365,8 @@
       check.addEventListener('change', () => { task.done = check.checked; updateStatus(); persistTasks('تم تحديث حالة العمل.'); counts(); draw(); });
       const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'bt-task-remove'; remove.append(taskIcon('trash')); remove.setAttribute('aria-label', `حذف ${task.title}`); remove.title = `حذف ${task.title}`;
       remove.addEventListener('click', () => { tasks = tasks.filter(item => item !== task); persistTasks('تم حذف العمل.'); renderTasks(); counts(); draw(); byId('bt-task-add-toggle').focus({ preventScroll: true }); });
-      if (task.type === 'note') {
-        const label = document.createElement('small'); label.className = 'bt-note-label'; label.textContent = 'ملاحظة';
+      if (task.type === 'note' || task.type === 'event') {
+        const label = document.createElement('small'); label.className = 'bt-note-label'; label.textContent = types[task.type];
         const body = document.createElement('span'); body.className = 'bt-note-preview'; body.textContent = task.body || '';
         copy.replaceChildren(label, title, body);
         row.append(copy, remove);
@@ -309,7 +383,7 @@
   function renderTodayDate() {
     const now = new Date(), footer = byId('bt-today-date');
     if (!footer) return;
-    const weekday = new Intl.DateTimeFormat('ar-OM', { weekday: 'long' }).format(now);
+    const weekday = new Intl.DateTimeFormat('ar-OM-u-nu-latn', { weekday: 'long' }).format(now);
     const hijri = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura-nu-latn', { day: 'numeric', month: 'long', year: 'numeric' }).format(now);
     const date = document.createElement('time'); date.dateTime = dateKey(now); date.dir = 'ltr';
     date.textContent = `${now.getDate()}-${now.getMonth() + 1}-${now.getFullYear()}`;

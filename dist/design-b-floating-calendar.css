@@ -1,0 +1,70 @@
+/* Reuse the personal planner inside a compact floating card. */
+#systems .b-floating-calendar { position: fixed; inset: auto auto 24px 24px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; z-index: 45; width: 260px; max-height: calc(100dvh - 32px); --text-primary: var(--brand-primary); --text-secondary: #526170; }
+#systems .b-floating-calendar-card { width: 100%; padding: 14px; border: 1px solid #dce5e3; border-radius: 21px; background: #fffffff5; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 4px 16px #172d2310; }
+#systems .b-floating-notice { --notice-base: #102b42; --notice-end: #081b2d; --notice-glow: #55b9db60; --text-primary: #fff; --text-secondary: #e4edf2; position: relative; isolation: isolate; overflow: hidden; width: 100%; padding: 16px; margin-bottom: 10px; border: 1px solid #ffffff26; border-radius: 25px; background: radial-gradient(ellipse at 35% 65%,var(--notice-glow),transparent 68%),linear-gradient(145deg,var(--notice-base),var(--notice-end)); box-shadow: inset 0 1px #ffffff17,0 6px 18px #0a294720; }
+#systems .b-floating-notice[data-tone="decision"] { --notice-base: #493324; --notice-end: #271f1a; --notice-glow: #dca76566; }
+#systems .b-floating-notice[data-tone="learning"] { --notice-base: #17453e; --notice-end: #0c2925; --notice-glow: #7aca9266; }
+#systems .b-floating-notice[data-tone="meeting"] { --notice-base: #173e68; --notice-end: #0b2443; --notice-glow: #6ca9e966; }
+#systems .b-floating-notice[data-tone="reminder"] { --notice-base: #57431b; --notice-end: #302710; --notice-glow: #e9c85b66; }
+#systems .b-floating-notice[data-tone="people"] { --notice-base: #532c2c; --notice-end: #301b1b; --notice-glow: #e7a08855; }
+#systems .b-floating-notice::before { content: ''; position: absolute; z-index: -1; width: 130%; height: 170px; left: -15%; bottom: -115px; border: 1px solid #ffffff22; border-radius: 50%; background: linear-gradient(180deg,#ffffff0d,transparent); box-shadow: 0 -8px 32px var(--notice-glow); pointer-events: none; }
+#systems .b-floating-notice > header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+#systems .b-floating-notice > header > strong { font-size: 13px; }
+#systems .b-floating-calendar-handle { display: flex; direction: ltr; align-items: center; gap: 8px; margin: -4px 0 10px; padding-top: 6px; }
+#systems .b-floating-calendar-handle::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg,#0a294726,#0a29470a); }
+#systems #b-calendar-content-toggle { --text-primary: #28404c; display: grid; place-items: center; width: 28px; height: 22px; padding: 0; border: 0; background: transparent; box-shadow: none; backdrop-filter: none; }
+#systems .b-floating-notice-close { width: 28px; height: 28px; padding: 0; border: 1px solid #ffffff26; border-radius: 50%; background: #ffffff14; font-size: 20px; }
+#systems .b-floating-notice-content { display: grid; gap: 6px; width: 100%; padding: 12px 0; background: transparent; text-align: start; }
+#systems .b-floating-notice-content > span { justify-self: start; padding: 4px 9px; border-radius: 999px; background: #ffffff1f; font-size: 10px; }
+#systems .b-floating-notice-content > strong { font-size: 13px; line-height: 1.7; }
+#systems .b-floating-notice-content > small { font-size: 10px; line-height: 1.7; }
+#systems #b-floating-notice-body > footer { display: flex; align-items: center; gap: 8px; border-top: 1px solid #ffffff24; padding-top: 9px; }
+#systems #b-floating-notice-body > footer button { min-height: 28px; padding: 3px 7px; border-radius: 999px; background: #ffffff14; font-size: 12px; }
+#systems #b-floating-notice-body > footer button:disabled { opacity: .4; cursor: default; }
+#systems .b-floating-notice-position { font-size: 10px; }
+#systems .b-floating-notice-all { margin-inline-start: auto; }
+#systems .b-floating-notice button:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+#systems .b-floating-calendar.is-expanded { width: min(744px,calc(100vw - 48px)); }
+#systems .b-floating-calendar .b-section-float-top { margin-bottom: 12px; }
+#systems .b-floating-calendar-card:has(#b-calendar-summary[hidden]):has(#b-floating-calendar-body[hidden]) .b-section-float-top { margin-bottom: 0; }
+#systems .b-floating-calendar .b-section-float-top > strong { font-size: 14px; }
+#systems #b-calendar-summary > p { margin: 8px 0; font-size: 12px; line-height: 1.8; }
+#systems .b-calendar-summary-item { display: grid; gap: 4px; width: 100%; padding: 10px; border-radius: 10px; background: #edf3f2; text-align: start; }
+#systems .b-calendar-summary-item[data-kind="event"] { background: #f6ead5; }
+#systems .b-calendar-summary-item[data-kind="work"] { background: #e3f0ed; }
+#systems .b-calendar-summary-item + .b-calendar-summary-item { margin-top: 6px; }
+#systems .b-calendar-summary-item strong { font-size: 12px; line-height: 1.6; }
+#systems .b-calendar-summary-item small { font-size: 10px; line-height: 1.6; }
+#systems #b-floating-calendar .bt-planner { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 18px; height: auto; min-height: 0; padding: 0; margin: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; }
+#systems #b-floating-calendar .bt-calendar-main { width: 100%; min-width: 0; }
+#systems #b-floating-calendar .bt-planner-head { margin-bottom: 10px; }
+#systems #b-floating-calendar .bt-planner-head h2 { display: none; }
+#systems #b-floating-calendar .bt-today-date { font-size: 12px; margin: 0; white-space: normal; }
+#systems #b-floating-calendar .bt-agenda { display: flex; flex-direction: column; height: auto; min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; }
+#systems #b-floating-calendar .bt-agenda-title { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+#systems #b-floating-calendar .bt-agenda-title h2 { font-size: 14px; margin: 0; }
+#systems #b-floating-calendar .bt-agenda.is-empty .bt-agenda-title { display: flex; }
+#systems #b-floating-calendar #bt-task-preview { display: block; }
+#systems #b-floating-calendar #bt-task-add-toggle { --text-primary: #111; --text-secondary: #111; color: #111 !important; padding: 8px 12px; min-height: 40px; border: 1px solid #ffffffa6; border-radius: 12px; background: linear-gradient(135deg,#ffffffb3,#dce6e666); box-shadow: inset 0 1px #fff,0 3px 10px #0a294710; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); font-size: 12px; }
+#systems #b-floating-calendar #bt-task-add-toggle span { color: #111 !important; }
+#systems #b-floating-calendar .bt-timeline-window { height: 282px; flex: none; margin: 0; border-radius: 12px; }
+#systems #b-floating-calendar .bt-timeline-window::after { height: 48px; background: linear-gradient(180deg,transparent,#00000085); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+#systems #b-floating-calendar #bt-task-preview { padding-bottom: 48px; }
+#systems #b-floating-calendar .bt-month-grid { grid-template-columns: repeat(7,minmax(0,1fr)); }
+#systems #b-floating-calendar .bt-month-grid button { width: 28px; height: 30px; min-height: 30px; }
+#systems #b-floating-calendar .bt-weekday { font-size: 9px; }
+#systems #b-floating-calendar .bt-task-row { grid-template-columns: 42px 16px minmax(0,1fr) 24px; gap: 7px; align-items: center; padding: 6px 0; min-height: 0; }
+#systems #b-floating-calendar .bt-task-row:is([data-type="note"],[data-type="event"]) { grid-template-columns: minmax(0,1fr) 24px; align-items: start; }
+#systems #b-floating-calendar .bt-task-copy { padding: 10px; background: #e3f0edb3; border-inline-start: 0; border-radius: 12px; }
+#systems #b-floating-calendar .bt-task-row[data-type="event"] .bt-task-copy { background: #f6ead5cc; }
+#systems #b-floating-calendar .bt-task-title { display: flex; align-items: start; gap: 6px; white-space: normal; overflow-wrap: anywhere; line-height: 1.7; }
+#systems #b-floating-calendar .bt-task-hour { font-size: 11px; white-space: nowrap; }
+#systems #b-floating-calendar .bt-task-remove { width: 24px; min-width: 24px; height: 32px; padding: 0; }
+#systems #b-floating-calendar .bt-task-remove .bt-task-icon { display: block; width: 16px; height: 16px; margin: auto; }
+#systems #b-floating-calendar .bt-task-row:not([data-type="event"]) .bt-task-copy { background: #e3f0edb3; }
+#systems #b-floating-calendar .bt-month-grid button.has-occasion::before { background: #a5742d; }
+#systems #b-floating-calendar .bt-month-grid button.has-tasks::after { background: #397567; }
+#systems #b-floating-calendar .bt-occasion-dot { background: #a5742d; }
+#systems #b-floating-calendar #bt-task-composer { max-height: calc(100dvh - 32px); }
+#systems .b-floating-calendar :is(button,input):focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 2px; }
+@media(max-width:600px) { #systems .b-floating-calendar { left: 12px; bottom: 12px; width: min(250px,calc(100vw - 24px)); }#systems .b-floating-calendar.is-expanded { width: calc(100vw - 24px); }#systems #b-floating-calendar .bt-planner { grid-template-columns: minmax(0,1fr); gap: 14px; }#systems #b-floating-calendar .bt-timeline-window { height: 204px; } }

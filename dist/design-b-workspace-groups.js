@@ -33,7 +33,7 @@
       workspace.insertBefore(card,add);
     });changed();
   }
-  function count(){dialog.querySelector('.b-group-count').textContent=`${selected.size.toLocaleString('ar-EG')} أنظمة محددة`;}
+  function count(){dialog.querySelector('.b-group-count').textContent=`${selected.size.toLocaleString('ar-EG-u-nu-latn')} أنظمة محددة`;}
   function filter(){
     const normalize=value=>value.replace(/[أإآ]/g,'ا').replace(/[\u064B-\u065F\u0670]/g,'').toLowerCase();const query=normalize(search.value.trim());let visible=0;
     choices.querySelectorAll('label').forEach(label=>{label.hidden=!normalize(label.textContent).includes(query);if(!label.hidden)visible++;});dialog.querySelector('.b-group-no-results').hidden=visible!==0;

@@ -15,7 +15,7 @@
   function decode(raw){try{const value=JSON.parse(raw);return Array.isArray(value)?new Set(value.filter(id=>typeof id==='string'&&systems.has(id))):new Set(defaults);}catch{return new Set(defaults);}}
   let pinned;try{pinned=decode(localStorage.getItem(storageKey));}catch{pinned=new Set(defaults);}
   const normalize=value=>value.normalize('NFKD').replace(/[\u064B-\u065F\u0670\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').toLowerCase().trim();
-  const number=value=>value.toLocaleString('ar-EG');
+  const number=value=>value.toLocaleString('ar-EG-u-nu-latn');
   function make(tag,className,text){const el=document.createElement(tag);if(className)el.className=className;if(text)el.textContent=text;return el;}
   function icon(name){const el=make('i','iconsax');el.setAttribute('icon-name',name);el.setAttribute('aria-hidden','true');return el;}
   function pinButton(id){const button=make('button','sc-pin');button.type='button';button.dataset.scPin=id;button.append(icon('add'),make('span',null,'تثبيت في ساحة العمل'));return button;}

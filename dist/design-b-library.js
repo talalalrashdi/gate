@@ -38,7 +38,7 @@
   function render() {
     const query = normalize(search.value.trim());
     const filtered = documents.filter(doc => doc.category === category && normalize(doc.title+' '+doc.description).includes(query));
-    section.querySelector('#dl-count').textContent = 'عدد الوثائق: '+filtered.length.toLocaleString('ar-OM');
+    section.querySelector('#dl-count').textContent = 'عدد الوثائق: '+filtered.length.toLocaleString('ar-OM-u-nu-latn');
     results.replaceChildren();
     for (const doc of filtered) {
       const row = document.createElement('article'); row.className = 'dl-row';
@@ -62,7 +62,7 @@
   section.querySelector('#dl-upload').addEventListener('change',event=>{
     for (const file of event.target.files) {
       if (!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf') continue;
-      documents.unshift({category,title:file.name.replace(/\.pdf$/i,''),description:'وثيقة أُضيفت للاستعراض ضمن '+names[category]+'.',url:URL.createObjectURL(file),size:(file.size/1048576).toLocaleString('ar-OM',{maximumFractionDigits:1})+' م.ب'});
+      documents.unshift({category,title:file.name.replace(/\.pdf$/i,''),description:'وثيقة أُضيفت للاستعراض ضمن '+names[category]+'.',url:URL.createObjectURL(file),size:(file.size/1048576).toLocaleString('ar-OM-u-nu-latn',{maximumFractionDigits:1})+' م.ب'});
     }
     search.value=''; event.target.value=''; render();
   });

@@ -49,7 +49,7 @@
       row.append(icon, copy, badge);
       return row;
     }));
-    count.textContent = `${matches.length.toLocaleString('ar-EG')} ملف`;
+    count.textContent = `${matches.length.toLocaleString('ar-EG-u-nu-latn')} ملف`;
     empty.hidden = matches.length > 0;
   }
   search.addEventListener('input', render);

@@ -50,3 +50,10 @@
 html:has(.b-documents-sheet[open]) { overflow: hidden; }
 @keyframes documents-sheet-enter { from { transform: translateY(32px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .b-documents-sheet[open] { animation: none; } }
+
+.b-policies-sheet-content { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-top: 24px; }
+.b-policies-sheet #policies { width: 100%; margin: 0; padding: 0; background: transparent; }
+.b-policies-sheet .b-section-heading { flex-wrap: wrap; gap: 12px; }
+.b-policies-sheet .b-policy-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.b-policies-sheet .b-policy-grid article { border-color: #a6bba9; background: #f6f4ee; }
+@media(max-width:760px) { .b-policies-sheet .b-policy-grid { grid-template-columns: minmax(0,1fr); }.b-policies-sheet .b-policy-grid article { min-height: 180px; }.b-policies-sheet .b-policy-grid h3 { margin-top: 20px; } }

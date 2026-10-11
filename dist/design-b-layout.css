@@ -24,8 +24,9 @@
 .b-header .b-brand img,
 .b-header.is-scrolled .b-brand img { width: calc(142px * var(--b-logo-scale, 1)); height: calc(46px * var(--b-logo-scale, 1)); }
 .b-header:has(#documents-sheet-trigger) { grid-template-columns: minmax(260px,1fr) minmax(620px,auto) minmax(260px,1fr); }
+.b-header:has(.b-search-group) { --b-search-controls-width: 90px; }
 .b-header:has(#documents-sheet-trigger) .b-navigation { display: flex; justify-content: center; }
-.b-header:has(#documents-sheet-trigger) .b-nav { max-width: calc(100% - 52px); justify-content: center; }
+.b-header:has(#documents-sheet-trigger) .b-nav { max-width: calc(100% - var(--b-search-controls-width,52px)); justify-content: center; }
 .b-header .b-nav a,
 .b-header .b-nav a::after,
 .b-header .b-search,
@@ -93,6 +94,16 @@ body { overflow-x: clip; }
 .b-dashboard .b-workspace-grid > .b-work-card { --widget-accent: var(--brand-primary); --widget-tint: var(--surface-navy); flex: 0 0 calc((100% - 80px) / 4.5); width: auto; min-width: 0; min-height: 420px; height: auto; padding: 22px; border: 1px solid var(--brand-line); border-radius: 20px; background: var(--surface-white); box-shadow: 0 3px 12px #0a294709; scroll-snap-align: start; }
 .b-dashboard #workspace-cards.b-workspace-grid > .b-work-card { flex-basis: calc((100% - 80px) / 4.5); }
 .b-dashboard #workspace-cards.b-workspace-grid > :is(.b-work-library, .b-work-email) { flex-basis: calc((100% - 80px) / 4.5 * 1.2); }
+
+/* Workspace view controls and responsive rows use the same cards and saved order. */
+.b-dashboard .b-workspace-actions { display: flex; align-items: center; gap: 10px; }
+.b-dashboard .b-workspace-view-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 8px 12px; border: 1px solid var(--brand-line); border-radius: 14px; background: var(--surface-white); font-size: 12px; white-space: nowrap; }
+.b-dashboard .b-workspace-view-toggle[aria-pressed="true"] { background: var(--surface-navy); border-color: var(--brand-primary); }
+.b-dashboard .b-workspace-view-toggle:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 3px; }
+.b-dashboard #workspace-cards[data-workspace-view="grid"] { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); overflow: visible; scroll-snap-type: none; }
+@media(max-width:1200px) { .b-dashboard #workspace-cards[data-workspace-view="grid"] { grid-template-columns: repeat(3,minmax(0,1fr)); } }
+@media(max-width:900px) { .b-dashboard #workspace-cards[data-workspace-view="grid"] { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media(max-width:600px) { .b-dashboard #workspace-cards[data-workspace-view="grid"] { grid-template-columns: minmax(0,1fr); } .b-dashboard .b-workspace-actions { gap: 6px; } .b-dashboard .b-workspace-view-toggle { padding-inline: 8px; } }
 .b-dashboard .b-workspace-grid.is-reordering { scroll-snap-type: none; }
 .b-dashboard .b-workspace-grid :is(.drop-before, .drop-after)::before,
 .b-dashboard .b-workspace-grid .drop-after::after { background: var(--brand-primary); }
@@ -390,3 +401,15 @@ body { overflow-x: clip; }
 .b-safety-note { margin: 20px 0 0; color: #6d786f; font-size: 11px; line-height: 1.8; }
 @media (max-width: 1000px) { .b-safety-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .b-safety-grid { grid-template-columns: minmax(0, 1fr); }.b-safety-card { padding: 20px; } }
+
+/* Related reference sections share one row on spacious screens. */
+.b-reference-sections { display: grid; grid-template-columns: minmax(0,1.8fr) minmax(0,1fr); align-items: start; gap: 20px; margin-block: 24px; }
+.b-reference-sections > .b-section { width: 100%; min-width: 0; margin: 0; padding: 20px; }
+.b-reference-sections > .b-safety { padding: 0; }
+.b-reference-sections .b-safety-surface { padding: 20px; }
+.b-reference-sections .b-section-heading { flex-wrap: wrap; gap: 12px; }
+.b-reference-sections .b-safety-grid { grid-template-columns: minmax(0,1fr); }
+.b-reference-sections .b-safety-card { padding: 18px; }
+.b-reference-sections .b-safety-card h3 { font-size: 17px; margin-block: 10px; }
+@media(max-width:1000px) { .b-reference-sections { grid-template-columns: minmax(0,1fr); }.b-reference-sections .b-safety-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media(max-width:600px) { .b-reference-sections .b-safety-grid { grid-template-columns: minmax(0,1fr); }.b-reference-sections > .b-section { padding: 16px; }.b-reference-sections > .b-safety { padding: 0; } }

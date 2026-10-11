@@ -7,6 +7,15 @@
   const pageInput = reader.querySelector('[data-mag-page]'), range = reader.querySelector('[data-mag-range]');
   const thumbs = reader.querySelector('.ed-local-thumbnails'), thumbButton = reader.querySelector('[data-mag-thumbnails]');
   const zoomButton = reader.querySelector('[data-mag-zoom]'), fullButton = reader.querySelector('[data-mag-fullscreen]');
+  const zoomOut=reader.querySelector('[data-mag-zoom-out]'),issueSelect=reader.querySelector('[data-mag-issue]'),issueUpload=reader.querySelector('[data-mag-issue-upload]'),pdfLink=reader.querySelector('[data-mag-pdf]');
+  const uploadedIssues=new Map();let activeIssue=null,pdfPage=1,pdfFrame;
+  const currentPDF=pdfLink?.href;
+  function renderPDF(){
+    if(!activeIssue)return;
+    if(!pdfFrame){pdfFrame=document.createElement('iframe');pdfFrame.className='ed-local-pdf-frame';pdfFrame.title='قراءة العدد السابق';stage.append(pdfFrame);}
+    pdfFrame.src=activeIssue.url+'#toolbar=0&navpanes=0&page='+pdfPage+'&zoom='+(reader.classList.contains('is-zoomed')?150:100);
+    status.textContent='صفحة '+number(pdfPage)+' · PDF';pageInput.value=String(pdfPage);previous.disabled=pdfPage===1;next.disabled=false;message.hidden=true;
+  }
   const mobile = matchMedia('(max-width:760px)'), reduced = matchMedia('(prefers-reduced-motion:reduce)');
   let pages = [], current = 0, turning = false, turnTimer, touch;
   const manifestURL = new URL(reader.dataset.pages, document.baseURI);
@@ -19,10 +28,11 @@
     image.alt = `صفحة ${number(index + 1)} من مجلة وُجهات`;
     image.width = 1500; image.height = Math.round(1500 * pages[index].height / pages[index].width);
     image.loading = thumbnail ? 'lazy' : 'eager'; image.decoding = 'async'; image.draggable = false;
-    if (!thumbnail) image.addEventListener('error', () => { message.hidden = false; message.textContent = 'تعذّر تحميل الصفحة. يمكنك فتح ملف PDF من الرابط بجانب المجلة.'; });
+    if (!thumbnail) image.addEventListener('error', () => { message.hidden = false; message.textContent = 'تعذّر تحميل الصفحة. يمكنك فتح ملف PDF من المتحكم أسفل المجلة.'; });
     return image;
   }
   function render() {
+    if(activeIssue){renderPDF();return;}
     const visible = indexes();
     spread.replaceChildren(...visible.map(index => {
       const page = document.createElement('div'); page.className = 'ed-local-page'; page.append(imageFor(index)); return page;
@@ -36,6 +46,7 @@
     message.hidden = true;
   }
   function goTo(index, animate = true) {
+    if(activeIssue){pdfPage=Math.max(1,index+1);renderPDF();return;}
     if (!pages.length) return;
     if (turning) { clearTimeout(turnTimer); stage.querySelector('.ed-local-turn')?.remove(); turning = false; }
     index = normalize(Math.max(0, Math.min(pages.length - 1, index)));
@@ -49,8 +60,8 @@
       clone.addEventListener('animationend', finish, {once: true}); turnTimer = setTimeout(finish, 600);
     }
   }
-  const advance = () => goTo(indexes().at(-1) + 1);
-  const retreat = () => goTo(current - (mobile.matches || current <= 1 ? 1 : 2));
+  const advance = () => activeIssue?goTo(pdfPage):goTo(indexes().at(-1) + 1);
+  const retreat = () => activeIssue?goTo(pdfPage-2):goTo(current - (mobile.matches || current <= 1 ? 1 : 2));
   previous.addEventListener('click', retreat); next.addEventListener('click', advance);
   pageInput.addEventListener('change', () => goTo((Number(pageInput.value) || 1) - 1, false));
   pageInput.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); goTo((Number(pageInput.value) || 1) - 1, false); } });
@@ -74,10 +85,30 @@
     thumbs.hidden = !thumbs.hidden; thumbButton.setAttribute('aria-expanded', String(!thumbs.hidden));
     [...thumbs.children].forEach((button, index) => button.setAttribute('aria-pressed', String(indexes().includes(index))));
   });
-  zoomButton.addEventListener('click', () => {
-    const zoomed = reader.classList.toggle('is-zoomed'); zoomButton.setAttribute('aria-pressed', String(zoomed));
-    zoomButton.setAttribute('aria-label', zoomed ? 'تصغير الصفحات' : 'تكبير الصفحات'); zoomButton.textContent = zoomed ? '−' : '＋';
+  function setZoom(zoomed){
+    reader.classList.toggle('is-zoomed',zoomed);zoomButton.setAttribute('aria-pressed',String(zoomed));
+    if(zoomOut){zoomButton.disabled=zoomed;zoomOut.disabled=!zoomed;}
+    else {zoomButton.setAttribute('aria-label',zoomed?'تصغير الصفحات':'تكبير الصفحات');zoomButton.textContent=zoomed?'−':'＋';}
+    if(activeIssue)renderPDF();
+  }
+  zoomButton.addEventListener('click',()=>setZoom(zoomOut?true:!reader.classList.contains('is-zoomed')));
+  zoomOut?.addEventListener('click',()=>setZoom(false));
+  function selectIssue(){
+    activeIssue=uploadedIssues.get(issueSelect.value)||null;reader.classList.toggle('is-pdf',!!activeIssue);pdfPage=1;
+    pdfFrame?.remove();pdfFrame=null;setZoom(false);thumbs.hidden=true;thumbButton.setAttribute('aria-expanded','false');thumbButton.disabled=!!activeIssue;
+    range.hidden=!!activeIssue;range.disabled=!!activeIssue||!pages.length;pageInput.disabled=!activeIssue&&!pages.length;
+    if(activeIssue)pageInput.removeAttribute('max');else pageInput.max=String(pages.length);
+    pdfLink.href=activeIssue?activeIssue.url:currentPDF;
+    if(activeIssue)renderPDF();else{current=0;render();}
+  }
+  issueSelect?.addEventListener('change',selectIssue);
+  issueUpload?.addEventListener('change',()=>{
+    const file=issueUpload.files?.[0];if(!file)return;
+    if(file.type!=='application/pdf'&&!/\.pdf$/i.test(file.name)){message.hidden=false;message.textContent='اختر ملف PDF لعدد سابق.';issueUpload.value='';return;}
+    const id='uploaded-'+uploadedIssues.size,url=URL.createObjectURL(file),title=file.name.replace(/\.pdf$/i,'');
+    uploadedIssues.set(id,{url,title});issueSelect.add(new Option('عدد سابق · '+title,id));issueSelect.value=id;selectIssue();issueUpload.value='';
   });
+  window.addEventListener('pagehide',()=>{for(const issue of uploadedIssues.values())URL.revokeObjectURL(issue.url);});
   fullButton.addEventListener('click', async () => {
     try { if (document.fullscreenElement === reader) await document.exitFullscreen(); else await reader.requestFullscreen(); }
     catch { message.hidden = false; message.textContent = 'تعذّر ملء الشاشة في هذا المتصفح. استخدم التكبير أو افتح ملف PDF.'; }
@@ -86,6 +117,6 @@
   mobile.addEventListener('change', () => { if (pages.length) { current = normalize(current); render(); } });
   fetch(manifestURL).then(response => { if (!response.ok) throw new Error('Manifest'); return response.json(); }).then(data => {
     if (!data.pages?.length) throw new Error('Pages'); pages = data.pages;
-    pageInput.max = range.max = String(pages.length); pageInput.disabled = range.disabled = false; render();
-  }).catch(() => { message.textContent = 'تعذّر تحميل المجلة. يمكنك قراءة ملف PDF من الرابط بجانب القارئ.'; });
+    range.max=String(pages.length);if(!activeIssue){pageInput.max=String(pages.length);pageInput.disabled=range.disabled=false;render();}
+  }).catch(() => { message.textContent = 'تعذّر تحميل المجلة. يمكنك قراءة ملف PDF من المتحكم أسفل القارئ.'; });
 })();

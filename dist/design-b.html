@@ -33,19 +33,22 @@
       <div class="b-navigation">
         <nav class="b-nav" aria-label="تنقل تصميم ب">
           <a href="#systems">الرئيسية</a>
-          <a href="#policies">توجيهات سامية</a>
+          <a href="#policies-sheet" id="policies-sheet-trigger" aria-haspopup="dialog" aria-controls="policies-sheet">توجيهات سامية</a>
           <a href="#systems-sheet" id="systems-sheet-trigger" aria-haspopup="dialog" aria-controls="systems-sheet">الأنظمة الإلكترونية</a>
           <a href="#documents-sheet" id="documents-sheet-trigger" aria-haspopup="dialog" aria-controls="documents-sheet">الاستمارات والوثائق</a>
         </nav>
-        <button class="b-search" type="button" aria-label="فتح البحث" aria-expanded="false" aria-controls="b-search-panel"><svg class="b-search-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg></button>
+        <div class="b-search-group" role="group" aria-label="خيارات البحث">
+        <button class="b-search" type="button" data-search-mode="all" title="البحث العام" aria-label="البحث العام" aria-haspopup="dialog" aria-expanded="false" aria-controls="b-search-panel"><svg class="b-search-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg></button>
+          <button class="b-search" type="button" data-search-mode="phone" title="البحث في دليل الهاتف" aria-label="البحث في دليل الهاتف" aria-haspopup="dialog" aria-expanded="false" aria-controls="b-search-panel"><svg class="b-search-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="15" height="18" rx="3"/><path d="M3 7h4M3 12h4M3 17h4"/><circle cx="12.5" cy="9" r="2"/><path d="M9 16c0-3.5 7-3.5 7 0"/></svg></button>
+        </div>
       </div>
-      <div class="b-header-search" id="b-search-panel" role="dialog" aria-modal="true" aria-label="البحث في محتوى الصفحة" hidden>
+      <div class="b-header-search" id="b-search-panel" role="dialog" aria-modal="true" aria-labelledby="b-search-title" hidden>
+        <h2 class="b-search-title" id="b-search-title">البحث العام</h2>
         <div class="b-search-field">
           <i class="iconsax" icon-name="search-normal-1" aria-hidden="true"></i>
           <input id="b-search-input" type="search" autocomplete="off" placeholder="عن ماذا تبحث اليوم؟" aria-label="البحث في محتوى الصفحة" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="b-search-results">
           <button class="b-search-close" type="button" aria-label="إغلاق البحث">✕</button>
         </div>
-        <fieldset class="b-search-scope"><legend>نطاق البحث</legend><label><input type="radio" name="b-search-scope" value="all" checked><span>البحث الشامل</span></label><label><input type="radio" name="b-search-scope" value="phone"><span>البحث في دليل الهاتف فقط</span></label></fieldset>
         <div class="b-search-dropdown">
           <div class="b-search-caption"><span id="b-search-status" role="status">وصول سريع</span><small>كل شيء أقرب</small></div>
           <div id="b-search-results" role="listbox" aria-label="نتائج البحث"></div>
@@ -66,7 +69,7 @@
     </section>
     <nav class="b-media-subnav" aria-label="أقسام الأخبار والوسائط">
       <div class="b-media-subnav-links">
-        <a href="#ed-news">أخبار عامة</a><a href="#ed-events">اخبارانا</a><a href="#digital-library">وثائق تهمك</a><a href="#safety">تعليمات السلامة</a><a href="#ed-magazine">مجلة الشهر <span class="b-media-new">جديد</span></a>
+        <a href="#ed-news">أخبار عامة</a><a href="#ed-events">أخبارنا</a><a href="#digital-library">وثائق تهمك</a><a href="#safety">تعليمات السلامة</a><a href="#ed-magazine">مجلة الشهر <span class="b-media-new">جديد</span></a>
       </div>
     </nav>
   </header>
@@ -74,7 +77,7 @@
   <main>
     <div class="bt-majestic-frame" id="bt-majestic-frame">
     <section class="b-personal-zone b-news-personal" aria-label="مساحة العمل الشخصية">
-      <div class="bt-majestic-backdrop" aria-hidden="true"><img src="./assets/hero-oman-fort.png" alt="" data-majestic-image="fort" class="is-active" decoding="async"><img src="./assets/hero-oman-mosque.png" alt="" data-majestic-image="mosque" decoding="async"><img src="./assets/hero-oman-desert.png" alt="" data-majestic-image="desert" decoding="async"><span class="bt-majestic-glass"></span></div>
+      <div class="bt-majestic-backdrop" aria-hidden="true"><img src="./assets/hero-oman-fort.png" alt="" data-majestic-image="fort" class="is-active" decoding="async"><img src="./assets/hero-oman-mosque.png" alt="" data-majestic-image="mosque" decoding="async"><img src="./assets/hero-oman-desert.png" alt="" data-majestic-image="desert" decoding="async"></div><span class="bt-majestic-glass" aria-hidden="true"></span>
       <div class="b-alert-carousel" id="b-alerts-section" role="region" aria-label="تنبيهات مساحة العمل" aria-roledescription="شريط بطاقات">
         <div class="b-alert-toolbar"><span>التنوية <small>6 تحديثات</small></span><div class="b-alert-controls"><span class="b-alert-position" aria-live="polite" aria-atomic="true"></span><button type="button" class="b-alert-prev" aria-label="تحريك التنبيهات إلى اليمين" aria-controls="workspace-alerts" disabled><i class="iconsax" icon-name="arrow-right" aria-hidden="true"></i></button><button type="button" class="b-alert-next" aria-label="تحريك التنبيهات إلى اليسار" aria-controls="workspace-alerts"><i class="iconsax" icon-name="arrow-left" aria-hidden="true"></i></button></div></div>
         <div class="b-alert-window">
@@ -151,7 +154,7 @@
     </section>
     </section>
     <section class="b-workspace-section" id="workspace" aria-label="مساحة العمل" data-search-category="مساحة العمل">
-      <div class="b-alert-toolbar b-workspace-toolbar"><span>مساحة العمل</span><div class="b-alert-controls"><button type="button" class="b-workspace-prev" aria-label="تحريك مساحة العمل إلى اليمين" aria-controls="workspace-cards" disabled><i class="iconsax" icon-name="arrow-right" aria-hidden="true"></i></button><button type="button" class="b-workspace-next" aria-label="تحريك مساحة العمل إلى اليسار" aria-controls="workspace-cards"><i class="iconsax" icon-name="arrow-left" aria-hidden="true"></i></button></div></div>
+      <div class="b-alert-toolbar b-workspace-toolbar"><span>مساحة العمل</span><div class="b-workspace-actions"><button type="button" class="b-workspace-view-toggle" id="b-workspace-view-toggle" aria-controls="workspace-cards" aria-pressed="false" title="عرض جميع البطاقات في شبكة"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>عرض شبكي</span></button><div class="b-alert-controls"><button type="button" class="b-workspace-prev" aria-label="تحريك مساحة العمل إلى اليمين" aria-controls="workspace-cards" disabled><i class="iconsax" icon-name="arrow-right" aria-hidden="true"></i></button><button type="button" class="b-workspace-next" aria-label="تحريك مساحة العمل إلى اليسار" aria-controls="workspace-cards"><i class="iconsax" icon-name="arrow-left" aria-hidden="true"></i></button></div></div></div>
       <div class="b-workspace-window">
       <div class="b-workspace-grid" id="workspace-cards" tabindex="0" role="region" aria-label="بطاقات مساحة العمل، استخدم سهمي اليمين واليسار للتصفح">
         <aside class="b-work-card b-work-library" data-work-system="library" data-widget-category="documents" aria-labelledby="work-library-title">
@@ -220,45 +223,40 @@
       </section>
 
     </div>
-    <section class="b-section b-media b-editorial" id="media" aria-labelledby="media-title">
+    <section class="b-section b-media b-editorial ed-light" id="media" aria-labelledby="media-title">
       <div class="ed-inner">
-        <header class="ed-masthead ed-on-dark"><div><span class="ed-eyebrow">نافذة كليريو / 02</span><h2 id="media-title"><i class="iconsax ed-heading-icon" icon-name="gallery" aria-hidden="true"></i>الأخبار والوسائط<span class="ed-title-dot">.</span></h2><p>حكايات تجمعنا، أفكار تلهمنا، ومعرفة تستحق وقتك.</p></div><div class="ed-edition ed-current-date" id="ed-current-date"><strong></strong><small></small></div></header>
+        <header class="ed-masthead"><div><h2 id="media-title"><i class="iconsax ed-heading-icon" icon-name="gallery" aria-hidden="true"></i>أخبار عامة<span class="ed-title-dot">.</span></h2></div><div class="ed-edition ed-current-date" id="ed-current-date"><strong></strong><small></small></div></header>
 
-        <section class="ed-block ed-news-refresh" id="ed-news" aria-labelledby="ed-news-title">
-          <div class="ed-block-heading ed-on-dark"><h3 id="ed-news-title"><i class="iconsax ed-heading-icon" icon-name="document-text-1" aria-hidden="true"></i>أخبار عامة</h3><a class="ed-more" href="https://omannews.gov.om/" target="_blank" rel="noopener noreferrer" aria-label="المزيد من أخبار وكالة الأنباء العمانية">أخبار الوكالة <span aria-hidden="true">↗</span></a></div>
-          <div class="ed-news-board" id="ed-agency-news"></div>
+        <section class="ed-block ed-news-refresh" id="ed-news" aria-labelledby="media-title">
+          <div class="ed-news-board ed-news-panel" id="ed-agency-news"></div>
         </section>
 
         <section class="ed-block" id="ed-events" aria-labelledby="ed-events-title">
-          <div class="ed-block-heading ed-on-dark"><h3 id="ed-events-title"><i class="iconsax ed-heading-icon" icon-name="calendar-2" aria-hidden="true"></i>خبارانا</h3><button type="button" class="ed-more" data-ed-more="events" aria-label="اطلع على المزيد من الفعاليات">اطّلع على المزيد <span aria-hidden="true">←</span></button></div>
-          <div class="ed-events-grid">
-            <article class="ed-video-card"><div class="ed-video-stage"><video id="ed-event-video" controls playsinline preload="none" poster="./assets/hero-oman-fort.png" aria-label="مشغل فيديو الفعالية"></video><span class="ed-visual-label">فيديو</span></div><div class="ed-event-copy"><div><h3>لحظات تستحق أن تُروى</h3><p id="ed-video-note">أضف فيديو محليًا لمعاينة تغطية الفعالية؛ لا يُرفع إلى أي خادم.</p></div><label class="ed-upload" for="ed-video-file"><i class="iconsax" icon-name="video-play" aria-hidden="true"></i> إضافة فيديو</label><input id="ed-video-file" class="ed-visually-hidden" type="file" accept="video/*"></div></article>
-            <button type="button" class="ed-photo-card" data-ed-gallery="0" aria-label="فتح ألبوم الصور التوضيحية من عُمان"><img src="./assets/hero-oman-desert.png" alt="كثبان عُمان" loading="lazy" decoding="async"><span class="ed-visual-label">3 صور</span><span class="ed-photo-copy"><strong>بعدساتنا… عُمان أقرب</strong><small>ألبوم توضيحي · افتح الصور ↗</small></span></button>
+          <div class="ed-block-heading"><h3 id="ed-events-title"><i class="iconsax ed-heading-icon" icon-name="calendar-2" aria-hidden="true"></i>أخبارنا</h3><div class="ed-video-toolbar"><div class="ed-video-controls b-arrow-controls"><button type="button" class="b-arrow-button" data-video-prev aria-label="الفيديو السابق" aria-controls="ed-video-track" disabled><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button><output data-video-status aria-live="polite">1 / 3</output><button type="button" class="b-arrow-button" data-video-next aria-label="الفيديو التالي" aria-controls="ed-video-track"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button></div></div></div>
+          <div class="ed-events-grid ed-events-rows">
+            <div class="ed-video-carousel" role="region" aria-label="فيديوهات أخبارنا" aria-roledescription="عارض فيديوهات"><div class="ed-video-viewport ed-media-viewport"><div class="ed-video-track" id="ed-video-track" tabindex="0" aria-label="فيديوهات أخبارنا، استخدم سهمي اليمين واليسار للتنقل"><article class="ed-video-card"><div class="ed-video-stage"><video id="ed-event-video" playsinline preload="none" poster="./assets/hero-oman-fort.png" aria-label="لحظات تستحق أن تُروى"></video><span class="ed-visual-label">فيديو تجريبي · 1</span><button type="button" class="ed-video-play" aria-label="تشغيل لحظات تستحق أن تُروى"><svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor" aria-hidden="true"><path d="M8 4.5v15l12-7.5Z"/></svg></button><div class="ed-event-copy"><h3>لحظات تستحق أن تُروى</h3><p>تغطية مصوّرة للحظات تجمع الفريق وتوثّق تفاصيل الفعالية.</p><small id="ed-video-note" role="status" hidden></small></div><label class="ed-upload" for="ed-video-file"><i class="iconsax" icon-name="video-play" aria-hidden="true"></i> اختيار فيديو</label><input id="ed-video-file" class="ed-visually-hidden" type="file" accept="video/*"></div></article>
+<article class="ed-video-card" inert><div class="ed-video-stage"><video id="ed-event-video-2" playsinline preload="none" poster="./assets/hero-oman-mosque.png" aria-label="فريق واحد… أثر مشترك"></video><span class="ed-visual-label">فيديو تجريبي · 2</span><button type="button" class="ed-video-play" aria-label="تشغيل فريق واحد… أثر مشترك"><svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor" aria-hidden="true"><path d="M8 4.5v15l12-7.5Z"/></svg></button><div class="ed-event-copy"><h3>فريق واحد… أثر مشترك</h3><p>مساحة لعرض مبادرات الفريق وتجارب التعاون في يوم العمل.</p><small id="ed-video-note-2" role="status" hidden></small></div><label class="ed-upload" for="ed-video-file-2"><i class="iconsax" icon-name="video-play" aria-hidden="true"></i> اختيار فيديو</label><input id="ed-video-file-2" class="ed-visually-hidden" type="file" accept="video/*"></div></article>
+<article class="ed-video-card" inert><div class="ed-video-stage"><video id="ed-event-video-3" playsinline preload="none" poster="./assets/hero-oman-desert.png" aria-label="من الفكرة إلى الإنجاز"></video><span class="ed-visual-label">فيديو تجريبي · 3</span><button type="button" class="ed-video-play" aria-label="تشغيل من الفكرة إلى الإنجاز"><svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor" aria-hidden="true"><path d="M8 4.5v15l12-7.5Z"/></svg></button><div class="ed-event-copy"><h3>من الفكرة إلى الإنجاز</h3><p>حكايات قصيرة عن التعلّم والإنجاز والمشاريع التي نعمل عليها.</p><small id="ed-video-note-3" role="status" hidden></small></div><label class="ed-upload" for="ed-video-file-3"><i class="iconsax" icon-name="video-play" aria-hidden="true"></i> اختيار فيديو</label><input id="ed-video-file-3" class="ed-visually-hidden" type="file" accept="video/*"></div></article></div></div></div>
+            <div class="ed-photo-collection"><div class="ed-photo-slider ed-media-viewport has-hidden-start has-hidden-end" tabindex="0" aria-label="صور من عُمان، استخدم الأسهم لاختيار الصورة الوسطى"><article class="ed-photo-slide" data-photo-slide="0"><img src="./assets/hero-oman-desert.png" alt="كثبان عُمان" loading="lazy" decoding="async"><button type="button" class="ed-photo-select" data-photo-select="0" aria-label="اختيار صورة كثبان عُمان" aria-pressed="false"></button><div class="ed-photo-copy"><h3>بعدساتنا… عُمان أقرب</h3><p>رمال عُمان وأفق مفتوح.</p></div><button type="button" class="ed-photo-enlarge" data-ed-gallery="0" aria-label="تكبير صورة كثبان عُمان" hidden><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5M8 8l-4-4m12 4 4-4M8 16l-4 4m12-4 4 4"/></svg></button></article><article class="ed-photo-slide" data-photo-slide="1"><img src="./assets/hero-oman-fort.png" alt="قلعة عُمانية" loading="lazy" decoding="async"><button type="button" class="ed-photo-select" data-photo-select="1" aria-label="اختيار صورة قلعة عُمانية" aria-pressed="false"></button><div class="ed-photo-copy"><h3>حكايات من المكان</h3><p>قلاع وحصون تحكي ذاكرة المكان.</p></div><button type="button" class="ed-photo-enlarge" data-ed-gallery="1" aria-label="تكبير صورة قلعة عُمانية" hidden><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5M8 8l-4-4m12 4 4-4M8 16l-4 4m12-4 4 4"/></svg></button></article><article class="ed-photo-slide" data-photo-slide="2"><img src="./assets/hero-oman-mosque.png" alt="العمارة العُمانية" loading="lazy" decoding="async"><button type="button" class="ed-photo-select" data-photo-select="2" aria-label="اختيار صورة العمارة العُمانية" aria-pressed="false"></button><div class="ed-photo-copy"><h3>تفاصيل تستحق النظر</h3><p>جمال العمارة العُمانية في صورة.</p></div><button type="button" class="ed-photo-enlarge" data-ed-gallery="2" aria-label="تكبير صورة العمارة العُمانية" hidden><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5M8 8l-4-4m12 4 4-4M8 16l-4 4m12-4 4 4"/></svg></button></article></div><div class="ed-photo-navigation"><div class="ed-photo-controls b-arrow-controls" role="group" aria-label="التنقّل بين الصور"><button type="button" class="b-arrow-button" data-photo-prev aria-label="الصورة السابقة">→</button><output data-photo-status aria-live="polite">2 / 3</output><button type="button" class="b-arrow-button" data-photo-next aria-label="الصورة التالية">←</button></div></div></div>
           </div>
         </section>
+      </div>
+    </section>
 
-        <section class="ed-magazine" id="ed-magazine" aria-labelledby="ed-magazine-title">
-          <div class="ed-magazine-intro ed-on-dark"><span class="ed-eyebrow">مساحة تستحق التوقّف</span><h3 id="ed-magazine-title">مجلة الشهر<span>وُجهات.</span></h3><p>تصفّح المجلة صفحةً بصفحة، وكبّر تفاصيلها لتستمتع بالقراءة.</p><span class="ed-issue">العدد الحالي · 258 صفحة</span><a class="ed-magazine-pdf" href="./assets/magazines/39.pdf" target="_blank" rel="noopener">فتح ملف PDF ↗</a></div>
+        <section class="b-section ed-magazine" id="ed-magazine" aria-labelledby="ed-magazine-title">
+          <h3 class="ed-magazine-accessible-title" id="ed-magazine-title">مجلة الشهر · وُجهات</h3>
           <div class="ed-local-reader" id="monthly-reader" aria-label="قارئ مجلة وُجهات" data-pages="./assets/magazines/39-pages/manifest.json">
-            <header class="ed-local-toolbar"><span>وُجهات / مجلة الشهر</span><div><button type="button" data-mag-thumbnails aria-expanded="false" aria-controls="monthly-thumbnails" aria-label="عرض مصغرات الصفحات">▦</button><button type="button" data-mag-zoom aria-pressed="false" aria-label="تكبير الصفحات">＋</button><button type="button" data-mag-fullscreen aria-label="ملء الشاشة">⛶</button></div></header>
             <div class="ed-local-thumbnails" id="monthly-thumbnails" aria-label="اختيار صفحة" hidden></div>
             <div class="ed-local-stage" tabindex="0" aria-label="صفحات المجلة؛ استخدم سهمي اليمين واليسار للتقليب"><div class="ed-local-spread"></div><p class="ed-local-message" role="status">جارٍ تجهيز المجلة…</p></div>
-            <footer class="ed-local-controls"><button type="button" data-mag-prev aria-label="الصفحات السابقة" disabled>→</button><output data-mag-status aria-live="polite"></output><button type="button" data-mag-next aria-label="الصفحات التالية" disabled>←</button><label>الصفحة <input data-mag-page type="number" min="1" value="1" inputmode="numeric" aria-label="الانتقال إلى صفحة" disabled></label></footer>
+            <div class="ed-magazine-floating-controls" role="group" aria-label="متحكمات مجلة الشهر">
+              <div class="ed-magazine-toolbar"><label class="ed-magazine-issue-select">العدد <select data-mag-issue aria-label="اختيار عدد المجلة"><option value="current">العدد الحالي · 39</option></select></label><label class="ed-magazine-add-issue">إضافة عدد سابق <input type="file" data-mag-issue-upload accept="application/pdf,.pdf" aria-label="إضافة عدد سابق من ملف PDF"></label><div class="ed-magazine-view-controls"><button type="button" data-mag-thumbnails aria-expanded="false" aria-controls="monthly-thumbnails" aria-label="عرض مصغرات الصفحات">▦</button><button type="button" data-mag-zoom-out aria-label="تصغير الصفحات" disabled>−</button><button type="button" data-mag-zoom aria-pressed="false" aria-label="تكبير الصفحات">＋</button><button type="button" data-mag-fullscreen aria-label="ملء الشاشة">⛶</button><a class="ed-magazine-pdf" data-mag-pdf href="./assets/magazines/39.pdf" target="_blank" rel="noopener">PDF ↗</a></div></div>
+            <footer class="ed-local-controls"><div class="ed-magazine-page-nav" role="group" aria-label="التنقل بين الصفحات"><button type="button" data-mag-prev aria-label="الصفحات السابقة" disabled>→</button><output data-mag-status aria-live="polite"></output><button type="button" data-mag-next aria-label="الصفحات التالية" disabled>←</button></div><label>الصفحة <input data-mag-page type="number" min="1" value="1" inputmode="numeric" aria-label="الانتقال إلى صفحة" disabled></label></footer>
             <input class="ed-local-range" data-mag-range type="range" min="1" value="1" aria-label="تصفح صفحات المجلة" disabled>
+            </div>
           </div>
         </section>
-        <footer class="ed-endnote ed-on-dark"><span>كليريو — مساحة للخبر والفكرة والحكاية.</span><small>جميع المواد والصور المعروضة نماذج توضيحية، وليست أخبارًا منشورة عن المؤسسة.</small></footer>
-      </div>
-    </section>
 
-    <section class="b-section b-policies" id="policies" aria-labelledby="policies-title">
-      <header class="b-section-heading"><div><span>03</span><h2 id="policies-title">توجيهات وقوانين</h2></div><p>مرجع مختصر للمعايير التي تساعدنا على اتخاذ القرار الصحيح.</p></header>
-      <div class="b-policy-grid">
-        <article><span>1</span><h3>وضوح المعلومة</h3><p>نكتب ما يحتاجه المستخدم بلغة مباشرة ومسار واحد واضح.</p><a href="#library">استعرض التوجيهات <i class="iconsax" icon-name="arrow-left"></i></a></article>
-        <article><span>2</span><h3>خصوصية افتراضية</h3><p>تحمي الأنظمة بيانات العمل وتوضح الصلاحيات من البداية.</p><a href="#library">اعرف المزيد <i class="iconsax" icon-name="arrow-left"></i></a></article>
-        <article><span>3</span><h3>توثيق مستمر</h3><p>كل قرار مهم يجد مكانه في مكتبة يسهل الرجوع إليها.</p><a href="#library">افتح المكتبة <i class="iconsax" icon-name="arrow-left"></i></a></article>
-      </div>
-    </section>
+
 
     <section class="b-section b-library sc-section" id="library" aria-labelledby="library-title" data-search-category="دليل الأنظمة" hidden>
       <header class="sc-heading"><div><span class="sc-eyebrow">04 / دليل الأنظمة</span><h2 id="library-title">الأنظمة الإلكترونية</h2><p>كل أدواتك في مكان واحد. اختر ما تحتاجه، واجعله أقرب في مساحة العمل.</p></div></header>
@@ -290,6 +288,7 @@
       <div class="sc-empty" id="sc-empty" hidden><i class="iconsax" icon-name="search-normal-1" aria-hidden="true"></i><h3>لم نعثر على نظام مطابق</h3><p>جرّب كلمة مختلفة أو أعد عرض جميع الأنظمة.</p><button type="button" id="sc-reset">عرض جميع الأنظمة</button></div>
       <p class="sc-local-note">تفضيلات التثبيت تُحفظ على هذا المتصفح. أسماء الأنظمة وخدماتها نماذج توضيحية.</p>
     </section>
+    <div class="b-reference-sections">
     <section class="b-section b-digital-library" id="digital-library" aria-labelledby="digital-library-title">
       <header class="b-section-heading"><div><span>05</span><h2 id="digital-library-title">وثائق تهمك</h2></div><p>مراجعك في مكان واحد. اختر التصنيف، وابحث عن الوثيقة التي تحتاجها.</p></header>
       <div class="dl-categories" aria-label="تصنيفات الوثائق">
@@ -320,6 +319,7 @@
       <p class="b-safety-note">إرشادات عامة · تُطبَّق وفق خطة السلامة والتعليمات المعتمدة في موقع المؤسسة.</p>
       </div>
     </section>
+    </div>
   </main>
   <footer class="b-footer"><a href="./index.html"><img src="./assets/logo-light.avif" alt="كليريو"></a><p>تصميم ب · مساحة عمل داخلية أكثر وضوحًا</p><span>2026</span></footer>
   <div class="b-toast" id="b-toast" role="status"></div>
@@ -343,6 +343,20 @@
     </section>
   </aside>
   <dialog class="b-doc-dialog" aria-labelledby="doc-preview-title"><button type="button" class="b-doc-close" aria-label="إغلاق معاينة المستند">✕</button><span class="b-preview-label">القرارات · مستند تجريبي</span><h2 id="doc-preview-title"></h2><p id="doc-preview-copy"></p><small>هذه معاينة توضيحية للتصميم وليست المستند الفعلي.</small></dialog>
+  <dialog id="policies-sheet" class="b-documents-sheet b-policies-sheet" aria-labelledby="policies-sheet-title">
+    <header class="b-documents-sheet-heading"><h2 id="policies-sheet-title">توجيهات سامية</h2><button type="button" class="b-documents-sheet-close" data-policies-close aria-label="إغلاق التوجيهات" autofocus><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
+    <div class="b-policies-sheet-content">
+    <section class="b-section b-policies" id="policies" aria-labelledby="policies-title">
+      <header class="b-section-heading"><div><span>03</span><h2 id="policies-title">توجيهات وقوانين</h2></div><p>مرجع مختصر للمعايير التي تساعدنا على اتخاذ القرار الصحيح.</p></header>
+      <div class="b-policy-grid">
+        <article><span>1</span><h3>وضوح المعلومة</h3><p>نكتب ما يحتاجه المستخدم بلغة مباشرة ومسار واحد واضح.</p><a href="#library">استعرض التوجيهات <i class="iconsax" icon-name="arrow-left"></i></a></article>
+        <article><span>2</span><h3>خصوصية افتراضية</h3><p>تحمي الأنظمة بيانات العمل وتوضح الصلاحيات من البداية.</p><a href="#library">اعرف المزيد <i class="iconsax" icon-name="arrow-left"></i></a></article>
+        <article><span>3</span><h3>توثيق مستمر</h3><p>كل قرار مهم يجد مكانه في مكتبة يسهل الرجوع إليها.</p><a href="#library">افتح المكتبة <i class="iconsax" icon-name="arrow-left"></i></a></article>
+      </div>
+    </section>
+    </div>
+  </dialog>
+  <script src="./design-b-policies-sheet.js"></script>
   <dialog id="documents-sheet" class="b-documents-sheet" aria-labelledby="documents-sheet-title">
     <header class="b-documents-sheet-heading">
       <h2 id="documents-sheet-title">الاستمارات والوثائق</h2>
@@ -353,7 +367,7 @@
   <script src="./design-b-status.js"></script>
   <script src="./design-b.js"></script>
   <dialog class="ed-dialog" id="ed-reading-dialog" aria-labelledby="ed-reading-title"><div class="ed-dialog-top"><span>مكتبة كليريو · محتوى توضيحي</span><button type="button" data-ed-close aria-label="إغلاق القراءة">✕</button></div><h2 id="ed-reading-title"></h2><div id="ed-reading-copy"></div></dialog>
-  <dialog class="ed-dialog ed-gallery-dialog" id="ed-gallery-dialog" aria-label="ألبوم صور عُمان"><div class="ed-dialog-top"><span id="ed-gallery-caption"></span><button type="button" data-ed-close aria-label="إغلاق الصور">✕</button></div><img id="ed-gallery-image" alt=""><div class="ed-gallery-controls"><button type="button" id="ed-gallery-prev" aria-label="الصورة السابقة">→</button><span id="ed-gallery-status" role="status"></span><button type="button" id="ed-gallery-next" aria-label="الصورة التالية">←</button></div></dialog>
+  <dialog class="ed-dialog ed-gallery-dialog ed-gallery-viewer" id="ed-gallery-dialog" aria-label="معرض الصور"><header class="ed-gallery-toolbar"><div><h2 id="ed-gallery-caption"></h2></div><div class="ed-gallery-actions"><button type="button" data-gallery-zoom aria-label="تكبير الصورة" aria-pressed="false"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6M7 10h6m-3-3v6"/></svg></button><button type="button" data-ed-close aria-label="إغلاق معرض الصور">✕</button></div></header><div class="ed-gallery-stage" tabindex="0" aria-label="الصورة الحالية، استخدم الأسهم للتنقل"><img id="ed-gallery-image" alt=""></div><div class="ed-gallery-navigation"><div class="ed-gallery-controls b-arrow-controls"><button type="button" class="b-arrow-button" id="ed-gallery-prev" aria-label="الصورة السابقة">→</button><button type="button" class="b-arrow-button" id="ed-gallery-next" aria-label="الصورة التالية">←</button></div><output id="ed-gallery-status" aria-live="polite"></output><label class="ed-gallery-jump">انتقل للصورة <input type="number" data-gallery-page min="1" value="1" inputmode="numeric" aria-label="رقم الصورة"></label></div><div class="ed-gallery-thumbnails" aria-label="اختيار صورة من المعرض"></div><input type="range" class="ed-gallery-range" data-gallery-range min="1" value="1" aria-label="التنقل السريع بين الصور"></dialog>
   <script src="./design-b-notice-strip.js"></script>
   <script src="./design-b-editorial.js"></script>
   <script src="./design-b-magazine.js"></script>

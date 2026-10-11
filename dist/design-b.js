@@ -5,6 +5,9 @@ document.querySelectorAll('[data-b-scroll]').forEach(button=>button.addEventList
 const header=document.querySelector('.b-header');
 const navigation=document.querySelector('.b-navigation');
 const searchTrigger=document.querySelector('.b-search');
+const searchTriggers=[...document.querySelectorAll('.b-search')];
+const separateSearch=!!document.querySelector('.b-search-group');
+let activeSearchTrigger=searchTrigger,searchMode='all';
 const searchPanel=document.getElementById('b-search-panel');
 const searchInput=document.getElementById('b-search-input');
 const results=document.getElementById('b-search-results');
@@ -93,7 +96,23 @@ const searchEntries=[...document.querySelectorAll('.b-section h2,.b-section h3,.
   const category=section?.dataset.searchCategory||section?.querySelector('h2')?.innerText.trim().replace(/\s+/g,' ')||'مساحة العمل';
   return {title:(title||'').trim().replace(/\s+/g,' '),category,text:element.matches('h2')?title:target.textContent.trim(),target};
 });
-const normalizeSearch=value=>value.normalize('NFKD').replace(/[\u064B-\u065F\u0670\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').toLowerCase().trim();
+// Illustrative contacts only; masked mobile numbers cannot be mistaken for live contacts.
+const phoneSamples=[
+  {title:'أحمد سالم',category:'الإدارة العامة',address:'مدير الشؤون الإدارية · المبنى الرئيسي، الطابق الأول',office:'1033',mobile:'9XXX 1033',photo:'workspace-person.png'},
+  {title:'خالد البلوشي',category:'تقنية المعلومات',address:'أخصائي دعم فني · المبنى الرئيسي، الطابق الثاني',office:'1044',mobile:'9XXX 1044',photo:'phone-khalid-mussar.png'},
+  {title:'سعيد الحارثي',category:'الموارد البشرية',address:'أخصائي شؤون الموظفين · مبنى الخدمات، الطابق الأول',office:'1055',mobile:'9XXX 1055',photo:'phone-saeed-mussar.png'}
+].map(person=>({...person,contact:true,text:[person.address,person.office,person.mobile].join(' ')}));
+const normalizeSearch=value=>value.normalize('NFKD').replace(/[\u064B-\u065F\u0670\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/[٠-٩۰-۹]/g,digit=>String(digit.charCodeAt(0)-(digit<='٩'?0x660:0x6f0))).toLowerCase().trim();
+const recentSearchKey='clerio-search-recents-v1';
+let recentSearches={all:[],phone:[]},recentSearchTimer;
+try{const saved=JSON.parse(localStorage.getItem(recentSearchKey));for(const mode of ['all','phone'])if(Array.isArray(saved?.[mode]))recentSearches[mode]=saved[mode].filter(value=>typeof value==='string'&&value.trim()&&value.length<=80).slice(0,6);}catch{}
+function rememberSearch(){
+  clearTimeout(recentSearchTimer);
+  const query=searchInput.value.trim().slice(0,80);
+  if(!separateSearch||!query||!visibleResults.length||visibleResults[0].recent)return;
+  recentSearches[searchMode]=[query,...recentSearches[searchMode].filter(value=>normalizeSearch(value)!==normalizeSearch(query))].slice(0,6);
+  try{localStorage.setItem(recentSearchKey,JSON.stringify(recentSearches));}catch{}
+}
 function paintMatch(node,title,query){
   const term=normalizeSearch(query),normalized=normalizeSearch(title),start=term?normalized.indexOf(term):-1;
   // Character offsets remain exact for unaccented literal matches.
@@ -110,13 +129,34 @@ function setActiveResult(index){
 }
 function renderSearch(){
   const term=normalizeSearch(searchInput.value);
-  const phoneOnly=searchPanel.querySelector('[name="b-search-scope"]:checked')?.value==='phone';
-  const entries=phoneOnly?searchEntries.filter(entry=>entry.target.closest('[data-search-category="دليل الهاتف"]')):searchEntries;
+  const phoneOnly=separateSearch?searchMode==='phone':searchPanel.querySelector('[name="b-search-scope"]:checked')?.value==='phone';
+  const entries=phoneOnly&&separateSearch?phoneSamples:phoneOnly?searchEntries.filter(entry=>entry.target.closest('[data-search-category="دليل الهاتف"]')):searchEntries;
   visibleResults=term?entries.filter(entry=>normalizeSearch(entry.title+' '+entry.category+' '+entry.text).includes(term)).sort((a,b)=>Number(normalizeSearch(b.title).includes(term))-Number(normalizeSearch(a.title).includes(term))):entries.filter(entry=>phoneOnly||entry.target.matches('.b-section'));
-  searchStatus.textContent=term?`${visibleResults.length.toLocaleString('ar-EG-u-nu-latn')} نتائج مطابقة`:'وصول سريع';
+  searchStatus.textContent=term?`${visibleResults.length.toLocaleString('ar-EG-u-nu-latn')} نتائج مطابقة`:phoneOnly?'جهات الاتصال':'وصول سريع';
+  if(separateSearch&&!term&&recentSearches[searchMode].length){
+    visibleResults=recentSearches[searchMode].map(query=>({recent:true,title:query,category:phoneOnly?'دليل الهاتف':'البحث العام'}));
+    searchStatus.textContent='عمليات البحث الأخيرة';
+  }
   results.replaceChildren();selectedResult=-1;searchInput.removeAttribute('aria-activedescendant');
   visibleResults.forEach((entry,index)=>{
     const option=document.createElement('div');option.className='b-search-option';option.id=`b-result-${index}`;option.setAttribute('role','option');option.setAttribute('aria-selected','false');
+    if(entry.recent){
+      option.classList.add('b-search-recent');
+      const clock=document.createElement('span'),copy=document.createElement('span'),title=document.createElement('strong'),description=document.createElement('small');
+      clock.className='b-search-recent-icon';clock.setAttribute('aria-hidden','true');clock.textContent='↶';title.textContent=entry.title;
+      const match=phoneOnly?phoneSamples.find(person=>normalizeSearch(person.title+' '+person.category+' '+person.text).includes(normalizeSearch(entry.title))):null;
+      description.textContent=match?match.title+' · '+match.category:entry.category;copy.append(title,description);
+      if(match){const photo=document.createElement('img');photo.src='./assets/'+match.photo;photo.alt='صورة توضيحية لشخصية '+match.title;photo.width=34;photo.height=34;photo.className='b-search-recent-photo';option.append(photo,copy);}else option.append(clock,copy);
+      option.addEventListener('pointerdown',event=>event.preventDefault());option.addEventListener('click',()=>openResult(index));results.append(option);return;
+    }
+    if(entry.contact){
+      option.classList.add('b-search-contact');option.tabIndex=-1;
+      const photo=document.createElement('img');photo.src='./assets/'+entry.photo;photo.alt='صورة توضيحية لشخصية '+entry.title;photo.width=44;photo.height=44;
+      const copy=document.createElement('div'),name=document.createElement('strong'),department=document.createElement('small'),address=document.createElement('p'),numbers=document.createElement('dl'),badge=document.createElement('span');
+      paintMatch(name,entry.title,searchInput.value);department.textContent=entry.category;address.textContent=entry.address;badge.className='b-search-contact-demo';badge.textContent='نموذج تجريبي';
+      [['رقم المكتب',entry.office],['الهاتف النقال',entry.mobile]].forEach(([label,value])=>{const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;dd.dir='ltr';row.append(dt,dd);numbers.append(row);});
+      copy.append(name,department,address,numbers,badge);option.append(photo,copy);results.append(option);return;
+    }
     const icon=document.createElement('i');icon.className='iconsax';icon.setAttribute('icon-name','document-text-1');icon.setAttribute('aria-hidden','true');
     const copy=document.createElement('span'),title=document.createElement('strong'),category=document.createElement('small'),arrow=document.createElement('span');
     paintMatch(title,entry.title,searchInput.value);category.textContent=entry.category;arrow.textContent='←';arrow.setAttribute('aria-hidden','true');copy.append(title,category);option.append(icon,copy,arrow);
@@ -125,16 +165,33 @@ function renderSearch(){
   if(!visibleResults.length){const empty=document.createElement('p');empty.className='b-search-empty';empty.textContent=phoneOnly?(entries.length?'لم نجد نتيجة في دليل الهاتف. جرّب الاسم أو رقم الهاتف.':'لا توجد بيانات لدليل الهاتف متاحة حاليًا.'):'لم نجد نتيجة. جرّب اسم نظام، مستند أو موضوع.';results.append(empty)}
 }
 function closeSearch(restoreFocus=true){
-  searchPanel.hidden=true;navigation.hidden=false;header.classList.remove('is-searching');searchTrigger.setAttribute('aria-expanded','false');searchInput.setAttribute('aria-expanded','false');searchInput.removeAttribute('aria-activedescendant');
-  if(restoreFocus)searchTrigger.focus({preventScroll:true});
+  if(separateSearch&&!searchPanel.hidden){rememberSearch();}
+  searchPanel.hidden=true;navigation.hidden=false;header.classList.remove('is-searching');searchTriggers.forEach(trigger=>trigger.setAttribute('aria-expanded','false'));searchInput.setAttribute('aria-expanded','false');searchInput.removeAttribute('aria-activedescendant');
+  if(restoreFocus)activeSearchTrigger.focus({preventScroll:true});
 }
-function openSearch(){
+function openSearch(mode='all',trigger=searchTrigger){
+  if(separateSearch){
+    if(!searchPanel.hidden)rememberSearch();
+    searchMode=mode==='phone'?'phone':'all';activeSearchTrigger=trigger;
+    const phoneOnly=searchMode==='phone',title=phoneOnly?'البحث في دليل الهاتف':'البحث العام';
+    document.getElementById('b-search-title').textContent=title;
+    searchPanel.dataset.searchMode=searchMode;
+    searchInput.value='';
+    searchInput.placeholder=phoneOnly?'ابحث بالاسم أو الإدارة أو رقم الهاتف':'عن ماذا تبحث اليوم؟';
+    searchInput.setAttribute('aria-label',title);
+    results.setAttribute('aria-label',phoneOnly?'نتائج دليل الهاتف':'نتائج البحث العام');
+    searchPanel.querySelector('.b-search-caption small').textContent=phoneOnly?'جهات الاتصال وأرقام التواصل':'الأنظمة والمستندات ومحتوى الصفحة';
+    searchTriggers.forEach(button=>button.setAttribute('aria-expanded',String(button===trigger)));
+  }
   closeProfile();
   closeNotifications();
-  navigation.hidden=true;searchPanel.hidden=false;header.classList.add('is-searching');searchTrigger.setAttribute('aria-expanded','true');searchInput.setAttribute('aria-expanded','true');renderSearch();searchInput.focus({preventScroll:true});
+  navigation.hidden=!separateSearch;searchPanel.hidden=false;header.classList.add('is-searching');activeSearchTrigger.setAttribute('aria-expanded','true');searchInput.setAttribute('aria-expanded','true');renderSearch();searchInput.focus({preventScroll:true});
 }
 function openResult(index){
   const selectedEntry=visibleResults[index];if(!selectedEntry)return;
+  if(selectedEntry.recent){searchInput.value=selectedEntry.title;renderSearch();searchInput.focus({preventScroll:true});rememberSearch();return;}
+  rememberSearch();
+  if(selectedEntry.contact){setActiveResult(index);results.children[index].focus({preventScroll:true});return;}
   const reveal={target:selectedEntry.target};document.dispatchEvent(new CustomEvent('sc:reveal',{detail:reveal}));
   const entry={...selectedEntry,target:reveal.target};
   if(entry.target.matches('[data-doc-id]')){libraryInput.value='';activeDocCategory='all';renderLibrary();}
@@ -144,9 +201,9 @@ function openResult(index){
   entry.target.focus({preventScroll:true});entry.target.scrollIntoView({behavior:reducedMotion.matches?'instant':'smooth',block:'center'});
   highlightTimer=setTimeout(()=>entry.target.classList.remove('b-search-target'),2400);
 }
-searchTrigger.addEventListener('click',openSearch);
+searchTriggers.forEach(trigger=>trigger.addEventListener('click',()=>openSearch(trigger.dataset.searchMode||'all',trigger)));
 document.querySelector('.b-search-close').addEventListener('click',()=>closeSearch());
-searchInput.addEventListener('input',renderSearch);
+searchInput.addEventListener('input',()=>{renderSearch();clearTimeout(recentSearchTimer);if(separateSearch)recentSearchTimer=setTimeout(rememberSearch,600);});
 searchPanel.querySelectorAll('[name="b-search-scope"]').forEach(input=>input.addEventListener('change',()=>{
   searchInput.placeholder=input.value==='phone'?'ابحث بالاسم أو رقم الهاتف':'عن ماذا تبحث اليوم؟';
   renderSearch();
@@ -268,6 +325,29 @@ workspaceTrack.addEventListener('keydown',event=>{
 workspaceTrack.addEventListener('scroll',updateWorkspaceNavigation,{passive:true});
 new ResizeObserver(updateWorkspaceNavigation).observe(workspaceTrack);
 updateWorkspaceNavigation();
+// The view toggle is only present on design B; cards and their state stay in place.
+(() => {
+  const toggle=document.getElementById('b-workspace-view-toggle');
+  if(!toggle)return;
+  const key='clerio-workspace-view-v1';
+  let horizontalPosition=0;
+  function apply(view,persist=false){
+    const grid=view==='grid';
+    if(grid&&workspaceTrack.dataset.workspaceView!=='grid')horizontalPosition=workspaceTrack.scrollLeft;
+    workspaceTrack.dataset.workspaceView=grid?'grid':'horizontal';
+    toggle.setAttribute('aria-pressed',String(grid));
+    toggle.querySelector('span').textContent=grid?'عرض أفقي':'عرض شبكي';
+    toggle.title=grid?'العودة إلى العرض الأفقي':'عرض جميع البطاقات في شبكة';
+    workspaceTrack.scrollLeft=grid?0:horizontalPosition;
+    updateWorkspaceNavigation();
+    if(persist){try{localStorage.setItem(key,grid?'grid':'horizontal');}catch{}}
+  }
+  let saved;try{saved=localStorage.getItem(key);}catch{}
+  apply(saved);
+  toggle.addEventListener('click',()=>apply(workspaceTrack.dataset.workspaceView==='grid'?'horizontal':'grid',true));
+  window.addEventListener('storage',event=>{if(event.key===key)apply(event.newValue);});
+})();
+
 
 // Hide the entire region so its height is released to the workspace below.
 (() => {

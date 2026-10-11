@@ -1,7 +1,7 @@
 (() => {
   const widget=document.querySelector('.b-section-float');if(!widget)return;
   if (widget.classList.contains('b-floating-calendar')) return;
-  const labels={systems:'مساحة العمل',media:'الأخبار والوسائط',policies:'توجيهات وقوانين',library:document.getElementById('library-title')?.textContent.trim()||'الأنظمة الرقمية'};
+  const labels={systems:'مساحة العمل',media:'الأخبار والوسائط','ed-magazine':'مجلة الشهر',policies:'توجيهات وقوانين',library:document.getElementById('library-title')?.textContent.trim()||'الأنظمة الرقمية'};
   const sections=[...document.querySelectorAll('main > .b-section[id], main > .b-personal-zone > .b-section[id]')].filter(node=>!node.hidden).map(node=>({node,title:labels[node.id]||node.querySelector('h2,h1')?.textContent.trim()||node.id}));
   if(!sections.length){widget.hidden=true;return;}
   const previous=document.getElementById('b-section-previous'),next=document.getElementById('b-section-next'),toggle=document.getElementById('b-section-float-toggle'),body=document.getElementById('b-section-float-body'),progress=document.getElementById('b-section-progress');

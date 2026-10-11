@@ -43,3 +43,5 @@
 .dl-upload:focus-within,.dl-search:focus-within,.dl-categories button:focus-visible,.dl-row button:focus-visible { outline:2px solid #668577; outline-offset:3px; }
 @media(max-width:1000px) { .dl-categories { grid-template-columns:repeat(2,minmax(0,1fr)); }.dl-search { flex:1; } }
 @media(max-width:560px) { .dl-categories { gap:8px; }.dl-categories button { padding:16px; }.dl-categories strong { font-size:15px; }.dl-categories small { font-size:10px; }.dl-categories button > span:last-child { display:none; }.dl-browser { padding:16px; }.dl-tools { gap:14px; }.dl-tools > div { width:100%; }.dl-tools h3 { font-size:21px; }.dl-search { flex-basis:100%; width:100%; }.dl-row { grid-template-columns:36px minmax(0,1fr); gap:12px; }.dl-file-icon { width:34px; height:44px; }.dl-row button { grid-column:2; justify-self:start; }.dl-row h4 { font-size:16px; }.dl-results-bar > span:last-child { display:none; }.dl-dialog { padding:18px; } }
+
+@media(min-width:1001px) { .b-reference-sections .dl-categories { grid-template-columns: repeat(2,minmax(0,1fr)); }.b-reference-sections .dl-browser { padding: 20px; } }

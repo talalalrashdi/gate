@@ -273,6 +273,8 @@
     if (!summary) return;
     summary.replaceChildren();
     const upcoming = tasks.filter(task => !task.done && task.date >= todayKey).sort((a,b) => a.date.localeCompare(b.date) || (a.time || '99').localeCompare(b.time || '99')).slice(0,3);
+    const handle = byId('b-calendar-content-toggle')?.closest('.b-floating-calendar-handle');
+    if (handle) handle.hidden = !upcoming.length;
     if (!upcoming.length) {
       const empty = document.createElement('p'); empty.textContent = 'لا توجد مواعيد أو تذكيرات قادمة.'; summary.append(empty); return;
     }

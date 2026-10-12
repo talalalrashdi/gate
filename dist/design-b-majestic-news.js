@@ -2,7 +2,12 @@
   const list = document.querySelector('.bt-majestic-headlines');
   if (!list) return;
   // Selected, dated ONA reports; these are not a live news feed.
+  const breakingStory = {
+        title: 'خبر عاجل', date: '2026-10-12', source: 'خبر تجريبي', breaking: true,
+        details: ['أعلنت المؤسسة إطلاق بوابة جديدة للخدمات الرقمية، تتيح للموظفين متابعة طلباتهم والوصول إلى الخدمات من مكان واحد.', 'تبدأ تجربة البوابة خلال هذا الأسبوع، على أن تُجمع ملاحظات المستخدمين لتحسين سهولة الاستخدام وتسريع إنجاز المعاملات. هذا النص خبري تجريبي لمعاينة تصميم الأخبار العاجلة.']
+  };
   const stories = [
+    breakingStory,
     { title: 'متحف عُمان عبر الزمان يستقبل نحو 940 ألف زائر منذ افتتاحه', date: '2026-02-22', url: 'https://omannews.gov.om/topics/ar/119/show/464026/', image: 'https://alroya.om/thumb/830x506/uploads/images/2025/07/VBTAR.jpeg', imageCredit: 'صورة متحف عُمان عبر الزمان — صحيفة الرؤية' },
     { title: 'جنوب الشرقية: رقمنة 14 خدمة حكومية وإنجاز 5694 معاملة خلال 2025', date: '2026-01-25', url: 'https://omannews.gov.om/topics/ar/122/show/462778/rss.ona' },
     { title: 'إطلاق برنامج «تعزيز» لتمكين الفرق الأهلية الرياضية', date: '2026-01-25', url: 'https://omannews.gov.om/topics/ar/8/show/462804/ona' },
@@ -13,6 +18,7 @@
   stories.forEach(story => {
     const item = document.createElement('li'), button = document.createElement('button');
     const title = document.createElement('span'), heading = document.createElement('strong'), credit = document.createElement('small');
+    item.classList.toggle('is-breaking', Boolean(story.breaking));
     item.classList.toggle('has-photo', Boolean(story.image));
     item.classList.toggle('is-featured', !list.children.length);
     if (story.image) {
@@ -23,16 +29,17 @@
       button.append(image);
     }
     heading.textContent = story.title;
-    credit.textContent = `العُمانية · ${publicationDate.format(new Date(`${story.date}T12:00:00+04:00`))}`;
+    credit.textContent = `${story.breaking ? 'خبر عاجل · تجريبي' : 'العُمانية'} · ${publicationDate.format(new Date(`${story.date}T12:00:00+04:00`))}`;
     title.append(heading, credit);
+    if(story.breaking){const summary=document.createElement('p');summary.textContent=story.details[0];title.append(summary);}
     button.type = 'button'; button.append(title);
-    button.addEventListener('click', () => window.open(story.url, '_blank', 'noopener,noreferrer'));
+    button.addEventListener('click', () => {if(story.breaking){document.querySelector('#ed-news-paged-list .is-breaking .ed-news-select')?.click();document.getElementById('ed-news')?.scrollIntoView({block:'start',behavior:'smooth'});}else window.open(story.url, '_blank', 'noopener,noreferrer');});
     item.append(button); list.append(item);
   });
   const agencyNews = document.getElementById('ed-agency-news');
   if (agencyNews) {
     const panel=agencyNews.classList.contains('ed-news-panel');
-    const panelStories = panel ? [...stories,
+    const panelStories = panel ? [...stories.filter(story=>!story.breaking),
       { title: 'والي بدبد يبحث تطوير رياضة الفروسية وتعزيز حضورها في الولاية', date: '2026-01-28', source: 'وزارة الداخلية', url: 'https://www.moi.gov.om/ar-om/news/والي-بدبد-يناقش-مع-لجنة-الفروسية-سبل-تطوير-رياضة-الفروسية-بالولاية-20260128084751290' },
       { title: 'ختام فعاليات «شتاء منح» بحضور أكثر من 15 ألف زائر', date: '2026-01-19', source: 'محافظة الداخلية', url: 'https://dg.gov.om/news/details/229' },
       { title: 'فعاليات «شتاء منح» تجمع الثقافة والتراث والترفيه', date: '2026-01-11', source: 'محافظة الداخلية', url: 'https://www.dg.gov.om/news/details/225' },
@@ -46,6 +53,7 @@
         'يوضح هذا النموذج كيف تظهر التفاصيل الإضافية أسفل عنوان الخبر والصورة، مع الحفاظ على سهولة القراءة داخل الصفحة.',
         'يمكن أن تتضمن هذه المساحة وصفًا موسّعًا للخبر، وأبرز النقاط والمعلومات المرتبطة به. النص هنا توضيحي لتجربة العرض، وللاطلاع على التقرير المنشور استخدم رابط المصدر.'
       ]};
+      entries.unshift(breakingStory);
       const feature=document.createElement('div');feature.className='ed-news-feature';
       const toolbar=document.createElement('div');toolbar.className='ed-news-feature-toolbar';
       const status=document.createElement('output');status.className='ed-news-feature-status';
@@ -69,14 +77,14 @@
       const rows=[];
       entries.forEach((story,index)=>{
         const item=document.createElement('li'),card=document.createElement('article'),copy=document.createElement('div'),thumbnail=document.createElement('img');
-        card.className='ed-news-list-story';copy.className='ed-news-item-copy';
+        card.className='ed-news-list-story';item.classList.toggle('is-breaking',Boolean(story.breaking));copy.className='ed-news-item-copy';
         thumbnail.className='ed-news-thumbnail';thumbnail.src=story.image||thumbnails[index%thumbnails.length];thumbnail.alt='';thumbnail.title=story.imageCredit||'صورة توضيحية';thumbnail.loading='lazy';thumbnail.decoding='async';thumbnail.width=64;thumbnail.height=84;
         const header=document.createElement('header'),sequence=document.createElement('span'),source=document.createElement('span'),heading=document.createElement('h3'),button=document.createElement('button');
-        sequence.className='ed-news-sequence';sequence.textContent=String(index+1).padStart(2,'0');sequence.setAttribute('aria-hidden','true');source.textContent=story.source||'وكالة الأنباء العُمانية';header.append(sequence,source);
+        sequence.className='ed-news-sequence';sequence.textContent=String(index+1).padStart(2,'0');sequence.setAttribute('aria-hidden','true');source.textContent=story.source||'وكالة الأنباء العُمانية';if(story.breaking){source.className='ed-news-breaking-badge';source.textContent='خبر عاجل · تجريبي';}header.append(sequence,source);
         button.type='button';button.className='ed-news-select';button.textContent=story.title;button.setAttribute('aria-controls',selected.id);button.setAttribute('aria-pressed','false');heading.append(button);
         const footer=document.createElement('footer'),date=document.createElement('time'),hint=document.createElement('span');
         date.dateTime=story.date;date.textContent=publicationDate.format(new Date(story.date+'T12:00:00+04:00'));hint.className='ed-news-preview-hint';hint.textContent=story.details?'عرض الخبر والتفاصيل ←':'عرض الخبر ←';
-        footer.append(date,hint);copy.append(header,heading,footer);card.append(thumbnail,copy);item.append(card);newsList.append(item);rows.push({item,button});
+        footer.append(date,hint);copy.append(header,heading,footer);if(!story.breaking)card.append(thumbnail);card.append(copy);item.append(card);newsList.append(item);rows.push({item,button});
         card.addEventListener('click',()=>{show(index,true);if(matchMedia('(max-width:760px)').matches)feature.scrollIntoView({block:'start',behavior:'instant'});schedule();});
       });
       const pageSize=8,pageCount=Math.ceil(entries.length/pageSize);let currentPage=0;
@@ -93,9 +101,9 @@
         const story=entries[active],visual=document.createElement('div'),image=document.createElement('img'),caption=document.createElement('span'),copy=document.createElement('div');
         visual.className='ed-news-card-image';image.src=story.image||thumbnails[active%thumbnails.length];image.alt=story.image?story.title:'';image.decoding='async';caption.textContent=story.imageCredit||'صورة توضيحية';visual.append(image,caption);
         const header=document.createElement('header'),source=document.createElement('span'),heading=document.createElement('h3'),footer=document.createElement('footer'),date=document.createElement('time'),link=document.createElement('a');
-        copy.className='ed-news-item-copy';source.textContent=story.source||'وكالة الأنباء العُمانية';header.append(source);heading.textContent=story.title;heading.id='ed-news-selected-title';selected.setAttribute('aria-labelledby',heading.id);
-        date.dateTime=story.date;date.textContent=publicationDate.format(new Date(story.date+'T12:00:00+04:00'));link.href=story.url;link.target='_blank';link.rel='noopener noreferrer';link.textContent='اقرأ الخبر من المصدر ↗';footer.append(date,link);copy.append(header,heading,footer);
-        selected.replaceChildren(visual,copy);
+        copy.className='ed-news-item-copy';source.textContent=story.source||'وكالة الأنباء العُمانية';if(story.breaking){source.className='ed-news-breaking-badge';source.textContent='خبر عاجل · تجريبي';}header.append(source);heading.textContent=story.title;heading.id='ed-news-selected-title';selected.classList.toggle('is-breaking',Boolean(story.breaking));selected.setAttribute('aria-labelledby',heading.id);
+        date.dateTime=story.date;date.textContent=publicationDate.format(new Date(story.date+'T12:00:00+04:00'));link.href=story.url;link.target='_blank';link.rel='noopener noreferrer';link.textContent='اقرأ الخبر من المصدر ↗';footer.append(date);if(story.url)footer.append(link);copy.append(header,heading,footer);
+        selected.replaceChildren(...(story.breaking?[copy]:[visual,copy]));
         if(story.details?.length){const details=document.createElement('section'),title=document.createElement('h4');details.className='ed-news-details';title.textContent='تفاصيل الخبر — نموذج توضيحي';details.append(title);story.details.forEach(text=>{const paragraph=document.createElement('p');paragraph.textContent=text;details.append(paragraph);});selected.append(details);}
         rows.forEach((row,i)=>{row.item.classList.toggle('is-selected',i===active);row.button.setAttribute('aria-pressed',String(i===active));});
         status.setAttribute('aria-live',manual?'polite':'off');status.textContent=(active+1)+' / '+entries.length;

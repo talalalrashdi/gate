@@ -3,7 +3,7 @@
   if (!status) return;
   const user = status.closest('.b-user');
   const alerts = user?.querySelector('.b-alert-visibility');
-  if (user && alerts) user.insertBefore(status, alerts);
+  if (user) user.insertBefore(status, alerts || user.firstChild);
   const menu = status.querySelector('.b-org-status-menu');
   const states = {
     yellow: { title: 'تنبيه احترازي', color: 'أصفر', summary: 'توجد حالة تستدعي الانتباه والاستعداد، مع استمرار العمل وفق الإجراءات المعتادة ما لم يصدر تحديث رسمي.', actions: ['تابع قنوات المؤسسة الرسمية باستمرار.', 'تأكد من جاهزية وسائل التواصل وبيانات الاتصال.', 'راجع تعليمات السلامة الخاصة بموقعك.'] },
@@ -27,6 +27,8 @@
     button.dataset.statusKey = key;
     button.setAttribute('aria-label', `عرض تفاصيل ${states[key].title}`);
     button.innerHTML = article.innerHTML;
+    const arrow = document.createElement('span');
+    arrow.className = 'b-org-status-arrow'; arrow.setAttribute('aria-hidden', 'true'); arrow.textContent = '←'; button.append(arrow);
     const optionTitle = button.querySelector('strong');
     optionTitle.id = `b-org-status-${key}`;
     button.setAttribute('aria-labelledby', optionTitle.id);

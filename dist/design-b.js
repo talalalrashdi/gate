@@ -84,7 +84,24 @@ document.addEventListener('pointerdown',event=>{if(notificationsPanel&&!notifica
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&notificationsPanel&&!notificationsPanel.hidden){event.preventDefault();closeNotifications(true);}});
 header.addEventListener('focusout',()=>requestAnimationFrame(()=>{if(notificationsPanel&&!notificationsPanel.hidden&&!header.contains(document.activeElement))closeNotifications();}));
 let selectedResult=-1,visibleResults=[],highlightTimer,highlightedTarget;
-function updateHeader(){header.classList.toggle('is-scrolled',window.scrollY>40)}
+const headerSpace = document.createElement('div');
+headerSpace.className = 'b-header-scroll-space';
+headerSpace.hidden = true;
+function updateHeader(){
+  const current = Math.max(0, window.scrollY);
+  header.classList.toggle('is-scrolled', current > 40);
+  if (current <= 40) {
+    header.classList.remove('is-pinned');
+    headerSpace.hidden = true;
+  } else if (!header.classList.contains('is-pinned')) {
+    if (getComputedStyle(header).position === 'relative') {
+      headerSpace.style.height = header.offsetHeight + 'px';
+      header.before(headerSpace);
+      headerSpace.hidden = false;
+    }
+    header.classList.add('is-pinned');
+  }
+}
 window.addEventListener('scroll',updateHeader,{passive:true});updateHeader();
 
 // Index the rendered content so titles and their destinations stay in sync.
@@ -127,13 +144,13 @@ function setActiveResult(index){
   if(index>=0){const option=results.children[index];searchInput.setAttribute('aria-activedescendant',option.id);option.scrollIntoView({block:'nearest'})}
   else searchInput.removeAttribute('aria-activedescendant');
 }
-function renderSearch(){
+function renderSearch(showDirectory=false){
   const term=normalizeSearch(searchInput.value);
   const phoneOnly=separateSearch?searchMode==='phone':searchPanel.querySelector('[name="b-search-scope"]:checked')?.value==='phone';
   const entries=phoneOnly&&separateSearch?phoneSamples:phoneOnly?searchEntries.filter(entry=>entry.target.closest('[data-search-category="دليل الهاتف"]')):searchEntries;
   visibleResults=term?entries.filter(entry=>normalizeSearch(entry.title+' '+entry.category+' '+entry.text).includes(term)).sort((a,b)=>Number(normalizeSearch(b.title).includes(term))-Number(normalizeSearch(a.title).includes(term))):entries.filter(entry=>phoneOnly||entry.target.matches('.b-section'));
   searchStatus.textContent=term?`${visibleResults.length.toLocaleString('ar-EG-u-nu-latn')} نتائج مطابقة`:phoneOnly?'جهات الاتصال':'وصول سريع';
-  if(separateSearch&&!term&&recentSearches[searchMode].length){
+  if(separateSearch&&!term&&!showDirectory&&(phoneOnly||recentSearches[searchMode].length)){
     visibleResults=recentSearches[searchMode].map(query=>({recent:true,title:query,category:phoneOnly?'دليل الهاتف':'البحث العام'}));
     searchStatus.textContent='عمليات البحث الأخيرة';
   }
@@ -144,9 +161,9 @@ function renderSearch(){
       option.classList.add('b-search-recent');
       const clock=document.createElement('span'),copy=document.createElement('span'),title=document.createElement('strong'),description=document.createElement('small');
       clock.className='b-search-recent-icon';clock.setAttribute('aria-hidden','true');clock.textContent='↶';title.textContent=entry.title;
-      const match=phoneOnly?phoneSamples.find(person=>normalizeSearch(person.title+' '+person.category+' '+person.text).includes(normalizeSearch(entry.title))):null;
-      description.textContent=match?match.title+' · '+match.category:entry.category;copy.append(title,description);
-      if(match){const photo=document.createElement('img');photo.src='./assets/'+match.photo;photo.alt='صورة توضيحية لشخصية '+match.title;photo.width=34;photo.height=34;photo.className='b-search-recent-photo';option.append(photo,copy);}else option.append(clock,copy);
+      copy.append(title);
+      if(!phoneOnly){description.textContent=entry.category;copy.append(description);}
+      option.append(clock,copy);
       option.addEventListener('pointerdown',event=>event.preventDefault());option.addEventListener('click',()=>openResult(index));results.append(option);return;
     }
     if(entry.contact){
@@ -162,7 +179,7 @@ function renderSearch(){
     paintMatch(title,entry.title,searchInput.value);category.textContent=entry.category;arrow.textContent='←';arrow.setAttribute('aria-hidden','true');copy.append(title,category);option.append(icon,copy,arrow);
     option.addEventListener('pointerdown',event=>event.preventDefault());option.addEventListener('click',()=>openResult(index));results.append(option);
   });
-  if(!visibleResults.length){const empty=document.createElement('p');empty.className='b-search-empty';empty.textContent=phoneOnly?(entries.length?'لم نجد نتيجة في دليل الهاتف. جرّب الاسم أو رقم الهاتف.':'لا توجد بيانات لدليل الهاتف متاحة حاليًا.'):'لم نجد نتيجة. جرّب اسم نظام، مستند أو موضوع.';results.append(empty)}
+  if(!visibleResults.length){const empty=document.createElement('p');empty.className='b-search-empty';empty.textContent=phoneOnly&&!term&&!showDirectory?'لا توجد عمليات بحث سابقة بعد.':phoneOnly?(entries.length?'لم نجد نتيجة في دليل الهاتف. جرّب الاسم أو رقم الهاتف.':'لا توجد بيانات لدليل الهاتف متاحة حاليًا.'):'لم نجد نتيجة. جرّب اسم نظام، مستند أو موضوع.';results.append(empty)}
 }
 function closeSearch(restoreFocus=true){
   if(separateSearch&&!searchPanel.hidden){rememberSearch();}
@@ -176,6 +193,8 @@ function openSearch(mode='all',trigger=searchTrigger){
     const phoneOnly=searchMode==='phone',title=phoneOnly?'البحث في دليل الهاتف':'البحث العام';
     document.getElementById('b-search-title').textContent=title;
     searchPanel.dataset.searchMode=searchMode;
+    searchPanel.querySelector('.b-phone-important').hidden=!phoneOnly;
+    searchPanel.querySelector('.b-phone-directory').hidden=!phoneOnly;
     searchInput.value='';
     searchInput.placeholder=phoneOnly?'ابحث بالاسم أو الإدارة أو رقم الهاتف':'عن ماذا تبحث اليوم؟';
     searchInput.setAttribute('aria-label',title);
@@ -202,6 +221,8 @@ function openResult(index){
   highlightTimer=setTimeout(()=>entry.target.classList.remove('b-search-target'),2400);
 }
 searchTriggers.forEach(trigger=>trigger.addEventListener('click',()=>openSearch(trigger.dataset.searchMode||'all',trigger)));
+searchPanel.querySelector('.b-phone-directory')?.addEventListener('click',()=>{searchInput.value='';renderSearch(true);searchInput.focus({preventScroll:true});results.scrollTop=0;});
+
 document.querySelector('.b-search-close').addEventListener('click',()=>closeSearch());
 searchInput.addEventListener('input',()=>{renderSearch();clearTimeout(recentSearchTimer);if(separateSearch)recentSearchTimer=setTimeout(rememberSearch,600);});
 searchPanel.querySelectorAll('[name="b-search-scope"]').forEach(input=>input.addEventListener('change',()=>{

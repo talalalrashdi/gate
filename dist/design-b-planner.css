@@ -1,5 +1,4 @@
 /* A compact daily workspace: calendar and a unified daily agenda. */
-.bn-strip { border:1px solid #efcecb; }
 #systems .bt-business { grid-template-columns:minmax(260px,360px) minmax(0,1fr); column-gap:0; row-gap:24px; align-items:stretch; }
 #systems .bt-person { grid-area:1 / 1 / 2 / -1; margin-bottom:4px; }
 #systems .bt-person-photo { flex-basis:58px; width:58px; height:62px; }

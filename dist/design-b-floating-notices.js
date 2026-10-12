@@ -58,7 +58,7 @@
   previous.addEventListener('click', () => { index--; render(); });
   next.addEventListener('click', () => { index++; render(); });
   content.addEventListener('click', () => active()[index]?.querySelector('.b-alert-open')?.click());
-  notice.querySelector('.b-floating-notice-all').addEventListener('click', () => source.querySelector('.bn-all')?.click());
+  notice.querySelector('.b-floating-notice-all').addEventListener('click', () => source.dispatchEvent(new Event('notices:show-all')));
   notice.querySelector('.b-floating-notice-close').addEventListener('click', () => {
     const card = active()[index];
     if (card) card.hidden = true;

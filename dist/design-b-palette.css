@@ -87,6 +87,7 @@ body .sc-categories button[aria-pressed="true"],body .sc-categories button[aria-
 .b-section.b-editorial { background:radial-gradient(ellipse at 85% 0%,#d3d4c021,transparent 43%),linear-gradient(145deg,#173c5d,var(--brand-primary) 65%,#102d47); }
 #media.b-editorial.ed-light { background: #f6f4ee; --text-primary: #163746; --text-secondary: #52666d; }
 #media.ed-light :is(.ed-masthead h2,.ed-block-heading h3,.ed-news-panel h3,.ed-news-panel h4,.ed-photo-heading h4) { --text-primary: #236348; color: #236348; }
+#media.ed-light .is-breaking :is(h3,h4) { --text-primary: #fff; color: #fff; }
 body #media.ed-light :is(.ed-heading-icon,.ed-title-dot) { color: #236348 !important; }
 #media.ed-light .ed-current-date { color: #163746; }
 #media.ed-light .ed-current-date small { color: #52666d; }

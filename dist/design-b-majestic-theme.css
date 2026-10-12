@@ -129,16 +129,14 @@ body[data-site-theme="majestic"] .bt-majestic-news-stage { width: min(100%, 529p
 body[data-site-theme="majestic"] .bt-news-bottom { position: relative; z-index: 3; display: flex; align-items: center; gap: 24px; margin-top: 6px; }
 body[data-site-theme="majestic"] .bt-news-bottom > .bt-majestic-news-footer { flex-shrink: 0; width: min(100%,529px); max-width: 529px; margin-top: 0; }
 body[data-site-theme="majestic"] .bt-news-bottom > .bn-root { flex: 0 1 calc(50% - 12px); min-width: 0; margin: 0; margin-inline-start: auto; }
-body[data-site-theme="majestic"] .bt-news-bottom .bn-strip { display: grid; grid-template-columns: minmax(0,1fr) 30px; gap: 4px 12px; min-height: 0; padding: 10px 14px; --text-primary: #563436; --text-secondary: #76504f; background: #fff1ef; border: 1px solid #e89a96; border-inline-start: 0; box-shadow: none; text-shadow: none; }
+body[data-site-theme="majestic"] .bt-news-bottom .bn-strip { position: relative; display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 4px 12px; min-height: 0; padding: 10px 14px; --text-primary: #563436; --text-secondary: #76504f; background: #f7f8fae6; border: 1px solid #ffffff99; border-inline-start: 0; box-shadow: none; text-shadow: none; }
 body[data-site-theme="majestic"] .bt-news-bottom .bn-identity { grid-column: 1; padding-inline-end: 0; border-inline-end: 0; --text-primary: #b02e35; }
-body[data-site-theme="majestic"] .bt-news-bottom .bn-identity strong { font-size: 17px; font-weight: 700; }
+body[data-site-theme="majestic"] .bt-news-bottom .bn-identity strong { font-size: 22px; font-weight: 700; }
 body[data-site-theme="majestic"] .bt-news-bottom .bn-bell { width: 30px; height: 30px; background: #c43a3a18; color: #b02e35 !important; }
-body[data-site-theme="majestic"] .bt-news-bottom .bn-actions { display: flex; grid-column: 2; grid-row: 1 / 3; margin: 0; }
-body[data-site-theme="majestic"] .bt-news-bottom .bn-feature { order: 0; grid-column: 1; grid-row: 2; grid-template-columns: minmax(0,1fr); padding: 0; }
-body[data-site-theme="majestic"] .bt-news-bottom :is(.bn-count,.bn-type,.bn-meta,.bn-paging,.bn-all,.bn-restore) { display: none; }
-body[data-site-theme="majestic"] .bt-news-bottom .bn-title { font-size: 13px; font-weight: 400; }
-body[data-site-theme="majestic"] .bt-news-bottom .bn-hide { border-color: #e89a96; background: #fff; }
-body[data-site-theme="majestic"] .bt-news-bottom .bn-hide:hover { background: #f9ddda; }
+body[data-site-theme="majestic"] .bt-news-bottom .bn-actions { display: flex; flex-wrap: wrap; grid-column: 2; grid-row: 1 / 3; margin: 0; align-self: start; }
+body[data-site-theme="majestic"] .bt-news-bottom .bn-identity > div { gap: 2px; }body[data-site-theme="majestic"] .bt-news-bottom .bn-feature { order: 0; grid-column: 1; grid-row: 2; grid-template-columns: minmax(0,1fr); padding: 0; }
+body[data-site-theme="majestic"] .bt-news-bottom :is(.bn-type,.bn-all,.bn-restore) { display: none; }
+body[data-site-theme="majestic"] .bt-news-bottom .bn-title { font-size: 19px; font-weight: 400; }
 @media(max-width:760px) { body[data-site-theme="majestic"] .bt-news-bottom { position: relative; z-index: 3; flex-direction: column; align-items: stretch; } body[data-site-theme="majestic"] .bt-news-bottom > :is(.bt-majestic-news-footer,.bn-root) { width: 100%; flex-basis: auto; } }
 .bt-majestic-story-label { display: block; color: #e8d6af; font-size: 12px; letter-spacing: .2px; }
 body[data-site-theme="majestic"] #intro-option-4 > #b-alerts-section { display: none !important; }
@@ -160,12 +158,16 @@ body[data-site-theme="majestic"] #intro-option-4 > #b-alerts-section { display: 
 .bt-majestic-headlines strong { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font: inherit; }
 .bt-majestic-headlines small { display: block; margin-top: 3.45px; font-size: 11.5px; font-weight: 400; opacity: .8; }
 .bt-majestic-headlines li:not(.has-photo) button { --text-primary: #18313e; --text-secondary: #18313e; color: #18313e; background: rgb(250 253 252 / 55%); text-shadow: none; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+.bt-majestic-headlines li.is-breaking button { --text-primary: #fff; --text-secondary: #fff; border: 1px solid #8f3f46; background: #8f3f46; color: #fff; text-shadow: none; }
+.bt-majestic-headlines li.is-breaking small { width: fit-content; padding: 4px 8px; border-radius: 6px; background: #ffffff20; --text-secondary: #fff; opacity: 1; }
+.bt-majestic-headlines li.is-breaking p { display: none; }
+.bt-majestic-headlines li.is-breaking.is-featured p { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; margin: 6px 0 0; font-size: 13px; font-weight: 400; line-height: 1.7; }
 .bt-majestic-headlines .has-photo span { padding-right: 87.4px; }
 .bt-majestic-headlines .is-featured button { height: 200px; border-radius: 18.4px; box-shadow: 0 6px 20px #00000026; }
 .bt-majestic-headlines .is-featured img { top: 0; width: 100%; height: 200px; border-radius: inherit; }
 .bt-majestic-headlines .is-featured span { justify-content: flex-end; padding: 48px 12px 10px; font-size: 23px; font-weight: 700; line-height: 1.6; }
 .bt-majestic-headlines .is-featured.has-photo span::before { content: ''; position: absolute; inset: 45% 0 0; border-radius: 0 0 18.4px 18.4px; pointer-events: none; background: linear-gradient(transparent, #ffffff0c 35%, #10212db3); backdrop-filter: blur(8px) saturate(110%); -webkit-backdrop-filter: blur(8px) saturate(110%); mask-image: linear-gradient(transparent, #000 55%); -webkit-mask-image: linear-gradient(transparent, #000 55%); }
-.bt-majestic-headlines .is-featured.has-photo span > :is(strong,small) { position: relative; z-index: 1; }
+.bt-majestic-headlines .is-featured.has-photo span > :is(strong,small,p) { position: relative; z-index: 1; }
 .bt-majestic-headlines .is-featured:not(.has-photo) button { height: 170px; }
 .bt-majestic-headlines .is-featured:not(.has-photo) span { justify-content: center; padding: 12px; background: none; }
 .bt-majestic-headlines .is-featured:not(.has-photo) strong { -webkit-line-clamp: 4; }

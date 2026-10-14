@@ -1,18 +1,16 @@
 (() => {
   const section = document.getElementById('digital-library');
   if (!section) return;
-  const names = {rules:'قوانين المؤسسة',guides:'كتيبات',social:'قانون الحماية الاجتماعية',pdf:'ملفات PDF متنوعة'};
+  const names = {rules:'قوانين المؤسسة',guides:'كتيبات',social:'قوانين الحماية الاجتماعية'};
   const documents = [
     {category:'rules',title:'قوانين المؤسسة',description:'المرجع الرئيسي للأنظمة والقواعد المنظمة للعمل داخل المؤسسة.'},
     {category:'rules',title:'سياسات وإجراءات العمل',description:'السياسات الداخلية وإجراءات العمل التي يحتاجها الموظف.'},
     {category:'guides',title:'كتيب الموظف',description:'دليل التعريف بالخدمات والقنوات التي تساعدك في يوم العمل.'},
     {category:'guides',title:'كتيب السلامة والإخلاء',description:'مرجع للاطلاع على تعليمات السلامة وخطة الإخلاء المعتمدة.'},
     {category:'social',title:'قانون الحماية الاجتماعية',description:'مكان مخصص للاطلاع على النسخة الرسمية المعتمدة من القانون.'},
-    {category:'social',title:'دليل الحماية الاجتماعية',description:'مكان مخصص للأدلة التوضيحية والأسئلة الشائعة المرتبطة بالقانون.'},
-    {category:'pdf',title:'تقارير وملفات مرجعية',description:'تقارير ووثائق عامة متاحة للرجوع إليها.'}
+    {category:'social',title:'دليل الحماية الاجتماعية',description:'مكان مخصص للأدلة التوضيحية والأسئلة الشائعة المرتبطة بالقانون.'}
   ];
   let category = 'rules';
-  const search = section.querySelector('#dl-search');
   const results = section.querySelector('#dl-results');
   const dialog = section.querySelector('#dl-dialog');
   const body = section.querySelector('#dl-dialog-body');
@@ -30,14 +28,13 @@
       body.append(link,frame);
     } else {
       const note = document.createElement('p');
-      note.textContent = 'لم يُرفق ملف لهذه الوثيقة بعد. يمكنك إضافة النسخة المعتمدة من زر «إضافة ملف PDF» ضمن هذا التصنيف.';
+      note.textContent = 'لم يُرفق ملف PDF لهذه الوثيقة بعد. ستظهر النسخة المعتمدة هنا عند إرفاقها.';
       body.append(note);
     }
     dialog.showModal();
   }
   function render() {
-    const query = normalize(search.value.trim());
-    const filtered = documents.filter(doc => doc.category === category && normalize(doc.title+' '+doc.description).includes(query));
+    const filtered = documents.filter(doc => doc.category === category);
     section.querySelector('#dl-count').textContent = 'عدد الوثائق: '+filtered.length.toLocaleString('ar-OM-u-nu-latn');
     results.replaceChildren();
     for (const doc of filtered) {
@@ -51,21 +48,13 @@
       const button = document.createElement('button'); button.type = 'button'; button.textContent = doc.url ? 'استعراض الملف ↗' : 'تفاصيل الوثيقة ←'; button.setAttribute('aria-label',(doc.url?'استعراض ':'تفاصيل ')+doc.title); button.addEventListener('click',()=>openDocument(doc));
       row.append(icon,content,button); results.append(row);
     }
-    if (!filtered.length) { const empty = document.createElement('p'); empty.className='dl-empty'; empty.textContent='لا توجد وثائق مطابقة. جرّب كلمة أخرى أو أضف ملفًا لهذا التصنيف.'; results.append(empty); }
+    if (!filtered.length) { const empty = document.createElement('p'); empty.className='dl-empty'; empty.textContent='لا توجد ملفات في هذا التصنيف حاليًا.'; results.append(empty); }
   }
   section.querySelectorAll('[data-dl-category]').forEach(button => button.addEventListener('click',()=>{
     category = button.dataset.dlCategory;
     section.querySelectorAll('[data-dl-category]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));
-    section.querySelector('#dl-current-title').textContent = names[category]; search.value=''; render();
+    section.querySelector('#dl-current-title').textContent = names[category]; render();
   }));
-  search.addEventListener('input',render);
-  section.querySelector('#dl-upload').addEventListener('change',event=>{
-    for (const file of event.target.files) {
-      if (!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf') continue;
-      documents.unshift({category,title:file.name.replace(/\.pdf$/i,''),description:'وثيقة أُضيفت للاستعراض ضمن '+names[category]+'.',url:URL.createObjectURL(file),size:(file.size/1048576).toLocaleString('ar-OM-u-nu-latn',{maximumFractionDigits:1})+' م.ب'});
-    }
-    search.value=''; event.target.value=''; render();
-  });
   section.querySelector('#dl-close').addEventListener('click',()=>dialog.close());
   dialog.addEventListener('close',()=>body.replaceChildren());
   window.addEventListener('pagehide',()=>documents.forEach(doc=>{if(doc.url)URL.revokeObjectURL(doc.url);}));

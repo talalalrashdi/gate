@@ -22,7 +22,7 @@ body.b-dashboard .b-header.is-pinned :is(.b-nav a,.b-media-subnav-links a,.b-med
   --text-primary: #000;
   --text-secondary: #000;
 }
-body.b-dashboard .b-header.is-pinned .b-brand img { filter: brightness(0); }
+body.b-dashboard .b-header.is-pinned .b-brand:not(.is-emblem) img { filter: brightness(0); }
 body.b-dashboard .b-header.is-pinned .b-nav a:is(:hover,:focus-visible) { color: #000 !important; }
 body.b-dashboard .b-header.is-pinned .b-user { background: transparent; border-color: transparent; }
 body.b-dashboard .b-header.is-pinned :is(.b-theme-trigger,.b-notifications-trigger,.b-alert-visibility) { background: #ffffff80; border-color: #00000012; }

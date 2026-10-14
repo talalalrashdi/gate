@@ -11,7 +11,7 @@
   }
   const sectionNav=document.querySelector('.b-media-subnav'),navTrack=sectionNav.querySelector('.b-media-subnav-links');
   const editorialMotion=matchMedia('(prefers-reduced-motion: reduce)');
-  const navItems=[...sectionNav.querySelectorAll('a[href^="#"]')].map(link=>({link,target:document.querySelector(link.getAttribute('href'))})).filter(item=>item.target);
+  const navItems=[...sectionNav.querySelectorAll('a[href^="#"]')].map(link=>({link,target:document.querySelector(link.getAttribute('href'))})).filter(item=>item.target).sort((a,b)=>a.target.compareDocumentPosition(b.target)&Node.DOCUMENT_POSITION_FOLLOWING?-1:1);
   let activeNavLink=null,navFrame=false;
   function markNav(link){
     if(activeNavLink===link)return;activeNavLink=link;
@@ -20,24 +20,26 @@
   }
   function updateDock(){
     navFrame=false;
-    // Read geometry together before changing styles to avoid repeated layout work.
-    const bounds=root.getBoundingClientRect(),anchor=Math.max(sectionNav.getBoundingClientRect().bottom+24,window.innerHeight*.28);
-    const inSection=bounds.top<=anchor&&bounds.bottom>anchor;
-    let nextLink=null;
-    if(inSection){
-      const positions=navItems.map(item=>({item,rect:item.target.getBoundingClientRect()}));
-      const visible=positions.filter(({rect})=>rect.top<=anchor&&rect.bottom>anchor);
-      const candidate=visible.find(({item})=>item.link===activeNavLink)||visible[0];
-      nextLink=(candidate?.item||positions.filter(({rect})=>rect.top<=anchor).at(-1)?.item||navItems[0])?.link;
-    }
+    // Sections such as the magazine and references now sit outside the editorial root.
+    const bounds=root.getBoundingClientRect();
+    const offset=Math.max(0,sectionNav.getBoundingClientRect().bottom)+16;
+    const anchor=Math.min(window.innerHeight-1,offset+1);
+    const positions=navItems.map(item=>({item,rect:item.target.getBoundingClientRect()})).filter(({rect})=>rect.height>0);
+    let nextLink=positions.filter(({rect})=>rect.top<=anchor).at(-1)?.item.link||null;
+    const maxScroll=Math.max(0,document.documentElement.scrollHeight-window.innerHeight);
+    if(maxScroll>0&&window.scrollY>=maxScroll-2&&positions.at(-1)?.rect.top<window.innerHeight)nextLink=positions.at(-1).item.link;
+    const value=offset+'px';
+    if(document.documentElement.style.getPropertyValue('--b-section-anchor-offset')!==value)document.documentElement.style.setProperty('--b-section-anchor-offset',value);
     if(bounds.top<window.innerHeight*.85)root.classList.add('ed-has-entered');
     markNav(nextLink);
   }
   function scheduleDock(){if(!navFrame){navFrame=true;requestAnimationFrame(updateDock);}}
-  navItems.forEach(item=>item.link.addEventListener('click',()=>markNav(item.link)));
+  navItems.forEach(item=>item.link.addEventListener('click',()=>{ updateDock(); markNav(item.link); }));
   window.addEventListener('scroll',scheduleDock,{passive:true});window.addEventListener('resize',scheduleDock,{passive:true});
-  document.addEventListener('visibilitychange',scheduleDock);editorialMotion.addEventListener('change',scheduleDock);
-  new ResizeObserver(scheduleDock).observe(root);updateDock();
+  document.addEventListener('visibilitychange',scheduleDock);document.addEventListener('clerio:theme-change',scheduleDock);editorialMotion.addEventListener('change',scheduleDock);
+  const sectionObserver=new ResizeObserver(scheduleDock);
+  new Set([root,document.querySelector('.b-header'),...navItems.map(item=>item.target)]).forEach(node=>{if(node)sectionObserver.observe(node);});
+  updateDock();
   const articles={
     'tech-lab':{title:'مساحة جديدة لتجربة الأفكار',paragraphs:['خبر تجريبي: تصوّر لمختبر رقمي يتيح للفرق تحويل الأفكار الصغيرة إلى نماذج أولية، ومناقشتها قبل بدء التنفيذ.','تركّز التجربة على اختيار مشكلة واحدة، ورسم مسار مبسّط لحلها، ثم مشاركة النموذج مع المستخدمين وتوثيق ملاحظاتهم.','هذا نموذج تحريري لتصنيف التقنية، وليس إعلانًا عن مبادرة قائمة في المؤسسة.']},
     'tech-dashboard':{title:'المعلومة أوضح، والصورة أشمل',paragraphs:['خبر تجريبي: تصور للوحة مؤشرات موحدة تعرض تقدم الأعمال والنتائج في مساحة واحدة، مع إمكانية الانتقال من الملخص إلى التفاصيل.','تجمع الفكرة بين وضوح الأرقام وتاريخ تحديثها وتعريف كل مؤشر، ليصبح استعراض المعلومات أسرع وأكثر قابلية للفهم.','المحتوى توضيحي لتجربة الواجهة؛ لا يعرض بيانات فعلية أو إعلانًا عن نظام مطبّق.']},

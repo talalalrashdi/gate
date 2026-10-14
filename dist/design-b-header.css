@@ -214,5 +214,6 @@ button:focus-visible,a:focus-visible { outline: 2px solid #ad614d; outline-offse
 .b-media-subnav-links small { font-size:8px; }
 body .b-media-new { padding:2px 5px; border-radius:4px; background:#fff0ec; color:#a14339!important; font-size:8px; }
 .b-editorial :is(.ed-block,.ed-magazine) { scroll-margin-top:160px; }
+#ed-news,#ed-events,#ed-magazine,#safety,#digital-library { scroll-margin-top:var(--b-section-anchor-offset,160px); }
 @media(max-width:1050px) { .b-media-subnav { gap:12px; padding-inline:18px; }.b-media-subnav-label { display:none; } }
 @media(max-width:760px) { .b-media-subnav { justify-content:flex-start; padding-inline:12px; }.b-media-subnav-links { width:100%; }.b-media-subnav-links:has(> .b-media-subnav-label) { justify-content:flex-start; }.b-media-subnav-links :is(a,button) { padding-inline:12px; font-size:11px; } }

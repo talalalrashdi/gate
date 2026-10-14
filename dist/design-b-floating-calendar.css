@@ -1,6 +1,8 @@
 /* Reuse the personal planner inside a compact floating card. */
 #systems .b-floating-calendar { position: fixed; inset: auto auto 24px 24px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; z-index: 45; width: 260px; max-height: calc(100dvh - 32px); --text-primary: var(--brand-primary); --text-secondary: #526170; }
 #systems .b-floating-calendar-card { width: 100%; padding: 14px; border: 1px solid #dce5e3; border-radius: 21px; background: #fffffff5; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 4px 16px #172d2310; }
+body[data-site-theme="formal"] #systems .b-floating-calendar { width: min(260px,calc(100vw - 24px)); }
+body[data-site-theme="formal"] #systems .b-floating-calendar-card { display: none; }
 body:has(.b-header.is-searching) #systems .b-floating-calendar { visibility: hidden; }
 #systems .b-floating-alert { --text-primary: #fff; --text-secondary: #fff; padding: 16px; margin-bottom: 10px; border: 1px solid #8f3f46; border-radius: 20px; background: #8f3f46; }
 #systems .b-floating-alert > strong { --text-primary: #8f3f46; display: inline-block; padding: 4px 10px; border-radius: 8px; background: #fff0f1; font-size: 16px; }

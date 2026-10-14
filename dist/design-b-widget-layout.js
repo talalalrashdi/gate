@@ -26,6 +26,17 @@
   function update() {
     grid.querySelectorAll('.b-work-card').forEach(card => {
       const heading = card.querySelector('.b-work-heading');
+      const notificationBadge = heading?.querySelector('[data-work-notification-count]');
+      if (notificationBadge) {
+        const forms = card.dataset.workSystem === 'requests';
+        const count = forms
+          ? Number(card.querySelector('.b-request-summary > div:first-child b')?.textContent.trim()) || 0
+          : card.querySelectorAll('.b-inbox-message:is([data-state="new"],[data-state="unread"]),.b-email-item:is([data-state="new"],[data-state="unread"])').length;
+        const value = String(count);
+        if (notificationBadge.textContent !== value) notificationBadge.textContent = value;
+        const label = value + (forms ? ' استمارات قيد المراجعة' : ' رسائل جديدة أو غير مقروءة');
+        if (notificationBadge.getAttribute('aria-label') !== label) notificationBadge.setAttribute('aria-label', label);
+      }
       const footer = card.querySelector(':scope > .b-work-footer');
       const open = footer?.querySelector('button');
       if (heading && open) {
@@ -78,7 +89,7 @@
     });
   }
   function schedule() { cancelAnimationFrame(frame); frame = requestAnimationFrame(update); }
-  new MutationObserver(schedule).observe(grid, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden'] });
+  new MutationObserver(schedule).observe(grid, { childList: true, subtree: true, attributes: true, characterData: true, attributeFilter: ['hidden', 'data-state'] });
   window.addEventListener('resize', () => {
     grid.querySelectorAll('[data-widget-preview]').forEach(list => { list.style.minHeight = ''; });
     schedule();

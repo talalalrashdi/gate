@@ -17,10 +17,13 @@
   const sharedPlanner = sharedCalendar?.closest('.bt-planner');
   const plannerHome = sharedPlanner?.parentElement;
   const plannerNext = sharedPlanner?.nextSibling;
+  const taskAddButton = byId('bt-task-add-toggle');
+  const taskAddHome = taskAddButton?.parentElement;
   const sharedComposer = byId('bt-task-composer');
   const composerHome = sharedComposer?.parentElement;
   const composerNext = sharedComposer?.nextSibling;
   const majesticCalendar = byId('bt-majestic-calendar');
+  const formalCalendar = byId('bt-formal-calendar');
   const sharedNews = section.querySelector('.bt-majestic-news');
   const floatingCalendar = byId('b-floating-calendar');
   const floatingBody = byId('b-floating-calendar-body');
@@ -106,7 +109,10 @@
       else alertsHome.insertBefore(alertsSection, alertsNext);
     }
     if (sharedPlanner && plannerHome && majesticCalendar) {
-      if (floatingBody) {
+      if (option === '3' && formalCalendar) {
+        formalCalendar.append(sharedPlanner);
+        if (sharedComposer) formalCalendar.append(sharedComposer);
+      } else if (floatingBody) {
         floatingBody.append(sharedPlanner);
         if (sharedComposer) floatingCalendar.append(sharedComposer);
       } else if (option === '4') {
@@ -117,6 +123,12 @@
         if (sharedComposer && composerHome) composerHome.insertBefore(sharedComposer, composerNext);
       }
     }
+    if (taskAddButton && taskAddHome) {
+      if (option === '3') sharedPlanner.querySelector('.bt-planner-head').append(taskAddButton);
+      else taskAddHome.append(taskAddButton);
+    }
+    if (byId('bt-calendar-title')) byId('bt-calendar-title').textContent = option === '3' ? 'برنامج اليوم' : 'تقويم الأعمال';
+    floatingCalendar?.showPopover?.();
     section.setAttribute('aria-labelledby', selected.labelledBy);
     byId('bt-theme-name').textContent = selected.label;
     save('clerio-opening-theme', option);
@@ -356,6 +368,7 @@
       const message = document.createElement('p'); message.textContent = 'لا توجد مهام مسجلة لهذا اليوم';
       empty.append(message); timeline.append(empty);
     }
+    const formal = document.body.dataset.siteTheme === 'formal';
     daily.forEach(task => {
       const row = document.createElement('div'); row.className = 'bt-task-row'; row.dataset.type = task.type;
       const time = document.createElement('time'); time.className = 'bt-task-hour'; time.textContent = task.time || 'مرن'; if (task.time) time.dateTime = `${task.date}T${task.time}`;
@@ -363,7 +376,20 @@
       const copy = document.createElement('button'); copy.type = 'button'; copy.className = 'bt-task-copy'; copy.setAttribute('aria-label', `تعديل ${task.title}`);
       const title = document.createElement('strong'); title.className = 'bt-task-title'; title.append(taskIcon(task.type), document.createTextNode(task.title)); const status = document.createElement('small');
       const updateStatus = () => { status.textContent = `${types[task.type]}${task.demo ? ' · نموذج' : ''}${task.done ? ' · مكتملة' : ''}`; };
-      updateStatus(); copy.append(title, status); copy.addEventListener('click', () => openComposer(task.type, task));
+      const toggleOnClick = formal && task.type !== 'note' && task.type !== 'event';
+      const syncCompletion = () => {
+        row.classList.toggle('is-done', Boolean(task.done));
+        if (toggleOnClick) {
+          copy.setAttribute('aria-pressed', String(Boolean(task.done)));
+          copy.setAttribute('aria-label', (task.done ? 'إلغاء إتمام ' : 'إتمام ') + task.title);
+        }
+        updateStatus();
+      };
+      syncCompletion(); copy.append(title, status);
+      copy.addEventListener('click', () => {
+        if (!toggleOnClick) { openComposer(task.type, task); return; }
+        task.done = !task.done; syncCompletion(); persistTasks('تم تحديث حالة العمل.'); counts(); draw();
+      });
       check.addEventListener('change', () => { task.done = check.checked; updateStatus(); persistTasks('تم تحديث حالة العمل.'); counts(); draw(); });
       const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'bt-task-remove'; remove.append(taskIcon('trash')); remove.setAttribute('aria-label', `حذف ${task.title}`); remove.title = `حذف ${task.title}`;
       remove.addEventListener('click', () => { tasks = tasks.filter(item => item !== task); persistTasks('تم حذف العمل.'); renderTasks(); counts(); draw(); byId('bt-task-add-toggle').focus({ preventScroll: true }); });
@@ -372,6 +398,12 @@
         const body = document.createElement('span'); body.className = 'bt-note-preview'; body.textContent = task.body || '';
         copy.replaceChildren(label, title, body);
         row.append(copy, remove);
+      } else if (formal) {
+        const actions = document.createElement('div'); actions.className = 'bt-task-actions';
+        const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'bt-task-edit'; edit.setAttribute('aria-label', 'تعديل ' + task.title); edit.title = 'تعديل المهمة';
+        edit.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 5 5 5M4 20l4-1 12-12a3.5 3.5 0 0 0-5-5L3 14l-1 5Z"/></svg>';
+        edit.addEventListener('click', () => openComposer(task.type, task));
+        actions.append(edit, remove); row.append(time, copy, actions);
       } else row.append(time, check, copy, remove);
       timeline.append(row);
     });

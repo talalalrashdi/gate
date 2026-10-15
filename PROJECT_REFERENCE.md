@@ -30,10 +30,10 @@
 
 - الخادم المحلي: `http://127.0.0.1:5173`.
 - التصميم الجاري تطويره: `http://127.0.0.1:5173/design-b.html`.
-- `dist/index.html`: تصميم سابق.
-- `dist/design-c.html`: نسخة تصميم بديلة.
+- `dist/index.html`: يحوّل مباشرة إلى `design-b.html`؛ أُزيل التصميم السابق بطلب المستخدم.
+- حُذف التصميم ج وصفحته وتنسيقه وصورة معاينته وأصوله الحصرية بطلب المستخدم؛ التصميم ب هو التصميم الوحيد المتبقي.
 - `dist/user-profile.html`: صفحة المستخدم.
-- بعض الملفات مشتركة بين التصميمين ب وج؛ انتبه إلى أثر تعديلها ولا تفترض تطابق الهيكل.
+- صفحة المستخدم تشترك مع التصميم ب في بعض التنسيقات؛ حافظ على هذا الاعتماد عند التعديل. لا تُعد التصميم ج أو ملفاته المحذوفة.
 
 ## 3. الهيدر والتنقل
 
@@ -206,8 +206,7 @@
 | `dist/design-b-section-nav.js` و`dist/design-b-section-nav.css` | التنقل بين الأقسام |
 | `dist/design-b-themes.css` و`dist/design-b-palette.css` | الثيمات والألوان |
 | `dist/design-b-typography.css` | ملف تنسيقات خطية؛ تحقّق من تحميله قبل الاعتماد عليه |
-| `dist/design-c.html` و`dist/design-c-theme.css` | التصميم البديل ج |
-| `dist/index.html` و`dist/styles.css` و`dist/app.js` | التصميم السابق |
+| `dist/index.html` | تحويل تلقائي إلى `design-b.html`؛ حُذفت ملفات التصميم السابق `styles.css` و`app.js` وصورته الخاصة `glass-wheel.png` بطلب المستخدم |
 | `dist/user-profile.html` | صفحة المستخدم |
 | `dist/assets` | الصور والرسوم والخطوط |
 | `tools/layout-review.html` | أداة مراجعة أحجام العرض، متاحة عبر `/__review` مع Vite |

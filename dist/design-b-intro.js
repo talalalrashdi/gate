@@ -88,8 +88,13 @@
     4: { theme: 'majestic', panel: 'intro-option-4', label: 'الشامخة', labelledBy: 'bt-calendar-title' },
     5: { theme: 'news', panel: 'intro-option-5', label: 'النشرة', labelledBy: 'bn-news-title' }
   };
+  // Only offer themes whose panel and selector still exist on this page.
+  Object.keys(themes).forEach(option => {
+    if (!byId(themes[option].panel) || !themeButtons.some(button => button.dataset.introOption === option)) delete themes[option];
+  });
+  const defaultTheme = Object.hasOwn(themes, '1') ? '1' : '2';
   function selectTheme(option) {
-    option = Object.hasOwn(themes, option) && byId(themes[option].panel) ? option : '1';
+    option = Object.hasOwn(themes, option) && byId(themes[option].panel) ? option : defaultTheme;
     const selected = themes[option];
     section.dataset.theme = selected.theme;
     document.body.dataset.siteTheme = selected.theme;
@@ -169,7 +174,7 @@
     });
   }
   showMajesticScene(0);
-  selectTheme(read('clerio-opening-theme', '1'));
+  selectTheme(read('clerio-opening-theme', defaultTheme));
   const today = new Date();
   const dateKey = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   const todayKey = dateKey(today);

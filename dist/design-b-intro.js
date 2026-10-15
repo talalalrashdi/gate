@@ -83,7 +83,7 @@
   let sceneIndex = 0, sceneTimer, playbackPaused = reducedMotion.matches;
   const themes = {
     1: { theme: 'business', panel: 'intro-option-1', label: 'الأعمال', labelledBy: 'workspace-title' },
-    2: { theme: 'official', panel: 'intro-option-2', label: 'الوطنية', labelledBy: 'bt-official-title' },
+    2: { theme: 'official', panel: 'intro-option-2', label: byId('intro-option-2')?.classList.contains('bt-national-day') ? 'المناسبات الرسمية' : 'الوطنية', labelledBy: 'bt-official-title' },
     3: { theme: 'formal', panel: 'intro-option-3', label: 'الرسمية', labelledBy: 'bt-formal-title' },
     4: { theme: 'majestic', panel: 'intro-option-4', label: 'الشامخة', labelledBy: 'bt-calendar-title' },
     5: { theme: 'news', panel: 'intro-option-5', label: 'النشرة', labelledBy: 'bn-news-title' }
@@ -206,11 +206,18 @@
   if (!validDate(demoDate)) { demoDate = todayKey; save('clerio-business-demo-date', demoDate); }
   const offsetDate = offset => { const date = new Date(demoDate + 'T12:00:00'); date.setDate(date.getDate() + offset); return dateKey(date); };
   const occasions = [
+    ...(floatingCalendar ? [{ date: '2026-10-15', title: 'اليوم الوطني العماني', symbol: '✦', official: true, detail: 'مضافة إلى التقويم بتاريخ 15 أكتوبر 2026.' }] : []),
     ...(floatingCalendar ? [{ date: '2026-10-08', title: 'اليوم الوطني العماني', symbol: '✦', detail: 'حدث تجريبي لليوم، وليس تاريخ المناسبة الرسمي.' }] : []),
     { date: demoDate, title: 'يوم القلب', symbol: '♡', detail: 'تذكير بالعناية بصحتك خلال يوم العمل.' },
     { date: offsetDate(3), title: 'يوم مشاركة المعرفة', symbol: '✦', detail: 'فكرة أو تجربة تستحق المشاركة مع الفريق.' },
     { date: offsetDate(7), title: 'مبادرة تطوعية', symbol: '◇', detail: 'مساحة للمشاركة وصناعة أثر إيجابي.' }
   ];
+  if (floatingCalendar && !read('clerio-national-day-2026-10-15-added', false)) {
+    if (!tasks.some(task => task.date === '2026-10-15' && task.title === 'اليوم الوطني العماني' && task.type === 'event')) {
+      tasks.push({ id: 'national-day-2026-10-15', date: '2026-10-15', title: 'اليوم الوطني العماني', type: 'event', time: '', body: 'مناسبة رسمية', done: false, demo: false });
+    }
+    if (save('clerio-personal-tasks', tasks)) save('clerio-national-day-2026-10-15-added', true);
+  }
   if (floatingCalendar && !read('clerio-floating-calendar-examples-v1', false)) {
     const examples = [
       { id: 'floating-national-day-demo', title: 'اليوم الوطني العماني', type: 'event', time: '', body: 'حدث تجريبي لليوم، وليس تاريخ المناسبة الرسمي.' },
@@ -322,7 +329,7 @@
       const date = dateKey(new Date(month.getFullYear(), month.getMonth(), day));
       const daily = tasks.filter(task => task.date === date), occasion = occasions.find(item => item.date === date);
       const button = document.createElement('button'); button.type = 'button'; button.textContent = number(day); button.dataset.date = date;
-      const label = dateLabel(date) + (daily.length ? `، ${number(daily.length)} عناصر في جدول اليوم` : '') + (occasion ? `، ${occasion.title} — مناسبة توضيحية` : '');
+      const label = dateLabel(date) + (daily.length ? `، ${number(daily.length)} عناصر في جدول اليوم` : '') + (occasion ? `، ${occasion.title} — ${occasion.official ? 'مناسبة رسمية' : 'مناسبة توضيحية'}` : '');
       button.setAttribute('aria-label', label); button.title = label; button.setAttribute('aria-pressed', String(selected === date));
       if (date === todayKey) button.setAttribute('aria-current', 'date');
       button.classList.toggle('has-tasks', daily.some(task => task.type !== 'event')); button.classList.toggle('has-occasion', Boolean(occasion) || daily.some(task => task.type === 'event'));
@@ -337,7 +344,7 @@
     const symbol = document.createElement('span'); symbol.className = 'bt-occasion-symbol'; symbol.setAttribute('aria-hidden', 'true'); symbol.textContent = occasion.symbol;
     const copy = document.createElement('div'), title = document.createElement('strong'), detail = document.createElement('small');
     title.textContent = occasion.title;
-    detail.textContent = `مناسبة توضيحية · ${occasion.detail}`;
+    detail.textContent = `${occasion.official ? 'مناسبة رسمية' : 'مناسبة توضيحية'} · ${occasion.detail}`;
     copy.append(title, detail); box.append(symbol, copy);
   }
   function updateComposerType() {

@@ -147,7 +147,7 @@ body { overflow-x: clip; }
 .b-dashboard .b-work-heading { position: relative; align-items: center; gap: 8px; margin-bottom: 16px; padding: 0 0 12px; border-bottom: 1px solid var(--brand-line); }
 .b-dashboard .b-work-heading > div:not(.b-work-icon):not(.sc-work-label) { flex: 1; min-width: 0; }
 .b-dashboard .b-work-heading .b-work-title-row { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.b-dashboard .b-work-notification-badge { --text-primary: #fff; --text-secondary: #fff; position: absolute; top: calc(50% - 6px); right: -16px; left: auto; transform: translateY(-50%); z-index: 1; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; min-width: 34px; min-height: 24px; box-sizing: border-box; padding: 4px 10px; border: 2px solid #fff; border-radius: 999px; background: #e14c52; color: #fff !important; font-size: 12px; font-weight: 800; line-height: 1; box-shadow: inset 0 1px 0 #ffffff26; }
+.b-dashboard .b-work-notification-badge { --text-primary: #fff; --text-secondary: #fff; position: absolute; top: calc(50% - 9px); right: -16px; left: auto; transform: translateY(-50%); z-index: 1; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; min-width: 34px; min-height: 24px; box-sizing: border-box; padding: 4px 10px; border: 2px solid #fff; border-radius: 999px; background: #e14c52; color: #fff !important; font-size: 12px; font-weight: 800; line-height: 1; box-shadow: inset 0 1px 0 #ffffff26; }
 .b-dashboard .b-work-heading h2 { font-size: 21px; line-height: 1.45; letter-spacing: 0; overflow-wrap: anywhere; }
 .b-dashboard .b-work-card { font-size: 15px; line-height: 1.7; overflow-wrap: anywhere; }
 .b-dashboard .b-work-card :is(h3, .b-doc-copy b, .b-email-item strong, .b-group-system-list li > span) { font-size: 15px; line-height: 1.7; }
@@ -158,12 +158,21 @@ body { overflow-x: clip; }
 .b-dashboard .b-work-card:has(.b-widget-pages) > .b-work-footer { margin-top: 8px; padding-top: 0; }
 .b-dashboard .b-workspace-card-actions :is(.sc-pin, .b-workspace-grip, .b-workspace-conceal, .b-group-edit) { width: 40px; height: 40px; }
 .b-dashboard .b-work-card :is(.b-work-footer button, .sc-details, .b-group-system-list button, .b-doc-categories button) { min-height: 40px; }
-.b-dashboard .b-work-card :is(.b-doc-copy, .b-inbox-surface) { flex-wrap: wrap; }
+.b-dashboard .b-work-card .b-doc-copy { flex-wrap: wrap; }
 .b-dashboard .b-work-inbox .b-inbox-list { flex: 1; max-height: none; grid-auto-rows: minmax(min-content,1fr); align-content: stretch; }
-.b-dashboard .b-work-inbox .b-inbox-surface { align-self: stretch; background: transparent; }
-.b-dashboard .b-work-inbox .b-inbox-message[data-state="new"] .b-inbox-surface { background: #edf5f7; }
-.b-dashboard .b-inbox-copy { flex-basis: calc(100% - 42px); }
-.b-dashboard .b-inbox-meta { flex-basis: 100%; flex-direction: row; justify-content: flex-end; }
+.b-dashboard .b-work-inbox .b-inbox-surface { display: grid; grid-template-columns: 33px minmax(0, 1fr) auto; align-content: center; align-items: start; align-self: stretch; row-gap: 0; border: 1px solid #dbe3e7; background: transparent; }
+.b-dashboard .b-inbox-surface > .b-sender-avatar { grid-column: 1; grid-row: 2; align-self: center; }
+.b-dashboard .b-inbox-copy h3 { grid-column: 1 / 3; grid-row: 1; -webkit-line-clamp: unset; }
+.b-dashboard .b-inbox-copy p { grid-column: 2 / 4; grid-row: 2; align-self: center; }
+.b-dashboard .b-work-inbox .b-inbox-message[data-state="new"] .b-inbox-surface { border-color: transparent; background: #edf5f7; }
+.b-dashboard .b-inbox-copy { display: contents; }
+.b-dashboard .b-inbox-meta { grid-column: 3; grid-row: 1; flex-direction: row; align-items: center; justify-content: flex-end; }
+@media(max-width:760px) {
+  .b-dashboard .b-work-inbox .b-inbox-surface { grid-template-columns: minmax(0, 1fr) auto; }
+  .b-dashboard .b-inbox-copy h3 { grid-column: 1; }
+  .b-dashboard .b-inbox-copy p { grid-column: 1 / -1; }
+  .b-dashboard .b-inbox-meta { grid-column: 2; }
+}
 .b-dashboard .b-work-library .b-work-docs { gap: 0; margin-top: 8px; max-height: 340px; overflow-y: auto; scrollbar-width: thin; }
 .b-dashboard .b-work-library .b-work-docs button { min-height: 58px; border-radius: 0; border-bottom: 1px solid #dbe3e780; }
 .b-dashboard .b-work-library .b-doc-surface { position: relative; gap: 8px; padding: 8px 0; border-radius: 0; background: transparent; }

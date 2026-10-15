@@ -3,7 +3,8 @@
   if (!status) return;
   const user = status.closest('.b-user');
   const alerts = user?.querySelector('.b-alert-visibility');
-  if (user) user.insertBefore(status, alerts || user.firstChild);
+  const themes = user?.querySelector('.b-theme-menu');
+  if (user) user.insertBefore(status, themes || alerts || user.firstChild);
   const menu = status.querySelector('.b-org-status-menu');
   const states = {
     yellow: { title: 'تنبيه احترازي', color: 'أصفر', summary: 'توجد حالة تستدعي الانتباه والاستعداد، مع استمرار العمل وفق الإجراءات المعتادة ما لم يصدر تحديث رسمي.', actions: ['تابع قنوات المؤسسة الرسمية باستمرار.', 'تأكد من جاهزية وسائل التواصل وبيانات الاتصال.', 'راجع تعليمات السلامة الخاصة بموقعك.'] },

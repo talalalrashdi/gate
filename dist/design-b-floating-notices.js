@@ -40,7 +40,7 @@
   function render() {
     const remaining = active();
     index = Math.max(0,Math.min(index, Math.max(0, remaining.length - 1)));
-    notice.hidden = !remaining.length;
+    notice.hidden = !remaining.length || document.getElementById('b-notices-visibility')?.getAttribute('aria-expanded') === 'false';
     if (!remaining.length) { resetTimer(); return; }
     const card = remaining[index];
     const title = card.querySelector('h3').textContent;
@@ -67,5 +67,17 @@
   });
   const observer = new MutationObserver(render);
   cards.forEach(card => observer.observe(card, { attributes: true, attributeFilter: ['hidden'] }));
+  const visibilityToggle = document.getElementById('b-notices-visibility');
+  visibilityToggle?.addEventListener('click', () => {
+    const visible = visibilityToggle.getAttribute('aria-expanded') !== 'true';
+    visibilityToggle.setAttribute('aria-expanded', String(visible));
+    const label = visible ? 'إخفاء التنويه والتنبيهات التي تهمك' : 'إظهار التنويه والتنبيهات التي تهمك';
+    visibilityToggle.setAttribute('aria-label', label);
+    visibilityToggle.title = label;
+    // The upper cards only supply content to the floating notices.
+    source.hidden = true;
+    document.getElementById('b-floating-alert')?.toggleAttribute('hidden', !visible);
+    render();
+  });
   render();
 })();

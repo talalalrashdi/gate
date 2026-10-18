@@ -1,0 +1,54 @@
+<header class="portal-header">
+    <a class="portal-brand is-emblem" href="@Url.Content("~/")" aria-label="العودة إلى الرئيسية"><img src="@Url.Content("~/assets/oman-khanjar.png")" alt="شعار سلطنة عُمان" width="80" height="75"></a>
+    <div class="portal-header-center">
+      <div class="portal-navigation">
+        <nav class="portal-nav" aria-label="تنقل البوابة">
+          <a href="#systems">الرئيسية</a>
+          <a href="#policies-sheet" id="policies-sheet-trigger" aria-haspopup="dialog" aria-controls="policies-sheet">التوجيهات السامية</a>
+          <a href="#systems-sheet" id="systems-sheet-trigger" aria-haspopup="dialog" aria-controls="systems-sheet">الأنظمة الإلكترونية</a>
+          <a href="#documents-sheet" id="documents-sheet-trigger" aria-haspopup="dialog" aria-controls="documents-sheet">الاستمارات والوثائق</a>
+        </nav>
+        <div class="portal-search-group" role="group" aria-label="خيارات البحث">
+        <button class="portal-search" type="button" data-search-mode="all" title="البحث العام" aria-label="البحث العام" aria-haspopup="dialog" aria-expanded="false" aria-controls="portal-search-panel"><svg class="portal-search-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg></button>
+          <button class="portal-search" type="button" data-search-mode="phone" title="البحث في دليل الهاتف" aria-label="البحث في دليل الهاتف" aria-haspopup="dialog" aria-expanded="false" aria-controls="portal-search-panel"><svg class="portal-search-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="15" height="18" rx="3"/><path d="M3 7h4M3 12h4M3 17h4"/><circle cx="12.5" cy="9" r="2"/><path d="M9 16c0-3.5 7-3.5 7 0"/></svg></button>
+        </div>
+      </div>
+      <div class="portal-header-search" id="portal-search-panel" role="dialog" aria-modal="true" aria-labelledby="portal-search-title" hidden>
+        <h2 class="portal-search-title" id="portal-search-title">البحث العام</h2>
+        <div class="portal-search-field">
+          <i class="iconsax" icon-name="search-normal-1" aria-hidden="true"></i>
+          <input id="portal-search-input" type="search" autocomplete="off" placeholder="عن ماذا تبحث اليوم؟" aria-label="البحث في محتوى الصفحة" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="portal-search-results">
+          <button class="portal-search-close" type="button" aria-label="إغلاق البحث">✕</button>
+        </div>
+        <div class="portal-search-dropdown">
+          <div class="portal-phone-search-layout">
+            <div class="portal-phone-search-main">
+              <div class="portal-search-caption"><span id="portal-search-status" role="status">وصول سريع</span><small>كل شيء أقرب</small></div>
+              <div id="portal-search-results" role="listbox" aria-label="نتائج البحث"></div>
+            </div>
+            <aside class="portal-phone-important" hidden aria-labelledby="portal-phone-important-title">
+              <h3 id="portal-phone-important-title">أرقام تهمك</h3><p>أرقام داخلية تجريبية للمعاينة</p>
+              <dl><div><dt>طوارئ المؤسسة</dt><dd dir="ltr">1000</dd></div><div><dt>فريق السلامة</dt><dd dir="ltr">1001</dd></div><div><dt>الإسعافات الأولية</dt><dd dir="ltr">1002</dd></div><div><dt>الأمن والاستقبال</dt><dd dir="ltr">1003</dd></div><div><dt>الدعم التقني</dt><dd dir="ltr">1044</dd></div></dl>
+            </aside>
+          </div>
+          <div class="portal-search-hint"><span class="portal-search-keyboard-hint">↑ ↓ للتنقل · Enter للانتقال</span><span class="portal-search-dismiss-hint">Esc للإغلاق</span><button type="button" class="portal-phone-directory" hidden aria-controls="portal-search-results">دليل الهاتف <span aria-hidden="true">←</span></button></div>
+        </div>
+      </div>
+    </div>
+    <div class="portal-user"><details class="portal-theme-menu"><summary class="portal-theme-trigger" aria-label="خيارات الثيمة" title="خيارات الثيمة"><span aria-hidden="true">◐</span></summary><div class="portal-theme-switch" id="portal-theme-options" role="group" aria-label="ثيمة القسم الأول"><span>الثيمة</span><div><button type="button" data-theme-option="majestic" aria-pressed="true" aria-controls="theme-majestic" title="الثيمة الشامخة" aria-label="1 · الثيمة الشامخة">1</button><button type="button" data-theme-option="official" aria-pressed="false" aria-controls="theme-official" title="ثيمة المناسبات الرسمية" aria-label="2 · ثيمة المناسبات الرسمية">2</button><button type="button" data-theme-option="formal" aria-pressed="false" aria-controls="theme-formal" title="الثيمة الرسمية" aria-label="3 · الثيمة الرسمية">3</button></div><small id="personal-theme-name">الشامخة</small></div></details><button type="button" class="portal-alert-visibility" id="portal-notices-visibility" aria-label="إخفاء التنويه والتنبيهات التي تهمك" title="إخفاء التنويه والتنبيهات التي تهمك" aria-expanded="true" aria-controls="portal-alerts-section portal-floating-alert portal-floating-notice"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg></button><button type="button" class="portal-avatar portal-profile-trigger" aria-label="عرض معلومات المستخدم والدوام" aria-expanded="false" aria-controls="portal-header-profile"><img src="@Url.Content("~/assets/workspace-person.png")" alt="أحمد سالم"></button><details class="portal-org-status"><summary aria-label="حالة المؤسسة: الحالة الطبيعية"><span class="portal-org-status-dot is-green" aria-hidden="true"></span><span class="portal-org-status-copy"><small>حالة المؤسسة</small><strong>الحالة الطبيعية</strong></span><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 8 4 4 4-4"/></svg></summary><div class="portal-org-status-menu"><header><div><small>الحالة الحالية <span class="portal-org-status-badge is-green">أخضر</span></small><h2><span class="portal-org-status-dot is-green" aria-hidden="true"></span>الحالة الطبيعية</h2></div><div class="portal-org-status-updated"><span>آخر تحديث للحالة</span><time datetime="2026-10-01T08:00:00+04:00">1 أكتوبر 2026<br>08:00 صباحًا</time><span class="portal-org-status-demo">بيانات تجريبية</span></div></header><p class="portal-org-status-current">العمل مستمر بصورة طبيعية. اتبع إجراءات العمل المعتادة وراقب القنوات الرسمية للتحديثات.</p><div class="portal-org-status-list" aria-label="دليل حالات المؤسسة"><article><span class="portal-org-status-dot is-yellow" aria-hidden="true"></span><div><strong>تنبيه احترازي</strong><small>أصفر</small><p>تابع التنبيهات، تأكد من وسائل التواصل، واستعد لأي تحديث في الإجراءات.</p></div></article><article><span class="portal-org-status-dot is-orange" aria-hidden="true"></span><div><strong>حالة مرتفعة</strong><small>برتقالي</small><p>قلّل الحركة غير الضرورية والتزم بتوجيهات المسؤولين وخطة الاستجابة.</p></div></article><article><span class="portal-org-status-dot is-red" aria-hidden="true"></span><div><strong>حالة طوارئ</strong><small>أحمر</small><p>توقف عن العمل المعتاد ونفّذ تعليمات الطوارئ أو الإخلاء الصادرة فورًا.</p></div></article></div><footer>المصدر المعتمد: تنبيهات المؤسسة الرسمية</footer></div></details></div>
+    <section class="portal-header-profile" id="portal-header-profile" aria-labelledby="portal-profile-name" hidden>
+      <div class="portal-profile-person"><h2 id="portal-profile-name">أحمد سالم</h2><p>مدير مساحة العمل · الإدارة العامة</p></div>
+      <div class="portal-attendance-details"><div><span>بداية الدوام</span><strong>08:00 <small>ص</small></strong></div><div><span>الخروج المتوقع</span><strong>03:00 <small>م</small></strong></div><div><span>رصيد الإجازات</span><strong aria-label="رصيد الإجازات غير متاح">— <small>يوم</small></strong></div><div><span>الأيام التي ستُحذف بنهاية العام</span><strong aria-label="عدد الأيام التي ستُحذف بنهاية العام غير متاح">— <small>يوم</small></strong></div></div>
+      <div class="portal-profile-footer"><a href="@Url.Content("~/profile")">صفحة المستخدم <span aria-hidden="true">←</span></a></div>
+    </section>
+    <section class="portal-header-profile portal-header-notifications" id="portal-header-notifications" role="region" aria-labelledby="portal-notifications-title" hidden>
+      <h2 id="portal-notifications-title">الإشعارات</h2>
+      <section class="portal-notifications-group" aria-labelledby="portal-system-notifications-title"><h3 id="portal-system-notifications-title">إشعارات الأنظمة</h3><ul id="portal-system-notifications"></ul></section>
+      <section class="portal-notifications-group" aria-labelledby="portal-calendar-notifications-title"><h3 id="portal-calendar-notifications-title">إشعارات تقويم الأعمال</h3><ul id="portal-calendar-notifications"></ul></section>
+    </section>
+    <nav class="portal-media-subnav" aria-label="أقسام الأخبار والوسائط">
+      <div class="portal-media-subnav-links">
+        <a href="#editorial-news">أخبار عامة</a><a href="#editorial-events">أخبارنا</a><a href="#editorial-magazine">مجلة الشهر <span class="portal-media-new">جديد</span></a><a href="#safety">تعليمات السلامة</a><a href="#digital-library">وثائق تهمك</a>
+      </div>
+    </nav>
+  </header>

@@ -1,8 +1,0 @@
-Tool: built-in image_gen
-
-Khalid
-Use case: photorealistic-natural. Create a square, semi-photorealistic professional head-and-shoulders portrait for a fictional male Omani employee named Khalid, around 35, short neatly trimmed dark beard, friendly natural expression, white Omani dishdasha, authentic Omani mussar (masar) wrapped turban in muted beige and warm brown woven pattern, not a kumma cap. Center face with entire turban visible, generous headroom for avatar cropping. Soft warm-gray studio background, natural soft daylight, realistic skin and fabric texture, understated editorial photography. No text, logos or borders.
-
-Saeed
-Use case: photorealistic-natural. Create a square, semi-photorealistic professional head-and-shoulders portrait for a fictional male Omani employee named Saeed, around 45, medium complexion, broad face, neatly trimmed salt-and-pepper beard and gentle confident expression. White Omani dishdasha, authentic Omani mussar (masar) wrapped turban with understated gray-green and cream woven pattern, not a kumma cap. Center face with whole turban visible and generous headroom for small avatar cropping. Soft pearl-gray studio background, natural soft daylight, realistic skin and fabric texture, tasteful editorial photography. No text, logos or borders.
-

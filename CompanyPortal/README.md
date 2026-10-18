@@ -4,7 +4,9 @@ ASP.NET Core MVC frontend targeting .NET 10. The future Web API will have its ow
 
 ## Current migration stage
 
-The MVC foundation and initial page/asset migration are implemented. Browser verification, shared layout/partial extraction, and final cleanup remain pending. Original source in `../dist/` and Vite tooling are retained for comparison. Do not edit both copies as parallel sources of truth; record intentional changes to the MVC copy and reconcile them before removing the original.
+The MVC frontend is organized into a shared layout and feature partials, essential assets are local, and the new project has been cleaned. Release publishing, local-only NuGet restore, theme logic and IIS Express checks passed, including `/companyportal/` sub-application hosting. Final desktop/mobile/offline browser acceptance and the actual internal Windows Server/IIS deployment remain pending; see the [acceptance checklist](docs/FRONTEND_ACCEPTANCE.md).
+
+The portable application is this `CompanyPortal` folder. Original source in `../dist/` and legacy tooling outside it are retained as a comparison baseline until browser acceptance; they are not required to build, publish or run this solution. No API project has been added.
 
 See [migration status](docs/MIGRATION_STATUS.md) and the [agreed plan](../docs/COMPANYPORTAL_MVC_MIGRATION_PLAN.md).
 
@@ -46,14 +48,17 @@ Use the same browser profile and exact scheme/hostname/port. The existing script
 
 - `Frontend/CompanyPortal.Frontend.slnx`: independent frontend solution.
 - `Frontend/CompanyPortal.Web/Controllers/`: thin MVC controllers for page routes.
-- `Frontend/CompanyPortal.Web/Views/`: portal, profile, and safe error views. Full-page views are retained initially to simplify comparison; shared layout/partials are the next organization step after browser verification.
+- `Frontend/CompanyPortal.Web/Views/Shared/_Layout.cshtml`: common Arabic document, tab metadata, app base URL and CSS/JavaScript section hooks.
+- `Frontend/CompanyPortal.Web/Views/Shared/`: portal header/footer partials. Feature sections and overlay/script partials live under `Views/Home`; profile CSS is in `wwwroot/css/profile.css`. The generic error page stays independent for fault handling.
 - `Frontend/CompanyPortal.Web/wwwroot/css/`: copied styles, with asset URLs adjusted for their new directory.
 - `Frontend/CompanyPortal.Web/wwwroot/js/`: feature-named JavaScript, including `site.js` and `personal-workspace.js`. Selectors/events use descriptive names; saved browser keys retain compatibility.
-- `Frontend/CompanyPortal.Web/wwwroot/assets/`: copied images, fonts, magazine pages, and licenses. Unused asset review is deferred until final cleanup.
+- `Frontend/CompanyPortal.Web/wwwroot/assets/`: required images, fonts, magazine pages, PDFs and existing licenses. Twelve proven unused files were removed; the [cleanup manifest](docs/frontend-cleanup.json) records their hashes and reasons.
+- `Frontend/CompanyPortal.Web/wwwroot/vendor/iconsax/`: local icon stylesheet, fonts and upstream notice.
 - `docs/frontend-baseline.json`: original file hashes and ordered stylesheet/script dependencies.
 - `tools/verify-frontend.mjs`: optional migration verification; requires Node.js and the retained original `../dist/`.
 - `tools/frontend-names.mjs`: old-to-new naming map used by migration checks, not a browser dependency. See [naming conventions](docs/NAMING_CONVENTIONS.md).
 - `tools/verify-theme-selection.mjs`: executes theme selection with a minimal DOM to check defaults, saved preference compatibility and all theme buttons.
+- `tools/verify-offline-assets.mjs`: checks automatic external resource references and local icon font dependencies without a browser.
 
 Models and backend service layers will be introduced when real data requirements need them. No empty model/repository/API scaffolding is included.
 
@@ -64,9 +69,10 @@ With MVC running, execute from this directory:
 ```powershell
 node tools/verify-frontend.mjs
 node tools/verify-theme-selection.mjs
+node tools/verify-offline-assets.mjs
 ```
 
-The frontend check verifies original source hashes, rendered page parity with approved naming/tab/theme changes, static resources, CSS asset paths, expected route status codes, and absence of API/Vite review routes. The theme check covers selection logic and preference compatibility with a minimal DOM. Neither replaces desktop/mobile browser checks. The original baseline remains frozen; intentional MVC changes are recorded separately.
+The frontend check verifies original source hashes, rendered page parity with approved changes, script order, retained/static resources, CSS paths, removed-file absence and route status codes. It optionally accepts a base URL, such as `http://localhost:5083/companyportal/`. It requires the retained original `../dist/` for comparison; the theme and offline checks work independently of that baseline. These checks do not replace desktop/mobile browser interaction testing.
 
 ## Publish and internal network preparation
 
@@ -80,11 +86,12 @@ Copy the publish output and run `dotnet CompanyPortal.Web.dll` from that output 
 
 Copying the parent folder transfers source for both eventual solutions, but offline building also needs the selected SDK and any future NuGet packages. This frontend currently uses only the installed shared framework. Prepare an offline package feed when package references are introduced; the future API has its own restore requirements.
 
-**Air-gapped readiness is not complete.** Iconsax CSS/fonts and some news imagery still use external URLs, preserved for initial parity. Inventory/local hosting and licensing review of required remote resources, plus an actual offline browser check, remain pending. Outbound news source links also cannot work without network access. Do not assume that a successful .NET build proves offline rendering.
+Required icon resources and imagery now load locally. Outbound news/source hyperlinks still require access to their destinations, but there are no automatic external asset references in the scanned frontend. An actual offline browser check remains required; source scans and HTTP checks do not prove complete visual behavior.
+
+See [IIS and offline deployment](docs/IIS_AND_OFFLINE_DEPLOYMENT.md) for prerequisites and delivery instructions.
 
 ## Next steps
 
 1. Verify portal/profile appearance and existing interactions on desktop/mobile, including visible themes 1/2/3 and storage behavior. Theme 1 (`majestic`) is the default.
-2. Extract the shared layout and coherent partial views in small verified changes.
-3. Resolve required external resources for offline use.
-4. Perform dependency-based cleanup last; retire original source and Vite only after the replacement is verified.
+2. Complete the offline browser and actual internal IIS acceptance checks.
+3. Once browser acceptance passes, retire/archive the legacy files outside `CompanyPortal`. Keep the API deferred until the frontend is accepted.

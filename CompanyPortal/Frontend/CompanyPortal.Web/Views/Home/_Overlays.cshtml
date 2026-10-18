@@ -1,0 +1,64 @@
+<div class="portal-toast" id="portal-toast" role="status"></div>
+  <dialog id="systems-sheet" class="portal-systems-sheet" aria-labelledby="systems-sheet-title">
+    <header class="portal-systems-sheet-heading"><div><small>دليل الخدمات</small><h2 id="systems-sheet-title">الأنظمة الإلكترونية</h2></div><button type="button" class="portal-systems-sheet-close" aria-label="إغلاق الأنظمة الإلكترونية"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
+    <div class="portal-systems-sheet-content"></div>
+  </dialog>
+  <aside class="portal-section-float portal-floating-calendar" id="portal-floating-calendar" aria-label="تقويم الأعمال" popover="manual">
+    <section id="portal-floating-alert" class="portal-floating-alert" aria-label="تنبيه ثابت">
+      <strong>تنوية</strong><p>تنبيه تجريبي لمتابعة التحديثات والتعليمات المهمة.</p>
+    </section>
+    <section class="portal-floating-notice" id="portal-floating-notice" aria-label="تنبيهات تهمك" hidden>
+      <button type="button" class="portal-floating-notice-close" aria-label="إغلاق التنبيه">×</button>
+      <div id="portal-floating-notice-body">
+      <button type="button" class="portal-floating-notice-content" aria-haspopup="dialog"><span></span><strong></strong><small></small></button>
+      <footer><button type="button" class="portal-floating-notice-prev" aria-label="التنبيه السابق">→</button><small class="portal-floating-notice-position"></small><button type="button" class="portal-floating-notice-next" aria-label="التنبيه التالي">←</button><button type="button" class="portal-floating-notice-all">عرض الكل</button></footer>
+      </div>
+    </section>
+    <section class="portal-floating-calendar-card" aria-label="بطاقة تقويم الأعمال">
+    <div class="portal-section-float-top"><strong>تقويم الأعمال</strong><button type="button" id="portal-calendar-toggle" aria-label="توسيع تقويم الأعمال" aria-expanded="false" aria-controls="portal-floating-calendar-body">＋</button></div>
+    <div class="portal-floating-calendar-handle" hidden><button type="button" id="portal-calendar-content-toggle" aria-label="طي محتوى التقويم" aria-expanded="true" aria-controls="portal-calendar-summary portal-floating-calendar-body"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 14 6-6 6 6"/></svg></button></div>
+    <div id="portal-calendar-summary" aria-label="المواعيد والتذكيرات القادمة"></div>
+    <div id="portal-floating-calendar-body" hidden></div>
+    </section>
+  </aside>
+  <dialog class="portal-doc-dialog" aria-labelledby="doc-preview-title"><button type="button" class="portal-doc-close" aria-label="إغلاق معاينة المستند">✕</button><span class="portal-preview-label">القرارات · مستند تجريبي</span><h2 id="doc-preview-title"></h2><p id="doc-preview-copy"></p><small>هذه معاينة توضيحية للتصميم وليست المستند الفعلي.</small></dialog>
+  <dialog id="policies-sheet" class="portal-documents-sheet portal-policies-sheet" aria-labelledby="policies-sheet-title">
+    <header class="portal-documents-sheet-heading"><h2 id="policies-sheet-title">التوجيهات السامية</h2><button type="button" class="portal-documents-sheet-close" data-policies-close aria-label="إغلاق التوجيهات" autofocus><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
+    <div class="portal-policies-sheet-content">
+    <section class="portal-section portal-policies" id="policies" aria-label="التوجيهات حسب السنة">
+<nav class="portal-policy-years" aria-label="انتقل إلى سنة"><a href="#policy-2020">2020</a><a href="#policy-2021">2021</a><a href="#policy-2022">2022</a><a href="#policy-2023">2023</a><a href="#policy-2024">2024</a><a href="#policy-2025">2025</a><a href="#policy-2026">2026</a></nav>
+      <ol class="portal-policy-timeline" aria-label="التوجيهات حسب السنة">
+        <!-- Reference: https://qanoon.om/p/2020/rd2020097/ -->
+        <li id="policy-2020"><span class="portal-policy-year" aria-hidden="true">2020</span><article class="portal-policy-entry" aria-labelledby="policy-title-2020"><header><span class="portal-policy-kind">مرسوم سلطاني 97/2020</span><time>18 أغسطس 2020</time></header><h3 id="policy-title-2020">تحديث مسمى وزارة التجارة</h3><div class="portal-policy-example"><p>في المخاطبات المؤسسية: <span class="portal-policy-preferred">«وزارة التجارة والصناعة وترويج الاستثمار»</span> بدلًا من <span class="portal-policy-previous">«وزارة التجارة والصناعة»</span>.</p></div></article></li>
+        <!-- Reference: https://www.oman2040.om/news/5 -->
+        <li id="policy-2021"><span class="portal-policy-year" aria-hidden="true">2021</span><article class="portal-policy-entry" aria-labelledby="policy-title-2021"><header><span class="portal-policy-kind">استعمال رسمي في ملف التشغيل</span><time>2021</time></header><h3 id="policy-title-2021">الصياغة عند الإشارة إلى الباحثين عن عمل</h3><div class="portal-policy-example"><p>في الصياغة المؤسسية: <span class="portal-policy-preferred">«الباحثون عن عمل»</span> بدلًا من <span class="portal-policy-previous">«العاطلين عن العمل»</span>.</p></div></article></li>
+        <!-- Reference: https://qanoon.om/p/2022/rd2022035/ -->
+        <li id="policy-2022"><span class="portal-policy-year" aria-hidden="true">2022</span><article class="portal-policy-entry" aria-labelledby="policy-title-2022"><header><span class="portal-policy-kind">مرسوم سلطاني 35/2022</span><time>16 يونيو 2022</time></header><h3 id="policy-title-2022">تحديث اسم قانون الإجراءات الإدارية</h3><div class="portal-policy-example"><p>عند ذكر القانون: <span class="portal-policy-preferred">«قانون الإجراءات الإدارية»</span> بدلًا من <span class="portal-policy-previous">«قانون محكمة القضاء الإداري»</span>.</p></div></article></li>
+        <!-- Reference: https://qanoon.om/p/2023/rd2023084/ -->
+        <li id="policy-2023"><span class="portal-policy-year" aria-hidden="true">2023</span><article class="portal-policy-entry" aria-labelledby="policy-title-2023"><header><span class="portal-policy-kind">مرسوم سلطاني 84/2023</span><time>20 نوفمبر 2023</time></header><h3 id="policy-title-2023">تحديث مسمى بنك التنمية</h3><div class="portal-policy-example"><p>في المخاطبات المؤسسية: <span class="portal-policy-preferred">«بنك التنمية (ش.م.ع.م)»</span> بدلًا من <span class="portal-policy-previous">«بنك التنمية العماني (ش.م.ع.م)»</span>.</p></div></article></li>
+        <!-- Reference: https://qanoon.om/p/2024/mhup20240200/ -->
+        <li id="policy-2024"><span class="portal-policy-year" aria-hidden="true">2024</span><article class="portal-policy-entry" aria-labelledby="policy-title-2024"><header><span class="portal-policy-kind">قرار وزاري 200/2024</span><time>21 فبراير 2024</time></header><h3 id="policy-title-2024">كتابة أسماء الشوارع بالأحرف اللاتينية</h3><div class="portal-policy-example"><p>عند كتابة أسماء الشوارع بالأحرف اللاتينية، تُنقل <span class="portal-policy-preferred">«حرفيًا وهجائيًا من اللغة العربية»</span> وفق الآلية التي تعدّها الجهة المعنية.</p></div></article></li>
+        <!-- Reference: https://qanoon.om/p/2025/rd2025092/ -->
+        <li id="policy-2025"><span class="portal-policy-year" aria-hidden="true">2025</span><article class="portal-policy-entry" aria-labelledby="policy-title-2025"><header><span class="portal-policy-kind">مصطلح في قانون الحقوق 92/2025</span><time>27 أكتوبر 2025</time></header><h3 id="policy-title-2025">الصياغة عند الإشارة إلى الإعاقة</h3><div class="portal-policy-example"><p>عند الإشارة إلى الإعاقة تحديدًا: <span class="portal-policy-preferred">«الأشخاص ذوو الإعاقة»</span> بدلًا من التعبير العام <span class="portal-policy-previous">«ذوو الاحتياجات الخاصة»</span>.</p></div></article></li>
+        <!-- Reference: https://qanoon.om/p/2026/rd2026080/ -->
+        <li id="policy-2026"><span class="portal-policy-year" aria-hidden="true">2026</span><article class="portal-policy-entry" aria-labelledby="policy-title-2026"><header><span class="portal-policy-kind">مرسوم سلطاني 80/2026</span><time>13 سبتمبر 2026</time></header><h3 id="policy-title-2026">تحديث مسمى النيابة العامة</h3><div class="portal-policy-example"><p>في الصياغة المؤسسية: <span class="portal-policy-preferred">«النيابة العامة»</span> بدلًا من <span class="portal-policy-previous">«الادعاء العام»</span>، و<span class="portal-policy-preferred">«النائب العام»</span> بدلًا من <span class="portal-policy-previous">«المدعي العام»</span>.</p></div></article></li>
+      </ol>
+    </section>
+    </div>
+  </dialog>
+  <dialog id="documents-sheet" class="portal-documents-sheet" aria-labelledby="documents-sheet-title">
+    <header class="portal-documents-sheet-heading">
+      <h2 id="documents-sheet-title">الاستمارات والوثائق</h2>
+      <button type="button" class="portal-documents-sheet-close" aria-label="إغلاق الاستمارات والوثائق" autofocus><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+    </header>
+  </dialog>
+  <dialog class="editorial-dialog" id="editorial-reading-dialog" aria-labelledby="editorial-reading-title"><div class="editorial-dialog-top"><span>مكتبة كليريو · محتوى توضيحي</span><button type="button" data-editorial-close aria-label="إغلاق القراءة">✕</button></div><h2 id="editorial-reading-title"></h2><div id="editorial-reading-copy"></div></dialog>
+  <dialog class="editorial-dialog editorial-gallery-dialog editorial-gallery-viewer" id="editorial-gallery-dialog" aria-label="معرض الصور"><header class="editorial-gallery-toolbar"><div><h2 id="editorial-gallery-caption"></h2></div><div class="editorial-gallery-actions"><button type="button" data-gallery-zoom aria-label="تكبير الصورة" aria-pressed="false"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6M7 10h6m-3-3v6"/></svg></button><button type="button" data-editorial-close aria-label="إغلاق معرض الصور">✕</button></div></header><div class="editorial-gallery-stage" tabindex="0" aria-label="الصورة الحالية، استخدم الأسهم للتنقل"><img id="editorial-gallery-image" alt=""></div><div class="editorial-gallery-navigation"><div class="editorial-gallery-controls portal-arrow-controls"><button type="button" class="portal-arrow-button" id="editorial-gallery-prev" aria-label="الصورة السابقة">→</button><button type="button" class="portal-arrow-button" id="editorial-gallery-next" aria-label="الصورة التالية">←</button></div><output id="editorial-gallery-status" aria-live="polite"></output><label class="editorial-gallery-jump">انتقل للصورة <input type="number" data-gallery-page min="1" value="1" inputmode="numeric" aria-label="رقم الصورة"></label></div><div class="editorial-gallery-thumbnails" aria-label="اختيار صورة من المعرض"></div><input type="range" class="editorial-gallery-range" data-gallery-range min="1" value="1" aria-label="التنقل السريع بين الصور"></dialog>
+  <dialog class="personal-announcement-dialog" id="personal-announcement-dialog" aria-labelledby="personal-announcement-title" aria-describedby="personal-announcement-description">
+    <header><span id="personal-announcement-label"></span><form method="dialog"><button type="submit" aria-label="إغلاق الإعلان">✕</button></form></header>
+    <h2 id="personal-announcement-title"></h2>
+    <p id="personal-announcement-description"></p>
+    <div id="personal-announcement-details"></div>
+    <small>محتوى توضيحي لتجربة الإعلانات.</small>
+  </dialog>
+

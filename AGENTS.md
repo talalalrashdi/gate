@@ -4,7 +4,7 @@
 
 - The user authorized migrating to ASP.NET Core MVC on .NET 10. Follow `docs/COMPANYPORTAL_MVC_MIGRATION_PLAN.md` and the current progress in `CompanyPortal/docs/MIGRATION_STATUS.md`.
 - The new frontend solution is under `CompanyPortal/Frontend/`; a separate backend solution under `CompanyPortal/Backend/` is deferred. No API, database, authentication, or redesign belongs to this milestone.
-- Preserve `dist/` as the original comparison baseline until migration and browser verification pass. Cleanup of files/code is the final step. Shared layout/partial extraction is pending after initial page verification.
+- Preserve `dist/` as the original comparison baseline until browser verification passes. The user authorized finishing the frontend: shared MVC layout/partials, local offline assets and cleanup of 12 proven unused files in the new project are now implemented. The legacy files outside `CompanyPortal` remain retained; see the current acceptance checklist before retiring them.
 - The legacy technical descriptions below apply to the retained original frontend; they do not prohibit the explicitly authorized MVC migration. Preserve Arabic/RTL, local fonts, existing behavior/storage, and unrelated edits. Visible themes are 1/2/3: majestic is default 1, official is 2, and formal is 3.
 - The user authorized replacing design-era filenames/selectors with descriptive names in the MVC application. See `CompanyPortal/docs/NAMING_CONVENTIONS.md`. Theme keys and panels now use semantic names; translate older numeric saved selections. Keep existing storage keys (including `clerio-design-b-pinned-systems-v1`) and the untouched `dist/` baseline. `/design-b.html` remains only as a compatibility redirect.
 

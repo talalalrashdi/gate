@@ -79,11 +79,9 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let sceneIndex = 0, sceneTimer, playbackPaused = reducedMotion.matches;
   const themes = {
-    business: { theme: 'business', panel: 'theme-business', label: 'الأعمال', labelledBy: 'workspace-title' },
     official: { theme: 'official', panel: 'theme-official', label: byId('theme-official')?.classList.contains('theme-national-day') ? 'المناسبات الرسمية' : 'الوطنية', labelledBy: 'personal-official-title' },
     formal: { theme: 'formal', panel: 'theme-formal', label: 'الرسمية', labelledBy: 'theme-formal-title' },
-    majestic: { theme: 'majestic', panel: 'theme-majestic', label: 'الشامخة', labelledBy: 'personal-calendar-title' },
-    news: { theme: 'news', panel: 'theme-news', label: 'النشرة', labelledBy: 'news-news-title' }
+    majestic: { theme: 'majestic', panel: 'theme-majestic', label: 'الشامخة', labelledBy: 'personal-calendar-title' }
   };
   // Only offer themes whose panel and selector still exist on this page.
   Object.keys(themes).forEach(option => {
@@ -106,7 +104,6 @@
     if (sharedNews) byId(option === 'formal' ? 'theme-formal' : 'theme-majestic')?.append(sharedNews);
     if (alertsSection && alertsHome && majesticFrame) {
       if (option === 'majestic') (sharedNews?.querySelector('.personal-news-bottom') || byId('theme-majestic')).append(alertsSection);
-      else if (option === 'news') section.after(alertsSection);
       else alertsHome.insertBefore(alertsSection, alertsNext);
     }
     if (sharedPlanner && plannerHome && majesticCalendar) {

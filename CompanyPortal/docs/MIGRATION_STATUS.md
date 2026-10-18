@@ -17,9 +17,9 @@ The new source is under `CompanyPortal/Frontend/CompanyPortal.Web/`. The future 
 | 1. Baseline | Source inventory complete; browser baseline pending | File hashes and load-order inventory captured. Browser runtime reported no available browser, so no screenshots or interaction baseline were captured. |
 | 2. MVC foundation | Complete | SDK 10.0.402 found. Minimal solution, controllers, launch settings and initial views built and served at port 5080. |
 | 3. Initial frontend migration | Implemented; HTTP/static checks passed | Full-page MVC views, copied assets, adjusted paths, and old page route aliases. |
-| 4. Behavior verification | Pending | Requires an available browser for desktop/mobile appearance and actual JavaScript interaction checks. HTTP checks do not satisfy this gate. |
-| 5. Shared layout / partials | Pending | Deliberately deferred until the initial frontend passes browser verification. |
-| 6. Cleanup | Pending | No original source, tooling, preview, helper, font, or asset has been deleted. |
+| 4. Behavior verification | Logic/HTTP checks passed; visual acceptance pending | Theme logic, source parity, resource checks and IIS Express root/sub-application checks passed. Actual desktop/mobile browser interactions remain unverified. |
+| 5. Shared layout / partials | Implemented and compiled | Shared layout/header/footer, coherent feature partials, profile stylesheet, and ordered script section. |
+| 6. Cleanup | New MVC project cleaned; legacy retirement pending | Removed 12 proven unused files from MVC and publish output after reference checks. Original source/tooling outside CompanyPortal remains retained for browser acceptance. |
 
 ## Changes in the initial migration
 
@@ -50,9 +50,9 @@ The in-app browser could not connect: browser selection reported no available br
 
 Browser storage is origin-specific. Port 5080 intentionally isolates this initial MVC run from the original port 5173. Existing data is not automatically transferred. The README documents the origin-preserving option after stopping Vite; do not clear storage to resolve differences.
 
-Required external Iconsax resources and externally hosted imagery still need review/local hosting before an air-gapped rendering claim. No remote resource was replaced during initial parity work.
+External resource localization was deferred during initial parity work. It is now implemented as described in the completion work below; an actual offline browser check remains outstanding.
 
-Next: obtain browser verification of the initial migration, resolve any regressions, then organize layout/partials and verify again. Review and delete proven unnecessary files/code only as the final step.
+Current next step: complete `FRONTEND_ACCEPTANCE.md` in a browser and validate the actual internal IIS environment. The source organization and new-project cleanup described below are implemented; preserve the original comparison baseline until visual acceptance.
 
 ## User-requested theme and tab update
 
@@ -81,3 +81,19 @@ The naming refactor supersedes the numeric internal theme IDs and original MVC a
 At the user's request, the majestic/default theme's shared header/personal-area frame now reaches the top and sides of the viewport. Removed the original 12px desktop / 6px mobile outer gaps and frame border, and squared the top corners of the frame, header and photographic backdrop. Retained internal header padding, bottom rounding/spacing and existing pinned-scroll behavior. Edited the existing theme rules rather than adding competing overrides. The retained original source contains the former gaps; it remains unchanged. Browser access is still unavailable, so no desktop/mobile visual verification is claimed.
 
 The user clarified that the header must use the same layout as the other themes while remaining continuous with the photos. Removed the default-theme header reparenting and its separate sizing/grid/avatar/control spacing rules, including the special two-row layout on laptop screens. The header now remains in the shared root position and inherits common desktop/mobile fixed positioning and sizing. The photographic frame retains the original content offsets (88px on wide desktops, 132px on laptop/mobile breakpoints), so the existing 52px separation and unchanged backdrop offsets keep the image composition continuous at the top. Background image files, image positioning, animation, overlays and backdrop styles were not changed by this correction. Theme selection checks now also verify that the header stays outside the photo frame through initialization and every theme switch. Visual verification remains pending.
+
+## Frontend completion work
+
+The user requested completing the frontend before any API work. No API/authentication/database project or dependency was introduced.
+
+- Created `Views/_ViewStart.cshtml` and `Views/Shared/_Layout.cshtml` for the common Arabic document, tab metadata, application base URL and page sections. Header/footer are shared partials; home feature markup is split into personal workspace, workspace cards, news/media, safety, systems catalog, documents and overlays. The main home view is now approximately 48 lines instead of a full HTML document. Profile presentation is in `css/profile.css`.
+- All dialog markup now precedes the ordered script section. This fixes a source-observed initialization problem: `personal-workspace.js` previously queried the announcement dialog before the parser reached it. The original 19-script sequence is preserved and verified.
+- Copied the existing Iconsax stylesheet and all five font formats locally, retaining its original notice and documenting sources/official developer terms. Removed the automatic external news-image request by using an existing local illustrative thumbnail with an appropriate credit; photographic backgrounds are untouched. Outbound source links remain intentional.
+- Removed two unavailable theme descriptors and an unreachable news-theme branch. Older numeric preferences still translate and invalid/retired choices fall back to majestic; all relevant logic checks pass.
+- Performed final reference-based cleanup in the new MVC project: one unloaded stylesheet, five unreferenced font weights, four unreferenced generated image/SVG alternatives, and two image-generation prompt files. `frontend-cleanup.json` records paths, original mappings, hashes and reasons. Original `dist/` and unrelated legacy tooling are not deleted.
+- Restore succeeded against an empty local NuGet feed and isolated package directory using the installed .NET 10 SDK/reference packs. Release publish succeeded. No NuGet application packages were needed.
+- The clean published output passed checks through local IIS Express with ASP.NET Core Module V2 and in-process hosting in Production, at both `/` and `/companyportal/`: six page routes, query-preserving legacy redirect, 313 retained original resources, seven CSS resource references, local profile/icon resources, and removed-file absence. All 328 original source hashes remain unchanged.
+- A static offline scan passes for application views, CSS, JavaScript and SVG resources. This is evidence that required assets are local, not a claim of an executed offline browser session.
+- IIS Express used a temporary configuration under ignored `.local/`; no permanent IIS site was installed. Verification servers are stopped after checks so Visual Studio builds are not blocked.
+
+Remaining acceptance is explicit in `FRONTEND_ACCEPTANCE.md`: real-browser desktop/mobile/offline interaction checks and testing the actual internal Windows Server/IIS environment. Browser automation is unavailable; source and local hosting checks do not substitute for those acceptance steps. Full legacy-folder retirement remains deferred until browser acceptance. See `IIS_AND_OFFLINE_DEPLOYMENT.md` for delivery instructions.

@@ -1,0 +1,90 @@
+{
+  "date": "2026-10-18",
+  "scope": "New MVC wwwroot only; original dist baseline preserved.",
+  "removed": [
+    {
+      "path": "css/typography.css",
+      "originalPath": "design-b-typography.css",
+      "reason": "Unloaded duplicate text-palette stylesheet; no application reference.",
+      "bytes": 1387,
+      "sha256": "a0bfed62fb0b6be4acbac74a4cab9bbb19eb5304bb11dab24140ef917170c485"
+    },
+    {
+      "path": "assets/fonts/GTAmericaArabic-Black.ttf",
+      "originalPath": "assets/fonts/GTAmericaArabic-Black.ttf",
+      "reason": "No font-face or application reference; Regular and Bold are retained.",
+      "bytes": 371324,
+      "sha256": "46f5d839c2a15f5cae1d4b978c2364e9e3846d27e8b4c564f287ed476b596d94"
+    },
+    {
+      "path": "assets/fonts/GTAmericaArabic-Light.ttf",
+      "originalPath": "assets/fonts/GTAmericaArabic-Light.ttf",
+      "reason": "No font-face or application reference; Regular and Bold are retained.",
+      "bytes": 369676,
+      "sha256": "e519a3948e0f4f68494de342b337ffe3cd506f2245b59b5a6ff2fef228164020"
+    },
+    {
+      "path": "assets/fonts/GTAmericaArabic-Medium.ttf",
+      "originalPath": "assets/fonts/GTAmericaArabic-Medium.ttf",
+      "reason": "No font-face or application reference; Regular and Bold are retained.",
+      "bytes": 368100,
+      "sha256": "dd494b3f6bbd5180cf3b0fc1716a814a8b7d6f6bd4d75e33c0377f24799b50ae"
+    },
+    {
+      "path": "assets/fonts/GTAmericaArabic-Thin.ttf",
+      "originalPath": "assets/fonts/GTAmericaArabic-Thin.ttf",
+      "reason": "No font-face or application reference; Regular and Bold are retained.",
+      "bytes": 370096,
+      "sha256": "73f3dd3c7aa1340dddf49298eb32dd4e67e1ece0c33126bdbc836af2dc4f2c65"
+    },
+    {
+      "path": "assets/fonts/GTAmericaArabic-UltraLight.ttf",
+      "originalPath": "assets/fonts/GTAmericaArabic-UltraLight.ttf",
+      "reason": "No font-face or application reference; Regular and Bold are retained.",
+      "bytes": 372020,
+      "sha256": "5c8e87aca6332fdbdb49402000bf5ef819ec1a23bc24be27777b24c651a5ae3d"
+    },
+    {
+      "path": "assets/oman-national-calligraphy.png",
+      "originalPath": "assets/oman-national-calligraphy.png",
+      "reason": "No active application reference; current inline calligraphy and silk-v2 asset are retained.",
+      "bytes": 655478,
+      "sha256": "4e03bcde0740b1712a8baaf11cd300c30a6a5e6cecc5061f624f36b5aa90046c"
+    },
+    {
+      "path": "assets/oman-national-calligraphy.svg",
+      "originalPath": "assets/oman-national-calligraphy.svg",
+      "reason": "No active application reference; current inline calligraphy and silk-v2 asset are retained.",
+      "bytes": 19684,
+      "sha256": "92c285c234eb0d07613bbec957d3f5ea098fc99496094bcfc6f3d6b668742b44"
+    },
+    {
+      "path": "assets/oman-national-silk.png",
+      "originalPath": "assets/oman-national-silk.png",
+      "reason": "No active application reference; current inline calligraphy and silk-v2 asset are retained.",
+      "bytes": 1228856,
+      "sha256": "1a481db3b7235a50da694ba51a21a69cb7567acedbfbdab78dcbd813b1d56a2c"
+    },
+    {
+      "path": "assets/workspace-collection.svg",
+      "originalPath": "assets/workspace-collection.svg",
+      "reason": "No active application reference; current inline calligraphy and silk-v2 asset are retained.",
+      "bytes": 5182,
+      "sha256": "1dc8c1639bd1008346c31954759dcb54d4444d888657c1bf855f5ad21b2fe2c5"
+    },
+    {
+      "path": "assets/phone-portraits.prompt.txt",
+      "originalPath": "assets/phone-portraits.prompt.txt",
+      "reason": "Image-generation notes, not runtime assets.",
+      "bytes": 1299,
+      "sha256": "315bd6ca7e92a80cf9ab63ec11d59d7b8401fbd4bd00e038ab514b13c010001e"
+    },
+    {
+      "path": "assets/workspace-person.prompt.txt",
+      "originalPath": "assets/workspace-person.prompt.txt",
+      "reason": "Image-generation notes, not runtime assets.",
+      "bytes": 642,
+      "sha256": "86c4c891ae751858331501ef6e8db06f224af9f3004b08943be123546bee1edf"
+    }
+  ]
+}

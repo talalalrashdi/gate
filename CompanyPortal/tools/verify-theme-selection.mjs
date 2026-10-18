@@ -6,7 +6,8 @@ import vm from 'node:vm';
 
 const root = new URL('../Frontend/CompanyPortal.Web/', import.meta.url);
 const script = await readFile(new URL('wwwroot/js/personal-workspace.js', root), 'utf8');
-const html = await readFile(new URL('Views/Home/Index.cshtml', root), 'utf8');
+const html = (await readFile(new URL('Views/Shared/_PortalHeader.cshtml', root), 'utf8'))
+  + (await readFile(new URL('Views/Home/_PersonalWorkspace.cshtml', root), 'utf8'));
 const end = script.indexOf('  const today = new Date();');
 assert.ok(end > 0, 'Theme initialization boundary exists');
 const themeCode = script.slice(0, end) + '\n})();';

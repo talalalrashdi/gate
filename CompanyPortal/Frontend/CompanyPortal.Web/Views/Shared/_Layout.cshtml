@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  @await RenderSectionAsync("Metadata", required: false)
+  <title>البوابة</title>
+  <base href="@Url.Content("~/")">
+  <link rel="icon" type="image/png" href="@Url.Content("~/assets/oman-khanjar.png")">
+  @await RenderSectionAsync("Head", required: false)
+  <link rel="stylesheet" href="@Url.Content("~/css/site.css")">
+  <link rel="stylesheet" href="@Url.Content("~/css/header.css")">
+  @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="@ViewData["BodyClass"]">
+  @RenderBody()
+  @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

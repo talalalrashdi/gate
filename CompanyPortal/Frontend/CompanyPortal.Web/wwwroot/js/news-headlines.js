@@ -8,7 +8,7 @@
   };
   const stories = [
     breakingStory,
-    { title: 'متحف عُمان عبر الزمان يستقبل نحو 940 ألف زائر منذ افتتاحه', date: '2026-02-22', url: 'https://omannews.gov.om/topics/ar/119/show/464026/', image: 'https://alroya.om/thumb/830x506/uploads/images/2025/07/VBTAR.jpeg', imageCredit: 'صورة متحف عُمان عبر الزمان — صحيفة الرؤية' },
+    { title: 'متحف عُمان عبر الزمان يستقبل نحو 940 ألف زائر منذ افتتاحه', date: '2026-02-22', url: 'https://omannews.gov.om/topics/ar/119/show/464026/', image: './assets/hero-oman-fort.png', imageCredit: 'صورة توضيحية من أصول البوابة المحلية'  },
     { title: 'جنوب الشرقية: رقمنة 14 خدمة حكومية وإنجاز 5694 معاملة خلال 2025', date: '2026-01-25', url: 'https://omannews.gov.om/topics/ar/122/show/462778/rss.ona' },
     { title: 'إطلاق برنامج «تعزيز» لتمكين الفرق الأهلية الرياضية', date: '2026-01-25', url: 'https://omannews.gov.om/topics/ar/8/show/462804/ona' },
     { title: 'حلقة عمل مجلة نزوى توصي بمرصد ثقافي وتحديث رؤية المجلة', date: '2026-01-21', url: 'https://omannews.gov.om/topics/ar/6/show/462659/' },

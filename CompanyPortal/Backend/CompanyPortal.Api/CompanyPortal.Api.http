@@ -10,3 +10,13 @@ Accept: application/json
 ### Development only: real SQL connection; requires Windows credentials
 GET {{baseUrl}}/api/diagnostics/database
 Accept: application/json
+
+### Current employee's theme; requires Windows credentials
+GET {{baseUrl}}/api/user-settings/theme
+
+### Save current employee's theme (no UserId/NTName in the body)
+PUT {{baseUrl}}/api/user-settings/theme
+Content-Type: application/json
+X-CompanyPortal-Request: theme
+
+{"theme":"formal"}

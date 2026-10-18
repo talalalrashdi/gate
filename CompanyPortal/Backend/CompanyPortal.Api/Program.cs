@@ -9,6 +9,14 @@ builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
 builder.Services.AddHealthChecks();
 builder.Services.AddScoped<DatabaseConnectionCheck>();
+builder.Services.AddScoped<UserSettingsStore>();
+builder.Services.AddCors(options => options.AddPolicy("Portal", policy =>
+{
+    var origins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+    if (origins.Length > 0)
+        policy.WithOrigins(origins).WithMethods("GET", "PUT")
+            .WithHeaders("Content-Type", "X-CompanyPortal-Request").AllowCredentials();
+}));
 builder.Services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
     .AddNegotiate();
 builder.Services.AddAuthorization(options =>
@@ -39,6 +47,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
+app.UseCors("Portal");
 app.UseAuthentication();
 app.UseAuthorization();
 

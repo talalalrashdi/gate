@@ -17,6 +17,7 @@ The default Project profile uses `http://localhost:5081` on loopback so the init
 | `/health` | Process liveness (`Healthy`), visible in Swagger; does not check SQL Server, Exchange, or AD availability |
 | `/api/me` | Requires Windows authentication; returns account name, SID when supplied by Windows, and authentication type; response is not cached |
 | `/api/diagnostics/database` | Development only; requires Windows authentication and queries the configured SQL database with Dapper |
+| `/api/user-settings/theme` | Windows-authenticated GET/PUT for the employee's theme, resolved through the external security database |
 | `/swagger` | Development only, Swagger UI; same-origin Windows authentication |
 | `/swagger/v1/swagger.json` | Development only, generated Swagger document |
 
@@ -79,4 +80,4 @@ dotnet build CompanyPortal.Backend.slnx --no-restore
 
 ## Next steps
 
-See [API decisions and Exchange findings](../docs/API_FOUNDATION.md), [database deployment](Database/README.md) and the [frontend/API/SQL connection check](../docs/CONNECTION_CHECK.md). The database remains empty; business tables/features and Exchange integration are separate steps. The user explicitly deferred portal preferences while verifying connectivity.
+The first employee feature is [theme settings](../docs/THEME_SETTINGS.md), using external NTName → UserId lookup and `Portal.UserSettings`. Its local-only sample SecurityDB and internal mapping/permission requirements are documented there. After setup, run `powershell -File tools/Test-ThemeSettings.ps1` with Windows PowerShell and a registered test account. It saves/restores that account's theme; if no setting existed, it leaves a row containing the original default. Other preferences and Exchange integration remain separate steps.

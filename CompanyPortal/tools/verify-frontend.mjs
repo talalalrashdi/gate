@@ -19,6 +19,7 @@ const normalize = text => text.replaceAll('\r\n', '\n').replace(/>\s+</g, '><').
 // User-approved changes after initial parity: tab metadata and theme controls.
 const canonicalHtml = text => normalize(text.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, ''))
   .replace(/<base[^>]*>/, '')
+  .replace(/<meta name="companyportal-api-base"[^>]*>/g, '')
   .replace('<body class="">', '<body>')
   .replace(/<title>[^<]*<\/title>/, '<title></title>')
   .replace(/\s*<link rel="icon"[^>]*>/g, '')
@@ -62,7 +63,7 @@ for (const route of ['', 'index.html', 'design-b.html']) {
   const buttons = [...html.matchAll(/<button[^>]*data-theme-option="([^"]+)"[^>]*>(\d)<\/button>/g)];
   assert.deepEqual(buttons.map(button => [button[1], button[2]]), [['majestic', '1'], ['official', '2'], ['formal', '3']], 'Visible theme mapping');
   const scripts = [...html.matchAll(/<script\b[^>]*src="([^"]+)"[^>]*><\/script>/g)].map(match => match[1]);
-  assert.deepEqual(scripts, baseline.portalScripts.map(file => mount + '/' + migratedPath(file.slice(2))), 'Classic script order preserved');
+  assert.deepEqual(scripts, [...baseline.portalScripts.map(file => mount + '/' + migratedPath(file.slice(2))), mount + '/js/theme-settings.js'], 'Original script order and appended theme persistence');
   assert.ok(html.indexOf('id="personal-announcement-dialog"') < html.indexOf(`src="${mount}/js/personal-workspace.js"`), 'Dialog markup must exist before initialization');
 }
 for (const route of ['profile', 'profile/', 'user-profile.html']) {
@@ -132,7 +133,7 @@ console.log(JSON.stringify({
   matchingStaticResources: resources.length,
   resolvedCssReferences: cssReferences,
   orderedPortalStyles: baseline.portalStyles.length,
-  orderedPortalScripts: baseline.portalScripts.length,
+  orderedPortalScripts: baseline.portalScripts.length + 1,
   apiAndViteReviewNotExposed: true,
   browserInteractionsTested: false
 }, null, 2));

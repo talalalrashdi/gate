@@ -1,8 +1,10 @@
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
     ViewData["BodyClass"] = "portal-dashboard";
 }
 @section Metadata {
   <meta name="theme-color" content="#f5f1ea">
+  <meta name="companyportal-api-base" content="@(Configuration["Api:BaseUrl"] ?? Url.Content("~/"))">
 }
 @section Head {
   <link rel="preload" href="@Url.Content("~/assets/fonts/GTAmericaArabic-Regular.ttf")" as="font" type="font/ttf" crossorigin>

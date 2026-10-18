@@ -2,6 +2,8 @@
 
 ASP.NET Core MVC frontend and a separate .NET 10 Web API foundation. Open `Frontend/CompanyPortal.Frontend.slnx` for the portal or `Backend/CompanyPortal.Backend.slnx` for the API. See the [API run instructions](Backend/README.md), [API/Exchange decisions](docs/API_FOUNDATION.md) and [frontend → API → SQL connection check](docs/CONNECTION_CHECK.md).
 
+The first employee feature now saves the selected theme through the API using the employee's Windows identity and external SecurityDB UserId. See [theme settings setup and deployment](docs/THEME_SETTINGS.md); sample SecurityDB creation is development-only.
+
 ## Current migration stage
 
 The MVC frontend is organized into a shared layout and feature partials, essential assets are local, and the new project has been cleaned. Verification evidence and remaining recorded checks are in the [frontend acceptance checklist](docs/FRONTEND_ACCEPTANCE.md). The user authorized proceeding to the API foundation on the assumption that frontend browser/IIS acceptance is complete. The API foundation now builds independently; its actual domain/IIS deployment, database and Exchange integration are later steps.

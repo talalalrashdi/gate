@@ -1,0 +1,5 @@
+USE [CompanyPortal];
+GO
+IF SCHEMA_ID(N'Security') IS NULL EXEC(N'CREATE SCHEMA [Security] AUTHORIZATION [dbo];');
+IF SCHEMA_ID(N'Portal') IS NULL EXEC(N'CREATE SCHEMA [Portal] AUTHORIZATION [dbo];');
+GO

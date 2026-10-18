@@ -80,7 +80,11 @@ The user requested connecting the frontend, API and database before implementing
 
 NuGet resolved a vulnerable transitive System.Security.Cryptography.Pkcs package during the SQL client restore; an explicit 10.0.13 reference upgrades it to the patched version. The updated locked dependency graph contains 25 packages and was exported/restored through a local-only feed into a separate package directory. See [connection check](CONNECTION_CHECK.md) for configuration, diagnostics scope, identity boundaries and verification.
 
-## Reference links
+## First employee feature: theme settings
+
+The user subsequently authorized saving the selected theme. SecurityDB (development sample only) supplies NTName/UserId; CompanyPortal does not duplicate users. `Security.User_getByUsername` is the integration procedure, while `Portal.UserSettings` contains the theme. The browser authenticates directly to the API, with narrowly configured credentialed CORS and protected JSON writes, rather than using MVC process credentials for employee ownership. See [theme feature](THEME_SETTINGS.md) for table definitions, scripts, security behavior, browser tests and replacing the sample lookup on the internal server.
+
+## Sources
 
 - [Exchange build numbers and version verification](https://learn.microsoft.com/en-us/exchange/new-features/build-numbers-and-release-dates)
 - [Exchange feature availability](https://learn.microsoft.com/en-us/exchange/new-features/feature-availability)

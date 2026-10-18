@@ -1,5 +1,9 @@
 # CompanyPortal database deployment
 
+Follow the [database general rules](../../docs/DATABASE_GENERAL_RULES.md) when designing tables, including string lengths, identity, Active/date columns and NTName → UserId lookup.
+
+The first feature now adds `Portal.UserSettings` and procedures in `Security`/`Portal`. Follow the [theme feature deployment order](../../docs/THEME_SETTINGS.md) for scripts 002–004 and the external security lookup mapping. The `Development/` sample SecurityDB script is excluded from the internal deployment.
+
 Use SQL Server with a new database named `CompanyPortal`. Development uses the default instance `localhost`, selected by the user. The inspected local instance reports SQL Server 2019 Developer Edition (15.0.2000.5). SQL Server instance selection, credentials, certificates and access permissions are environment configuration; application code and SQL schema scripts stay the same between development and the air-gapped network.
 
 ## Create the database

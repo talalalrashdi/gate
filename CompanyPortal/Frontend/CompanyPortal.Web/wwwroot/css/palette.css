@@ -1,0 +1,123 @@
+/* Shared brand palette. Semantic notification and status colors stay independent. */
+:root {
+  --brand-primary:#0a2947;
+  --brand-secondary:#d3d4c0;
+  --brand-cream:#f3e4c9;
+  --brand-accent:#8b5e3c;
+  --surface-white:#fff;
+  --surface-cream:#faf5eb;
+  --surface-olive:#f1f1e9;
+  --surface-navy:#edf1f5;
+  --brand-line:#deded1;
+  --text-primary:var(--brand-primary);
+  --text-secondary:#526170;
+  --ink:var(--brand-primary);
+  --muted:var(--text-secondary);
+  --deep:var(--brand-primary);
+  --sage:var(--brand-secondary);
+  --terra:var(--brand-accent);
+  --paper:var(--surface-white);
+  --line:var(--brand-line);
+  --system-icon-ink:var(--brand-accent);
+  --system-icon-surface:var(--brand-cream);
+}
+
+/* White navigation with navy selection and restrained brown accents. */
+.portal-media-subnav-label { --text-secondary:var(--brand-accent); }
+.portal-media-subnav-links :is(a,button) { --text-primary:var(--brand-primary); }
+.portal-media-subnav-links a:hover { background:var(--surface-cream); --text-primary:var(--brand-primary); }
+.portal-media-subnav-links a[aria-current="location"] { background:var(--brand-primary); border-bottom-color:var(--brand-primary); --text-primary:#fff; }
+.portal-media-subnav-links a:focus-visible { outline-color:var(--brand-accent); }
+.portal-header .portal-nav a::after { background:var(--brand-accent); }
+body.portal-dashboard .portal-header .portal-search { background:#fff; --text-primary:#000; }
+.portal-avatar { background:var(--brand-cream); }
+.portal-alert-visibility { background:var(--surface-olive); border-color:var(--brand-secondary); }
+.portal-alert-visibility:hover { background:var(--brand-secondary); }
+
+/* The opening mesh uses diluted brand colors, retaining its soft glass treatment. */
+#systems[data-theme="business"] { background:#fafbf9; }
+#systems[data-theme="business"]::before {
+  background:
+    radial-gradient(ellipse 24% 72% at 15% 35%,#f3e4c9e6 0%,#f3e4c980 42%,transparent 100%),
+    radial-gradient(ellipse 38% 38% at 63% 8%,#8b5e3c66 0%,#f3e4c980 48%,transparent 100%),
+    radial-gradient(ellipse 48% 35% at 94% 51%,#0a294766 0%,#0a294724 48%,transparent 100%),
+    radial-gradient(ellipse 32% 29% at 44% 43%,#d3d4c0cc 0%,#d3d4c066 48%,transparent 100%),
+    linear-gradient(125deg,#faf5eb,#f1f1e9 52%,#edf1f5);
+}
+#systems :is(.personal-person,.personal-planner,.personal-agenda) { --text-primary:var(--brand-primary); --text-secondary:#526170; }
+body .portal-theme-switch button[aria-pressed="true"],body #systems .personal-month-grid button[aria-pressed="true"],body #systems #planner-task-form button { background:var(--brand-primary); color:#fff!important; box-shadow:0 3px 9px #0a294718; }
+#systems .personal-month-grid button[aria-current="date"] { border-color:var(--brand-accent); }
+#systems .personal-month-grid button.has-tasks::after { background:var(--brand-accent); }
+#systems .personal-calendar-key i,#systems[data-theme="business"] .personal-heading-dot { background:var(--brand-primary); }
+#systems .personal-calendar-key span+span i { background:var(--brand-accent); }
+#systems .planner-task-row input { accent-color:var(--brand-primary); }
+#systems .personal-business :is(button,input):focus-visible { outline-color:var(--brand-accent); }
+#systems[data-theme="business"] :is(.personal-planner,.personal-month-nav button,.planner-task-copy) { border-color:#0a294721; }
+#systems[data-theme="business"] :is(.personal-agenda-heading small,.personal-agenda-mark) { background:var(--brand-secondary); }
+#systems .planner-task-row::before { background:#8b5e3c50; }
+#systems[data-theme="business"] #planner-task-add-toggle { border-color:#8b5e3c66; }
+#systems[data-theme="business"] #planner-task-add-toggle:hover { background:var(--surface-cream); border-color:var(--brand-accent); }
+#systems[data-theme="business"] #planner-task-form { border-color:var(--brand-secondary); }
+#systems[data-theme="business"] .personal-timeline-window::after { background:linear-gradient(transparent,#fafbf9e6); }
+
+/* Everyday workspace cards and the systems directory. */
+.portal-work-card,.portal-workspace-grid > .portal-work-library { background:var(--surface-white); border-color:var(--brand-line); }
+.portal-work-docs .portal-doc-type,.portal-work-docs [data-category="reports"] .portal-doc-type { background:var(--brand-cream); }
+.portal-work-docs [data-category="policies"] .portal-doc-type { background:var(--brand-secondary); }
+.portal-doc-surface,.portal-inbox-surface { background:var(--surface-olive); }
+.portal-request-summary > div,.portal-service-links button { background:var(--surface-olive); }
+.portal-service-links button:hover { background:var(--brand-secondary); }
+.portal-message-purpose.is-info { background:var(--surface-navy); }
+.portal-message-purpose.is-action { background:var(--brand-cream); }
+.portal-doc-categories button:hover { background:var(--surface-cream); }
+body .portal-doc-categories button[aria-pressed="true"] { background:var(--brand-primary); }
+.portal-work-footer button,.systems-details { --text-primary:var(--brand-accent); }
+.portal-library.systems-section { background:linear-gradient(135deg,var(--surface-cream),var(--surface-olive)); }
+.systems-card,.systems-card.is-pinned { background:var(--surface-white); border-color:var(--brand-line); }
+.systems-card.is-pinned { background:var(--surface-olive); }
+.systems-pin,.systems-work-category,.portal-group-plus { background:var(--brand-cream); border-color:var(--brand-secondary); }
+.systems-pin[aria-pressed="true"],.systems-categories button:hover { background:var(--brand-secondary); border-color:var(--brand-secondary); }
+body .systems-categories button[aria-pressed="true"],body .systems-categories button[aria-pressed="true"] span,body .systems-pinned-filter[aria-pressed="true"] { background:var(--brand-primary); }
+.systems-search:focus-within { border-color:var(--brand-primary); outline-color:#0a294724; }
+.portal-policy-grid article { background:var(--surface-cream); border-color:var(--brand-accent); }
+.portal-policy-grid article:nth-child(2) { background:var(--surface-olive); border-color:var(--brand-secondary); }
+.portal-policy-grid article:nth-child(3) { border-color:var(--brand-primary); }
+
+/* Navy editorial canvas, cream stories, olive reading cards. */
+.portal-section.portal-editorial { background:radial-gradient(ellipse at 85% 0%,#d3d4c021,transparent 43%),linear-gradient(145deg,#173c5d,var(--brand-primary) 65%,#102d47); }
+#media.portal-editorial.editorial-light { background: #f6f4ee; --text-primary: #163746; --text-secondary: #52666d; }
+#media.editorial-light :is(.editorial-masthead h2,.editorial-block-heading h3,.editorial-news-panel h3,.editorial-news-panel h4,.editorial-photo-heading h4) { --text-primary: #236348; color: #236348; }
+#media.editorial-light .is-breaking :is(h3,h4) { --text-primary: #fff; color: #fff; }
+body #media.editorial-light :is(.editorial-heading-icon,.editorial-title-dot) { color: #236348 !important; }
+#media.editorial-light .editorial-current-date { color: #163746; }
+#media.editorial-light .editorial-current-date small { color: #52666d; }
+#media.editorial-light .editorial-photo-heading { --text-primary: #163746; --text-secondary: #52666d; }
+#media.editorial-light .editorial-video-toolbar output { color: #52666d; }
+#media.editorial-light .editorial-gallery-open { border-color: #dce6df; background: #f3f7f4; }
+#media.editorial-light .editorial-gallery-open:focus-visible { outline-color: #236348; }
+
+body .portal-editorial .editorial-on-dark,body .portal-editorial .editorial-on-dark :is(h2,h3,p,span,small,strong,a,button) { color:#fff!important; }
+body .portal-editorial .editorial-on-dark :is(p,small),body .portal-editorial .editorial-on-dark .editorial-eyebrow { color:var(--brand-secondary)!important; }
+body .portal-editorial .editorial-on-dark .editorial-title-dot,body .portal-editorial .editorial-heading-icon { color:var(--brand-cream)!important; }
+.editorial-lead-story,.editorial-news-note,.editorial-book-pick { background:var(--brand-cream); }
+.editorial-news-note.editorial-note-sand,.editorial-summary-panel { background:var(--brand-secondary); }
+.portal-editorial .editorial-article-card { background:var(--surface-olive); }
+.portal-editorial .editorial-article-peach,.portal-editorial .editorial-tech-grid > .editorial-article-card:nth-child(even) { background:var(--surface-cream); }
+.editorial-kicker,.editorial-card-footer button,.editorial-lead-copy button,.editorial-news-note button { --text-primary:var(--brand-accent); --text-secondary:var(--brand-accent); }
+.editorial-save[aria-pressed="true"] { background:var(--brand-secondary); border-color:var(--brand-accent); }
+.editorial-upload,.editorial-mini-book,.editorial-magazine-reader { background:var(--brand-secondary); }
+.editorial-mini-book.editorial-cover-clay { background:var(--brand-accent); --text-primary:#fff; --text-secondary:#fff; }
+.editorial-mini-book.editorial-cover-lilac { background:var(--brand-primary); --text-primary:#fff; --text-secondary:var(--brand-cream); }
+.editorial-page.editorial-mag-cover { background:var(--brand-cream); }
+.editorial-reader-top button,.editorial-reader-controls button { background:var(--surface-cream); border-color:var(--brand-secondary); }
+.editorial-reader-controls button:focus-visible,.editorial-tech-grid:focus-visible,.editorial-tech-carousel-controls button:focus-visible { outline-color:var(--brand-cream); }
+
+/* Supporting navigation and dialogs share the same restrained accents. */
+.portal-section-float-dot { background:var(--brand-primary); }
+.portal-section-float-track > span { background:linear-gradient(90deg,var(--brand-secondary),var(--brand-primary)); }
+.portal-section-step-icon,.portal-section-float-top button { background:var(--surface-olive); }
+.bf-notice { background:var(--surface-cream); border-color:var(--brand-line); }
+.bf-notice-icon,.bf-notice-decision .bf-notice-icon { background:var(--brand-cream); }
+.bf-notice-icon i,.bf-notice-decision .bf-notice-icon i { color:var(--brand-accent); }
+:is(.portal-doc-dialog,.editorial-dialog,.systems-system-dialog,.portal-group-dialog) { background:var(--surface-cream); }
+body .portal-group-dialog .portal-group-save { background:var(--brand-primary); }

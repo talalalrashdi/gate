@@ -60,3 +60,18 @@ Next: obtain browser verification of the initial migration, resolve any regressi
 - CompanyPortal saves theme selections under `companyportal-opening-theme-v1`, so its new default applies on first use without changing the original `clerio-opening-theme` preference. Subsequent explicit selections persist normally. Task and other storage keys are untouched.
 - Portal, profile, and error views use the browser title `البوابة` and the existing local `oman-khanjar.png` favicon.
 - These are intentional differences from the frozen original source. The migration verifier accounts for the tab/theme changes while continuing to check remaining HTML and assets against the original baseline. The changed intro script is checked against its current MVC source.
+
+## User-authorized naming refactor
+
+The naming refactor supersedes the numeric internal theme IDs and original MVC asset filenames mentioned in the earlier stage notes above. See `NAMING_CONVENTIONS.md` for the full mapping.
+
+- Renamed all 39 top-level CSS/JavaScript files from design-era names to feature names; preserved their loading order and feature boundaries.
+- Updated MVC view references, CSS selectors/custom properties, JavaScript IDs/classes/data attributes/dataset access, inline markup/styles, and the affected SVG's internal classes together. No assets or features were removed.
+- Theme keys are `majestic`, `official`, and `formal`; their panel IDs are `theme-majestic`, `theme-official`, and `theme-formal`. Visible numbering remains 1/2/3 with majestic first/default.
+- Numeric values previously saved in `companyportal-opening-theme-v1` are mapped to the same themes before writing semantic values. Existing legacy browser storage keys and all unrelated data remain intact.
+- Renamed custom events to `companyportal:theme-change` and `systems:reveal`, updating producers and consumers.
+- Replaced visible Design B navigation/footer wording with portal wording. The title/favicon remain as requested.
+- `/design-b.html` now redirects temporarily to the portal root and retains its query string. No active MVC CSS/JavaScript filename uses `design-b`; the intentionally retained storage key and compatibility route are exceptions.
+- Build passed with zero warnings/errors. All 19 JavaScript files passed syntax checks. Theme logic checks passed for the default, numeric and semantic preferences, invalid/retired values, all three buttons, panel visibility, active state, custom events, and legacy-key preservation.
+- HTTP verification passed for six page routes, all 325 static resources, seven CSS resource references, renamed asset paths, the legacy redirect/query string, and expected error/absent routes. All 328 original source hashes remain unchanged.
+- Browser selection again reported no available browser. Desktop/mobile rendering and complete browser interactions remain pending; this is not a visual verification claim.

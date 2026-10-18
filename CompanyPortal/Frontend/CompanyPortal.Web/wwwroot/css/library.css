@@ -1,0 +1,32 @@
+/* Document browsing, scoped to design B's library. */
+.portal-section.portal-digital-library { position: relative; isolation: isolate; margin-block: 32px; border: 1px solid #e5dacf; border-radius: 28px; background: #f3ece2; --text-primary: #153b4d; --text-secondary: #60716b; }
+.portal-digital-library::before { content: ''; position: absolute; z-index: -1; inset: 0; border-radius: inherit; pointer-events: none; background: radial-gradient(ellipse at 90% 5%,#d9c4a733,transparent 55%),repeating-linear-gradient(45deg,transparent 0 32px,#a88c6610 32px 33px,transparent 33px 64px),repeating-linear-gradient(-45deg,transparent 0 32px,#a88c6610 32px 33px,transparent 33px 64px); }
+#digital-library .portal-section-heading h2 { color: #153b4d !important; }
+.documents-categories { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.documents-categories button { padding: 10px 18px; min-height: 44px; border: 1px solid #d8d9ce; border-radius: 999px; background: #ffffff85; color: #405c50; --text-primary: #405c50; font-size: 14px; font-weight: 500; transition: background .2s,border-color .2s; }
+.documents-categories button:hover { background: #fff; border-color: #96b3a0; }.documents-categories button[aria-pressed="true"] { --text-primary: #fff; --text-secondary: #fff; color: #fff; background: #285c4b; border-color: #285c4b; }
+.documents-browser { padding:26px; border:1px solid #dce3df; border-radius:20px; background:#ffffffb3; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
+.documents-tools { display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+.documents-tools > div { margin-inline-end:auto; }
+.documents-eyebrow { font-size:11px; color:#6a7d70; }
+.documents-tools h3 { margin:5px 0 0; font-size:24px; }
+.documents-results-bar { display:flex; justify-content:space-between; gap:12px; margin-top:24px; padding-bottom:12px; border-bottom:1px solid #e3e8e2; font-size:11px; color:#687a71; }
+.documents-row { display:grid; grid-template-columns:48px minmax(0,1fr) auto; align-items:center; gap:18px; padding:20px 0; border-bottom:1px solid #e7ebe5; }
+.documents-row:last-child { border-bottom:0; }
+.documents-file-icon { display:grid; place-items:center; width:44px; height:54px; border:1px solid #dce3df; border-radius:6px 14px 6px 6px; background:#f4f5ef; font-size:10px; color:#8f3f46; font-weight:700; }
+.documents-row h4 { margin:0 0 6px; font-size:17px; }
+.documents-row p { margin:0; font-size:12px; line-height:1.8; color:#63756c; }
+.documents-row small { display:block; margin-top:6px; font-size:10px; color:#7c8a80; }
+.documents-row button { padding:10px 14px; border:1px solid #d4ded4; border-radius:10px; background:#f1f5ed; color:#153b4d; font:inherit; font-size:12px; }
+.documents-local-note,.documents-empty { font-size:11px; line-height:1.9; color:#748078; }
+.documents-local-note { margin:18px 0 0; }
+.documents-empty { padding:24px 0; }
+.documents-dialog { width:min(960px,calc(100vw - 32px)); max-height:calc(100dvh - 40px); margin:auto; padding:24px; border:1px solid #d6ded3; border-radius:22px; background:#fafbf7; color:#153b4d; --text-primary:#153b4d; --text-secondary:#63756c; }
+.documents-dialog::backdrop { background:#102a3466; backdrop-filter:blur(8px); }
+.documents-dialog header { display:flex; justify-content:space-between; gap:18px; align-items:center; }
+.documents-dialog h3 { margin:6px 0; font-size:24px; }
+.documents-dialog header button { width:40px; height:40px; border-radius:50%; background:#e8eee4; font-size:26px; }
+.documents-dialog p { font-size:13px; line-height:1.9; }
+.documents-dialog iframe { display:block; width:100%; height:60dvh; border:1px solid #d6ded3; border-radius:12px; background:#fff; }
+.documents-dialog a { display:inline-block; padding:11px 16px; margin-bottom:12px; border:1px solid #c7d4cc; border-radius:10px; font-size:12px; }
+@media(max-width:560px) { .documents-categories { gap:8px; }.documents-categories button { padding:9px 13px; font-size:13px; }.documents-categories strong { font-size:15px; }.documents-categories small { font-size:10px; }.documents-categories button > span:last-child { display:none; }.documents-browser { padding:16px; }.documents-tools { gap:14px; }.documents-tools > div { width:100%; }.documents-tools h3 { font-size:21px; }.documents-row { grid-template-columns:36px minmax(0,1fr); gap:12px; }.documents-file-icon { width:34px; height:44px; }.documents-row button { grid-column:2; justify-self:start; }.documents-row h4 { font-size:16px; }.documents-results-bar > span:last-child { display:none; }.documents-dialog { padding:18px; } }

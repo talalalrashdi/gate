@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { fileNames, renameFrontendSource } from './frontend-names.mjs';
 
 const companyRoot = fileURLToPath(new URL('../', import.meta.url));
 const originalRoot = path.resolve(companyRoot, '../dist');
@@ -16,21 +17,21 @@ const normalize = text => text.replaceAll('\r\n', '\n').trim();
 const canonicalHtml = text => normalize(text)
   .replace(/<title>[^<]*<\/title>/, '<title></title>')
   .replace(/\s*<link rel="icon"[^>]*>/g, '')
-  .replace(/<div class="b-intro-switch"[\s\S]*?<small id="bt-theme-name">[^<]*<\/small><\/div>/, '<!-- theme controls -->');
+  .replace(/<div class="portal-theme-switch"[\s\S]*?<small id="personal-theme-name">[^<]*<\/small><\/div>/, '<!-- theme controls -->');
 
 function migratedPath(file) {
-  if (file.endsWith('.css')) return 'css/' + file;
-  if (file.endsWith('.js')) return 'js/' + file;
+  if (file.endsWith('.css')) return 'css/' + (fileNames[file] ?? file);
+  if (file.endsWith('.js')) return 'js/' + (fileNames[file] ?? file);
   return file;
 }
 
 function expectedHtml(html) {
-  return html.replace(/\b(href|src)="\.\/([^\"]+)"/g, (_, attribute, file) => {
+  return renameFrontendSource(html.replace(/\b(href|src)="\.\/([^\"]+)"/g, (_, attribute, file) => {
     let destination = migratedPath(file);
     if (file === 'design-b.html' || file === 'index.html') destination = '';
     if (file === 'user-profile.html') destination = 'profile';
     return `${attribute}="/${destination}"`;
-  });
+  }));
 }
 
 async function request(resource, expectedStatus = 200) {
@@ -51,8 +52,8 @@ for (const route of ['', 'index.html', 'design-b.html']) {
   assert.equal(canonicalHtml(html), canonicalHtml(expectedHtml(portal)), `Portal differs: /${route}`);
   assert.ok(html.includes('<title>البوابة</title>'), 'Portal tab title');
   assert.ok(html.includes('rel="icon" type="image/png" href="/assets/oman-khanjar.png"'), 'Portal favicon');
-  const buttons = [...html.matchAll(/<button[^>]*data-intro-option="([^"]+)"[^>]*>(\d)<\/button>/g)];
-  assert.deepEqual(buttons.map(button => [button[1], button[2]]), [['4', '1'], ['2', '2'], ['3', '3']], 'Visible theme mapping');
+  const buttons = [...html.matchAll(/<button[^>]*data-theme-option="([^"]+)"[^>]*>(\d)<\/button>/g)];
+  assert.deepEqual(buttons.map(button => [button[1], button[2]]), [['majestic', '1'], ['official', '2'], ['formal', '3']], 'Visible theme mapping');
 }
 for (const route of ['profile', 'profile/', 'user-profile.html']) {
   const html = await (await request(route)).text();
@@ -69,8 +70,9 @@ for (let offset = 0; offset < resources.length; offset += 8) {
     const actual = Buffer.from(await response.arrayBuffer());
     let expected = await readFile(path.join(originalRoot, file.path));
     if (file.path.endsWith('.css')) expected = Buffer.from(expected.toString('utf8').replaceAll('./assets/', '../assets/'));
+    if (/\.(css|js|svg)$/.test(file.path)) expected = Buffer.from(renameFrontendSource(expected.toString('utf8')));
     // The default/preference behavior was intentionally changed in this script.
-    if (file.path === 'design-b-intro.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/design-b-intro.js'));
+    if (file.path === 'design-b-intro.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/personal-workspace.js'));
     assert.equal(digest(actual), digest(expected), `Resource differs: ${file.path}`);
   }));
 }
@@ -93,6 +95,11 @@ for (const file of styles) {
 
 await request('api/v1/me', 404);
 await request('__review', 404);
+await request('css/design-b.css', 404);
+await request('js/design-b.js', 404);
+const legacy = await fetch(new URL('design-b.html?section=workspace', base), { redirect: 'manual' });
+assert.equal(legacy.status, 302, 'Legacy portal route redirects');
+assert.equal(legacy.headers.get('location'), '/?section=workspace', 'Legacy query preserved');
 const error = await request('error', 500);
 assert.ok(!(await error.text()).includes('StackTrace'), 'Error page exposes diagnostics');
 

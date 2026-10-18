@@ -24,7 +24,7 @@ dotnet run --project CompanyPortal.Web
 
 Run .NET commands from `Frontend/` so its `global.json` SDK selection applies.
 
-Open `http://127.0.0.1:5080/` for the portal and `http://127.0.0.1:5080/profile` for the profile page. Old `/index.html`, `/design-b.html`, and `/user-profile.html` links also resolve through MVC.
+Open `http://127.0.0.1:5080/` for the portal and `http://127.0.0.1:5080/profile` for the profile page. Old `/index.html` and `/user-profile.html` links also resolve through MVC; `/design-b.html` redirects to `/` and preserves the query string.
 
 The local development profile intentionally uses HTTP on loopback. Production HTTPS hosting is a later configuration task. No authentication or API integration is implemented; existing employee/business content remains illustrative.
 
@@ -48,10 +48,12 @@ Use the same browser profile and exact scheme/hostname/port. The existing script
 - `Frontend/CompanyPortal.Web/Controllers/`: thin MVC controllers for page routes.
 - `Frontend/CompanyPortal.Web/Views/`: portal, profile, and safe error views. Full-page views are retained initially to simplify comparison; shared layout/partials are the next organization step after browser verification.
 - `Frontend/CompanyPortal.Web/wwwroot/css/`: copied styles, with asset URLs adjusted for their new directory.
-- `Frontend/CompanyPortal.Web/wwwroot/js/`: unchanged original JavaScript.
+- `Frontend/CompanyPortal.Web/wwwroot/js/`: feature-named JavaScript, including `site.js` and `personal-workspace.js`. Selectors/events use descriptive names; saved browser keys retain compatibility.
 - `Frontend/CompanyPortal.Web/wwwroot/assets/`: copied images, fonts, magazine pages, and licenses. Unused asset review is deferred until final cleanup.
 - `docs/frontend-baseline.json`: original file hashes and ordered stylesheet/script dependencies.
 - `tools/verify-frontend.mjs`: optional migration verification; requires Node.js and the retained original `../dist/`.
+- `tools/frontend-names.mjs`: old-to-new naming map used by migration checks, not a browser dependency. See [naming conventions](docs/NAMING_CONVENTIONS.md).
+- `tools/verify-theme-selection.mjs`: executes theme selection with a minimal DOM to check defaults, saved preference compatibility and all theme buttons.
 
 Models and backend service layers will be introduced when real data requirements need them. No empty model/repository/API scaffolding is included.
 
@@ -61,9 +63,10 @@ With MVC running, execute from this directory:
 
 ```powershell
 node tools/verify-frontend.mjs
+node tools/verify-theme-selection.mjs
 ```
 
-This checks original source hashes, rendered page parity, copied static resources, CSS asset paths, expected route status codes, and absence of API/Vite review routes. It does not run JavaScript interactions or replace desktop/mobile browser checks. It deliberately fails if the original baseline changes; update the migration record when an intentional change is made.
+The frontend check verifies original source hashes, rendered page parity with approved naming/tab/theme changes, static resources, CSS asset paths, expected route status codes, and absence of API/Vite review routes. The theme check covers selection logic and preference compatibility with a minimal DOM. Neither replaces desktop/mobile browser checks. The original baseline remains frozen; intentional MVC changes are recorded separately.
 
 ## Publish and internal network preparation
 
@@ -81,7 +84,7 @@ Copying the parent folder transfers source for both eventual solutions, but offl
 
 ## Next steps
 
-1. Verify portal/profile appearance and existing interactions on desktop/mobile, including themes 2/3/4 and storage behavior.
+1. Verify portal/profile appearance and existing interactions on desktop/mobile, including visible themes 1/2/3 and storage behavior. Theme 1 (`majestic`) is the default.
 2. Extract the shared layout and coherent partial views in small verified changes.
 3. Resolve required external resources for offline use.
 4. Perform dependency-based cleanup last; retire original source and Vite only after the replacement is verified.

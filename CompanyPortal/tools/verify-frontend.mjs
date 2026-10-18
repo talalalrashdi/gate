@@ -73,6 +73,8 @@ for (let offset = 0; offset < resources.length; offset += 8) {
     if (/\.(css|js|svg)$/.test(file.path)) expected = Buffer.from(renameFrontendSource(expected.toString('utf8')));
     // The default/preference behavior was intentionally changed in this script.
     if (file.path === 'design-b-intro.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/personal-workspace.js'));
+    // User-requested full-width, flush-top default-theme header.
+    if (file.path === 'design-b-majestic-theme.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/theme-majestic.css'));
     assert.equal(digest(actual), digest(expected), `Resource differs: ${file.path}`);
   }));
 }

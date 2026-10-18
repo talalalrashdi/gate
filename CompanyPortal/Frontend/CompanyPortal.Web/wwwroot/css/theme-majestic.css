@@ -1,9 +1,9 @@
-/* A single photographic surface joins the header and personal area in theme four. */
+/* A full-width photographic surface joins the header and personal area in the default theme. */
 .theme-majestic-backdrop { display: none; }
 .theme-majestic-frame { display: contents; }
 body[data-site-theme="majestic"] { padding-top: 0; }
-body[data-site-theme="majestic"] .theme-majestic-frame { display: block; position: relative; width: calc(100vw - 24px); margin: 12px calc(50% - 50vw + 12px) 24px; padding: 0 0 20px; border: 1px solid #c9cdcf; border-radius: 20px; background: transparent; overflow: clip; }
-body[data-site-theme="majestic"] .theme-majestic-frame > .portal-header { position: relative; inset: auto; width: 100%; border-radius: 20px 20px 0 0; }
+body[data-site-theme="majestic"] .theme-majestic-frame { display: block; position: relative; width: 100vw; margin: 0 calc(50% - 50vw) 24px; padding: 0 0 20px; border: 0; border-radius: 0 0 20px 20px; background: transparent; overflow: clip; }
+body[data-site-theme="majestic"] .theme-majestic-frame > .portal-header { position: relative; inset: auto; width: 100%; border-radius: 0; }
 body[data-site-theme="majestic"] .theme-majestic-frame > .portal-header:has(#documents-sheet-trigger) { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); padding-inline: 24px; gap: 24px; }
 body[data-site-theme="majestic"] .portal-header .portal-brand { justify-self: start; }
 body[data-site-theme="majestic"] .portal-header .portal-user { display: flex; justify-self: end; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid #ffffff24; border-radius: 16px; background: #ffffff08; }
@@ -17,7 +17,7 @@ body[data-site-theme="majestic"] .portal-header-center { min-width: 0; }
 body[data-site-theme="majestic"] .portal-personal-zone { padding-bottom: 0; }
 body[data-site-theme="majestic"] .portal-personal-zone::before,
 body[data-site-theme="majestic"] .portal-personal-zone::after { display: none; }
-body[data-site-theme="majestic"] .theme-majestic-backdrop { display: block; position: absolute; z-index: -1; inset: -140px 0 0; width: 100%; overflow: hidden; border-radius: 20px; background: #101513; }
+body[data-site-theme="majestic"] .theme-majestic-backdrop { display: block; position: absolute; z-index: -1; inset: -140px 0 0; width: 100%; overflow: hidden; border-radius: 0 0 20px 20px; background: #101513; }
 .theme-majestic-backdrop img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 56%; opacity: 0; transform: scale(1.04); transition: opacity 1.6s ease; }
 .theme-majestic-backdrop img.is-active { opacity: 1; }
 body[data-site-theme="majestic"] .theme-majestic-backdrop img { animation: majestic-drift 22s ease-in-out infinite alternate; }
@@ -98,9 +98,7 @@ body[data-site-theme="majestic"] :is(.theme-majestic-link,.theme-majestic-scenes
   body[data-site-theme="majestic"] .portal-header .portal-navigation { gap: 8px; }
   body[data-site-theme="majestic"] main { width: calc(100% - 24px); }
   body[data-site-theme="majestic"] .portal-section.portal-editorial { width: calc(100% + 24px); margin-inline: -12px; }
-  body[data-site-theme="majestic"] .theme-majestic-frame { width: calc(100vw - 12px); margin: 6px calc(50% - 50vw + 6px) 12px; padding: 0 0 10px; border-radius: 20px; }
-  body[data-site-theme="majestic"] .theme-majestic-frame > .portal-header { border-radius: 20px 20px 0 0; }
-  body[data-site-theme="majestic"] .theme-majestic-backdrop { border-radius: 20px; }
+  body[data-site-theme="majestic"] .theme-majestic-frame { margin-bottom: 12px; padding: 0 0 10px; }
   body[data-site-theme="majestic"] .theme-majestic-frame > .portal-workspace-section { padding: 20px 12px 6px; }
   body[data-site-theme="majestic"] .theme-majestic-backdrop { top: -184px; }body[data-site-theme="majestic"] .portal-personal-zone > .theme-majestic-glass { top: calc(65% - 64.4px); }
   body[data-site-theme="majestic"] #theme-majestic:not([hidden]) { grid-template-columns: minmax(0, 1fr) minmax(240px, .7fr); gap: 20px; min-height: 0; padding: 4px 12px 12px; }

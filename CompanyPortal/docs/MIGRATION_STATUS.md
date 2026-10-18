@@ -75,3 +75,7 @@ The naming refactor supersedes the numeric internal theme IDs and original MVC a
 - Build passed with zero warnings/errors. All 19 JavaScript files passed syntax checks. Theme logic checks passed for the default, numeric and semantic preferences, invalid/retired values, all three buttons, panel visibility, active state, custom events, and legacy-key preservation.
 - HTTP verification passed for six page routes, all 325 static resources, seven CSS resource references, renamed asset paths, the legacy redirect/query string, and expected error/absent routes. All 328 original source hashes remain unchanged.
 - Browser selection again reported no available browser. Desktop/mobile rendering and complete browser interactions remain pending; this is not a visual verification claim.
+
+## Default-theme header spacing
+
+At the user's request, the majestic/default theme's shared header/personal-area frame now reaches the top and sides of the viewport. Removed the original 12px desktop / 6px mobile outer gaps and frame border, and squared the top corners of the frame, header and photographic backdrop. Retained internal header padding, bottom rounding/spacing and existing pinned-scroll behavior. Edited the existing theme rules rather than adding competing overrides. The retained original source contains the former gaps; it remains unchanged. Browser access is still unavailable, so no desktop/mobile visual verification is claimed.

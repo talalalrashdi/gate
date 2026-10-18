@@ -6,9 +6,6 @@
   const byId = id => document.getElementById(id);
   const themeButtons = [...document.querySelectorAll('[data-theme-option]')];
   const themePanels = [...section.querySelectorAll('.portal-theme-panel')];
-  const siteHeader = document.querySelector('.portal-header');
-  const headerHome = siteHeader?.parentElement;
-  const headerNext = siteHeader?.nextSibling;
   const majesticFrame = byId('theme-majestic-frame');
   const alertsSection = byId('portal-alerts-section');
   const alertsHome = alertsSection?.parentElement;
@@ -107,10 +104,6 @@
     });
     themePanels.forEach(panel => { panel.hidden = panel.id !== selected.panel; });
     if (sharedNews) byId(option === 'formal' ? 'theme-formal' : 'theme-majestic')?.append(sharedNews);
-    if (siteHeader && headerHome && majesticFrame) {
-      if (option === 'majestic') majesticFrame.prepend(siteHeader);
-      else headerHome.insertBefore(siteHeader, headerNext);
-    }
     if (alertsSection && alertsHome && majesticFrame) {
       if (option === 'majestic') (sharedNews?.querySelector('.personal-news-bottom') || byId('theme-majestic')).append(alertsSection);
       else if (option === 'news') section.after(alertsSection);

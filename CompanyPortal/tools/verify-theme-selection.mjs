@@ -30,13 +30,16 @@ function initialize(saved) {
     querySelectorAll: () => panels,
     setAttribute(key, value) { this.attributes[key] = value; }
   };
-  const elements = new Map([['systems', section], ['personal-theme-name', label], ...panels.map(panel => [panel.id, panel])]);
+  const headerParent = { insertBefore(node) { node.parentElement = this; } };
+  const header = { parentElement: headerParent, nextSibling: null };
+  const photoFrame = { prepend(node) { node.parentElement = this; } };
+  const elements = new Map([['systems', section], ['personal-theme-name', label], ['theme-majestic-frame', photoFrame], ...panels.map(panel => [panel.id, panel])]);
   const body = { dataset: {} };
   const events = [];
   vm.runInNewContext(themeCode, {
     document: {
       body, hidden: false, getElementById: id => elements.get(id) ?? null,
-      querySelector: () => null,
+      querySelector: selector => selector === '.portal-header' ? header : null,
       querySelectorAll: selector => selector === '[data-theme-option]' ? buttons : [],
       dispatchEvent: event => events.push(event), addEventListener() {}
     },
@@ -48,6 +51,7 @@ function initialize(saved) {
   function check(expected) {
     assert.equal(body.dataset.siteTheme, expected);
     assert.equal(section.dataset.theme, expected);
+    assert.equal(header.parentElement, headerParent, 'Every theme retains the same shared header outside the photo frame');
     assert.deepEqual(panels.filter(panel => !panel.hidden).map(panel => panel.id), ['theme-' + expected]);
     assert.equal(buttons.filter(button => button.attributes['aria-pressed'] === 'true').length, 1);
     assert.equal(JSON.parse(state.get('companyportal-opening-theme-v1')), expected);

@@ -1,5 +1,7 @@
 # كليريو — المشروع الكامل للتشغيل المحلي
 
+> CompanyPortal MVC migration has started. The .NET 10 frontend is in [CompanyPortal](CompanyPortal/README.md). The original Vite source below remains available for comparison; migration verification and final cleanup are still pending. See [migration status](CompanyPortal/docs/MIGRATION_STATUS.md).
+
 التصميم المعتمد هو «تصميم ب»، بواجهة عربية واتجاه RTL وخط GT America Arabic المحلي. الصفحة الرئيسية تحوّل إليه تلقائيًا.
 
 ## التشغيل في VS Code

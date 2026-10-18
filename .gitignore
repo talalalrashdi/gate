@@ -1,1 +1,9 @@
 node_modules/
+.local/
+**/bin/
+**/obj/
+**/.vs/
+**/publish/
+**/artifacts/
+*.user
+*.suo

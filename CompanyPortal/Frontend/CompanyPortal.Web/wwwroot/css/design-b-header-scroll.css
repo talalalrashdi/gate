@@ -1,0 +1,29 @@
+/* Keep the complete header pinned while scrolling, across the existing themes. */
+body.b-dashboard .b-header.is-pinned {
+  position: fixed;
+  inset: 0 0 auto;
+  width: 100%;
+  z-index: 60;
+  border-radius: 0;
+  background: rgb(255 255 255 / 82%);
+  border-bottom-color: #00000012;
+  backdrop-filter: blur(22px) saturate(120%);
+  -webkit-backdrop-filter: blur(22px) saturate(120%);
+  --text-primary: #000;
+  --text-secondary: #000;
+}
+body.b-dashboard .b-header.is-pinned .b-media-subnav {
+  background: rgb(255 255 255 / 82%);
+  border-block-color: #00000012;
+  backdrop-filter: blur(22px) saturate(120%);
+  -webkit-backdrop-filter: blur(22px) saturate(120%);
+}
+body.b-dashboard .b-header.is-pinned :is(.b-nav a,.b-media-subnav-links a,.b-media-new,.b-org-status-copy,.b-search,.b-theme-trigger,.b-notifications-trigger,.b-alert-visibility,.b-org-status > summary) {
+  --text-primary: #000;
+  --text-secondary: #000;
+}
+body.b-dashboard .b-header.is-pinned .b-brand:not(.is-emblem) img { filter: brightness(0); }
+body.b-dashboard .b-header.is-pinned .b-nav a:is(:hover,:focus-visible) { color: #000 !important; }
+body.b-dashboard .b-header.is-pinned .b-user { background: transparent; border-color: transparent; }
+body.b-dashboard .b-header.is-pinned :is(.b-theme-trigger,.b-notifications-trigger,.b-alert-visibility) { background: #ffffff80; border-color: #00000012; }
+.b-header-scroll-space[hidden] { display: none; }

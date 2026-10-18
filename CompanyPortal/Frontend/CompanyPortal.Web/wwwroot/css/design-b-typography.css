@@ -1,0 +1,16 @@
+/* Shared two-tone text palette for Design B and its user page. */
+:root { --text-primary: #111111; --text-secondary: #444444; }
+body { color: var(--text-primary) !important; }
+body :is(h1,h2,h3,h4,h5,h6,b,strong,em,a,button,input,label,mark) { color: var(--text-primary) !important; }
+body :is(p,small,time,span,footer,.b-toast) { color: var(--text-secondary) !important; }
+body :is(h1,h2,h3,h4,h5,h6) * { color: var(--text-primary) !important; }
+body :is(.b-alert-toolbar > span,.b-library-catalog button > span,.b-service-links button > span,.b-search-option strong,.b-avatar) { color: var(--text-primary) !important; }
+body input::placeholder { color: var(--text-secondary) !important; opacity: 1; }
+
+/* Light text surfaces keep black lettering readable on dark/photographic areas. */
+body .b-media { background: #e5ece8; }
+body .b-media-hero-copy { padding: 20px; border-radius: 14px; background: #fffdf8ed; }
+body .b-media-rail article > div:not(.b-text-tile) { left: 16px; padding: 12px; border-radius: 10px; background: #fffdf8ed; }
+body .b-doc-categories button[aria-pressed="true"] { background: #e3ddec; box-shadow: inset 0 -2px #8d809e; }
+body .b-profile-footer a { background: #dce8df; }
+body .b-toast { background: #f8f7fa; border: 1px solid #dedbe4; box-shadow: 0 8px 25px #00000012; }

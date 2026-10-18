@@ -1,0 +1,1694 @@
+{
+  "capturedOn": "2026-10-18",
+  "source": "gate/dist",
+  "note": "Source inventory only; no browser storage inspected or exported. Original source is retained.",
+  "portalStyles": [
+    "https://iconsax.gitlab.io/i/icons.css",
+    "./design-b.css",
+    "./design-b-header.css",
+    "./design-b-workspace.css",
+    "./design-b-editorial.css",
+    "./design-b-section-nav.css",
+    "./design-b-systems.css",
+    "./design-b-notice-strip.css",
+    "./design-b-themes.css",
+    "./design-b-palette.css",
+    "./design-b-planner.css",
+    "./design-b-layout.css",
+    "./design-b-calendar-integrated.css",
+    "./design-b-documents-sheet.css",
+    "./design-b-formal-theme.css",
+    "./design-b-majestic-theme.css",
+    "./design-b-library.css",
+    "./design-b-national-theme.css",
+    "./design-b-floating-calendar.css",
+    "./design-b-header-scroll.css"
+  ],
+  "portalScripts": [
+    "./design-b-policies-sheet.js",
+    "./design-b-documents-sheet.js",
+    "./design-b-status.js",
+    "./design-b.js",
+    "./design-b-notice-strip.js",
+    "./design-b-editorial.js",
+    "./design-b-magazine.js",
+    "./design-b-library.js",
+    "./design-b-safety.js",
+    "./design-b-intro.js",
+    "./design-b-majestic-news.js",
+    "./design-b-personal-carousel.js",
+    "./design-b-section-nav.js",
+    "./design-b-floating-notices.js",
+    "./design-b-systems.js",
+    "./design-b-workspace-groups.js",
+    "./design-b-workspace-order.js",
+    "./design-b-electronic-services.js",
+    "./design-b-widget-layout.js"
+  ],
+  "profileStyles": [
+    "./design-b.css",
+    "./design-b-header.css"
+  ],
+  "files": [
+    {
+      "path": "assets/editorial-texture.svg",
+      "bytes": 2780,
+      "sha256": "0037d61f543c340976da8738edc280495b4b1d7d58e030a0fab4d7b5cc453204"
+    },
+    {
+      "path": "assets/fonts/GTAmericaArabic-Black.ttf",
+      "bytes": 371324,
+      "sha256": "46f5d839c2a15f5cae1d4b978c2364e9e3846d27e8b4c564f287ed476b596d94"
+    },
+    {
+      "path": "assets/fonts/GTAmericaArabic-Bold.ttf",
+      "bytes": 370980,
+      "sha256": "62bad5dcc63335fadefe39b257648c60a6ef8b36b13391b0579b20c0896e0ecb"
+    },
+    {
+      "path": "assets/fonts/GTAmericaArabic-Light.ttf",
+      "bytes": 369676,
+      "sha256": "e519a3948e0f4f68494de342b337ffe3cd506f2245b59b5a6ff2fef228164020"
+    },
+    {
+      "path": "assets/fonts/GTAmericaArabic-Medium.ttf",
+      "bytes": 368100,
+      "sha256": "dd494b3f6bbd5180cf3b0fc1716a814a8b7d6f6bd4d75e33c0377f24799b50ae"
+    },
+    {
+      "path": "assets/fonts/GTAmericaArabic-Regular.ttf",
+      "bytes": 367544,
+      "sha256": "a4f5b1a61e38d121c16f266e9ea15b7d8483015fb0172e69332a77e23a0e1d53"
+    },
+    {
+      "path": "assets/fonts/GTAmericaArabic-Thin.ttf",
+      "bytes": 370096,
+      "sha256": "73f3dd3c7aa1340dddf49298eb32dd4e67e1ece0c33126bdbc836af2dc4f2c65"
+    },
+    {
+      "path": "assets/fonts/GTAmericaArabic-UltraLight.ttf",
+      "bytes": 372020,
+      "sha256": "5c8e87aca6332fdbdb49402000bf5ef819ec1a23bc24be27777b24c651a5ae3d"
+    },
+    {
+      "path": "assets/fonts/LICENSE.txt",
+      "bytes": 4456,
+      "sha256": "7e6b2818edbd8f6a01ae80641cc8f16a51080d08fb4e532be3a0b6f74adb07da"
+    },
+    {
+      "path": "assets/hero-oman-desert.png",
+      "bytes": 1882725,
+      "sha256": "c89f8883a8de7b0cd32d97d5e6cb65edd4de356910f2f0ebfd385bcc38fa78d6"
+    },
+    {
+      "path": "assets/hero-oman-fort.png",
+      "bytes": 2356192,
+      "sha256": "8874252720cf1bf579c23d3a5d2a8d5146b9663c2eff58a41016cba94e6633a6"
+    },
+    {
+      "path": "assets/hero-oman-mosque.png",
+      "bytes": 1886773,
+      "sha256": "1421a2c73273e0c0039dc2fff13c710e31dcef8f89ec0891c45a3c385abd9292"
+    },
+    {
+      "path": "assets/magazines/39-pages/001.webp",
+      "bytes": 122632,
+      "sha256": "5e674a745eb37f9697fffe74d4fbe968d27266151d67363ea53712814c623d00"
+    },
+    {
+      "path": "assets/magazines/39-pages/002.webp",
+      "bytes": 69740,
+      "sha256": "e7d6cd226176b7222fef1a56cb0e7ef89062323fbba06aaf75229dd82b7a28dd"
+    },
+    {
+      "path": "assets/magazines/39-pages/003.webp",
+      "bytes": 66912,
+      "sha256": "3be27712343a24bb126bdd2cef432b38d355efa2cef60d5932722dfcd041bdcb"
+    },
+    {
+      "path": "assets/magazines/39-pages/004.webp",
+      "bytes": 15140,
+      "sha256": "cb3d67946d7bce83a2c335e4fc190c4ad6ce17b325e5fc62242c396cd0429716"
+    },
+    {
+      "path": "assets/magazines/39-pages/005.webp",
+      "bytes": 19372,
+      "sha256": "0786bf39f544ea0d7ebaadbb8291b7b87859f2e8afaaa61df1e4dc745c2aa457"
+    },
+    {
+      "path": "assets/magazines/39-pages/006.webp",
+      "bytes": 19368,
+      "sha256": "9974800a4c54122375200b426fed93a64b72612a451690e146d7481710132f76"
+    },
+    {
+      "path": "assets/magazines/39-pages/007.webp",
+      "bytes": 197768,
+      "sha256": "339b3f23b2d7bd9b20d7327499e91d1ba9acd10278c7e55e255201674fd13740"
+    },
+    {
+      "path": "assets/magazines/39-pages/008.webp",
+      "bytes": 202002,
+      "sha256": "712c55b73f4c183d50dcb37aabb2714242bf00f1c1782567709d67eb61ec2f8f"
+    },
+    {
+      "path": "assets/magazines/39-pages/009.webp",
+      "bytes": 43562,
+      "sha256": "9751eb1d052c498d1e3dbc7a80105f7ac80b4d11562ab1a5b5dc1e328003839c"
+    },
+    {
+      "path": "assets/magazines/39-pages/010.webp",
+      "bytes": 170806,
+      "sha256": "5446095b4687fe74456fc5395011b4b8f5072c9b83c556104a934dd6158c4956"
+    },
+    {
+      "path": "assets/magazines/39-pages/011.webp",
+      "bytes": 55540,
+      "sha256": "effbd94f24fe69608308c3cf55ccf15f3ff5db443c910257798bcf265e622ec4"
+    },
+    {
+      "path": "assets/magazines/39-pages/012.webp",
+      "bytes": 15140,
+      "sha256": "cb3d67946d7bce83a2c335e4fc190c4ad6ce17b325e5fc62242c396cd0429716"
+    },
+    {
+      "path": "assets/magazines/39-pages/013.webp",
+      "bytes": 20858,
+      "sha256": "96b790dcf5a8479344f2287a65f51b25ca89bc3f6dbb0ee0a4f0456c3dc4555d"
+    },
+    {
+      "path": "assets/magazines/39-pages/014.webp",
+      "bytes": 19368,
+      "sha256": "9974800a4c54122375200b426fed93a64b72612a451690e146d7481710132f76"
+    },
+    {
+      "path": "assets/magazines/39-pages/015.webp",
+      "bytes": 181652,
+      "sha256": "37884f2051b46f163e2e58a301de88d9517246e03a23e8c2c76f611d84b4694e"
+    },
+    {
+      "path": "assets/magazines/39-pages/016.webp",
+      "bytes": 199456,
+      "sha256": "7b79cecd99013dfec17ee841aba927f8d2ec7973d6ca522d569979378aa60e78"
+    },
+    {
+      "path": "assets/magazines/39-pages/017.webp",
+      "bytes": 185398,
+      "sha256": "33b4f4d8b4d929198c48a3bc666da2e376bd30e6d14adad7afef1f1e571ca3f9"
+    },
+    {
+      "path": "assets/magazines/39-pages/018.webp",
+      "bytes": 15140,
+      "sha256": "cb3d67946d7bce83a2c335e4fc190c4ad6ce17b325e5fc62242c396cd0429716"
+    },
+    {
+      "path": "assets/magazines/39-pages/019.webp",
+      "bytes": 25700,
+      "sha256": "fc14485be27657fbd5614666a73b466721d9f5589d473c313315e1813f356919"
+    },
+    {
+      "path": "assets/magazines/39-pages/020.webp",
+      "bytes": 19368,
+      "sha256": "9974800a4c54122375200b426fed93a64b72612a451690e146d7481710132f76"
+    },
+    {
+      "path": "assets/magazines/39-pages/021.webp",
+      "bytes": 203500,
+      "sha256": "cdaeef5c4341fcef47648a0dc7427bcf0635dd73d1737c3a042619f7e640fdae"
+    },
+    {
+      "path": "assets/magazines/39-pages/022.webp",
+      "bytes": 181602,
+      "sha256": "9684f1e7b0044371f88f58f248007e943316acbb64d63ea79c32e153a4ca0da9"
+    },
+    {
+      "path": "assets/magazines/39-pages/023.webp",
+      "bytes": 196224,
+      "sha256": "b44f33c16faead3d18e9a69e250ec4d4f3af9d149c89d2d9944a2aa427625baa"
+    },
+    {
+      "path": "assets/magazines/39-pages/024.webp",
+      "bytes": 193766,
+      "sha256": "834650e7df3fd3fea6bbb2f07fac6661bd50044995dac94ce0f5d058b9379aac"
+    },
+    {
+      "path": "assets/magazines/39-pages/025.webp",
+      "bytes": 217034,
+      "sha256": "9b2c496137eeab4a950dbc88a10b091f71dff238ae432f35487777ca79a1cf17"
+    },
+    {
+      "path": "assets/magazines/39-pages/026.webp",
+      "bytes": 181906,
+      "sha256": "843bad30b282ee83c79ea636bb5a89a50152b081d07665e570aa889f094eff72"
+    },
+    {
+      "path": "assets/magazines/39-pages/027.webp",
+      "bytes": 159092,
+      "sha256": "18fef2634acc42662fdb2dc90bec0991e1a3fe5d83eacbc336838fee5695d494"
+    },
+    {
+      "path": "assets/magazines/39-pages/028.webp",
+      "bytes": 167000,
+      "sha256": "65b392f1d0e4d685b366850528877fac85cfaaea3f6e55b3003a781f21a35e2b"
+    },
+    {
+      "path": "assets/magazines/39-pages/029.webp",
+      "bytes": 183468,
+      "sha256": "4b51e0397790c71755941cea469bd89cd860a3fca71af74781b15e7edfd39299"
+    },
+    {
+      "path": "assets/magazines/39-pages/030.webp",
+      "bytes": 173280,
+      "sha256": "4d494a8f3c880affa82ed9e83e340853dbc8c93f6ea3469ddc5a24fb87c4ed1e"
+    },
+    {
+      "path": "assets/magazines/39-pages/031.webp",
+      "bytes": 142440,
+      "sha256": "3a593c6d6236b32332dac246e755d0b293887c134a5846b1fba03dfefbef1127"
+    },
+    {
+      "path": "assets/magazines/39-pages/032.webp",
+      "bytes": 194282,
+      "sha256": "69ea62386c4f05217087ce51a80da8df377677ad2594596d94b8a81599d7cb12"
+    },
+    {
+      "path": "assets/magazines/39-pages/033.webp",
+      "bytes": 36348,
+      "sha256": "a6482b751aad9b200b50c9bedc398ceac7100589d335570a264d168b071d4de5"
+    },
+    {
+      "path": "assets/magazines/39-pages/034.webp",
+      "bytes": 15140,
+      "sha256": "cb3d67946d7bce83a2c335e4fc190c4ad6ce17b325e5fc62242c396cd0429716"
+    },
+    {
+      "path": "assets/magazines/39-pages/035.webp",
+      "bytes": 27190,
+      "sha256": "5b7d76f11baeb48c27c112085273d8dd7680a30ef488f9973e17ae5d7c915668"
+    },
+    {
+      "path": "assets/magazines/39-pages/036.webp",
+      "bytes": 19368,
+      "sha256": "9974800a4c54122375200b426fed93a64b72612a451690e146d7481710132f76"
+    },
+    {
+      "path": "assets/magazines/39-pages/037.webp",
+      "bytes": 164908,
+      "sha256": "01a5934f3791b63c93a1b5a4b173e594a58087685fa87beeac1f425c7337fd64"
+    },
+    {
+      "path": "assets/magazines/39-pages/038.webp",
+      "bytes": 205216,
+      "sha256": "003cae1e5d30678bd49cc6109d610a78e3aa7ec1d0ce3f65a26115b17dd92026"
+    },
+    {
+      "path": "assets/magazines/39-pages/039.webp",
+      "bytes": 178454,
+      "sha256": "62c7b1122a991135f417924432edc94dda6bf9151f4e80eed625712c70318c22"
+    },
+    {
+      "path": "assets/magazines/39-pages/040.webp",
+      "bytes": 194816,
+      "sha256": "14569fe8c709afc0dcc772617a08e086abe039225642e16a047ed7e5c3d88fcf"
+    },
+    {
+      "path": "assets/magazines/39-pages/041.webp",
+      "bytes": 181216,
+      "sha256": "d2b7704a483ce7d940a9f9fdfd5a037b4d1a78605b4a5a4147633628e907ef9c"
+    },
+    {
+      "path": "assets/magazines/39-pages/042.webp",
+      "bytes": 189504,
+      "sha256": "5670d4ccf59f480e0230df2d6172c3a33c696492289c4146c63dfe04fd41965c"
+    },
+    {
+      "path": "assets/magazines/39-pages/043.webp",
+      "bytes": 183046,
+      "sha256": "daab0a451a53f8ce48d7103ad78117c9017a3327224ec84a1b1f9e3a539541b0"
+    },
+    {
+      "path": "assets/magazines/39-pages/044.webp",
+      "bytes": 179802,
+      "sha256": "caa8e4b8e02355f54c9fba167a6f872973d1c9c94c398eb524c81ee8a8c3367a"
+    },
+    {
+      "path": "assets/magazines/39-pages/045.webp",
+      "bytes": 194240,
+      "sha256": "98219be8334df17270268199a4761fbe3e624d146ccb6d60543e954ee28ee860"
+    },
+    {
+      "path": "assets/magazines/39-pages/046.webp",
+      "bytes": 180318,
+      "sha256": "255828db27fec40c7a21de95db47c8b31460ef4ab51ed83c2e571ff7e3b8469d"
+    },
+    {
+      "path": "assets/magazines/39-pages/047.webp",
+      "bytes": 202110,
+      "sha256": "9abdd10c07097863ed20eafbb628d492159427fa3e0bdad7e11a933b2dd0b59c"
+    },
+    {
+      "path": "assets/magazines/39-pages/048.webp",
+      "bytes": 194928,
+      "sha256": "6351002bd7ed22dfa81006d045b840a75da1daf9cacbfa0c4a490acf9ae88800"
+    },
+    {
+      "path": "assets/magazines/39-pages/049.webp",
+      "bytes": 175172,
+      "sha256": "317bbd493eec95cc08970332acf0a32cb2e450421634871350bdc0596a777e6d"
+    },
+    {
+      "path": "assets/magazines/39-pages/050.webp",
+      "bytes": 175864,
+      "sha256": "bd538ea54792abe6e80bc81308c79f1bdb5852b696dc794d688f861f2ab529e3"
+    },
+    {
+      "path": "assets/magazines/39-pages/051.webp",
+      "bytes": 184308,
+      "sha256": "622171c83608f5fc046fe3ec1144d9070f357c2c38eef599510ece91c6549fef"
+    },
+    {
+      "path": "assets/magazines/39-pages/052.webp",
+      "bytes": 181690,
+      "sha256": "f04213810dd001ae0d396ae63f58dcb02bf5f1d789bdee06ba527509d44bb12a"
+    },
+    {
+      "path": "assets/magazines/39-pages/053.webp",
+      "bytes": 184896,
+      "sha256": "a48b56b66018c1a5b5b2e649ca44af1c7ed1c92f28d2947298b500a23d192b55"
+    },
+    {
+      "path": "assets/magazines/39-pages/054.webp",
+      "bytes": 167422,
+      "sha256": "8d2410b526b29525c8d1c450d46511475ce50f845a11dcf926613b399f71a0e7"
+    },
+    {
+      "path": "assets/magazines/39-pages/055.webp",
+      "bytes": 129326,
+      "sha256": "cff67364e051ac54f6f2c2cf50589e4239573457ef9fab6c5b061a80764df2ac"
+    },
+    {
+      "path": "assets/magazines/39-pages/056.webp",
+      "bytes": 15140,
+      "sha256": "cb3d67946d7bce83a2c335e4fc190c4ad6ce17b325e5fc62242c396cd0429716"
+    },
+    {
+      "path": "assets/magazines/39-pages/057.webp",
+      "bytes": 32730,
+      "sha256": "3810f44010e96b46f58905b3c1af2153dd1d2632fc2801317267fba06f71d210"
+    },
+    {
+      "path": "assets/magazines/39-pages/058.webp",
+      "bytes": 19368,
+      "sha256": "9974800a4c54122375200b426fed93a64b72612a451690e146d7481710132f76"
+    },
+    {
+      "path": "assets/magazines/39-pages/059.webp",
+      "bytes": 187924,
+      "sha256": "b4a6dc8c654b68b7bf3a2fb11d733d4ecca814b0b3434d0fef4028624b673372"
+    },
+    {
+      "path": "assets/magazines/39-pages/060.webp",
+      "bytes": 188348,
+      "sha256": "35a4c68ae6f0a65f06a22f1d39016e67259d6ec57b4ea052c015d472a44ac701"
+    },
+    {
+      "path": "assets/magazines/39-pages/061.webp",
+      "bytes": 182316,
+      "sha256": "d1e1a4bfb82f75168db3cf66f3c468b022bbf89aac8398d631a014418a364bfb"
+    },
+    {
+      "path": "assets/magazines/39-pages/062.webp",
+      "bytes": 212830,
+      "sha256": "24d3bb74c74c715e5d0679a3dfe744a0ad330525b70a4d039336b8a7379a7e72"
+    },
+    {
+      "path": "assets/magazines/39-pages/063.webp",
+      "bytes": 195490,
+      "sha256": "ce23aade2d9d82766e5261bec2b1b459d3ad65f94ae23adf7b9d8600e70cf6a7"
+    },
+    {
+      "path": "assets/magazines/39-pages/064.webp",
+      "bytes": 181104,
+      "sha256": "b5588b6f4aad591641cf24ea32bfd74c811adc4e947ea0825b42311c63189621"
+    },
+    {
+      "path": "assets/magazines/39-pages/065.webp",
+      "bytes": 205932,
+      "sha256": "61425e29c42155e9ea8c03cec95d24b345d73ed8fee3802cca195c0692158c80"
+    },
+    {
+      "path": "assets/magazines/39-pages/066.webp",
+      "bytes": 202332,
+      "sha256": "b2bd109a3b9d76e0a2c73ab2dd711b3c961dd1c3442ab19708a33877b956b539"
+    },
+    {
+      "path": "assets/magazines/39-pages/067.webp",
+      "bytes": 199012,
+      "sha256": "439b7b304326189e1f58175b7280bf69895428b86a2fe4489927512be3f7a968"
+    },
+    {
+      "path": "assets/magazines/39-pages/068.webp",
+      "bytes": 194418,
+      "sha256": "1774acc91be9341241e86e7dc34e0a5182513543e7ef801a6cc7f4e250484256"
+    },
+    {
+      "path": "assets/magazines/39-pages/069.webp",
+      "bytes": 199668,
+      "sha256": "c3b9421ed704c43ac7a329c77fd166ec918736854182c6999a11943c76d50108"
+    },
+    {
+      "path": "assets/magazines/39-pages/070.webp",
+      "bytes": 186522,
+      "sha256": "6e5696917f5ba7af0879949e6942494770a82c011564335e14a59519a7eb8d31"
+    },
+    {
+      "path": "assets/magazines/39-pages/071.webp",
+      "bytes": 161616,
+      "sha256": "45dc497ad9d5e42070a228cd819ba07bb2793df0780044b145613cf6dda491f3"
+    },
+    {
+      "path": "assets/magazines/39-pages/072.webp",
+      "bytes": 188078,
+      "sha256": "e4323129f3ef341653da73c49b5901fad46d7389c5fe04cb908f189330cda605"
+    },
+    {
+      "path": "assets/magazines/39-pages/073.webp",
+      "bytes": 197644,
+      "sha256": "eb38aec0cccc4c7eec38a73ffa4ec46342266b274ffd4b8a3e42ff735092f768"
+    },
+    {
+      "path": "assets/magazines/39-pages/074.webp",
+      "bytes": 187168,
+      "sha256": "bd337122cd9ea96b1c7c0f8487bc0d469bcf307f37652bc7a2a36494e942237c"
+    },
+    {
+      "path": "assets/magazines/39-pages/075.webp",
+      "bytes": 197252,
+      "sha256": "a3150a4bd60d0b5db0852250b595d0ea71342cced6c089f8f961d552f6a4abd8"
+    },
+    {
+      "path": "assets/magazines/39-pages/076.webp",
+      "bytes": 209722,
+      "sha256": "ce084d6e9e19692b0eb47ba38ebda8a738f8dcea9a2a8d360842ff4887943010"
+    },
+    {
+      "path": "assets/magazines/39-pages/077.webp",
+      "bytes": 214490,
+      "sha256": "d9ea2b1ce602a955405d9ae087f00fdd3ecbcd867773c8591c196c9f9091c07a"
+    },
+    {
+      "path": "assets/magazines/39-pages/078.webp",
+      "bytes": 171072,
+      "sha256": "30f710506798dba2cfaa9838871212b835b23930d7cd642042f4c9e18adcceea"
+    },
+    {
+      "path": "assets/magazines/39-pages/079.webp",
+      "bytes": 208434,
+      "sha256": "017218db42166765dbff4ae96cca6c0fe4712481b27d6e98fdb206a43f9606e9"
+    },
+    {
+      "path": "assets/magazines/39-pages/080.webp",
+      "bytes": 172062,
+      "sha256": "4c15b0592ead0cfd7b84885956b45bcc644fa7787f18df785dd570a6493acf0d"
+    },
+    {
+      "path": "assets/magazines/39-pages/081.webp",
+      "bytes": 196626,
+      "sha256": "15fd35b363623f89b4e6cebec0c5f72b66f113e8e5f2fbde54c5ed5f97eb7fcf"
+    },
+    {
+      "path": "assets/magazines/39-pages/082.webp",
+      "bytes": 191244,
+      "sha256": "afc0df888bc7e81b506e6c7a034477415f8dd203fe1ca7dc92d39ff6f29610fc"
+    },
+    {
+      "path": "assets/magazines/39-pages/083.webp",
+      "bytes": 180322,
+      "sha256": "a75293cca953428a863cfb80637b9d03ee48252e3c57a0599572cbd61b4b7678"
+    },
+    {
+      "path": "assets/magazines/39-pages/084.webp",
+      "bytes": 180088,
+      "sha256": "b7b7b973236bb875df8d67d36f4d86e3472b85d53b59a762665474f0c2cd51e5"
+    },
+    {
+      "path": "assets/magazines/39-pages/085.webp",
+      "bytes": 201540,
+      "sha256": "4281c77cdddb7b3f98bb8101b3f472dcf8e164a716b0fee9da4291af27483ded"
+    },
+    {
+      "path": "assets/magazines/39-pages/086.webp",
+      "bytes": 187850,
+      "sha256": "fc2b8ca998bbeddaf4f89859de79a77575e3944f928573603da9af248e6dc60a"
+    },
+    {
+      "path": "assets/magazines/39-pages/087.webp",
+      "bytes": 194308,
+      "sha256": "7eb0433b66aa3f91d764ec3bac476888005232f4e23d5f8e24a99dbfcc1fbd02"
+    },
+    {
+      "path": "assets/magazines/39-pages/088.webp",
+      "bytes": 183556,
+      "sha256": "d27343a1dc78ef5c9f48e777e147bd7303db26fc496c199cf56d671d2f050aca"
+    },
+    {
+      "path": "assets/magazines/39-pages/089.webp",
+      "bytes": 177430,
+      "sha256": "9138e21d775ae5acc23c86d179163c2f97ecfcd2fe95dc0a586f9538ee18380a"
+    },
+    {
+      "path": "assets/magazines/39-pages/090.webp",
+      "bytes": 191774,
+      "sha256": "8c67b8bc9bb453a98de3e4d2cdc3d1d17d81caf3556445740829bd7489781fa3"
+    },
+    {
+      "path": "assets/magazines/39-pages/091.webp",
+      "bytes": 196502,
+      "sha256": "0a8284f3b5aea4003d144d7d78aeb9f2e72120ca22947a1c4cfebea28e7d236e"
+    },
+    {
+      "path": "assets/magazines/39-pages/092.webp",
+      "bytes": 188174,
+      "sha256": "44d41a87e8078f16a4a8622442f754ab20ec5b14aac2783fbcbc74da7cf7bc71"
+    },
+    {
+      "path": "assets/magazines/39-pages/093.webp",
+      "bytes": 180540,
+      "sha256": "1ec60bb30bddd4cd28bfc164e470a8425fdd8c7478e6d64c7c5d39ac985953f6"
+    },
+    {
+      "path": "assets/magazines/39-pages/094.webp",
+      "bytes": 157534,
+      "sha256": "ce1d1bad5bb097a58875f1fda6b7a877e42f3bd3fc8b8cd0755d8fa00581f88b"
+    },
+    {
+      "path": "assets/magazines/39-pages/095.webp",
+      "bytes": 169678,
+      "sha256": "61b0f2a87ee65eb99f8f9d1d4ca7071cea5f56f2de497b8c682181a71973a6cb"
+    },
+    {
+      "path": "assets/magazines/39-pages/096.webp",
+      "bytes": 163078,
+      "sha256": "5aa779523b8264ec003e917705feb741f29dba84cb4a2f41d3f823300449d296"
+    },
+    {
+      "path": "assets/magazines/39-pages/097.webp",
+      "bytes": 48970,
+      "sha256": "0eb28d3a0841382cfdedb7271512cd4a21125f45cd0d0c03d8e78b952ae7e12b"
+    },
+    {
+      "path": "assets/magazines/39-pages/098.webp",
+      "bytes": 15140,
+      "sha256": "cb3d67946d7bce83a2c335e4fc190c4ad6ce17b325e5fc62242c396cd0429716"
+    },
+    {
+      "path": "assets/magazines/39-pages/099.webp",
+      "bytes": 35480,
+      "sha256": "f0fc7347d8b7079448a82a1582ec30ec430e7376f80b8260b486a1423399fc79"
+    },
+    {
+      "path": "assets/magazines/39-pages/100.webp",
+      "bytes": 19368,
+      "sha256": "9974800a4c54122375200b426fed93a64b72612a451690e146d7481710132f76"
+    },
+    {
+      "path": "assets/magazines/39-pages/101.webp",
+      "bytes": 178282,
+      "sha256": "992e7a9719086a747b8f4556b084ccfe065626eeb30ee3d39de95bac9943d0ac"
+    },
+    {
+      "path": "assets/magazines/39-pages/102.webp",
+      "bytes": 203620,
+      "sha256": "13469441c39edb40e3cfc128127c127a30583fb12938fdb98a42a6776f1835ab"
+    },
+    {
+      "path": "assets/magazines/39-pages/103.webp",
+      "bytes": 209174,
+      "sha256": "5583801c9dff5f8f3463da98d265b19f5ba84dfc1ec8916854e4484aaaf42468"
+    },
+    {
+      "path": "assets/magazines/39-pages/104.webp",
+      "bytes": 207924,
+      "sha256": "f8f6b0a0494b43abd8b87491c77892f619cd7f65ceeafbffef62dd8b86448a14"
+    },
+    {
+      "path": "assets/magazines/39-pages/105.webp",
+      "bytes": 192860,
+      "sha256": "819f14d616d582f4d04ed6c029d2631442afc4ad35c2ee213167504ee3dde311"
+    },
+    {
+      "path": "assets/magazines/39-pages/106.webp",
+      "bytes": 191832,
+      "sha256": "1add3c6d0839419e2484f930a3d8bd3485ff793c8342ef5611b8ad4152090a17"
+    },
+    {
+      "path": "assets/magazines/39-pages/107.webp",
+      "bytes": 192904,
+      "sha256": "e311eee4dd676a48508ef66c8c1ea019fe57543c193475adda6dd1f228f60578"
+    },
+    {
+      "path": "assets/magazines/39-pages/108.webp",
+      "bytes": 182382,
+      "sha256": "45581b37073e11c6f8387823a0fb2d05f466f71360f2c355f87ebe4e841df7d5"
+    },
+    {
+      "path": "assets/magazines/39-pages/109.webp",
+      "bytes": 184828,
+      "sha256": "795ad0a32bd7230d16778baf3d6ceb8bd3b5f38ba412fe350782c03702e6d7c4"
+    },
+    {
+      "path": "assets/magazines/39-pages/110.webp",
+      "bytes": 184098,
+      "sha256": "8407f867443c9816db7b8990a1aa41fbfba9a6cb4e4515bd3b8f7ba350caa1ad"
+    },
+    {
+      "path": "assets/magazines/39-pages/111.webp",
+      "bytes": 193044,
+      "sha256": "b690c156b8073af6c2191570f6acfd63d0e2e357edda2b3bd2d071b99c34f253"
+    },
+    {
+      "path": "assets/magazines/39-pages/112.webp",
+      "bytes": 195800,
+      "sha256": "7e20828a912c1bd0dc97e2b569bc0b83c03a0aa18e3d0a7c220d82ed55e6e0a1"
+    },
+    {
+      "path": "assets/magazines/39-pages/113.webp",
+      "bytes": 191334,
+      "sha256": "b1fce706f4d29cfe080cb214bd4ecbbe992f12f8cae0c81d985e18d7ffadcd3c"
+    },
+    {
+      "path": "assets/magazines/39-pages/114.webp",
+      "bytes": 178948,
+      "sha256": "a4cf68464e577b2d4c434dab8361e4b1503bb489f608e6e7104616fe53f02766"
+    },
+    {
+      "path": "assets/magazines/39-pages/115.webp",
+      "bytes": 196920,
+      "sha256": "4c0039192d655b31e799d924c9a91e3a2a7cbfac50a40c942585bc77729bfb49"
+    },
+    {
+      "path": "assets/magazines/39-pages/116.webp",
+      "bytes": 193860,
+      "sha256": "82026737cab43b48d934166e8cc1fdb21a62c9f1bf819fc4e86f3656cad8ee37"
+    },
+    {
+      "path": "assets/magazines/39-pages/117.webp",
+      "bytes": 180678,
+      "sha256": "1d9cc8a1668a9463025499b7369a3e2a8c96ac8957baca6a3affe701725a8ff1"
+    },
+    {
+      "path": "assets/magazines/39-pages/118.webp",
+      "bytes": 198770,
+      "sha256": "165b96ea000167fc1ab40b9f271f0b2796f12fe3373623000f308f1d992ca986"
+    },
+    {
+      "path": "assets/magazines/39-pages/119.webp",
+      "bytes": 181870,
+      "sha256": "bdd1a07c94a9d5e7be8f544f51abd149e54813b48074b27cfa2460f60c0616ca"
+    },
+    {
+      "path": "assets/magazines/39-pages/120.webp",
+      "bytes": 222306,
+      "sha256": "0169949c0366076785a98db08afd5b4c714da88817b4685d180add693b89ba74"
+    },
+    {
+      "path": "assets/magazines/39-pages/121.webp",
+      "bytes": 208396,
+      "sha256": "3760b63152365b69117d9afa06a49adc2e0583db4d7d1dd9bf3bfd298da388b2"
+    },
+    {
+      "path": "assets/magazines/39-pages/122.webp",
+      "bytes": 192626,
+      "sha256": "8348336c392188b83cda4940fb0aed12847d320d12a6feca785348d0eabe0566"
+    },
+    {
+      "path": "assets/magazines/39-pages/123.webp",
+      "bytes": 169676,
+      "sha256": "258c19325eedf7f9042dc6aef615b8f59add41e374b9cdb48eb650b27e270596"
+    },
+    {
+      "path": "assets/magazines/39-pages/124.webp",
+      "bytes": 190688,
+      "sha256": "98ec91810293fbfdd48939587b9a1a71f434c347b553d80b0806dbc8f8385568"
+    },
+    {
+      "path": "assets/magazines/39-pages/125.webp",
+      "bytes": 198246,
+      "sha256": "741ef474f58bff7e928ed72a17c8893de8eb4baab21366a82307dc37be507211"
+    },
+    {
+      "path": "assets/magazines/39-pages/126.webp",
+      "bytes": 184600,
+      "sha256": "3ecdf175e810d018de0fde76c9f8ba7e540e68b589c9286b3d222e9e35bc9f89"
+    },
+    {
+      "path": "assets/magazines/39-pages/127.webp",
+      "bytes": 204304,
+      "sha256": "9b0df4135df5d86e31e9548a1bb1092ceb8bd1593b1d8b263053979fec531cba"
+    },
+    {
+      "path": "assets/magazines/39-pages/128.webp",
+      "bytes": 198586,
+      "sha256": "2312fe721cea1bb88650ae0620d561e9a9b63cb6a3aab305e6e727000b424045"
+    },
+    {
+      "path": "assets/magazines/39-pages/129.webp",
+      "bytes": 162578,
+      "sha256": "4a6fbecd85636a5ca48b691f60fc90ca4ee93a201764a65f5160934b890d41f7"
+    },
+    {
+      "path": "assets/magazines/39-pages/130.webp",
+      "bytes": 115324,
+      "sha256": "6c1371c5a933f93fa1c03ab306df2a9e1f7d1436e00e5aee6bb14816d8842841"
+    },
+    {
+      "path": "assets/magazines/39-pages/131.webp",
+      "bytes": 30584,
+      "sha256": "5e89edc4f1a02b043b08becdad140bdc24c3b4c4b0c90ca6326415f4fec71213"
+    },
+    {
+      "path": "assets/magazines/39-pages/132.webp",
+      "bytes": 19368,
+      "sha256": "9974800a4c54122375200b426fed93a64b72612a451690e146d7481710132f76"
+    },
+    {
+      "path": "assets/magazines/39-pages/133.webp",
+      "bytes": 175396,
+      "sha256": "05280984580643226f2f35515cb350829b3412ee45d29158a749a1b32919cd43"
+    },
+    {
+      "path": "assets/magazines/39-pages/134.webp",
+      "bytes": 191448,
+      "sha256": "5d80ad380738556a62522a94bfb77b3d0f792c192739e77e141374c88984f4af"
+    },
+    {
+      "path": "assets/magazines/39-pages/135.webp",
+      "bytes": 203368,
+      "sha256": "4c80476de4df9d528aaf3ac0d4d9c77fc3d0a4db45e8e3cd380ca80c2fcb370c"
+    },
+    {
+      "path": "assets/magazines/39-pages/136.webp",
+      "bytes": 186278,
+      "sha256": "47b33b8acfbe4018576adecf38b010156fa46c6dfa2636615b6818eeb2326534"
+    },
+    {
+      "path": "assets/magazines/39-pages/137.webp",
+      "bytes": 189880,
+      "sha256": "fb0086a399ddc1c22a519f54c2ebd4a4d8abfb10265cbe9976086a11876b56b3"
+    },
+    {
+      "path": "assets/magazines/39-pages/138.webp",
+      "bytes": 206992,
+      "sha256": "90db63b104f41cda2dd8a12f4b8a872d3ef836d59a8fdcc32ec6f9870c17a305"
+    },
+    {
+      "path": "assets/magazines/39-pages/139.webp",
+      "bytes": 186712,
+      "sha256": "e8219174193bef9970cbdb8f1912817c875bd53bde502a964fe4a9c6f8f799fd"
+    },
+    {
+      "path": "assets/magazines/39-pages/140.webp",
+      "bytes": 182182,
+      "sha256": "d88b21b7890c60660a7eb576e77bde53cef8d6792b2d083bd07b39168d5e975b"
+    },
+    {
+      "path": "assets/magazines/39-pages/141.webp",
+      "bytes": 193750,
+      "sha256": "8990d2a536d4645edf4c4c027630e754ffc4a32f06a5908c2b6508fdb578140f"
+    },
+    {
+      "path": "assets/magazines/39-pages/142.webp",
+      "bytes": 194894,
+      "sha256": "1d76026391223d28ced450bf8235ea05a6e116921ae4a7a1f1b1e4b39ecaca31"
+    },
+    {
+      "path": "assets/magazines/39-pages/143.webp",
+      "bytes": 194962,
+      "sha256": "0bf96f23d136971de3b0db2efc73bdd6b74271fce87cf4a3440aad9cc0d1dd3f"
+    },
+    {
+      "path": "assets/magazines/39-pages/144.webp",
+      "bytes": 195384,
+      "sha256": "4a11e2af9f8343278a775329f04c171335616858c498ce81e52f192cc1db4c45"
+    },
+    {
+      "path": "assets/magazines/39-pages/145.webp",
+      "bytes": 186796,
+      "sha256": "e68fba136579744074f9ab7a2e63be812314a734ff2f9122f2e7bcbf2cbda101"
+    },
+    {
+      "path": "assets/magazines/39-pages/146.webp",
+      "bytes": 190700,
+      "sha256": "46b7752a44908302ac798bbaf9960e18d2244853dcecb5e8fccbe59654565d41"
+    },
+    {
+      "path": "assets/magazines/39-pages/147.webp",
+      "bytes": 193462,
+      "sha256": "fd2797c4a40aee252d24c47fbe6ac7ec509108539127c49bc51f43e65e63d839"
+    },
+    {
+      "path": "assets/magazines/39-pages/148.webp",
+      "bytes": 83560,
+      "sha256": "439990b1110c764cef832c878430b2514ad93c20d8653b937aa7c0a37e806cf7"
+    },
+    {
+      "path": "assets/magazines/39-pages/149.webp",
+      "bytes": 30430,
+      "sha256": "a2a921bd0c30f5635d35e07f77b6e6b8cb87f085c33f9d4d17c66c39f1e27c85"
+    },
+    {
+      "path": "assets/magazines/39-pages/150.webp",
+      "bytes": 19368,
+      "sha256": "9974800a4c54122375200b426fed93a64b72612a451690e146d7481710132f76"
+    },
+    {
+      "path": "assets/magazines/39-pages/151.webp",
+      "bytes": 179162,
+      "sha256": "811774b3f6140e79cf5f1a8c8e18fbcee5b064444b6e06b2e2ac66996a2d8ae3"
+    },
+    {
+      "path": "assets/magazines/39-pages/152.webp",
+      "bytes": 185234,
+      "sha256": "fedfaddac9a7ae7dabf147daf381e72fa5b07df465679bb111433ae705d0fcd8"
+    },
+    {
+      "path": "assets/magazines/39-pages/153.webp",
+      "bytes": 202870,
+      "sha256": "8325c81f3096aea5011cd250f882aba652064339642f9afca0fb31b8f685e1a9"
+    },
+    {
+      "path": "assets/magazines/39-pages/154.webp",
+      "bytes": 194312,
+      "sha256": "0e5ecc71302b3c340cbb4b332fbfe65fb729252e73ff1a7045a68ec09f950820"
+    },
+    {
+      "path": "assets/magazines/39-pages/155.webp",
+      "bytes": 186290,
+      "sha256": "1a8acba7493ed7b27b88e57454964ae8099183a6754710cb8d12503afee41786"
+    },
+    {
+      "path": "assets/magazines/39-pages/156.webp",
+      "bytes": 203920,
+      "sha256": "4fcb6a67b9eca00a327c73141d6a0729836c93a241ad371086a1a1fc9451d45a"
+    },
+    {
+      "path": "assets/magazines/39-pages/157.webp",
+      "bytes": 184202,
+      "sha256": "2ab2980008ad7741b63fba6e80d268652ef8571fc1a03b2a4c4d1c0247f1d6d8"
+    },
+    {
+      "path": "assets/magazines/39-pages/158.webp",
+      "bytes": 174350,
+      "sha256": "7aafbbc0027da9eef7f8187622055ae5e1c0295267d8b99203ab79a4c13a9406"
+    },
+    {
+      "path": "assets/magazines/39-pages/159.webp",
+      "bytes": 182744,
+      "sha256": "9f1c79ade779f1e6e26a518decd10d0510bdedef24a765cffdde08b73111fae8"
+    },
+    {
+      "path": "assets/magazines/39-pages/160.webp",
+      "bytes": 177808,
+      "sha256": "eca5f7dde00275d2531a5e540beaab4f19ba929d302dadc96259ca60b4fe019e"
+    },
+    {
+      "path": "assets/magazines/39-pages/161.webp",
+      "bytes": 204816,
+      "sha256": "dab17c121181d7e0fc4021fc882596cdb8ecfe73af643ecb9f276140c64f46b6"
+    },
+    {
+      "path": "assets/magazines/39-pages/162.webp",
+      "bytes": 163686,
+      "sha256": "9e330ff69acff92f583101e836ccadf2ed5d7f5a8cb373000fae5ccd88a68b27"
+    },
+    {
+      "path": "assets/magazines/39-pages/163.webp",
+      "bytes": 183584,
+      "sha256": "802d79139bd89c7d58cd1e5fc7e08d0618eda2e2acc52134b164faea4176a2f8"
+    },
+    {
+      "path": "assets/magazines/39-pages/164.webp",
+      "bytes": 189112,
+      "sha256": "e5ad591b3ac6509040599a6f0f298e1936d74c60847baf69b07b685ac5d7f153"
+    },
+    {
+      "path": "assets/magazines/39-pages/165.webp",
+      "bytes": 181814,
+      "sha256": "715930991f835552fd56125825b0f7c4edffd2277b3dca303b8d8133286bc568"
+    },
+    {
+      "path": "assets/magazines/39-pages/166.webp",
+      "bytes": 171942,
+      "sha256": "801cb1cf4afe6ce1c59dcddfd92393850659f500cdd24aa4081f04e54bfef2f5"
+    },
+    {
+      "path": "assets/magazines/39-pages/167.webp",
+      "bytes": 192256,
+      "sha256": "d8af561932fbb3698a7d9e7d505929c95cbcc0d670029ff2a61ab18805799590"
+    },
+    {
+      "path": "assets/magazines/39-pages/168.webp",
+      "bytes": 192942,
+      "sha256": "7ccfcebc4b72ac1ac49e04ddd7eee95ac2a703499bc7d19325b25fe60348b6a3"
+    },
+    {
+      "path": "assets/magazines/39-pages/169.webp",
+      "bytes": 196310,
+      "sha256": "9b6806aa357e162e6d9fe09e6136769ef428479b8ebdab005b58a98771edaece"
+    },
+    {
+      "path": "assets/magazines/39-pages/170.webp",
+      "bytes": 111880,
+      "sha256": "7f7d8881fa82459c06762435f982530393125e9709fbe51957003e4b2bfdeaba"
+    },
+    {
+      "path": "assets/magazines/39-pages/171.webp",
+      "bytes": 31404,
+      "sha256": "8c0dbcc187ee97259d6afc8c7609837483400f5919921b49dbd3ba1ac77009d6"
+    },
+    {
+      "path": "assets/magazines/39-pages/172.webp",
+      "bytes": 19368,
+      "sha256": "9974800a4c54122375200b426fed93a64b72612a451690e146d7481710132f76"
+    },
+    {
+      "path": "assets/magazines/39-pages/173.webp",
+      "bytes": 164110,
+      "sha256": "b6ab3acb2c14f9f0fd4f6e5b32951944139c0b0af2c465abe7136b4cc5441fc5"
+    },
+    {
+      "path": "assets/magazines/39-pages/174.webp",
+      "bytes": 196234,
+      "sha256": "9a63dd29b567e982c5e505f702370101b78f4c3d4243b6fc70a4fa70c3b4fa24"
+    },
+    {
+      "path": "assets/magazines/39-pages/175.webp",
+      "bytes": 191458,
+      "sha256": "9b8fcab9f8e88925dc128babaeaaf18923ab47671b332deceb32f1da6fb9d839"
+    },
+    {
+      "path": "assets/magazines/39-pages/176.webp",
+      "bytes": 182764,
+      "sha256": "6f4e27eb473ad73672a545494865e15e9bb5ab63a279c283d330ae0d006c26cb"
+    },
+    {
+      "path": "assets/magazines/39-pages/177.webp",
+      "bytes": 205628,
+      "sha256": "3b9d5bb0efec6d5e1861e10ea318f606b62452f96089be835d1cb9aa6d698433"
+    },
+    {
+      "path": "assets/magazines/39-pages/178.webp",
+      "bytes": 194940,
+      "sha256": "cbe70db20703fb44c4b3d920eab33918b0e5a58cd935a73ac25ba9accaec1757"
+    },
+    {
+      "path": "assets/magazines/39-pages/179.webp",
+      "bytes": 194470,
+      "sha256": "69975f91b670f11f099417ee1cec9120b45f311e8ba62e2e9d46de176cfe61f3"
+    },
+    {
+      "path": "assets/magazines/39-pages/180.webp",
+      "bytes": 198738,
+      "sha256": "f0dfa4b8966d2688cb331027fdd727df6e16c9b2fd7999edef49a005a713a083"
+    },
+    {
+      "path": "assets/magazines/39-pages/181.webp",
+      "bytes": 172728,
+      "sha256": "3732cbdeaf1cc9db9a224a3289a39cdcf4b6d52115ddd58f90ec0df8b2e834b3"
+    },
+    {
+      "path": "assets/magazines/39-pages/182.webp",
+      "bytes": 175730,
+      "sha256": "85773559806c5e919dd800e145716edb1bdf0ce09c5d34bb5c8421b4c4a4f810"
+    },
+    {
+      "path": "assets/magazines/39-pages/183.webp",
+      "bytes": 194032,
+      "sha256": "f13aa9f30b68b7c80f30b8fe43d54e00c29c15f3e8ed0024469c6d192f5b9e1c"
+    },
+    {
+      "path": "assets/magazines/39-pages/184.webp",
+      "bytes": 189704,
+      "sha256": "2a203c58d697a93d308fb9f5cc29989a77c9aa783a67679f99131797a95c4542"
+    },
+    {
+      "path": "assets/magazines/39-pages/185.webp",
+      "bytes": 214398,
+      "sha256": "90a61fc9365890cfbcfca604d22d3fb684d57d2a7d7781922c1f3adfc0faebf4"
+    },
+    {
+      "path": "assets/magazines/39-pages/186.webp",
+      "bytes": 187608,
+      "sha256": "fee97e7cbe50ff29cd7b845a97e6fe810f29293ce5680aeaec52a92c4902f125"
+    },
+    {
+      "path": "assets/magazines/39-pages/187.webp",
+      "bytes": 175994,
+      "sha256": "8c0fab0538e2bd80dc6b9b0859be1d15cbd0bdacb6c4d922f9a57e0be0b064d1"
+    },
+    {
+      "path": "assets/magazines/39-pages/188.webp",
+      "bytes": 197382,
+      "sha256": "0ed5f4ce35aa50c04ef21d55ca4c6f2b2539a262925a83f488dfaf5cff4de6ae"
+    },
+    {
+      "path": "assets/magazines/39-pages/189.webp",
+      "bytes": 193204,
+      "sha256": "0df22b3eeb1161da44824a2557347217c648da027534ce509723ea744e806f2f"
+    },
+    {
+      "path": "assets/magazines/39-pages/190.webp",
+      "bytes": 135280,
+      "sha256": "9244899dfe1d36d8a4f994eaf079aa46b99dcc6c827397ca457717c5f53e2b1d"
+    },
+    {
+      "path": "assets/magazines/39-pages/191.webp",
+      "bytes": 19496,
+      "sha256": "0e517327b550889d09ccd0492a19355c7b4ddc39633e725554d7aa6c7cfa5f44"
+    },
+    {
+      "path": "assets/magazines/39-pages/192.webp",
+      "bytes": 19368,
+      "sha256": "9974800a4c54122375200b426fed93a64b72612a451690e146d7481710132f76"
+    },
+    {
+      "path": "assets/magazines/39-pages/193.webp",
+      "bytes": 184410,
+      "sha256": "cef35aeaed135d10346bf04d7cf4591df0c13ed6df07b02c21640eb4e5c70c22"
+    },
+    {
+      "path": "assets/magazines/39-pages/194.webp",
+      "bytes": 188756,
+      "sha256": "a0a40c4cc6eb38d3493d617c50b899dd9acb6b465ef8a061b687ce42ea5bf979"
+    },
+    {
+      "path": "assets/magazines/39-pages/195.webp",
+      "bytes": 102552,
+      "sha256": "06ff52d4781743036c1958344d746b9ea7bba32368566e3bc1acd13bc23a9386"
+    },
+    {
+      "path": "assets/magazines/39-pages/196.webp",
+      "bytes": 15140,
+      "sha256": "cb3d67946d7bce83a2c335e4fc190c4ad6ce17b325e5fc62242c396cd0429716"
+    },
+    {
+      "path": "assets/magazines/39-pages/197.webp",
+      "bytes": 22652,
+      "sha256": "7882478cf477f9e85998963355701c07ec0ccfc1e6b4a2d64ec7ec590ea90154"
+    },
+    {
+      "path": "assets/magazines/39-pages/198.webp",
+      "bytes": 19368,
+      "sha256": "9974800a4c54122375200b426fed93a64b72612a451690e146d7481710132f76"
+    },
+    {
+      "path": "assets/magazines/39-pages/199.webp",
+      "bytes": 140218,
+      "sha256": "39ee270ede2b5ae770619f70cb0d579529c7cd7c7ee5ad9daaa5f20763131ad3"
+    },
+    {
+      "path": "assets/magazines/39-pages/200.webp",
+      "bytes": 143614,
+      "sha256": "92ab082d9b1efc45fe6a9557bea313a904c73a7902168d3a82d1f5979505f386"
+    },
+    {
+      "path": "assets/magazines/39-pages/201.webp",
+      "bytes": 134890,
+      "sha256": "6c1c15dae5ca6478bcec2b555e00155bcc361a1be2f03a3dbdc9eb3115521b8d"
+    },
+    {
+      "path": "assets/magazines/39-pages/202.webp",
+      "bytes": 143316,
+      "sha256": "f303ac097968246d8c53e0a50705d8222982fbcc5039dd536feb48060cbf72e4"
+    },
+    {
+      "path": "assets/magazines/39-pages/203.webp",
+      "bytes": 138672,
+      "sha256": "5d803d82c78fae424012f539af2202ca902df308f9cbb92efb61948867695491"
+    },
+    {
+      "path": "assets/magazines/39-pages/204.webp",
+      "bytes": 147534,
+      "sha256": "06bf5edef325d45d6b4cc1b5fd324430cd75b159cf31d9520ddeda342ac5d49c"
+    },
+    {
+      "path": "assets/magazines/39-pages/205.webp",
+      "bytes": 140202,
+      "sha256": "8c28b1a0fd93a220f4237f5e2497b971fafc6ac0bc27b7af49b32d280d8c4444"
+    },
+    {
+      "path": "assets/magazines/39-pages/206.webp",
+      "bytes": 135576,
+      "sha256": "d2f614ba2ddd1eeb1ac0719d37066e80abff1b631c5f030567640c97d578e057"
+    },
+    {
+      "path": "assets/magazines/39-pages/207.webp",
+      "bytes": 56558,
+      "sha256": "adaf24c99b3a808955a6830b40fa53b1bdd763a61f2daced234609269f6d7431"
+    },
+    {
+      "path": "assets/magazines/39-pages/208.webp",
+      "bytes": 15140,
+      "sha256": "cb3d67946d7bce83a2c335e4fc190c4ad6ce17b325e5fc62242c396cd0429716"
+    },
+    {
+      "path": "assets/magazines/39-pages/209.webp",
+      "bytes": 25662,
+      "sha256": "f09e1b5138b45d3f557982c8c3429d29ad9f6620756ae4d55bb7e238c8693c60"
+    },
+    {
+      "path": "assets/magazines/39-pages/210.webp",
+      "bytes": 94976,
+      "sha256": "0671c39a9cfcdbf748a18b2bc2d0fb8f8b7b38291a167faa5e6c878259a9e2de"
+    },
+    {
+      "path": "assets/magazines/39-pages/211.webp",
+      "bytes": 105574,
+      "sha256": "d37ac1f0c3e10c5f7b20b35e8a01a2c5e56a906a37d2271f17877822748cb477"
+    },
+    {
+      "path": "assets/magazines/39-pages/212.webp",
+      "bytes": 132116,
+      "sha256": "fff8f10d1e86ab603ec38f0c1929f9f89cb9f3c80f0fc9518447bf0f578640fe"
+    },
+    {
+      "path": "assets/magazines/39-pages/213.webp",
+      "bytes": 65074,
+      "sha256": "4d297cec07c6505c717289985c74a59b2f5d0038f46db9c469ab8c4c8234ba63"
+    },
+    {
+      "path": "assets/magazines/39-pages/214.webp",
+      "bytes": 77522,
+      "sha256": "328b6ea3a60054f09442a08b0bf7fff5d4218343413f3714ee4710b411842ff8"
+    },
+    {
+      "path": "assets/magazines/39-pages/215.webp",
+      "bytes": 89824,
+      "sha256": "d10184c031754f70f0b40a2e78977297045558244bf8320b95da2133cb8ae6ec"
+    },
+    {
+      "path": "assets/magazines/39-pages/216.webp",
+      "bytes": 47820,
+      "sha256": "1a24334873274452d53ae3eaa25e752d0769d463eae18fd2a1468759bcd64467"
+    },
+    {
+      "path": "assets/magazines/39-pages/217.webp",
+      "bytes": 66042,
+      "sha256": "d17227da9977e4ee3469803600c7d5711cd3ef405cb8db6e7d523395af5ef24f"
+    },
+    {
+      "path": "assets/magazines/39-pages/218.webp",
+      "bytes": 47496,
+      "sha256": "2e80c9be2a0dcb6b6df20e31fe1794feb8321b220a58e57beeb93a48d90842df"
+    },
+    {
+      "path": "assets/magazines/39-pages/219.webp",
+      "bytes": 40224,
+      "sha256": "3ad1c604853ad28bcfc5b330850da2a3dae3ed0cec726dd79ccb8a97eb26ccc9"
+    },
+    {
+      "path": "assets/magazines/39-pages/220.webp",
+      "bytes": 57656,
+      "sha256": "8e949bc215d3267bbbe66d74aaa2399ad78787a6d12f3a5d4b1d35f167474e9a"
+    },
+    {
+      "path": "assets/magazines/39-pages/221.webp",
+      "bytes": 51864,
+      "sha256": "69a79ffd6e22aea62f85be6f1f8d1f08abe37cc1382eb91cb484d6436e3bde77"
+    },
+    {
+      "path": "assets/magazines/39-pages/222.webp",
+      "bytes": 63162,
+      "sha256": "79932c65e342dcad633e5d7ad78b1d41590c818156767ff207becb1c83410aea"
+    },
+    {
+      "path": "assets/magazines/39-pages/223.webp",
+      "bytes": 62538,
+      "sha256": "8b5817e72a9fe089b32192a930ebf2152c86930619664ce7546452476f432855"
+    },
+    {
+      "path": "assets/magazines/39-pages/224.webp",
+      "bytes": 106372,
+      "sha256": "17c2064923f262bbe70c6e5260f983ded07bd70fe0be1f24a0d9fe798ad80500"
+    },
+    {
+      "path": "assets/magazines/39-pages/225.webp",
+      "bytes": 100714,
+      "sha256": "53f874340affd98754b254685277910c35f33f50f5cac95853a86e67e31c8707"
+    },
+    {
+      "path": "assets/magazines/39-pages/226.webp",
+      "bytes": 201878,
+      "sha256": "6c6ffabdd356cf2030dfa7c6c98472d9b6b6b61a0a38d8ac51bac970ee9b8bcf"
+    },
+    {
+      "path": "assets/magazines/39-pages/227.webp",
+      "bytes": 139934,
+      "sha256": "bdb63503adf5b001c9bb6c67b6dba73aae04a255b19b32e3a1c70ea84c2c99ac"
+    },
+    {
+      "path": "assets/magazines/39-pages/228.webp",
+      "bytes": 76570,
+      "sha256": "022d65ff1abd9ed9610275a3c5f0a901b7b693a8352d05c621f3a1d83b92328a"
+    },
+    {
+      "path": "assets/magazines/39-pages/229.webp",
+      "bytes": 116796,
+      "sha256": "2e5085a34d02beaae61d5df7829c2ae64cdb342595ee790114edb832bf66f0ad"
+    },
+    {
+      "path": "assets/magazines/39-pages/230.webp",
+      "bytes": 91984,
+      "sha256": "a800500d661ded55c674af9f8ac408452c8e21d9743d86c54c51fd8498058a61"
+    },
+    {
+      "path": "assets/magazines/39-pages/231.webp",
+      "bytes": 107618,
+      "sha256": "c299dbde8e5f4eabab93833c1841e90cd963eaad16716e7caf66b407b05e3796"
+    },
+    {
+      "path": "assets/magazines/39-pages/232.webp",
+      "bytes": 221022,
+      "sha256": "226c2890d752d9004749fa9720ba78b2c3face4bac924325bbaa9d539fd681b7"
+    },
+    {
+      "path": "assets/magazines/39-pages/233.webp",
+      "bytes": 112356,
+      "sha256": "28a9429f123b81c88e327df7b521f1124934ba8705b8cccde5cf0d103b8e2964"
+    },
+    {
+      "path": "assets/magazines/39-pages/234.webp",
+      "bytes": 158144,
+      "sha256": "f692a26fae64fadc7ac49f85c2868c9264e4e617e33404563b477077ef1f3e72"
+    },
+    {
+      "path": "assets/magazines/39-pages/235.webp",
+      "bytes": 185062,
+      "sha256": "762999e36fa7efe2a20f87a9b3a14ce5e3f584eb020f6c495b383cd9828519f6"
+    },
+    {
+      "path": "assets/magazines/39-pages/236.webp",
+      "bytes": 127770,
+      "sha256": "887838837a266aa7551b63d2e08aaee7a80809c826de161f9734134afaf730c9"
+    },
+    {
+      "path": "assets/magazines/39-pages/237.webp",
+      "bytes": 110812,
+      "sha256": "b21df0e774f4c6819fc50184d47a8d4939fa4d3717bab80ecb0060570f92b650"
+    },
+    {
+      "path": "assets/magazines/39-pages/238.webp",
+      "bytes": 225768,
+      "sha256": "538e710abb1bfc8c7bb407e2452ec0ac47178036306295a0dc017d19d7aaa7a6"
+    },
+    {
+      "path": "assets/magazines/39-pages/239.webp",
+      "bytes": 113498,
+      "sha256": "a71bb415996544e2c63f82adf0933772c4063045babda333cded4c1783c630ca"
+    },
+    {
+      "path": "assets/magazines/39-pages/240.webp",
+      "bytes": 196046,
+      "sha256": "02827291305395a112c294378902d5e179eee8e3b3018fd297de1c54d33abe9c"
+    },
+    {
+      "path": "assets/magazines/39-pages/241.webp",
+      "bytes": 83028,
+      "sha256": "6a4515f7df993cd2ed9101119931f8cd15b44924c960f6763e0b1f4f3d868844"
+    },
+    {
+      "path": "assets/magazines/39-pages/242.webp",
+      "bytes": 108394,
+      "sha256": "69ecec33e56e79cdc8f9b8911d6100927a534dc73cf90a6efde4dcd07bb3f8e1"
+    },
+    {
+      "path": "assets/magazines/39-pages/243.webp",
+      "bytes": 144078,
+      "sha256": "009305db8ec2c4f57ebbbe1c8f1ce65654b6a73d7d12a57ba0e2b6f465864c37"
+    },
+    {
+      "path": "assets/magazines/39-pages/244.webp",
+      "bytes": 102790,
+      "sha256": "8fb57cac89fad0699506896d2e46ea6faf08b658a291627ab8986e3b41650c70"
+    },
+    {
+      "path": "assets/magazines/39-pages/245.webp",
+      "bytes": 73512,
+      "sha256": "6869932b2de933f19c788e4c2d5340e727ae8626b3ad018434ff39b5383f7bce"
+    },
+    {
+      "path": "assets/magazines/39-pages/246.webp",
+      "bytes": 121940,
+      "sha256": "1765f876e132c70040714e3d46e3fa61c5e5529f11dfb3abaaa22597edeabcab"
+    },
+    {
+      "path": "assets/magazines/39-pages/247.webp",
+      "bytes": 128954,
+      "sha256": "cab66965f780640090aba828fed4eda88f9ccb0898c41478a2abe98e56e80b6f"
+    },
+    {
+      "path": "assets/magazines/39-pages/248.webp",
+      "bytes": 149436,
+      "sha256": "aa5943d2016c2197e60a210a32b701c270604f92d528eed2b26800f22a05b2be"
+    },
+    {
+      "path": "assets/magazines/39-pages/249.webp",
+      "bytes": 162872,
+      "sha256": "4817b7061d6a63326a1142b42705783a0c96cfa285aad5a61fb72ed9123ce5ee"
+    },
+    {
+      "path": "assets/magazines/39-pages/250.webp",
+      "bytes": 15140,
+      "sha256": "cb3d67946d7bce83a2c335e4fc190c4ad6ce17b325e5fc62242c396cd0429716"
+    },
+    {
+      "path": "assets/magazines/39-pages/251.webp",
+      "bytes": 20644,
+      "sha256": "5cb467d686857e6c95c3186d2617e705d1a1a422c17ceb9b4987097e5f26ce28"
+    },
+    {
+      "path": "assets/magazines/39-pages/252.webp",
+      "bytes": 72580,
+      "sha256": "e99c2d21136afd6857210eac4567681c252c60bbdc6f0d4beb1f055d19cfd024"
+    },
+    {
+      "path": "assets/magazines/39-pages/253.webp",
+      "bytes": 23574,
+      "sha256": "f00d4b845028a4d21b67eb717b0a67af4da4d519dcb6039101f06b5b2a2099f1"
+    },
+    {
+      "path": "assets/magazines/39-pages/254.webp",
+      "bytes": 142140,
+      "sha256": "73b4b61a539b5936a40ef363147fe89519ff130e2b77296f32904993b3f329b7"
+    },
+    {
+      "path": "assets/magazines/39-pages/255.webp",
+      "bytes": 170610,
+      "sha256": "8ac7918f5b2d015cf937297983d1c506f362345a17e582984b4917defd1bcb9b"
+    },
+    {
+      "path": "assets/magazines/39-pages/256.webp",
+      "bytes": 145046,
+      "sha256": "2b3bd5b4958f99b0479fa8cee35a16fbac4ad290d0ca3d1177195070ecff07ac"
+    },
+    {
+      "path": "assets/magazines/39-pages/257.webp",
+      "bytes": 19322,
+      "sha256": "1ef32a6b74c4c65c24a2bfb16b28cf5b227e9562ce3021978418e219c0226b51"
+    },
+    {
+      "path": "assets/magazines/39-pages/258.webp",
+      "bytes": 250490,
+      "sha256": "808bbb7ee33e2454a4fd9be8bec8f49d1ad22e482b4b03cb3d19af996669c351"
+    },
+    {
+      "path": "assets/magazines/39-pages/manifest.json",
+      "bytes": 20676,
+      "sha256": "e89945bc86ff7f281d1e49978392c390ed7d0f20a90fe39a60156efab02d8cf2"
+    },
+    {
+      "path": "assets/magazines/39.pdf",
+      "bytes": 5023294,
+      "sha256": "5b93f45bf3cfda484bf134874facb146b521e620bd47b3e92021dbb9b8a04e14"
+    },
+    {
+      "path": "assets/oman-khanjar.png",
+      "bytes": 295891,
+      "sha256": "cedbb2572ab61a7619eb64d709ab4ffc1b1092488bd71eb5ca6810a2c7c82769"
+    },
+    {
+      "path": "assets/oman-national-calligraphy.png",
+      "bytes": 655478,
+      "sha256": "4e03bcde0740b1712a8baaf11cd300c30a6a5e6cecc5061f624f36b5aa90046c"
+    },
+    {
+      "path": "assets/oman-national-calligraphy.svg",
+      "bytes": 19429,
+      "sha256": "f0d46229ad9831ac0e8dbd001d203de9c63007997886715f42ec3efcf2b0d841"
+    },
+    {
+      "path": "assets/oman-national-silk-v2.png",
+      "bytes": 1213538,
+      "sha256": "0ed1a411b0f24db46b891d41a59f63d1da258033d1659cd6b8ece8de9d8e9919"
+    },
+    {
+      "path": "assets/oman-national-silk.png",
+      "bytes": 1228856,
+      "sha256": "1a481db3b7235a50da694ba51a21a69cb7567acedbfbdab78dcbd813b1d56a2c"
+    },
+    {
+      "path": "assets/phone-khalid-mussar.png",
+      "bytes": 1956206,
+      "sha256": "bd218e029b58fdf717945419e239d270f8a18bc2057a5de3295c18414b982956"
+    },
+    {
+      "path": "assets/phone-portraits.prompt.txt",
+      "bytes": 1299,
+      "sha256": "315bd6ca7e92a80cf9ab63ec11d59d7b8401fbd4bd00e038ab514b13c010001e"
+    },
+    {
+      "path": "assets/phone-saeed-mussar.png",
+      "bytes": 2141062,
+      "sha256": "752b6a092ab2f57b80e66bed9bd70ffec1c15d45c56604e7148a15ccb017206b"
+    },
+    {
+      "path": "assets/sultan-haitham-cutout.png",
+      "bytes": 1191007,
+      "sha256": "c1160397b1f6322093aa2bd6fd6ad262dcbd6be0fb7a378b6d9d6224445da864"
+    },
+    {
+      "path": "assets/systems-texture.svg",
+      "bytes": 2205,
+      "sha256": "f102af4d1e5b9cb783a748f79c46315c69055cde9641167fa087e0ff2826d9f2"
+    },
+    {
+      "path": "assets/workspace-collection.svg",
+      "bytes": 5182,
+      "sha256": "1dc8c1639bd1008346c31954759dcb54d4444d888657c1bf855f5ad21b2fe2c5"
+    },
+    {
+      "path": "assets/workspace-person.png",
+      "bytes": 1752887,
+      "sha256": "243704d6c841b9e906c6650afa2d34d60ff68e36d1aa0ba025f6edf9a94eb3d6"
+    },
+    {
+      "path": "assets/workspace-person.prompt.txt",
+      "bytes": 642,
+      "sha256": "86c4c891ae751858331501ef6e8db06f224af9f3004b08943be123546bee1edf"
+    },
+    {
+      "path": "assets/workspace-silk-contours.svg",
+      "bytes": 2958,
+      "sha256": "c32c5c07930d4a68ccc6bacbfdee722969578efe92cd55513d8395b1983fe887"
+    },
+    {
+      "path": "design-b-calendar-integrated.css",
+      "bytes": 12555,
+      "sha256": "d451a88748a388cc6ad8955e642a9d07cedf08de082d191691a9df071d3f0cac"
+    },
+    {
+      "path": "design-b-documents-sheet.css",
+      "bytes": 7354,
+      "sha256": "7272f79511587aceb61dec989ff92d20ed90ca5eab9f882366cdc0e622aecc7a"
+    },
+    {
+      "path": "design-b-documents-sheet.js",
+      "bytes": 5925,
+      "sha256": "9c0caad37a5c0d35d4a35ba95b4b7f094c57f59b19c75ecf5bdf168a17c6a143"
+    },
+    {
+      "path": "design-b-editorial.css",
+      "bytes": 60935,
+      "sha256": "8c73c68016ac73cdc875c7cc76c33393a77becfd4e484481c28e066936b446c4"
+    },
+    {
+      "path": "design-b-editorial.js",
+      "bytes": 39405,
+      "sha256": "e27b3d15868435673bfc9d4a5b065aea960f0a36d41b94d6db43efacf81bf2f7"
+    },
+    {
+      "path": "design-b-electronic-services.js",
+      "bytes": 2328,
+      "sha256": "0c01c162f92ca8c14f464da4ea73b4eceff41405431947f18d788497843360ad"
+    },
+    {
+      "path": "design-b-floating-calendar.css",
+      "bytes": 10777,
+      "sha256": "22484c942a8ec8c6635d25908049ea4f7e8ddd70170b40b61442c4ca00d4dd03"
+    },
+    {
+      "path": "design-b-floating-notices.js",
+      "bytes": 6713,
+      "sha256": "a72a00e98263a7f9f5ef93e9815a556fc4724945f9d668f68e283956fc276009"
+    },
+    {
+      "path": "design-b-formal-theme.css",
+      "bytes": 16771,
+      "sha256": "d4ba73efbb5abb9eab21112332bbf0d9112f9400272cc56564e4e6acc1e4aa49"
+    },
+    {
+      "path": "design-b-header-scroll.css",
+      "bytes": 1448,
+      "sha256": "982de89c02641c84047d46ae83c96e5ae8d1c14e7c7dbface96a50067ff04d13"
+    },
+    {
+      "path": "design-b-header.css",
+      "bytes": 27491,
+      "sha256": "43b962c67e63380de304f1f55d9883116d3437f296fa6521253cbf537a62818b"
+    },
+    {
+      "path": "design-b-intro.js",
+      "bytes": 34086,
+      "sha256": "858aa716a11aab7691b31bf9fe94ba951175064026e2f3382665c16c8dd73403"
+    },
+    {
+      "path": "design-b-layout.css",
+      "bytes": 36026,
+      "sha256": "1c5e568f43e17de7ee840a1f4d28fcba2b3a93e3a651b2f67a38b108bfe2821c"
+    },
+    {
+      "path": "design-b-library.css",
+      "bytes": 4309,
+      "sha256": "f6a2b1a41abb2c3434baa6773ccf42326bdd945abf3a04fbb1d9dfe458b4e2cb"
+    },
+    {
+      "path": "design-b-library.js",
+      "bytes": 4961,
+      "sha256": "c20554f9160a5b3663de3c825d5e2b165bbe70c83bbc6d1c1054b43579af721a"
+    },
+    {
+      "path": "design-b-magazine.js",
+      "bytes": 10106,
+      "sha256": "adcf67997d33ac5d0ad6fa90758c0d8a2c6f0fdf5de94d20e6a426f191218197"
+    },
+    {
+      "path": "design-b-majestic-news.js",
+      "bytes": 21243,
+      "sha256": "7212dc07e7ab5acd276dec7ca953dab11332538cd8e927a3b4ea3cd62064a1bc"
+    },
+    {
+      "path": "design-b-majestic-theme.css",
+      "bytes": 27389,
+      "sha256": "4c1fcda7449a555615cd497966d5b38a0c5791620f95ae5e4c053f143d0e768d"
+    },
+    {
+      "path": "design-b-national-theme.css",
+      "bytes": 6545,
+      "sha256": "b07bf3e24287460ac04f2dda86e298255270e95afd2f2579c5726e829cf7d389"
+    },
+    {
+      "path": "design-b-notice-strip.css",
+      "bytes": 4982,
+      "sha256": "06a75f64011b572324aea33c6d40d2dd43678782a482512117334d96522d9634"
+    },
+    {
+      "path": "design-b-notice-strip.js",
+      "bytes": 3911,
+      "sha256": "142a17908a88a2b0262764921d3e4c28da4133ca4db415f9dbdf71857c235b5c"
+    },
+    {
+      "path": "design-b-palette.css",
+      "bytes": 9401,
+      "sha256": "f449ff758a646af8a422a187587d7c2638cda9e95d03098e1aa7fc6d3e706b47"
+    },
+    {
+      "path": "design-b-personal-carousel.js",
+      "bytes": 1275,
+      "sha256": "c7cda7c6b5236350bea6186a1a0dd381e1745a3554b27eee24d4642137c12a1e"
+    },
+    {
+      "path": "design-b-planner.css",
+      "bytes": 10112,
+      "sha256": "771d3465d65b0273b2f11a495099b16bbf92fedffee59610dceb9735babb11d0"
+    },
+    {
+      "path": "design-b-policies-sheet.js",
+      "bytes": 967,
+      "sha256": "ff458c44cbb3ddad740e3fd4bb266ade7f015ea86b83272c8428ba2d0bdc3fac"
+    },
+    {
+      "path": "design-b-safety.js",
+      "bytes": 3987,
+      "sha256": "c8f0d0bdb1428a0b8ff2c611c1ca21a63d9c0ecd024e540fccd9279b1733316f"
+    },
+    {
+      "path": "design-b-section-nav.css",
+      "bytes": 4544,
+      "sha256": "fa2a408e14625a27665ba1dd504376de46a5c109f1d02a2b4a9036dad46ba200"
+    },
+    {
+      "path": "design-b-section-nav.js",
+      "bytes": 4225,
+      "sha256": "ffcd4bd2e1b748cc03354cac395fcd0b27853774f15045fd530ddef00e0e51cf"
+    },
+    {
+      "path": "design-b-status.js",
+      "bytes": 4939,
+      "sha256": "c7903ce58ee4fa86d4739a57e06a67e0c8769d031b933b77b09c8612a22cf360"
+    },
+    {
+      "path": "design-b-systems.css",
+      "bytes": 13726,
+      "sha256": "c181c2b150caf98a6c36e178baa80ad5884a19b3ed9d48864bb2b2107ae107b0"
+    },
+    {
+      "path": "design-b-systems.js",
+      "bytes": 12913,
+      "sha256": "b9950eb2cd7887a36bd3c9fda231c36367ddc62a1af0f8f943419f3eb217d3ef"
+    },
+    {
+      "path": "design-b-themes.css",
+      "bytes": 25704,
+      "sha256": "e8655ab87e64ec8b9a6bc2ff4f3b73729f3eca42076c6a4e077ce858b34877f1"
+    },
+    {
+      "path": "design-b-typography.css",
+      "bytes": 1317,
+      "sha256": "a9b1fdeee4642f6b3cd87e8b9e4bfc590bd6701f8e15c06c6dca5a2a1f04a0de"
+    },
+    {
+      "path": "design-b-widget-layout.js",
+      "bytes": 5633,
+      "sha256": "f2a8b4f6dbdd65ba6fbc0f73c3acb3415afaccbe43ab549514b4fc897b631b5c"
+    },
+    {
+      "path": "design-b-workspace-groups.js",
+      "bytes": 8101,
+      "sha256": "b593ddcb2d898c7123b051ca1bdeb8f3874c0b037dc460dc3c5c7a0229dc6d1b"
+    },
+    {
+      "path": "design-b-workspace-order.js",
+      "bytes": 9580,
+      "sha256": "f903f2690d8624841673e288c84cde28ac1bc8edb717bd5e65d05dce7cbcbe98"
+    },
+    {
+      "path": "design-b-workspace.css",
+      "bytes": 36416,
+      "sha256": "dd6de3fcb35a59f484df80e2300ce939c5234eb3d216eff64f09db61e35c7960"
+    },
+    {
+      "path": "design-b.css",
+      "bytes": 13178,
+      "sha256": "e76a37ecd93e28b54c5882087faeccf3046dd33287b4837615e3499b490a470f"
+    },
+    {
+      "path": "design-b.html",
+      "bytes": 115698,
+      "sha256": "579f014c2ba5a5009811d150d45900198b3edb81ddd6f4278599ace95e475b99"
+    },
+    {
+      "path": "design-b.js",
+      "bytes": 43338,
+      "sha256": "4b636670797a988f541a0df71929cf156d9062d59819e85d9eda8dc3839c4014"
+    },
+    {
+      "path": "index.html",
+      "bytes": 419,
+      "sha256": "a778b090b94e9dd0d715173b5731ff7a16a860375924874e5e484531e79f01c7"
+    },
+    {
+      "path": "user-profile.html",
+      "bytes": 2024,
+      "sha256": "c0d127e14140beae40fef6afb5fbb062dd5cd01c74461e2596dc81480676f4ee"
+    }
+  ]
+}

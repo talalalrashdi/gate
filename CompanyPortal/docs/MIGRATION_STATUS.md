@@ -52,7 +52,7 @@ Browser storage is origin-specific. Port 5080 intentionally isolates this initia
 
 External resource localization was deferred during initial parity work. It is now implemented as described in the completion work below; an actual offline browser check remains outstanding.
 
-Current next step: complete `FRONTEND_ACCEPTANCE.md` in a browser and validate the actual internal IIS environment. The source organization and new-project cleanup described below are implemented; preserve the original comparison baseline until visual acceptance.
+Current next step: finish the remaining checks listed in `FRONTEND_ACCEPTANCE.md` and validate the actual internal IIS environment. Isolated Edge has now passed 16 browser interaction scenarios and responsive checks across all three themes; see the latest browser acceptance update. Preserve the original comparison baseline until acceptance is complete.
 
 ## User-requested theme and tab update
 
@@ -96,4 +96,4 @@ The user requested completing the frontend before any API work. No API/authentic
 - A static offline scan passes for application views, CSS, JavaScript and SVG resources. This is evidence that required assets are local, not a claim of an executed offline browser session.
 - IIS Express used a temporary configuration under ignored `.local/`; no permanent IIS site was installed. Verification servers are stopped after checks so Visual Studio builds are not blocked.
 
-Remaining acceptance is explicit in `FRONTEND_ACCEPTANCE.md`: real-browser desktop/mobile/offline interaction checks and testing the actual internal Windows Server/IIS environment. Browser automation is unavailable; source and local hosting checks do not substitute for those acceptance steps. Full legacy-folder retirement remains deferred until browser acceptance. See `IIS_AND_OFFLINE_DEPLOYMENT.md` for delivery instructions.
+Subsequent browser acceptance is recorded in `FRONTEND_ACCEPTANCE.md`: 16 Edge interaction scenarios passed, with responsive checks across three themes at six viewport widths. The checks found and fixed intermediate-width header overlap and duplicated group choices from cloned catalog cards. No automatic external requests or JavaScript errors were detected. Keyboard/pointer reordering, saved articles, selected media/status interactions, a final tablet screenshot recheck and actual internal Windows Server/IIS acceptance remain pending. Full legacy-folder retirement remains deferred until acceptance is complete. See `IIS_AND_OFFLINE_DEPLOYMENT.md` for delivery instructions.

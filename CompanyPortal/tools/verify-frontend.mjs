@@ -85,6 +85,9 @@ for (let offset = 0; offset < resources.length; offset += 8) {
     if (file.path === 'design-b-intro.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/personal-workspace.js'));
     // User-requested full-width, flush-top default-theme header.
     if (file.path === 'design-b-majestic-theme.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/theme-majestic.css'));
+    // Browser acceptance fixes: shared responsive header and unique group choices.
+    if (file.path === 'design-b-layout.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/layout.css'));
+    if (file.path === 'design-b-workspace-groups.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/workspace-groups.js'));
     if (file.path === 'design-b-majestic-news.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/news-headlines.js'));
     assert.equal(digest(actual), digest(expected), `Resource differs: ${file.path}`);
   }));

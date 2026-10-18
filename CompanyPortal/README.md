@@ -86,7 +86,7 @@ Copy the publish output and run `dotnet CompanyPortal.Web.dll` from that output 
 
 Copying the parent folder transfers source for both eventual solutions, but offline building also needs the selected SDK and any future NuGet packages. This frontend currently uses only the installed shared framework. Prepare an offline package feed when package references are introduced; the future API has its own restore requirements.
 
-Required icon resources and imagery now load locally. Outbound news/source hyperlinks still require access to their destinations, but there are no automatic external asset references in the scanned frontend. An actual offline browser check remains required; source scans and HTTP checks do not prove complete visual behavior.
+Required icon resources and imagery now load locally. Outbound news/source hyperlinks still require access to their destinations. Isolated Edge acceptance passed 16 interaction scenarios with all non-local requests blocked and no external requests detected. Testing on the actual disconnected workstation and internal IIS deployment remains required. See [frontend acceptance](docs/FRONTEND_ACCEPTANCE.md) for coverage and remaining checks.
 
 See [IIS and offline deployment](docs/IIS_AND_OFFLINE_DEPLOYMENT.md) for prerequisites and delivery instructions.
 

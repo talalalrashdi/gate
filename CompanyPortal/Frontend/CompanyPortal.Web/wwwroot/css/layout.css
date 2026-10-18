@@ -382,6 +382,15 @@ body { overflow-x: clip; }
   #systems :is(.personal-agenda, .personal-planner) { height: auto; min-height: 400px; }
   #systems[data-theme="business"] .personal-planner { height: auto; min-height: 400px; }
 }
+@media (min-width: 761px) and (max-width: 1400px) {
+  body.portal-dashboard { padding-top: 184px; }
+  .portal-header, .portal-header.is-scrolled { height: 132px; padding-inline: 20px; grid-template-rows: 80px 52px; gap: 0 16px; }
+  .portal-header:has(#documents-sheet-trigger) { grid-template-columns: minmax(0,1fr) auto; }
+  .portal-brand { grid-column: 1; grid-row: 1; }
+  .portal-header-center { grid-column: 1 / -1; grid-row: 2; }
+  .portal-user { grid-column: 2; grid-row: 1; }
+  .portal-section, [data-portal-search-target] { scroll-margin-top: 148px; }
+}
 @media (max-width: 760px) {
   .portal-header, .portal-header.is-scrolled { height: 132px; padding-inline: 12px; grid-template-columns: 90px minmax(0,1fr); grid-template-rows: 72px 60px; gap: 0 8px; }
   .portal-header:has(#documents-sheet-trigger) { grid-template-columns: 180px minmax(0,1fr); }

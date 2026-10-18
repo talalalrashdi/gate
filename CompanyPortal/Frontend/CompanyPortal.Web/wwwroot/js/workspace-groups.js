@@ -1,7 +1,7 @@
 (() => {
   const workspace=document.getElementById('workspace-cards');if(!workspace)return;
   const storageKey='clerio-workspace-groups-v1';
-  const systems=[...document.querySelectorAll('.systems-card[data-system-id]')].map(card=>({id:card.dataset.systemId,title:card.querySelector('h3').textContent}));
+  const systems=[...document.querySelectorAll('#systems-grid .systems-card[data-system-id]')].map(card=>({id:card.dataset.systemId,title:card.querySelector('h3').textContent}));
   const byId=new Map(systems.map(system=>[system.id,system]));
   const make=(tag,cls,text)=>{const node=document.createElement(tag);if(cls)node.className=cls;if(text)node.textContent=text;return node;};
   function decode(raw){

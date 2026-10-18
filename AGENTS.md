@@ -2,6 +2,8 @@
 
 ## Authorized CompanyPortal migration
 
+- The user has now authorized the API foundation milestone. `CompanyPortal/Backend/` contains its own solution and one .NET 10 controller-based API project; see `CompanyPortal/docs/API_FOUNDATION.md` and `Backend/README.md`. Use Swagger/Swashbuckle and Windows/AD authentication. SQL Server with Dapper/SqlClient and numbered SQL scripts is agreed; no EF Core. Exchange SE build 15.2.2562.17 was reported, with EWS planned for the same Outlook records and Exchange-enforced calendar delegation. Database creation, Exchange access and frontend connection remain later steps. The frontend-only restrictions below describe the earlier milestone.
+
 - The user authorized migrating to ASP.NET Core MVC on .NET 10. Follow `docs/COMPANYPORTAL_MVC_MIGRATION_PLAN.md` and the current progress in `CompanyPortal/docs/MIGRATION_STATUS.md`.
 - The new frontend solution is under `CompanyPortal/Frontend/`; a separate backend solution under `CompanyPortal/Backend/` is deferred. No API, database, authentication, or redesign belongs to this milestone.
 - Preserve `dist/` as the original comparison baseline until browser verification passes. The user authorized finishing the frontend: shared MVC layout/partials, local offline assets and cleanup of 12 proven unused files in the new project are now implemented. The legacy files outside `CompanyPortal` remain retained; see the current acceptance checklist before retiring them.

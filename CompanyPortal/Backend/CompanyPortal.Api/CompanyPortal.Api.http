@@ -1,0 +1,8 @@
+@baseUrl = http://localhost:5081
+
+### Process liveness; does not check SQL Server or Exchange
+GET {{baseUrl}}/health
+
+### Requires a client that sends Windows credentials (see Backend/README.md)
+GET {{baseUrl}}/api/me
+Accept: application/json

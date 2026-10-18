@@ -1,12 +1,12 @@
 # CompanyPortal
 
-ASP.NET Core MVC frontend targeting .NET 10. The future Web API will have its own solution under `Backend/` beside `Frontend/`; it has not been created.
+ASP.NET Core MVC frontend and a separate .NET 10 Web API foundation. Open `Frontend/CompanyPortal.Frontend.slnx` for the portal or `Backend/CompanyPortal.Backend.slnx` for the API. See the [API run instructions](Backend/README.md) and [API/Exchange decisions](docs/API_FOUNDATION.md).
 
 ## Current migration stage
 
-The MVC frontend is organized into a shared layout and feature partials, essential assets are local, and the new project has been cleaned. Release publishing, local-only NuGet restore, theme logic and IIS Express checks passed, including `/companyportal/` sub-application hosting. Final desktop/mobile/offline browser acceptance and the actual internal Windows Server/IIS deployment remain pending; see the [acceptance checklist](docs/FRONTEND_ACCEPTANCE.md).
+The MVC frontend is organized into a shared layout and feature partials, essential assets are local, and the new project has been cleaned. Verification evidence and remaining recorded checks are in the [frontend acceptance checklist](docs/FRONTEND_ACCEPTANCE.md). The user authorized proceeding to the API foundation on the assumption that frontend browser/IIS acceptance is complete. The API foundation now builds independently; its actual domain/IIS deployment, database and Exchange integration are later steps.
 
-The portable application is this `CompanyPortal` folder. Original source in `../dist/` and legacy tooling outside it are retained as a comparison baseline until browser acceptance; they are not required to build, publish or run this solution. No API project has been added.
+The portable application is this `CompanyPortal` folder. Original source in `../dist/` and legacy tooling outside it remain retained as a comparison baseline; they are not required to build, publish or run either solution. The API introduces NuGet dependencies: include its offline package bundle when delivering source for offline builds.
 
 See [migration status](docs/MIGRATION_STATUS.md) and the [agreed plan](../docs/COMPANYPORTAL_MVC_MIGRATION_PLAN.md).
 
@@ -28,7 +28,7 @@ Run .NET commands from `Frontend/` so its `global.json` SDK selection applies.
 
 Open `http://127.0.0.1:5080/` for the portal and `http://127.0.0.1:5080/profile` for the profile page. Old `/index.html` and `/user-profile.html` links also resolve through MVC; `/design-b.html` redirects to `/` and preserves the query string.
 
-The local development profile intentionally uses HTTP on loopback. Production HTTPS hosting is a later configuration task. No authentication or API integration is implemented; existing employee/business content remains illustrative.
+The frontend local development profile intentionally uses HTTP on loopback. Its API connection and employee authentication have not been implemented; existing employee/business content remains illustrative. The separate backend now has Windows authentication; see its own run/deployment instructions.
 
 ## Browser data
 
@@ -94,4 +94,4 @@ See [IIS and offline deployment](docs/IIS_AND_OFFLINE_DEPLOYMENT.md) for prerequ
 
 1. Verify portal/profile appearance and existing interactions on desktop/mobile, including visible themes 1/2/3 and storage behavior. Theme 1 (`majestic`) is the default.
 2. Complete the offline browser and actual internal IIS acceptance checks.
-3. Once browser acceptance passes, retire/archive the legacy files outside `CompanyPortal`. Keep the API deferred until the frontend is accepted.
+3. Retire/archive legacy files outside `CompanyPortal` only after frontend acceptance is confirmed. Continue the authorized API milestone using [the backend plan](docs/API_FOUNDATION.md).

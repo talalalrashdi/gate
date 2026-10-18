@@ -50,6 +50,7 @@ else {
     if ($swagger.Content -notmatch 'Swagger UI') { throw 'Swagger UI not served.' }
     $schema = (Request '/swagger/v1/swagger.json' 200 $true).Content | ConvertFrom-Json
     if (-not $schema.paths.'/api/me'.get) { throw 'Identity endpoint is missing from Swagger.' }
+    if (-not $schema.paths.'/health'.get) { throw 'Health endpoint is missing from Swagger.' }
     foreach ($asset in @('/swagger/swagger-ui.css', '/swagger/swagger-ui-bundle.js', '/swagger/swagger-ui-standalone-preset.js')) {
         Request $asset 200 $true | Out-Null
     }

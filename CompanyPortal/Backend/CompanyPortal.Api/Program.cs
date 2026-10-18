@@ -51,7 +51,6 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.MapHealthChecks("/health").AllowAnonymous();
 app.MapControllers();
 
 app.Run();

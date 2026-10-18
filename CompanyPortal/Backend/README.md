@@ -14,7 +14,7 @@ The default Project profile uses `http://localhost:5081` on loopback so the init
 
 | Address | Behavior |
 | --- | --- |
-| `/health` | Process liveness (`Healthy`); does not check SQL Server, Exchange, or AD availability |
+| `/health` | Process liveness (`Healthy`), visible in Swagger; does not check SQL Server, Exchange, or AD availability |
 | `/api/me` | Requires Windows authentication; returns account name, SID when supplied by Windows, and authentication type; response is not cached |
 | `/swagger` | Development only, Swagger UI; same-origin Windows authentication |
 | `/swagger/v1/swagger.json` | Development only, generated Swagger document |
@@ -78,4 +78,4 @@ dotnet build CompanyPortal.Backend.slnx --no-restore
 
 ## Next steps
 
-See [API decisions and Exchange findings](../docs/API_FOUNDATION.md). No database has been created, no mailbox accessed, and no frontend feature has been connected by this foundation.
+See [API decisions and Exchange findings](../docs/API_FOUNDATION.md) and [database deployment](Database/README.md). The first SQL script creates an empty `CompanyPortal` database; application tables/data access, mailbox access and frontend integration are subsequent steps.

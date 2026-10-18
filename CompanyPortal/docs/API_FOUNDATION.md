@@ -64,6 +64,16 @@ Windows authentication to IIS does not automatically delegate credentials to a s
 - No usable local development HTTPS certificate was available. HTTPS startup correctly failed without a certificate; HTTP loopback was used for the runtime checks. The default launch profile therefore uses HTTP loopback, with a separate HTTPS profile and certificate setup instructions. The Production smoke check verified environment behavior over local HTTP; it did not verify HTTPS/certificate deployment. Configure and verify HTTPS on the actual IIS address.
 - Temporary verification processes were stopped after testing to avoid executable locks during Visual Studio builds.
 
+## Local database and health follow-up — 18 October 2026
+
+The user confirmed that the API runs and selected the local default SQL Server instance (`localhost`) for the new database. The instance reports SQL Server 2019 Developer Edition, 15.0.2000.5. The first numbered script, `Backend/Database/Scripts/001_CreateDatabase.sql`, creates an empty `CompanyPortal` database using server-default file locations and safely leaves an existing database unchanged. Schema/data-access implementation is separate; Exchange remains authoritative for mail, tasks and calendars.
+
+The agreed deployment approach is identical application code and ordered database scripts in both environments, with the destination API connection string changed through configuration. SQL service-account grants, network connectivity and certificate trust must also be provisioned. `Backend/Database/README.md` documents the procedure. No actual internal deployment is claimed by local tests.
+
+The `/health` endpoint originally used the health middleware and was absent from Swagger's controller discovery. It now uses a controller backed by the same built-in HealthCheckService, preserving the existing URL, `Healthy` text, anonymous application access and liveness-only semantics while appearing in Swagger. IIS can still require authentication before it reaches the application. Health is not a database connectivity check.
+
+Verified locally: `CompanyPortal` was created on `localhost`, is ONLINE and contains zero application tables. Running script 001 again reported that the database already exists and made no changes. The Release build/publish passed with zero warnings/errors, and the Windows-authenticated foundation checks passed including discovery of both `/health` and `/api/me` in Swagger. The temporary API test process was stopped. No connection string is consumed by the API yet; Dapper/SqlClient and application schema are the next feature step.
+
 ## Sources
 
 - [Exchange build numbers and version verification](https://learn.microsoft.com/en-us/exchange/new-features/build-numbers-and-release-dates)

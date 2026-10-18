@@ -53,3 +53,10 @@ Browser storage is origin-specific. Port 5080 intentionally isolates this initia
 Required external Iconsax resources and externally hosted imagery still need review/local hosting before an air-gapped rendering claim. No remote resource was replaced during initial parity work.
 
 Next: obtain browser verification of the initial migration, resolve any regressions, then organize layout/partials and verify again. Review and delete proven unnecessary files/code only as the final step.
+
+## User-requested theme and tab update
+
+- The current majestic theme (legacy internal option/panel 4) is now the default, displayed as theme **1**. Official/national is **2**, and formal is **3**. Stable internal panel IDs are retained because existing CSS and JavaScript reference them.
+- CompanyPortal saves theme selections under `companyportal-opening-theme-v1`, so its new default applies on first use without changing the original `clerio-opening-theme` preference. Subsequent explicit selections persist normally. Task and other storage keys are untouched.
+- Portal, profile, and error views use the browser title `البوابة` and the existing local `oman-khanjar.png` favicon.
+- These are intentional differences from the frozen original source. The migration verifier accounts for the tab/theme changes while continuing to check remaining HTML and assets against the original baseline. The changed intro script is checked against its current MVC source.

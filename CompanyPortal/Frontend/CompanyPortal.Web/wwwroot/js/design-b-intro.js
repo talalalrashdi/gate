@@ -92,7 +92,10 @@
   Object.keys(themes).forEach(option => {
     if (!byId(themes[option].panel) || !themeButtons.some(button => button.dataset.introOption === option)) delete themes[option];
   });
-  const defaultTheme = Object.hasOwn(themes, '1') ? '1' : '2';
+  // Visible themes are 1 (majestic), 2 (official), 3 (formal). Keep legacy panel IDs for CSS compatibility.
+  const defaultTheme = '4';
+  // Start CompanyPortal with its new default without overwriting the original portal preference.
+  const themePreferenceKey = 'companyportal-opening-theme-v1';
   function selectTheme(option) {
     option = Object.hasOwn(themes, option) && byId(themes[option].panel) ? option : defaultTheme;
     const selected = themes[option];
@@ -136,7 +139,7 @@
     floatingCalendar?.showPopover?.();
     section.setAttribute('aria-labelledby', selected.labelledBy);
     byId('bt-theme-name').textContent = selected.label;
-    save('clerio-opening-theme', option);
+    save(themePreferenceKey, option);
     syncMajesticPlayback();
     document.dispatchEvent(new CustomEvent('clerio:theme-change', { detail: { theme: selected.theme } }));
   }
@@ -174,7 +177,7 @@
     });
   }
   showMajesticScene(0);
-  selectTheme(read('clerio-opening-theme', defaultTheme));
+  selectTheme(read(themePreferenceKey, defaultTheme));
   const today = new Date();
   const dateKey = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   const todayKey = dateKey(today);

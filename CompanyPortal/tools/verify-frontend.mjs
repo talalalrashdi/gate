@@ -12,6 +12,11 @@ const baseline = JSON.parse(await readFile(path.join(companyRoot, 'docs/frontend
 const base = new URL(process.argv[2] ?? 'http://127.0.0.1:5080/');
 const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 const normalize = text => text.replaceAll('\r\n', '\n').trim();
+// User-approved changes after initial parity: tab metadata and theme controls.
+const canonicalHtml = text => normalize(text)
+  .replace(/<title>[^<]*<\/title>/, '<title></title>')
+  .replace(/\s*<link rel="icon"[^>]*>/g, '')
+  .replace(/<div class="b-intro-switch"[\s\S]*?<small id="bt-theme-name">[^<]*<\/small><\/div>/, '<!-- theme controls -->');
 
 function migratedPath(file) {
   if (file.endsWith('.css')) return 'css/' + file;
@@ -42,10 +47,18 @@ for (const file of baseline.files) {
 const portal = await readFile(path.join(originalRoot, 'design-b.html'), 'utf8');
 const profile = await readFile(path.join(originalRoot, 'user-profile.html'), 'utf8');
 for (const route of ['', 'index.html', 'design-b.html']) {
-  assert.equal(normalize(await (await request(route)).text()), normalize(expectedHtml(portal)), `Portal differs: /${route}`);
+  const html = await (await request(route)).text();
+  assert.equal(canonicalHtml(html), canonicalHtml(expectedHtml(portal)), `Portal differs: /${route}`);
+  assert.ok(html.includes('<title>البوابة</title>'), 'Portal tab title');
+  assert.ok(html.includes('rel="icon" type="image/png" href="/assets/oman-khanjar.png"'), 'Portal favicon');
+  const buttons = [...html.matchAll(/<button[^>]*data-intro-option="([^"]+)"[^>]*>(\d)<\/button>/g)];
+  assert.deepEqual(buttons.map(button => [button[1], button[2]]), [['4', '1'], ['2', '2'], ['3', '3']], 'Visible theme mapping');
 }
 for (const route of ['profile', 'profile/', 'user-profile.html']) {
-  assert.equal(normalize(await (await request(route)).text()), normalize(expectedHtml(profile)), `Profile differs: /${route}`);
+  const html = await (await request(route)).text();
+  assert.equal(canonicalHtml(html), canonicalHtml(expectedHtml(profile)), `Profile differs: /${route}`);
+  assert.ok(html.includes('<title>البوابة</title>'), 'Profile tab title');
+  assert.ok(html.includes('rel="icon" type="image/png" href="/assets/oman-khanjar.png"'), 'Profile favicon');
 }
 
 // Includes runtime-generated image paths and magazine pages, not just HTML links.
@@ -56,6 +69,8 @@ for (let offset = 0; offset < resources.length; offset += 8) {
     const actual = Buffer.from(await response.arrayBuffer());
     let expected = await readFile(path.join(originalRoot, file.path));
     if (file.path.endsWith('.css')) expected = Buffer.from(expected.toString('utf8').replaceAll('./assets/', '../assets/'));
+    // The default/preference behavior was intentionally changed in this script.
+    if (file.path === 'design-b-intro.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/design-b-intro.js'));
     assert.equal(digest(actual), digest(expected), `Resource differs: ${file.path}`);
   }));
 }

@@ -2,6 +2,8 @@
 
 ## Authorized CompanyPortal migration
 
+- The user authorized the frontend → API → SQL connection check, explicitly deferring portal preferences. See `CompanyPortal/docs/CONNECTION_CHECK.md`. Dapper/SqlClient and a Development-only read-only diagnostic now connect MVC HttpClient (process identity) to the Windows-authenticated API and local CompanyPortal database. This is not employee impersonation/delegation or an Exchange connection. No business tables/preferences or portal design changes belong to this connectivity step.
+
 - The user has now authorized the API foundation milestone. `CompanyPortal/Backend/` contains its own solution and one .NET 10 controller-based API project; see `CompanyPortal/docs/API_FOUNDATION.md` and `Backend/README.md`. Use Swagger/Swashbuckle and Windows/AD authentication. SQL Server with Dapper/SqlClient and numbered SQL scripts is agreed; no EF Core. The user selected the default local SQL instance (`localhost`); script 001 created an empty `CompanyPortal` database and was verified safe to rerun. Schema/data access, Exchange access and frontend connection remain later steps. Exchange SE build 15.2.2562.17 was reported, with EWS planned for the same Outlook records and Exchange-enforced calendar delegation. The frontend-only restrictions below describe the earlier milestone.
 
 - The user authorized migrating to ASP.NET Core MVC on .NET 10. Follow `docs/COMPANYPORTAL_MVC_MIGRATION_PLAN.md` and the current progress in `CompanyPortal/docs/MIGRATION_STATUS.md`.

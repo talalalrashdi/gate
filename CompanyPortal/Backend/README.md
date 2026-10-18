@@ -16,6 +16,7 @@ The default Project profile uses `http://localhost:5081` on loopback so the init
 | --- | --- |
 | `/health` | Process liveness (`Healthy`), visible in Swagger; does not check SQL Server, Exchange, or AD availability |
 | `/api/me` | Requires Windows authentication; returns account name, SID when supplied by Windows, and authentication type; response is not cached |
+| `/api/diagnostics/database` | Development only; requires Windows authentication and queries the configured SQL database with Dapper |
 | `/swagger` | Development only, Swagger UI; same-origin Windows authentication |
 | `/swagger/v1/swagger.json` | Development only, generated Swagger document |
 
@@ -45,7 +46,7 @@ The script checks anonymous rejection, actual Windows identity, local Swagger as
 
 Add feature-specific data/services/integration classes when implementing real features. No empty repository/service layers, template WeatherForecast endpoints or sample business data are included. Built-in logging and Problem Details handle diagnostics/errors. Configure a retained log destination during IIS deployment; the application does not create its own file logging subsystem.
 
-Only Windows authentication and Swagger dependencies are installed now. Dapper and Microsoft.Data.SqlClient are agreed for the first database feature. EF Core and the Microsoft.AspNetCore.OpenApi generator are excluded. Swashbuckle uses the OpenAPI specification and its own Microsoft.OpenApi dependency internally.
+Windows authentication, Swagger, Dapper and Microsoft.Data.SqlClient are installed. The database access is currently a read-only connection check, not a business feature. EF Core and the Microsoft.AspNetCore.OpenApi generator are excluded. Swashbuckle uses the OpenAPI specification and its own Microsoft.OpenApi dependency internally. See the [connection check](../docs/CONNECTION_CHECK.md) for the MVC → API → SQL test and configuration.
 
 ## IIS
 
@@ -57,7 +58,7 @@ dotnet publish CompanyPortal.Api --configuration Release --no-restore --output a
 
 Install the matching .NET 10 Hosting Bundle and IIS Windows Authentication feature. Create a separate application/app pool (No Managed Code); enable Windows Authentication, disable Anonymous Authentication, configure HTTPS and the approved host binding, and keep the environment `Production`. `launchSettings.json` configures local launch profiles only; it does not configure production IIS authentication. `/swagger` and its document are unavailable in Production. A Windows-authenticated request can verify their absence; an anonymous request can receive 401 from the authorization policy or IIS first.
 
-No CORS policy or frontend API calls are configured yet. The two solutions remain independently buildable. Before connecting the MVC application to the API, choose the identity flow: a server-to-server request does not automatically forward the employee's Windows identity. Kerberos delegation and Exchange access require explicit infrastructure configuration; do not substitute the app-pool account for the employee or trust an account name supplied by the client. Mutating browser endpoints will also need an explicit CSRF protection strategy before introduction.
+No CORS policy is configured. A Development-only MVC connection check now calls the API using the MVC process/service identity; the two solutions remain independently buildable. Before employee-specific features are connected, choose the identity flow: a server-to-server request does not automatically forward the employee's Windows identity. Kerberos delegation and Exchange access require explicit infrastructure configuration; do not substitute the app-pool account for the employee or trust an account name supplied by the client. Mutating browser endpoints will also need an explicit CSRF protection strategy before introduction.
 
 ## Offline delivery
 
@@ -78,4 +79,4 @@ dotnet build CompanyPortal.Backend.slnx --no-restore
 
 ## Next steps
 
-See [API decisions and Exchange findings](../docs/API_FOUNDATION.md) and [database deployment](Database/README.md). The first SQL script creates an empty `CompanyPortal` database; application tables/data access, mailbox access and frontend integration are subsequent steps.
+See [API decisions and Exchange findings](../docs/API_FOUNDATION.md), [database deployment](Database/README.md) and the [frontend/API/SQL connection check](../docs/CONNECTION_CHECK.md). The database remains empty; business tables/features and Exchange integration are separate steps. The user explicitly deferred portal preferences while verifying connectivity.

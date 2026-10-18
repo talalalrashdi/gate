@@ -6,3 +6,7 @@ GET {{baseUrl}}/health
 ### Requires a client that sends Windows credentials (see Backend/README.md)
 GET {{baseUrl}}/api/me
 Accept: application/json
+
+### Development only: real SQL connection; requires Windows credentials
+GET {{baseUrl}}/api/diagnostics/database
+Accept: application/json

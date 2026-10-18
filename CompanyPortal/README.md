@@ -1,6 +1,6 @@
 # CompanyPortal
 
-ASP.NET Core MVC frontend and a separate .NET 10 Web API foundation. Open `Frontend/CompanyPortal.Frontend.slnx` for the portal or `Backend/CompanyPortal.Backend.slnx` for the API. See the [API run instructions](Backend/README.md) and [API/Exchange decisions](docs/API_FOUNDATION.md).
+ASP.NET Core MVC frontend and a separate .NET 10 Web API foundation. Open `Frontend/CompanyPortal.Frontend.slnx` for the portal or `Backend/CompanyPortal.Backend.slnx` for the API. See the [API run instructions](Backend/README.md), [API/Exchange decisions](docs/API_FOUNDATION.md) and [frontend → API → SQL connection check](docs/CONNECTION_CHECK.md).
 
 ## Current migration stage
 
@@ -28,7 +28,7 @@ Run .NET commands from `Frontend/` so its `global.json` SDK selection applies.
 
 Open `http://127.0.0.1:5080/` for the portal and `http://127.0.0.1:5080/profile` for the profile page. Old `/index.html` and `/user-profile.html` links also resolve through MVC; `/design-b.html` redirects to `/` and preserves the query string.
 
-The frontend local development profile intentionally uses HTTP on loopback. Its API connection and employee authentication have not been implemented; existing employee/business content remains illustrative. The separate backend now has Windows authentication; see its own run/deployment instructions.
+The frontend local development profile intentionally uses HTTP on loopback. Its Development-only `/diagnostics/connection` page now checks MVC → Windows-authenticated API → SQL. Employee-specific API features/authentication are not connected; existing employee/business content remains illustrative. See [the connection check instructions](docs/CONNECTION_CHECK.md).
 
 ## Browser data
 

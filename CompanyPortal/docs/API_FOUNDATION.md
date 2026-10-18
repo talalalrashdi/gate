@@ -36,14 +36,14 @@ The API must authorize the requested calendar and operation on the server. Prefe
 
 Windows authentication to IIS does not automatically delegate credentials to a separate API or Exchange. The frontend-to-API and API-to-Exchange identity paths, SPNs/Kerberos delegation if applicable, service identities and permitted mailbox scope remain explicit infrastructure decisions. No user passwords or identity headers will be accepted as a workaround. AD identity is not itself an SMTP address; mailbox mapping needs verification.
 
-## Implemented foundation scope
+## Initial foundation scope (see subsequent updates below)
 
 - .NET 10 SDK selection and an independently buildable backend solution.
 - Windows Negotiate authentication with authentication required by default, plus an explicitly protected `GET /api/me` diagnostic endpoint.
 - Liveness-only `GET /health`, with no dependency checks yet.
 - Swagger UI/document in Development, with bundled UI assets and external validation disabled; Windows authentication still applies.
 - Built-in exception/status Problem Details, logging, IIS Express Windows-auth launch profile, local request examples, locked dependency graph and an offline package export helper.
-- No database connection, tables, SQL execution, Dapper package, Exchange access, SignalR hub, frontend integration or invented feature scaffolding yet.
+- The initial foundation did not include database access, tables, SQL execution, Dapper, Exchange, SignalR or frontend integration. Subsequent connectivity work is recorded below.
 
 ## Incremental next steps
 
@@ -72,9 +72,15 @@ The agreed deployment approach is identical application code and ordered databas
 
 The `/health` endpoint originally used the health middleware and was absent from Swagger's controller discovery. It now uses a controller backed by the same built-in HealthCheckService, preserving the existing URL, `Healthy` text, anonymous application access and liveness-only semantics while appearing in Swagger. IIS can still require authentication before it reaches the application. Health is not a database connectivity check.
 
-Verified locally: `CompanyPortal` was created on `localhost`, is ONLINE and contains zero application tables. Running script 001 again reported that the database already exists and made no changes. The Release build/publish passed with zero warnings/errors, and the Windows-authenticated foundation checks passed including discovery of both `/health` and `/api/me` in Swagger. The temporary API test process was stopped. No connection string is consumed by the API yet; Dapper/SqlClient and application schema are the next feature step.
+Verified locally: `CompanyPortal` was created on `localhost`, is ONLINE and contains zero application tables. Running script 001 again reported that the database already exists and made no changes. The Release build/publish passed with zero warnings/errors, and the Windows-authenticated foundation checks passed including discovery of both `/health` and `/api/me` in Swagger. The temporary API test process was stopped. At that stage the API did not yet consume a connection string; the subsequent update below adds connectivity without business schema.
 
-## Sources
+## Frontend → API → SQL follow-up — 18 October 2026
+
+The user requested connecting the frontend, API and database before implementing portal preferences. Dapper 2.1.89 and Microsoft.Data.SqlClient 7.1.1 now support a read-only Development-only API diagnostic. SQL access uses `ConnectionStrings:CompanyPortal`; the query is `SELECT DB_NAME();`. The MVC Development-only `/diagnostics/connection` page calls it using HttpClient and the MVC process's Windows credentials, displaying the API result. Both solutions still build independently. This does not forward the visitor's identity, create business tables or implement preferences; employee identity/delegation remains a separate decision.
+
+NuGet resolved a vulnerable transitive System.Security.Cryptography.Pkcs package during the SQL client restore; an explicit 10.0.13 reference upgrades it to the patched version. The updated locked dependency graph contains 25 packages and was exported/restored through a local-only feed into a separate package directory. See [connection check](CONNECTION_CHECK.md) for configuration, diagnostics scope, identity boundaries and verification.
+
+## Reference links
 
 - [Exchange build numbers and version verification](https://learn.microsoft.com/en-us/exchange/new-features/build-numbers-and-release-dates)
 - [Exchange feature availability](https://learn.microsoft.com/en-us/exchange/new-features/feature-availability)

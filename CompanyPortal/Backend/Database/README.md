@@ -22,7 +22,7 @@ Use the organization's approved TLS/certificate configuration for the SQL client
 
 ## Connection configuration
 
-When database access is implemented, the API will use the configuration key `ConnectionStrings:CompanyPortal`. The connection string is not consumed by the current liveness/identity-only foundation. For local development, the intended value is:
+The API's Development-only database connection check uses the configuration key `ConnectionStrings:CompanyPortal`. It runs a read-only database-name query without business tables. The local default is in `CompanyPortal.Api/appsettings.Development.json`:
 
 ```text
 Server=localhost;Database=CompanyPortal;Integrated Security=True;Encrypt=True;TrustServerCertificate=True;

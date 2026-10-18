@@ -1,0 +1,26 @@
+@model CompanyPortal.Web.Models.ConnectionCheckViewModel
+@{
+    ViewData["BodyClass"] = "connection-check";
+}
+@section Styles {
+    <link rel="stylesheet" href="@Url.Content("~/css/connection-check.css")">
+}
+<main data-connection-status="@(Model.DatabaseConnected ? "connected" : "failed")">
+    <h1>فحص الاتصال</h1>
+    <p>البوابة ← واجهة API ← قاعدة البيانات</p>
+    <dl>
+        <div><dt>البوابة</dt><dd>تعمل</dd></div>
+        <div><dt>واجهة API</dt><dd>@(Model.ApiConnected ? "متصلة" : "تعذر الاتصال")</dd></div>
+        <div><dt>قاعدة البيانات</dt><dd>@(Model.DatabaseConnected ? "متصلة" : "لم يتم التحقق")</dd></div>
+        @if (Model.DatabaseConnected)
+        {
+            <div><dt>اسم قاعدة البيانات</dt><dd data-database-name>@Model.DatabaseName</dd></div>
+            <div><dt>وقت الفحص (UTC)</dt><dd dir="ltr">@Model.CheckedAtUtc?.ToString("u")</dd></div>
+        }
+    </dl>
+    @if (Model.Error is not null)
+    {
+        <p role="alert">@Model.Error</p>
+    }
+    <nav><a href="@Url.Content("~/diagnostics/connection")">إعادة الفحص</a><a href="@Url.Content("~/")">العودة إلى البوابة</a></nav>
+</main>

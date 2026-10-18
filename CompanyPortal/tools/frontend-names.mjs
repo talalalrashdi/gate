@@ -1,5 +1,6 @@
 // Migration naming map. Shared with the verifier; not shipped to the browser.
-export const fileNames = {
+import { renameThemeIdentifiers } from './theme-names.mjs';
+export const originalFileNames = {
   'design-b.css': 'site.css',
   'design-b.js': 'site.js',
   'design-b-intro.js': 'personal-workspace.js',
@@ -37,8 +38,11 @@ for (const [oldStem, newStem, extensions] of [
   ['floating-notices', 'floating-notices', ['js']],
   ['section-nav', 'section-navigation', ['css', 'js']]
 ]) {
-  for (const extension of extensions) fileNames[`design-b-${oldStem}.${extension}`] = `${newStem}.${extension}`;
+  for (const extension of extensions) originalFileNames[`design-b-${oldStem}.${extension}`] = `${newStem}.${extension}`;
 }
+
+export const fileNames = Object.fromEntries(Object.entries(originalFileNames)
+  .map(([before, after]) => [before, renameThemeIdentifiers(after)]));
 
 export const themeNames = { 1: 'business', 2: 'official', 3: 'formal', 4: 'majestic', 5: 'news' };
 
@@ -50,7 +54,7 @@ export function renameFrontendSource(source) {
     return `__PRESERVED_STORAGE_${preservedKeys.length - 1}__`;
   });
 
-  for (const [oldName, newName] of Object.entries(fileNames)) text = text.replaceAll(oldName, newName);
+  for (const [oldName, newName] of Object.entries(originalFileNames)) text = text.replaceAll(oldName, newName);
   text = text
     .replace(/intro-option-([1-5])/g, (_, number) => `theme-${themeNames[number]}`)
     .replace(/data-intro-option="([1-5])"/g, (_, number) => `data-theme-option="${themeNames[number]}"`)
@@ -86,5 +90,5 @@ export function renameFrontendSource(source) {
     .replaceAll('تنقل تصميم ب', 'تنقل البوابة')
     .replaceAll('تصميم ب · مساحة عمل داخلية أكثر وضوحًا', 'البوابة · مساحة عمل داخلية أكثر وضوحًا');
 
-  return text.replace(/__PRESERVED_STORAGE_(\d+)__/g, (_, index) => preservedKeys[Number(index)]);
+  return renameThemeIdentifiers(text.replace(/__PRESERVED_STORAGE_(\d+)__/g, (_, index) => preservedKeys[Number(index)]));
 }

@@ -12,7 +12,8 @@ namespace CompanyPortal.Api.Controllers;
 public sealed class UserSettingsController(UserSettingsStore settings, IConfiguration configuration,
     ILogger<UserSettingsController> logger) : ControllerBase
 {
-    private static readonly string[] Themes = ["majestic", "official", "formal"];
+    // 1 الرسمي: official; 2 العملي: work; 3 اليوم الوطني: national-day.
+    private static readonly string[] Themes = ["official", "work", "national-day"];
 
     [HttpGet]
     [ProducesResponseType<ThemeSettingsResponse>(StatusCodes.Status200OK)]
@@ -46,16 +47,16 @@ public sealed class UserSettingsController(UserSettingsStore settings, IConfigur
         var sameOrigin = $"{Request.Scheme}://{Request.Host}";
         if (origin.Length > 0 && origin != sameOrigin && !allowedOrigins.Contains(origin, StringComparer.Ordinal))
             return Problem(statusCode: 403, title: "Origin is not permitted.");
-        if (!Themes.Contains(request.Theme, StringComparer.Ordinal))
+        if (!Themes.Contains(request.ThemeName, StringComparer.Ordinal))
         {
-            ModelState.AddModelError(nameof(request.Theme), "Choose majestic, official or formal.");
+            ModelState.AddModelError(nameof(request.ThemeName), "Choose official, work or national-day.");
             return ValidationProblem(ModelState);
         }
         var name = User.Identity?.Name;
         if (string.IsNullOrWhiteSpace(name) || name.Length > 512) return Unauthorized();
         try
         {
-            return await settings.SaveThemeAsync(name, request.Theme, cancellationToken)
+            return await settings.SaveThemeAsync(name, request.ThemeName, cancellationToken)
                 ? NoContent() : Unregistered();
         }
         catch (SqlException exception) { return DatabaseFailure(exception); }

@@ -6,7 +6,7 @@
   const byId = id => document.getElementById(id);
   const themeButtons = [...document.querySelectorAll('[data-theme-option]')];
   const themePanels = [...section.querySelectorAll('.portal-theme-panel')];
-  const majesticFrame = byId('theme-majestic-frame');
+  const officialFrame = byId('theme-official-frame');
   const alertsSection = byId('portal-alerts-section');
   const alertsHome = alertsSection?.parentElement;
   const alertsNext = alertsSection?.nextSibling;
@@ -19,16 +19,16 @@
   const sharedComposer = byId('planner-task-composer');
   const composerHome = sharedComposer?.parentElement;
   const composerNext = sharedComposer?.nextSibling;
-  const majesticCalendar = byId('theme-majestic-calendar');
-  const formalCalendar = byId('theme-formal-calendar');
-  const sharedNews = section.querySelector('.theme-majestic-news');
+  const officialCalendar = byId('theme-official-calendar');
+  const workCalendar = byId('theme-work-calendar');
+  const sharedNews = section.querySelector('.theme-official-news');
   const floatingCalendar = byId('portal-floating-calendar');
   const floatingBody = byId('portal-floating-calendar-body');
   if (floatingCalendar) {
     section.append(floatingCalendar);
     floatingCalendar.showPopover?.();
   }
-  const sceneImages = [...document.querySelectorAll('[data-majestic-image]')];
+  const sceneImages = [...document.querySelectorAll('[data-official-image]')];
   const sceneStories = {
     fort: ['منيو جديد، لخيارات أكثر.', 'اكتشف خيارات الفطور والغداء في مطعم الشركة، وخطّط لاستراحتك القادمة.', 'جديد مطعم الشركة', 'استعرض المنيو', [['الفطور', 'ساندويتشات طازجة، فواكه موسمية، وقهوة وشاي.'], ['الغداء', 'أطباق رئيسية متنوعة، سلطات، وخيارات نباتية.'], ['قبل الطلب', 'اسأل فريق المطعم عن مكونات الوجبات ومسببات الحساسية.']]],
     mosque: ['خدمات الموظفين، أقرب إليك.', 'تعرّف على خطوات الوصول إلى الاستمارات والوثائق التي تحتاجها في يومك.', 'توضيح للموظفين', 'اعرف التفاصيل', [['وصول سريع', 'افتح الاستمارات والوثائق من القائمة الرئيسية واختر الخدمة المطلوبة.'], ['قبل إرسال الطلب', 'راجع البيانات والمرفقات اللازمة لضمان اكتمال الطلب.']]],
@@ -41,7 +41,7 @@
   };
   function createSceneIcon(scene) {
     const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    icon.classList.add('theme-majestic-story-icon');
+    icon.classList.add('theme-official-story-icon');
     icon.setAttribute('viewBox', '0 0 24 24');
     icon.setAttribute('fill', 'none');
     icon.setAttribute('stroke', 'currentColor');
@@ -55,8 +55,8 @@
     return icon;
   }
   const announcementDialog = byId('personal-announcement-dialog');
-  byId('theme-majestic-story-action')?.addEventListener('click', () => {
-    const story = sceneStories[sceneImages[sceneIndex]?.dataset.majesticImage];
+  byId('theme-official-story-action')?.addEventListener('click', () => {
+    const story = sceneStories[sceneImages[sceneIndex]?.dataset.officialImage];
     if (!story || !announcementDialog) return;
     byId('personal-announcement-label').textContent = story[2];
     byId('personal-announcement-title').textContent = story[0];
@@ -68,29 +68,29 @@
       heading.textContent = title; copy.textContent = description; item.append(heading, copy); details.append(item);
     });
     announcementDialog.showModal();
-    syncMajesticPlayback();
+    syncOfficialPlayback();
   });
-  announcementDialog?.addEventListener('close', syncMajesticPlayback);
+  announcementDialog?.addEventListener('close', syncOfficialPlayback);
   announcementDialog?.addEventListener('click', event => {
     const bounds = announcementDialog.getBoundingClientRect();
     if (event.target === announcementDialog && (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom)) announcementDialog.close();
   });
-  const backdrop = document.querySelector('.theme-majestic-backdrop');
+  const backdrop = document.querySelector('.theme-official-backdrop');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let sceneIndex = 0, sceneTimer, playbackPaused = reducedMotion.matches;
   const themes = {
-    official: { theme: 'official', panel: 'theme-official', label: byId('theme-official')?.classList.contains('theme-national-day') ? 'المناسبات الرسمية' : 'الوطنية', labelledBy: 'personal-official-title' },
-    formal: { theme: 'formal', panel: 'theme-formal', label: 'الرسمية', labelledBy: 'theme-formal-title' },
-    majestic: { theme: 'majestic', panel: 'theme-majestic', label: 'الشامخة', labelledBy: 'personal-calendar-title' }
+    official: { theme: 'official', panel: 'theme-official', label: 'الرسمي', labelledBy: 'personal-calendar-title' },
+    work: { theme: 'work', panel: 'theme-work', label: 'العملي', labelledBy: 'theme-work-title' },
+    'national-day': { theme: 'national-day', panel: 'theme-national-day', label: 'اليوم الوطني', labelledBy: 'personal-national-day-title' }
   };
   // Only offer themes whose panel and selector still exist on this page.
   Object.keys(themes).forEach(option => {
     if (!byId(themes[option].panel) || !themeButtons.some(button => button.dataset.themeOption === option)) delete themes[option];
   });
   // Visible numbers are presentation only; theme keys and panel IDs describe their purpose.
-  const defaultTheme = 'majestic';
+  const defaultTheme = 'official';
   // Start CompanyPortal with its new default without overwriting the original portal preference.
-  const themePreferenceKey = 'companyportal-opening-theme-v1';
+  const themePreferenceKey = 'companyportal-opening-theme-v2';
   function selectTheme(option) {
     option = Object.hasOwn(themes, option) && byId(themes[option].panel) ? option : defaultTheme;
     const selected = themes[option];
@@ -101,76 +101,78 @@
       button.setAttribute('aria-pressed', String(active));
     });
     themePanels.forEach(panel => { panel.hidden = panel.id !== selected.panel; });
-    if (sharedNews) byId(option === 'formal' ? 'theme-formal' : 'theme-majestic')?.append(sharedNews);
-    if (alertsSection && alertsHome && majesticFrame) {
-      if (option === 'majestic') (sharedNews?.querySelector('.personal-news-bottom') || byId('theme-majestic')).append(alertsSection);
+    if (sharedNews) byId(option === 'work' ? 'theme-work' : 'theme-official')?.append(sharedNews);
+    if (alertsSection && alertsHome && officialFrame) {
+      if (option === 'official') (sharedNews?.querySelector('.personal-news-bottom') || byId('theme-official')).append(alertsSection);
       else alertsHome.insertBefore(alertsSection, alertsNext);
     }
-    if (sharedPlanner && plannerHome && majesticCalendar) {
-      if (option === 'formal' && formalCalendar) {
-        formalCalendar.append(sharedPlanner);
-        if (sharedComposer) formalCalendar.append(sharedComposer);
+    if (sharedPlanner && plannerHome && officialCalendar) {
+      if (option === 'work' && workCalendar) {
+        workCalendar.append(sharedPlanner);
+        if (sharedComposer) workCalendar.append(sharedComposer);
       } else if (floatingBody) {
         floatingBody.append(sharedPlanner);
         if (sharedComposer) floatingCalendar.append(sharedComposer);
-      } else if (option === 'majestic') {
-        majesticCalendar.append(sharedPlanner);
-        if (sharedComposer) majesticCalendar.append(sharedComposer);
+      } else if (option === 'official') {
+        officialCalendar.append(sharedPlanner);
+        if (sharedComposer) officialCalendar.append(sharedComposer);
       } else {
         plannerHome.insertBefore(sharedPlanner, plannerNext);
         if (sharedComposer && composerHome) composerHome.insertBefore(sharedComposer, composerNext);
       }
     }
     if (taskAddButton && taskAddHome) {
-      if (option === 'formal') sharedPlanner.querySelector('.personal-planner-head').append(taskAddButton);
+      if (option === 'work') sharedPlanner.querySelector('.personal-planner-head').append(taskAddButton);
       else taskAddHome.append(taskAddButton);
     }
-    if (byId('personal-calendar-title')) byId('personal-calendar-title').textContent = option === 'formal' ? 'برنامج اليوم' : 'تقويم الأعمال';
+    if (byId('personal-calendar-title')) byId('personal-calendar-title').textContent = option === 'work' ? 'برنامج اليوم' : 'تقويم الأعمال';
     floatingCalendar?.showPopover?.();
     section.setAttribute('aria-labelledby', selected.labelledBy);
     byId('personal-theme-name').textContent = selected.label;
     save(themePreferenceKey, option);
-    syncMajesticPlayback();
+    syncOfficialPlayback();
     document.dispatchEvent(new CustomEvent('companyportal:theme-change', { detail: { theme: selected.theme } }));
   }
   const themeMenu = byId('portal-theme-options')?.closest('details');
   themeButtons.forEach(button => button.addEventListener('click', () => { selectTheme(button.dataset.themeOption); if (themeMenu) themeMenu.open = false; }));
-  function showMajesticScene(index) {
+  function showOfficialScene(index) {
     sceneIndex = index;
-    const scene = sceneImages[index]?.dataset.majesticImage;
-    sceneImages.forEach(image => image.classList.toggle('is-active', image.dataset.majesticImage === scene));
+    const scene = sceneImages[index]?.dataset.officialImage;
+    sceneImages.forEach(image => image.classList.toggle('is-active', image.dataset.officialImage === scene));
     const story = sceneStories[scene];
-    if (story && byId('theme-majestic-story-title')) {
-      byId('theme-majestic-story-title').replaceChildren(createSceneIcon(scene), document.createTextNode(story[0]));
-      byId('theme-majestic-story-description').textContent = story[1];
-      byId('theme-majestic-story-label').textContent = story[2];
-      byId('theme-majestic-story-action').replaceChildren(document.createTextNode(story[3] + ' ←'));
+    if (story && byId('theme-official-story-title')) {
+      byId('theme-official-story-title').replaceChildren(createSceneIcon(scene), document.createTextNode(story[0]));
+      byId('theme-official-story-description').textContent = story[1];
+      byId('theme-official-story-label').textContent = story[2];
+      byId('theme-official-story-action').replaceChildren(document.createTextNode(story[3] + ' ←'));
     }
   }
-  function syncMajesticPlayback() {
+  function syncOfficialPlayback() {
     clearTimeout(sceneTimer);
     if (!backdrop || !sceneImages.length) return;
     const paused = playbackPaused;
-    const photoTheme = document.body.dataset.siteTheme === 'majestic' || (document.body.dataset.siteTheme === 'formal' && document.querySelector('.portal-news-personal'));
+    const photoTheme = document.body.dataset.siteTheme === 'official' || (document.body.dataset.siteTheme === 'work' && document.querySelector('.portal-news-personal'));
     const running = !paused && !document.hidden && !announcementDialog?.open && photoTheme;
     backdrop.dataset.paused = String(!running);
     if (running) sceneTimer = setTimeout(() => {
-      showMajesticScene((sceneIndex + 1) % sceneImages.length);
-      syncMajesticPlayback();
+      showOfficialScene((sceneIndex + 1) % sceneImages.length);
+      syncOfficialPlayback();
     }, 8000);
   }
   if (backdrop) {
-    document.addEventListener('visibilitychange', syncMajesticPlayback);
+    document.addEventListener('visibilitychange', syncOfficialPlayback);
     reducedMotion.addEventListener('change', () => {
       playbackPaused = reducedMotion.matches;
-      syncMajesticPlayback();
+      syncOfficialPlayback();
     });
   }
-  showMajesticScene(0);
+  showOfficialScene(0);
   // Preserve selections saved before descriptive theme keys were introduced.
-  const legacyThemeNames = { 1: 'business', 2: 'official', 3: 'formal', 4: 'majestic', 5: 'news' };
-  const savedTheme = read(themePreferenceKey, defaultTheme);
-  selectTheme(legacyThemeNames[savedTheme] ?? savedTheme);
+  const legacyThemeNames = { 1: 'business', 2: 'national-day', 3: 'work', 4: 'official', 5: 'news' };
+  const savedTheme = read(themePreferenceKey, null);
+  const previousTheme = read('companyportal-opening-theme-v1', null);
+  const previousNames = { majestic: 'official', formal: 'work', official: 'national-day' };
+  selectTheme(savedTheme ?? legacyThemeNames[previousTheme] ?? previousNames[previousTheme] ?? defaultTheme);
   const today = new Date();
   const dateKey = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   const todayKey = dateKey(today);
@@ -376,7 +378,7 @@
       const message = document.createElement('p'); message.textContent = 'لا توجد مهام مسجلة لهذا اليوم';
       empty.append(message); timeline.append(empty);
     }
-    const formal = document.body.dataset.siteTheme === 'formal';
+    const work = document.body.dataset.siteTheme === 'work';
     daily.forEach(task => {
       const row = document.createElement('div'); row.className = 'planner-task-row'; row.dataset.type = task.type;
       const time = document.createElement('time'); time.className = 'planner-task-hour'; time.textContent = task.time || 'مرن'; if (task.time) time.dateTime = `${task.date}T${task.time}`;
@@ -384,7 +386,7 @@
       const copy = document.createElement('button'); copy.type = 'button'; copy.className = 'planner-task-copy'; copy.setAttribute('aria-label', `تعديل ${task.title}`);
       const title = document.createElement('strong'); title.className = 'planner-task-title'; title.append(taskIcon(task.type), document.createTextNode(task.title)); const status = document.createElement('small');
       const updateStatus = () => { status.textContent = `${types[task.type]}${task.demo ? ' · نموذج' : ''}${task.done ? ' · مكتملة' : ''}`; };
-      const toggleOnClick = formal && task.type !== 'note' && task.type !== 'event';
+      const toggleOnClick = work && task.type !== 'note' && task.type !== 'event';
       const syncCompletion = () => {
         row.classList.toggle('is-done', Boolean(task.done));
         if (toggleOnClick) {
@@ -406,7 +408,7 @@
         const body = document.createElement('span'); body.className = 'personal-note-preview'; body.textContent = task.body || '';
         copy.replaceChildren(label, title, body);
         row.append(copy, remove);
-      } else if (formal) {
+      } else if (work) {
         const actions = document.createElement('div'); actions.className = 'planner-task-actions';
         const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'planner-task-edit'; edit.setAttribute('aria-label', 'تعديل ' + task.title); edit.title = 'تعديل المهمة';
         edit.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 5 5 5M4 20l4-1 12-12a3.5 3.5 0 0 0-5-5L3 14l-1 5Z"/></svg>';

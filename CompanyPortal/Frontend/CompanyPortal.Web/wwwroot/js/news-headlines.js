@@ -1,5 +1,5 @@
 (() => {
-  const list = document.querySelector('.theme-majestic-headlines');
+  const list = document.querySelector('.theme-official-headlines');
   if (!list) return;
   // Selected, dated ONA reports; these are not a live news feed.
   const breakingStory = {
@@ -129,7 +129,7 @@
       });
     }
   }
-  const dates = ['theme-majestic-today', 'editorial-current-date'].map(id => document.getElementById(id)).filter(Boolean);
+  const dates = ['theme-official-today', 'editorial-current-date'].map(id => document.getElementById(id)).filter(Boolean);
   if (dates.length) {
     const options = { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Muscat' };
     const gregorian = new Intl.DateTimeFormat('ar-OM-u-ca-gregory-nu-latn', { ...options, weekday: 'long' });
@@ -145,8 +145,8 @@
     setInterval(updateDate, 60000);
     document.addEventListener('visibilitychange', updateDate);
   }
-  const panel = list.closest('.theme-majestic-news');
-  const controls = [...panel.querySelectorAll('.theme-majestic-news-controls button')];
+  const panel = list.closest('.theme-official-news');
+  const controls = [...panel.querySelectorAll('.theme-official-news-controls button')];
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
   let timer, rotating = false, visible = false, hovered = false, focused = false;
   function syncWindow() {
@@ -195,7 +195,7 @@
   panel.querySelector('[data-news-next]').addEventListener('click', () => rotate(1));
   function schedule() {
     clearTimeout(timer);
-    if (rotating || !visible || hovered || focused || motion.matches || document.hidden || !['majestic', 'formal'].includes(document.body.dataset.siteTheme) || list.children.length < 2) return;
+    if (rotating || !visible || hovered || focused || motion.matches || document.hidden || !['official', 'work'].includes(document.body.dataset.siteTheme) || list.children.length < 2) return;
     timer = setTimeout(() => rotate(1), 6500);
   }
   new IntersectionObserver(entries => { visible = entries[0].isIntersecting; schedule(); }).observe(panel);

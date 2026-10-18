@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { fileNames, renameFrontendSource } from './frontend-names.mjs';
+import { fileNames, originalFileNames, renameFrontendSource } from './frontend-names.mjs';
 
 const companyRoot = fileURLToPath(new URL('../', import.meta.url));
 const originalRoot = path.resolve(companyRoot, '../dist');
@@ -35,7 +35,9 @@ function expectedHtml(html) {
   const prepared = html.replace('https://iconsax.gitlab.io/i/icons.css', '/vendor/iconsax/icons.css')
     .replace(/<style>body\{padding:40px[\s\S]*?<\/style>/, '<link rel="stylesheet" href="/css/profile.css">');
   return renameFrontendSource(prepared.replace(/\b(href|src)="\.\/([^\"]+)"/g, (_, attribute, file) => {
-    let destination = migratedPath(file);
+    // HTML will pass through the semantic-name transform below, exactly once.
+    let destination = file.endsWith('.css') ? 'css/' + (originalFileNames[file] ?? file)
+      : file.endsWith('.js') ? 'js/' + (originalFileNames[file] ?? file) : file;
     if (file === 'design-b.html' || file === 'index.html') destination = '';
     if (file === 'user-profile.html') destination = 'profile';
     return `${attribute}="/${destination}"`;
@@ -57,11 +59,16 @@ const portal = await readFile(path.join(originalRoot, 'design-b.html'), 'utf8');
 const profile = await readFile(path.join(originalRoot, 'user-profile.html'), 'utf8');
 for (const route of ['', 'index.html', 'design-b.html']) {
   const html = await (await request(route)).text();
-  assert.equal(canonicalHtml(html), canonicalHtml(expectedHtml(portal)), `Portal differs: /${route}`);
+  const actualHtml = canonicalHtml(html), baselineHtml = canonicalHtml(expectedHtml(portal));
+  if (actualHtml !== baselineHtml) {
+    let at = 0;
+    while (actualHtml[at] === baselineHtml[at] && at < Math.min(actualHtml.length, baselineHtml.length)) at++;
+    throw new Error(`Portal differs: /${route}, offset ${at}\nActual: ${actualHtml.slice(Math.max(0, at - 80), at + 140)}\nExpected: ${baselineHtml.slice(Math.max(0, at - 80), at + 140)}`);
+  }
   assert.ok(html.includes('<title>البوابة</title>'), 'Portal tab title');
   assert.ok(html.includes(`rel="icon" type="image/png" href="${mount}/assets/oman-khanjar.png"`), 'Portal favicon');
   const buttons = [...html.matchAll(/<button[^>]*data-theme-option="([^"]+)"[^>]*>(\d)<\/button>/g)];
-  assert.deepEqual(buttons.map(button => [button[1], button[2]]), [['majestic', '1'], ['official', '2'], ['formal', '3']], 'Visible theme mapping');
+  assert.deepEqual(buttons.map(button => [button[1], button[2]]), [['official', '1'], ['work', '2'], ['national-day', '3']], 'Visible theme mapping');
   const scripts = [...html.matchAll(/<script\b[^>]*src="([^"]+)"[^>]*><\/script>/g)].map(match => match[1]);
   assert.deepEqual(scripts, [...baseline.portalScripts.map(file => mount + '/' + migratedPath(file.slice(2))), mount + '/js/theme-settings.js'], 'Original script order and appended theme persistence');
   assert.ok(html.indexOf('id="personal-announcement-dialog"') < html.indexOf(`src="${mount}/js/personal-workspace.js"`), 'Dialog markup must exist before initialization');
@@ -85,7 +92,7 @@ for (let offset = 0; offset < resources.length; offset += 8) {
     // The default/preference behavior was intentionally changed in this script.
     if (file.path === 'design-b-intro.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/personal-workspace.js'));
     // User-requested full-width, flush-top default-theme header.
-    if (file.path === 'design-b-majestic-theme.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/theme-majestic.css'));
+    if (file.path === 'design-b-majestic-theme.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/theme-official.css'));
     // Browser acceptance fixes: shared responsive header and unique group choices.
     if (file.path === 'design-b-layout.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/layout.css'));
     if (file.path === 'design-b-workspace-groups.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/workspace-groups.js'));
@@ -113,6 +120,8 @@ for (const file of styles) {
 await request('api/v1/me', 404);
 await request('__review', 404);
 await request('css/design-b.css', 404);
+for (const oldThemeFile of ['theme-majestic.css', 'theme-formal.css', 'theme-national.css'])
+  await request('css/' + oldThemeFile, 404);
 await request('js/design-b.js', 404);
 for (const removed of cleanup.removed) await request(removed.path, 404);
 for (const resource of ['css/profile.css', 'vendor/iconsax/icons.css', ...['eot','woff2','woff','ttf','svg'].map(extension => `vendor/iconsax/files/iconsax.${extension}`)]) {

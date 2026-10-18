@@ -22,17 +22,17 @@
   <link rel="stylesheet" href="@Url.Content("~/css/layout.css")">
   <link rel="stylesheet" href="@Url.Content("~/css/personal-workspace.css")">
   <link rel="stylesheet" href="@Url.Content("~/css/documents-dialog.css")">
-  <link rel="stylesheet" href="@Url.Content("~/css/theme-formal.css")">
-  <link rel="stylesheet" href="@Url.Content("~/css/theme-majestic.css")">
+  <link rel="stylesheet" href="@Url.Content("~/css/theme-work.css")">
+  <link rel="stylesheet" href="@Url.Content("~/css/theme-official.css")">
   <link rel="stylesheet" href="@Url.Content("~/css/library.css")">
-  <link rel="stylesheet" href="@Url.Content("~/css/theme-national.css")">
+  <link rel="stylesheet" href="@Url.Content("~/css/theme-national-day.css")">
   <link rel="stylesheet" href="@Url.Content("~/css/floating-calendar.css")">
   <link rel="stylesheet" href="@Url.Content("~/css/header-scroll.css")">
 }
 
 @await Html.PartialAsync("_PortalHeader")
 <main>
-  <div class="theme-majestic-frame" id="theme-majestic-frame">
+  <div class="theme-official-frame" id="theme-official-frame">
     @await Html.PartialAsync("_PersonalWorkspace")
     @await Html.PartialAsync("_Workspace")
   </div>

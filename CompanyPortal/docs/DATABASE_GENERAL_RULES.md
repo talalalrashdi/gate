@@ -28,6 +28,7 @@ Recorded: 18 October 2026. Applies to future CompanyPortal SQL Server tables whe
 - Agree on the column name for each table, such as `CreatedAt` or `TimeStamp`.
 - SQL Server's `timestamp` data type is a row-version value, not a date/time value. A column named `TimeStamp` must still be declared as `datetime` for this convention.
 - `GETDATE()` uses the SQL Server's current date/time. Its default applies on insertion when the value is omitted; it does not automatically update the value when a row is edited. Add update-tracking columns only when needed.
+- For `Portal.UserSettings`, the agreed date column is `LastChangeAt`: the write procedure assigns `GETDATE()` when ThemeName or the active state changes, and preserves it for a no-op save. The API exposes it as `lastChangeAt`. See theme migration 005 for the data-preserving rename from the original CreatedAt column.
 
 ## Employee identity: NTName and UserId
 

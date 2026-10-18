@@ -13,19 +13,19 @@ public sealed class UserSettingsStore(IConfiguration configuration)
         var userId = await GetUserIdAsync(connection, ntName, cancellationToken);
         if (userId is null) return null;
 
-        var theme = await connection.QuerySingleOrDefaultAsync<string>(Command(
+        var setting = await connection.QuerySingleOrDefaultAsync<SavedTheme>(Command(
             "Portal.UserSettings_getTheme", new { UserId = userId.Value }, cancellationToken));
-        return new ThemeSettingsResponse(theme ?? "majestic", theme is not null);
+        return new ThemeSettingsResponse(setting?.ThemeName ?? "official", setting is not null, setting?.LastChangeAt);
     }
 
-    public async Task<bool> SaveThemeAsync(string ntName, string theme, CancellationToken cancellationToken)
+    public async Task<bool> SaveThemeAsync(string ntName, string themeName, CancellationToken cancellationToken)
     {
         await using var connection = await OpenAsync(cancellationToken);
         var userId = await GetUserIdAsync(connection, ntName, cancellationToken);
         if (userId is null) return false;
 
         await connection.ExecuteAsync(Command("Portal.UserSettings_setTheme",
-            new { UserId = userId.Value, Theme = theme }, cancellationToken));
+            new { UserId = userId.Value, ThemeName = themeName }, cancellationToken));
         return true;
     }
 
@@ -46,4 +46,6 @@ public sealed class UserSettingsStore(IConfiguration configuration)
 
     private static CommandDefinition Command(string name, object parameters, CancellationToken token) =>
         new(name, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 10, cancellationToken: token);
+
+    private sealed record SavedTheme(string ThemeName, DateTime LastChangeAt);
 }

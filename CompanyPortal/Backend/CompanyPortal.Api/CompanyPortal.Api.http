@@ -19,4 +19,4 @@ PUT {{baseUrl}}/api/user-settings/theme
 Content-Type: application/json
 X-CompanyPortal-Request: theme
 
-{"theme":"formal"}
+{"themeName":"work"}

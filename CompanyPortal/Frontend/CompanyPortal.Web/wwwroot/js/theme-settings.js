@@ -8,7 +8,7 @@
   status.setAttribute('aria-live', 'polite');
   options.append(status);
   const url = new URL('api/user-settings/theme', new URL(base.replace(/\/?$/, '/'), location.href));
-  const allowed = new Set(['majestic', 'official', 'formal']);
+  const allowed = new Set(['official', 'work', 'national-day']);
   let version = 0, applying = false, writes = Promise.resolve();
   const show = text => { status.textContent = text; };
   const failed = response => {
@@ -16,11 +16,11 @@
     if (response.status === 401) return 'تعذر التحقق من حساب Windows. المظهر محفوظ على هذا المتصفح فقط.';
     return 'تعذر الحفظ في حسابك. المظهر محفوظ على هذا المتصفح فقط.';
   };
-  const request = (method, theme) => fetch(url, {
+  const request = (method, themeName) => fetch(url, {
     method, credentials: 'include', cache: 'no-store', signal: AbortSignal.timeout(10000),
     ...(method === 'PUT' ? {
       headers: { 'Content-Type': 'application/json', 'X-CompanyPortal-Request': 'theme' },
-      body: JSON.stringify({ theme })
+      body: JSON.stringify({ themeName })
     } : {})
   });
 
@@ -30,11 +30,11 @@
       const response = await request('GET');
       if (!response.ok) { if (!version) show(failed(response)); return; }
       const settings = await response.json();
-      if (!allowed.has(settings.theme)) throw new Error('Invalid saved theme');
+      if (!allowed.has(settings.themeName)) throw new Error('Invalid saved theme name');
       // Never overwrite a newer selection made while the initial request was pending.
       if (version) return;
       applying = true;
-      try { document.querySelector(`[data-theme-option="${settings.theme}"]`)?.click(); }
+      try { document.querySelector(`[data-theme-option="${settings.themeName}"]`)?.click(); }
       finally { applying = false; }
       show(settings.isSaved ? 'تم تحميل مظهر حسابك.' : 'المظهر الافتراضي لحسابك.');
     } catch { if (!version) show('تعذر تحميل مظهر حسابك. يُستخدم اختيار هذا المتصفح.'); }

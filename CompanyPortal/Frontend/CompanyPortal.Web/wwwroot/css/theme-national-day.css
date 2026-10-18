@@ -1,0 +1,103 @@
+/* Theme 2: one continuous National Day scene, from header to workspace. */
+body.portal-dashboard[data-site-theme="national-day"] { padding-top: 0; }
+body.portal-dashboard[data-site-theme="national-day"] .portal-personal-zone {
+  width: 100vw;
+  margin: 0 calc(50% - 50vw);
+  padding: 145px clamp(24px, 5vw, 80px) 0;
+  overflow: clip;
+  background: radial-gradient(ellipse 58% 100% at 0% 65%, #b4ddc7 0%, transparent 78%), radial-gradient(ellipse 40% 65% at 14% 0%, #f0c9c8 0%, transparent 80%), linear-gradient(115deg, #dceee3 0%, #f5f9f3 52%, #fffaf4 100%);
+}
+body.portal-dashboard[data-site-theme="national-day"] .portal-personal-zone::before {
+  content: "";
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: auto;
+  transform: none;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='112' height='112' viewBox='0 0 112 112'%3E%3Cg fill='none' stroke='%232f654a' stroke-width='1'%3E%3Cpath d='M56 8 70 36 104 56 70 76 56 104 42 76 8 56 42 36Z'/%3E%3Cpath d='M28 28h56v56H28zM56 16l40 40-40 40-40-40z'/%3E%3Ccircle cx='56' cy='56' r='9'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 112px 112px;
+}
+body.portal-dashboard[data-site-theme="national-day"] .portal-personal-zone::after { display: none; }
+body.portal-dashboard #systems[data-theme="national-day"] { width: 100%; max-width: none; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; overflow: visible; }
+body.portal-dashboard #systems[data-theme="national-day"]::before,
+body.portal-dashboard #systems[data-theme="national-day"]::after { display: none; }
+body.portal-dashboard #systems[data-theme="national-day"] .portal-theme-options { padding: 0; }
+/* The transparent header shares the landscape; its existing pinned state remains glass. */
+body.portal-dashboard[data-site-theme="national-day"] .portal-header:not(.is-pinned),
+body.portal-dashboard[data-site-theme="national-day"] .portal-header:not(.is-pinned) .portal-media-subnav {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+body.portal-dashboard[data-site-theme="national-day"] .portal-header:not(.is-pinned) { --header-background: transparent; }
+#systems .theme-national-day {
+  --text-primary: #143f33;
+  --text-secondary: #536459;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.14fr);
+  align-items: center;
+  gap: 0 clamp(30px, 5vw, 80px);
+  min-height: 405px;
+  padding: 10px 0 0;
+  background: transparent;
+}
+.theme-national-day-copy { grid-column: 1; align-self: center; padding-block: 8px 16px; position: relative; z-index: 3; }
+.theme-national-day-portrait { position: absolute; z-index: 1; left: 1%; top: -30px; width: 350px; height: 700px; pointer-events: none; }
+.theme-national-day-portrait img { display: block; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 12px 16px #17412c16); }
+.theme-national-day-silk { position: absolute; pointer-events: none; }
+.theme-national-day-silk img { display: block; width: 100%; height: 100%; object-fit: contain; animation: national-silk-unfurl 5s ease-out both; transform-origin: 60% 65%; }
+.theme-national-day-silk--front { z-index: 2; bottom: -520px; left: calc(-5vw - 250px); width: clamp(780px, 68vw, 1050px); height: clamp(780px, 68vw, 1050px); }
+.theme-national-day-silk--front img { filter: blur(2.5px) drop-shadow(0 12px 20px #173b2714); }
+.theme-national-day-silk--left { z-index: 0; top: -500px; left: -570px; width: 800px; height: 800px; transform: rotate(-25deg); opacity: .6; }
+.theme-national-day-silk--left img { filter: blur(12px); }
+.theme-national-day-silk--right { z-index: 0; top: -340px; right: -440px; width: 640px; height: 640px; transform: rotate(155deg); opacity: .45; }
+.theme-national-day-silk--right img { filter: blur(15px); }
+@keyframes national-silk-unfurl {
+  0% { opacity: 0; transform: translate(-25px,18px) rotate(-5deg) scale(.96); }
+  40% { opacity: 1; transform: translate(0,-9px) rotate(1deg) scale(1.01); }
+  75% { transform: translate(0,4px) rotate(-.7deg) scale(1); }
+  100% { opacity: 1; transform: none; }
+}
+.theme-national-day-kicker { display: block; margin-top: 0; font-size: 14px; --text-secondary: #9e3438; }
+#systems .theme-national-day h2 { margin: 8px 0 16px; font-size: clamp(48px, 5.6vw, 86px); line-height: 1.25; font-weight: 700; letter-spacing: -1.8px; }
+.theme-national-day-calligraphy { display: block; width: 100%; max-width: 620px; height: auto; margin-inline-start: 0; }
+#systems .theme-national-day-description { margin: 0; font-size: 15px; line-height: 2; }
+.theme-national-day-date { display: flex; align-items: center; gap: 24px; margin-top: 20px; }
+.theme-national-day-date time { display: flex; align-items: center; gap: 14px; }
+.theme-national-day-date time > strong { font-size: 70px; line-height: 1; font-weight: 500; letter-spacing: -3px; --text-primary: #a3333b; }
+.theme-national-day-date time > span { font-size: 24px; line-height: 1.6; --text-secondary: #173f35; }
+.theme-national-day-date time small { display: block; font-size: 10px; --text-secondary: #657565; }
+.theme-national-day-date-line { width: 1px; height: 42px; background: #c6b79a; }
+.theme-national-day-salute { font-size: 12px; line-height: 1.8; }
+.theme-national-day-salute b { font-size: 19px; }
+@media(max-width:1000px) {
+  #systems .theme-national-day { column-gap: 24px; }
+  .theme-national-day-date { gap: 16px; }
+}
+@media(max-width:760px) {
+  body.portal-dashboard[data-site-theme="national-day"] .portal-personal-zone { padding: 174px 24px 0; }
+  #systems .theme-national-day { grid-template-columns: minmax(0,1fr); min-height: 620px; padding-top: 12px; }
+  .theme-national-day-copy { align-self: start; padding-block: 0 10px; }
+  .theme-national-day-kicker { margin-top: 26px; font-size: 12px; }
+  #systems .theme-national-day h2 { font-size: clamp(46px,11vw,70px); margin-block: 12px 16px; }
+  #systems .theme-national-day-description { font-size: 13px; }
+  .theme-national-day-date { margin-top: 22px; gap: 18px; }
+  .theme-national-day-date time > strong { font-size: 58px; }
+  .theme-national-day-date time > span { font-size: 21px; }
+  .theme-national-day-salute b { font-size: 17px; }
+  .theme-national-day-portrait { left: -85px; top: auto; bottom: -180px; width: 245px; height: 490px; }
+  .theme-national-day-silk--front { bottom: -335px; left: -330px; width: 650px; height: 650px; }
+  .theme-national-day-silk--left { top: -420px; left: -450px; width: 620px; height: 620px; opacity: .35; }
+  .theme-national-day-silk--right { top: -190px; right: -330px; width: 460px; height: 460px; opacity: .3; }
+  .theme-national-day-silk img { height: 100%; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .theme-national-day-silk img { animation: none; }
+}
+

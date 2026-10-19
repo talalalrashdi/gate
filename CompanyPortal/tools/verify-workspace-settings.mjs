@@ -6,17 +6,22 @@ const policySource = await readFile(new URL('../Frontend/CompanyPortal.Web/wwwro
 const policyContext = { window: {} };
 vm.runInNewContext(policySource, policyContext);
 const policy = policyContext.window.CompanyPortalWorkspacePolicy;
-const definitions = ['library', 'inbox', 'email'].map((cardKey, index) => ({ cardKey, cardName: cardKey, displayOrder: index + 1, isFixed: false }));
+const definitions = ['library', 'inbox', 'email'].map((cardKey, index) => ({ cardKey, cardName: cardKey, displayOrder: index + 1, isFixed: false, isCustom: false, userCardId: null }));
 const locked = definitions.map(card => ({ ...card, isFixed: card.cardKey === 'inbox' }));
+const customDefinition = { cardKey: 'custom-41', cardName: 'Private card name', displayOrder: 4, isFixed: false, isCustom: true, userCardId: 41 };
+assert.equal(policy.valid([...locked, customDefinition], ['library','inbox','email','custom-41']), true);
+assert.equal(policy.valid([...locked, {...customDefinition,isFixed:true}], ['library','inbox','email','custom-41']), false);
+assert.deepEqual(Array.from(policy.normalize(['custom-41','inbox','email','library'], [...locked,customDefinition])), ['custom-41','inbox','email','library']);
 assert.equal(policy.valid(locked, definitions.map(card => card.cardKey)), true);
 assert.deepEqual(Array.from(policy.normalize(['inbox','email','library'], locked)), ['email','inbox','library']);
 assert.equal(policy.valid([...locked.slice(0,2), {...locked[2], isFixed:true, displayOrder:2}], ['library','inbox','email']), false);
 const source = await readFile(new URL('../Frontend/CompanyPortal.Web/wwwroot/js/workspace-settings.js', import.meta.url), 'utf8');
 const settle = async () => { for (let i = 0; i < 12; i++) await new Promise(resolve => setImmediate(resolve)); };
-async function fixture({ held = false, offline = false, isSaved = true, mismatch = false } = {}) {
+async function fixture({ held = false, offline = false, isSaved = true, mismatch = false, custom = false } = {}) {
   const listeners = new Map(), writes = [], applied = [];
   const status = { setAttribute() {} };
   let currentKeys = ['library', 'inbox', 'email'];
+  const cached = new Map();
   const workspace = {
     querySelectorAll: () => currentKeys.map(id => ({ dataset: { workSystem: id } })),
     addEventListener: (type, action) => listeners.set(type, action),
@@ -25,8 +30,8 @@ async function fixture({ held = false, offline = false, isSaved = true, mismatch
   let release;
   const gate = held ? new Promise(resolve => { release = resolve; }) : Promise.resolve();
   vm.runInNewContext(source, {
-    window: { CompanyPortalWorkspacePolicy: policy },
-    localStorage: { getItem: () => offline ? JSON.stringify(definitions) : null, setItem() {} },
+    window: { CompanyPortalWorkspacePolicy: policy, CompanyPortalCustomCards: { ready: Promise.resolve().then(() => { if (custom) currentKeys.push('custom-41'); }) } },
+    localStorage: { getItem: () => offline ? JSON.stringify(definitions) : null, setItem(key,value) { cached.set(key,value); } },
     URL, location: { href: 'http://portal.test/' }, AbortSignal: { timeout() {} },
     CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options.detail; } },
     document: {
@@ -45,11 +50,11 @@ async function fixture({ held = false, offline = false, isSaved = true, mismatch
         return { ok: true };
       }
       await gate;
-      return { ok: true, json: async () => ({ cardKeys: mismatch ? ['missing'] : ['email', 'library', 'inbox'], cards: definitions, isSaved }) };
+      return { ok: true, json: async () => ({ cardKeys: mismatch ? ['missing'] : ['email', 'library', 'inbox', ...(custom ? ['custom-41'] : [])], cards: [...definitions,...(custom ? [customDefinition] : [])], isSaved }) };
     }
   });
   await settle();
-  return { applied, writes, status, release, reorder(cardKeys) { currentKeys = cardKeys; listeners.get('workspace:order-changed')({ detail: { cardKeys } }); } };
+  return { applied, writes, status, release, cached, reorder(cardKeys) { currentKeys = cardKeys; listeners.get('workspace:order-changed')({ detail: { cardKeys } }); } };
 }
 const saved = await fixture();
 assert.deepEqual(JSON.parse(JSON.stringify(saved.applied)), [['email', 'library', 'inbox']]);
@@ -71,4 +76,7 @@ offline.reorder(['email', 'inbox', 'library']); await settle();
 assert.deepEqual(Array.from(offline.applied.at(-1)), ['email','inbox','library']);
 assert.match(offline.status.textContent, /محلي/);
 assert.equal((await fixture({ mismatch: true })).applied.length, 0, 'Catalog mismatch must preserve local layout');
+const personal = await fixture({ custom: true });
+assert.equal(personal.applied[0].length, 4, 'Wait for account-owned cards before loading their combined order');
+assert.equal([...personal.cached.values()].some(value => value.includes('Private card name') || value.includes('custom-41')), false, 'Never cache personal card definitions');
 console.log('Workspace synchronization checks passed: read-only loading, local compatibility, latest order, delayed reads, invalid lists and offline fallback.');

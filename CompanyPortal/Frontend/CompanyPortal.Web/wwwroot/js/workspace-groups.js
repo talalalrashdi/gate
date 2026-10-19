@@ -1,65 +1,113 @@
 (() => {
-  const workspace=document.getElementById('workspace-cards');if(!workspace)return;
-  // Enable only after account-owned cards and authorized application data exist.
-  // Keep old local definitions intact; do not render them as account-owned cards.
-  if(workspace.dataset.allowCustomCards!=='true')return;
-  const storageKey='clerio-workspace-groups-v1';
-  const systems=[...document.querySelectorAll('#systems-grid .systems-card[data-system-id]')].map(card=>({id:card.dataset.systemId,title:card.querySelector('h3').textContent}));
-  const byId=new Map(systems.map(system=>[system.id,system]));
-  const make=(tag,cls,text)=>{const node=document.createElement(tag);if(cls)node.className=cls;if(text)node.textContent=text;return node;};
-  function decode(raw){
-    try{const value=JSON.parse(raw);if(!Array.isArray(value))return [];const seen=new Set();
-      return value.filter(group=>group&&typeof group.id==='string'&&/^group-[a-zA-Z0-9-]+$/.test(group.id)&&typeof group.name==='string'&&group.name.trim()&&Array.isArray(group.systems)).filter(group=>{if(seen.has(group.id))return false;seen.add(group.id);return true;}).map(group=>({id:group.id,name:group.name.trim().slice(0,60),systems:[...new Set(group.systems)].filter(id=>byId.has(id))}));
-    }catch{return [];}
-  }
-  let groups=[];try{groups=decode(localStorage.getItem(storageKey));}catch{}
-  const add=make('button','portal-work-card portal-workspace-add-group');add.type='button';add.dataset.widgetCategory='applications';add.setAttribute('aria-label','إضافة بطاقة مجموعة أنظمة');
-  const plus=make('span','portal-group-plus','+');plus.setAttribute('aria-hidden','true');add.append(plus,make('strong',null,'بطاقة جديدة'),make('small',null,'اجمع أنظمتك في مكان واحد'));workspace.append(add);
-  const dialog=make('dialog','portal-group-dialog');dialog.setAttribute('aria-labelledby','group-dialog-title');
-  dialog.innerHTML='<form><header><h2 id="group-dialog-title">بطاقة جديدة</h2><button type="button" data-group-close aria-label="إغلاق">×</button></header><label class="portal-group-name-label" for="group-name">اسم البطاقة</label><input id="group-name" name="name" maxlength="60" required placeholder="مثلاً: أنظمتي اليومية" autocomplete="off"><fieldset><legend>اختر الأنظمة</legend><input type="search" id="group-system-search" aria-label="البحث عن نظام" placeholder="ابحث عن نظام…"><div class="portal-group-choices"></div><p class="portal-group-no-results" hidden>لا توجد أنظمة مطابقة.</p></fieldset><p class="portal-group-count" aria-live="polite"></p><p class="portal-group-error" role="alert" hidden></p><footer><button type="button" class="portal-group-delete" hidden>حذف البطاقة</button><button type="button" data-group-close>إلغاء</button><button type="submit" class="portal-group-save">حفظ البطاقة</button></footer></form>';
+  const workspace = document.getElementById('workspace-cards');
+  const base = document.querySelector('meta[name="companyportal-api-base"]')?.content;
+  if (!workspace || !base) return;
+  const root = new URL(base.replace(/\/?$/, '/'), location.href);
+  const make = (tag, cls, text) => { const node = document.createElement(tag); if (cls) node.className = cls; if (text) node.textContent = text; return node; };
+  let groups = [], apps = [], editing = null, selected = new Set(), busy = false;
+  const add = make('button', 'portal-work-card portal-workspace-add-group');
+  add.type = 'button'; add.disabled = true; add.dataset.widgetCategory = 'applications';
+  add.setAttribute('aria-label', 'إضافة بطاقة تطبيقات شخصية');
+  const hint = make('small', null, 'جارٍ تحميل بطاقاتك…');
+  add.append(make('span', 'portal-group-plus', '+'), make('strong', null, 'بطاقة جديدة'), hint);
+  workspace.append(add);
+  const dialog = make('dialog', 'portal-group-dialog');
+  dialog.setAttribute('aria-labelledby', 'group-dialog-title');
+  dialog.innerHTML = '<form><header><h2 id="group-dialog-title">بطاقة جديدة</h2><button type="button" data-group-close aria-label="إغلاق">×</button></header><label class="portal-group-name-label" for="group-name">اسم البطاقة</label><input id="group-name" name="name" maxlength="200" required autocomplete="off"><fieldset><legend>اختر التطبيقات المصرح بها</legend><input type="search" id="group-system-search" aria-label="البحث عن تطبيق" placeholder="ابحث عن تطبيق…"><div class="portal-group-choices"></div><p class="portal-group-no-results" hidden>لا توجد تطبيقات مطابقة.</p></fieldset><p class="portal-group-count" aria-live="polite"></p><p class="portal-group-error" role="alert" hidden></p><footer><button type="button" class="portal-group-delete" hidden>حذف البطاقة</button><button type="button" data-group-close>إلغاء</button><button type="submit" class="portal-group-save">حفظ البطاقة</button></footer></form>';
   document.body.append(dialog);
-  const form=dialog.querySelector('form'),name=dialog.querySelector('#group-name'),search=dialog.querySelector('#group-system-search'),choices=dialog.querySelector('.portal-group-choices'),error=dialog.querySelector('.portal-group-error'),remove=dialog.querySelector('.portal-group-delete');
-  let editing=null,selected=new Set();
-  function announce(text){if(typeof showToast==='function')showToast(text);}
-  function persist(){try{localStorage.setItem(storageKey,JSON.stringify(groups));return true;}catch{return false;}}
-  function changed(){workspace.dispatchEvent(new CustomEvent('workspace:cards-changed'));if(typeof updateWorkspaceNavigation==='function')updateWorkspaceNavigation();}
-  function render(){
-    workspace.querySelectorAll('[data-work-group]').forEach(card=>card.remove());
-    groups.forEach(group=>{
-      const card=make('article','portal-work-card portal-system-group');card.dataset.workSystem=group.id;card.dataset.workGroup=group.id;card.dataset.widgetCategory='applications';
-      const heading=make('header','portal-work-heading'),icon=make('div','portal-work-icon');icon.innerHTML='<i class="iconsax" icon-name="folder-2" aria-hidden="true"></i>';
-      const copy=make('div'),title=make('h2',null,group.name);title.id=group.id+'-title';card.setAttribute('aria-labelledby',title.id);copy.append(title);heading.append(icon,copy);
-      const actions=make('div','systems-work-label'),edit=make('button','portal-group-edit','✎');edit.type='button';edit.setAttribute('aria-label',`تعديل ${group.name}`);edit.title=`تعديل ${group.name}`;edit.addEventListener('click',()=>open(group.id));actions.append(edit);heading.append(actions);
-      const list=make('ul','portal-group-system-list');list.dataset.widgetPreview='';
-      group.systems.forEach(id=>{const system=byId.get(id);if(!system)return;const row=make('li'),title=make('span',null,system.title),button=make('button',null,'فتح النظام ↗');button.type='button';button.dataset.systemsDetails=id;button.setAttribute('aria-label',`فتح نظام ${system.title}`);row.append(title,button);list.append(row);});
-      card.append(heading,list);if(!list.children.length)card.append(make('p','portal-group-empty','أضف أنظمة من زر تعديل البطاقة.'));
-      workspace.insertBefore(card,add);
-    });changed();
+  const form = dialog.querySelector('form'), name = dialog.querySelector('#group-name'), search = dialog.querySelector('#group-system-search');
+  const choices = dialog.querySelector('.portal-group-choices'), error = dialog.querySelector('.portal-group-error'), remove = dialog.querySelector('.portal-group-delete');
+  async function request(path, method = 'GET', body) {
+    let response;
+    try { response = await fetch(new URL(path, root), {
+      method, credentials: 'include', cache: 'no-store', signal: AbortSignal.timeout(10000),
+      ...(method === 'GET' ? {} : { headers: { 'X-CompanyPortal-Request': 'custom-cards', ...(body ? { 'Content-Type': 'application/json' } : {}) } }),
+      ...(body ? { body: JSON.stringify(body) } : {})
+    }); } catch { throw new Error('تعذر الاتصال بخدمة البطاقات. حاول مرة أخرى.'); }
+    if (!response.ok) throw new Error(response.status === 400 ? 'تحقق من الاسم والتطبيقات المصرح بها وحدود البطاقة.'
+      : response.status === 404 ? 'البطاقة أو التطبيق لم يعد متاحًا.'
+      : response.status === 403 ? 'الحساب غير مسجل أو غير نشط.' : 'تعذر الاتصال بخدمة البطاقات. حاول مرة أخرى.');
+    return response.status === 204 ? null : response.json();
   }
-  function count(){dialog.querySelector('.portal-group-count').textContent=`${selected.size.toLocaleString('ar-EG-u-nu-latn')} أنظمة محددة`;}
-  function filter(){
-    const normalize=value=>value.replace(/[أإآ]/g,'ا').replace(/[\u064B-\u065F\u0670]/g,'').toLowerCase();const query=normalize(search.value.trim());let visible=0;
-    choices.querySelectorAll('label').forEach(label=>{label.hidden=!normalize(label.textContent).includes(query);if(!label.hidden)visible++;});dialog.querySelector('.portal-group-no-results').hidden=visible!==0;
+  function render() {
+    workspace.querySelectorAll('[data-user-card-id]').forEach(card => card.remove());
+    groups.forEach(group => {
+      const card = make('article', 'portal-work-card portal-system-group');
+      card.dataset.workSystem = 'custom-' + group.userCardId;
+      card.dataset.userCardId = String(group.userCardId); card.dataset.widgetCategory = 'applications';
+      const heading = make('header', 'portal-work-heading'), icon = make('div', 'portal-work-icon');
+      icon.innerHTML = '<i class="iconsax" icon-name="folder-2" aria-hidden="true"></i>';
+      const copy = make('div'), title = make('h2', null, group.cardName);
+      title.id = 'custom-' + group.userCardId + '-title'; card.setAttribute('aria-labelledby', title.id); copy.append(title); heading.append(icon, copy);
+      const actions = make('div', 'systems-work-label'), edit = make('button', 'portal-group-edit', '✎');
+      edit.type = 'button'; edit.setAttribute('aria-label', 'تعديل ' + group.cardName); edit.title = 'تعديل ' + group.cardName;
+      edit.addEventListener('click', () => open(group.userCardId)); actions.append(edit); heading.append(actions);
+      const list = make('ul', 'portal-group-system-list'); list.dataset.widgetPreview = '';
+      group.applications.forEach(app => {
+        const row = make('li'), link = make('a', null, 'فتح التطبيق ↗');
+        link.href = new URL('api/applications/' + app.appId + '/launch', root).href;
+        link.target = '_blank'; link.rel = 'noopener'; link.setAttribute('aria-label', 'فتح تطبيق ' + app.appName);
+        row.append(make('span', null, app.appName), link); list.append(row);
+      });
+      card.append(heading, list);
+      if (!group.applications.length) card.append(make('p', 'portal-group-empty', 'لا توجد تطبيقات متاحة في هذه البطاقة. يمكنك تعديلها أو حذفها.'));
+      workspace.insertBefore(card, add);
+    });
+    workspace.dispatchEvent(new CustomEvent('workspace:cards-changed'));
+    if (typeof updateWorkspaceNavigation === 'function') updateWorkspaceNavigation();
   }
-  function open(id=null){
-    editing=id;const group=groups.find(item=>item.id===id);selected=new Set(group?.systems||[]);name.value=group?.name||'';search.value='';error.hidden=true;remove.hidden=!group;
-    dialog.querySelector('h2').textContent=group?'تعديل البطاقة':'بطاقة جديدة';choices.replaceChildren();
-    systems.forEach(system=>{const label=make('label'),input=make('input');input.type='checkbox';input.value=system.id;input.checked=selected.has(system.id);input.addEventListener('change',()=>{if(input.checked)selected.add(system.id);else selected.delete(system.id);count();error.hidden=true;});label.append(input,make('span',null,system.title));choices.append(label);});
-    count();filter();dialog.showModal();name.focus();
+  function count() { dialog.querySelector('.portal-group-count').textContent = selected.size + ' تطبيقات محددة'; }
+  function filter() {
+    const normalize = value => value.replace(/[أإآ]/g, 'ا').toLowerCase();
+    const query = normalize(search.value.trim()); let visible = 0;
+    choices.querySelectorAll('label').forEach(label => { label.hidden = !normalize(label.textContent).includes(query); if (!label.hidden) visible++; });
+    dialog.querySelector('.portal-group-no-results').hidden = visible !== 0;
   }
-  add.addEventListener('click',()=>open());search.addEventListener('input',filter);name.addEventListener('input',()=>name.setCustomValidity(''));
-  dialog.querySelectorAll('[data-group-close]').forEach(button=>button.addEventListener('click',()=>dialog.close()));
-  form.addEventListener('submit',event=>{
-    event.preventDefault();const title=name.value.trim();if(!title){name.setCustomValidity('اكتب اسمًا للبطاقة');name.reportValidity();return;}
-    if(!selected.size){error.textContent='اختر نظامًا واحدًا على الأقل.';error.hidden=false;return;}
-    const id=editing||'group-'+crypto.randomUUID(),group={id,name:title,systems:[...selected]};
-    if(editing)groups=groups.map(item=>item.id===editing?group:item);else groups.push(group);
-    const saved=persist();dialog.close();render();
-    const card=[...workspace.querySelectorAll('[data-work-group]')].find(card=>card.dataset.workGroup===id);
-    card?.querySelector('.portal-group-edit')?.focus({preventScroll:true});card?.scrollIntoView({behavior:'instant',block:'nearest',inline:'nearest'});
-    announce(saved?'تم حفظ بطاقة الأنظمة':'تمت إضافة البطاقة لهذه الجلسة؛ تعذّر الحفظ في المتصفح');
+  async function open(id = null) {
+    if (busy) return;
+    add.disabled = true;
+    try {
+      apps = await request('api/applications');
+      editing = id;
+      const group = groups.find(item => item.userCardId === id);
+      const allowed = new Set(apps.map(app => app.appId));
+      selected = new Set((group?.applications || []).map(app => app.appId).filter(appId => allowed.has(appId)));
+      name.value = group?.cardName || ''; search.value = ''; error.hidden = true; remove.hidden = !group;
+      dialog.querySelector('h2').textContent = group ? 'تعديل البطاقة' : 'بطاقة جديدة'; choices.replaceChildren();
+      dialog.querySelector('.portal-group-no-results').textContent = apps.length ? 'لا توجد تطبيقات مطابقة.' : 'لا توجد تطبيقات مصرح بها لحسابك حاليًا.';
+      apps.forEach(app => {
+        const label = make('label'), input = make('input'); input.type = 'checkbox'; input.value = String(app.appId); input.checked = selected.has(app.appId);
+        input.addEventListener('change', () => { if (input.checked) selected.add(app.appId); else selected.delete(app.appId); count(); error.hidden = true; });
+        label.append(input, make('span', null, app.appName)); choices.append(label);
+      });
+      count(); filter(); dialog.showModal(); name.focus();
+    } catch (failure) { hint.textContent = failure.message || 'تعذر تحميل التطبيقات.'; }
+    finally { add.disabled = false; }
+  }
+  function reload() { location.hash = 'workspace'; location.reload(); }
+  async function mutate(method, body) {
+    if (busy) return;
+    busy = true; error.hidden = true; form.querySelectorAll('button').forEach(button => { button.disabled = true; });
+    try { await request('api/user-cards' + (editing === null ? '' : '/' + editing), method, body); reload(); }
+    catch (failure) { error.textContent = failure.message || 'تعذر حفظ البطاقة.'; error.hidden = false; }
+    finally { busy = false; form.querySelectorAll('button').forEach(button => { button.disabled = false; }); }
+  }
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    if (!name.value.trim() || selected.size < 1 || selected.size > 100) { error.textContent = 'اكتب اسمًا واختر من 1 إلى 100 تطبيق مصرح به.'; error.hidden = false; return; }
+    mutate(editing === null ? 'POST' : 'PUT', { cardName: name.value.trim(), appIds: [...selected] });
   });
-  remove.addEventListener('click',()=>{groups=groups.filter(group=>group.id!==editing);const saved=persist();dialog.close();render();add.focus({preventScroll:true});announce(saved?'تم حذف البطاقة':'تم حذف البطاقة لهذه الجلسة؛ تعذّر حفظ التغيير');});
-  window.addEventListener('storage',event=>{if(event.key===storageKey||event.key===null){if(dialog.open)dialog.close();groups=decode(event.newValue);render();}});
-  render();
+  remove.addEventListener('click', () => mutate('DELETE'));
+  dialog.querySelectorAll('[data-group-close]').forEach(button => button.addEventListener('click', () => dialog.close()));
+  add.addEventListener('click', () => open()); search.addEventListener('input', filter);
+  const ready = (async () => {
+    try {
+      const results = await Promise.all([request('api/applications'), request('api/user-cards')]);
+      apps = results[0]; groups = results[1]; render(); add.disabled = false;
+      hint.textContent = 'اجمع تطبيقاتك المصرح بها';
+    } catch (failure) { hint.textContent = failure.message || 'تعذر تحميل بطاقاتك.'; throw failure; }
+  })();
+  // Keep startup failures handled even while the later order script is loading.
+  ready.catch(() => {});
+  window.CompanyPortalCustomCards = { ready };
 })();

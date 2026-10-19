@@ -34,3 +34,34 @@ Content-Type: application/json
 X-CompanyPortal-Request: card-order
 
 {"cardKeys":["library","inbox","email","requests","electronic-services"]}
+
+### Authorized app choices for the signed-in employee
+GET {{baseUrl}}/api/applications
+
+### Personal cards, including currently authorized app memberships
+GET {{baseUrl}}/api/user-cards
+
+### Create; replace appIds with IDs returned by /api/applications
+POST {{baseUrl}}/api/user-cards
+Content-Type: application/json
+X-CompanyPortal-Request: custom-cards
+
+{"cardName":"تطبيقاتي","appIds":[1]}
+
+### Replace with an actual userCardId from POST; IDs are not per-user counters
+@userCardId = 1
+GET {{baseUrl}}/api/user-cards/{{userCardId}}
+
+### Edit an owned card
+PUT {{baseUrl}}/api/user-cards/{{userCardId}}
+Content-Type: application/json
+X-CompanyPortal-Request: custom-cards
+
+{"cardName":"تطبيقاتي اليومية","appIds":[1]}
+
+### Soft-delete an owned card
+DELETE {{baseUrl}}/api/user-cards/{{userCardId}}
+X-CompanyPortal-Request: custom-cards
+
+### Launch only after current grant check; replace 1 with an authorized appId
+GET {{baseUrl}}/api/applications/1/launch

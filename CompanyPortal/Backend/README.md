@@ -17,6 +17,8 @@ The default Project profile uses `http://localhost:5081` on loopback so the init
 | `/health` | Process liveness (`Healthy`), visible in Swagger; does not check SQL Server, Exchange, or AD availability |
 | `/api/me` | Requires Windows authentication; returns account name, SID when supplied by Windows, and authentication type; response is not cached |
 | `/api/diagnostics/database` | Development only; requires Windows authentication and queries the configured SQL database with Dapper |
+| `/api/applications` | The employee's currently authorized app choices; launch requests use `/api/applications/{id}/launch` and recheck grants |
+| `/api/user-cards` | Employee-owned card GET/POST; GET/PUT/DELETE by ID; authorized app membership only |
 | `/api/user-settings/card-order` | Windows-authenticated GET/PUT for the employee's complete built-in card order |
 | `/api/themes` | Windows-authenticated active theme catalog; stable IDs, display labels and layout keys |
 | `/api/user-settings/theme` | Windows-authenticated GET/PUT for the employee's theme, resolved through the external security database |
@@ -80,7 +82,11 @@ dotnet build CompanyPortal.Backend.slnx --no-restore
 
 `NuGetAudit=false` is only for that disconnected restore because vulnerability metadata requires a reachable audit service; it does not replace the connected audit. Repeat export/audit when dependencies change. Framework-dependent publish includes application libraries, but the destination still needs the ASP.NET Core runtime/Hosting Bundle. Publish for the intended architecture if using RID-specific or self-contained deployment later. Keep secrets out of source, exported packages and appsettings; configure future connection secrets through deployment configuration.
 
-Current [master card policy](../docs/MASTER_CARD_POLICY.md) requires migration 009: five active definitions, policy metadata on GET, fixed-position enforcement on PUT. Master.Cards_setPosition is reserved for administration; it is not exposed to employee HTTP requests. Custom card ownership/app authorization remains a later feature.
+Current [master card policy](../docs/MASTER_CARD_POLICY.md) requires migration 009: five active definitions, policy metadata on GET, fixed-position enforcement on PUT. Master.Cards_setPosition is reserved for administration; it is not exposed to employee HTTP requests. [Custom card ownership/app authorization](../docs/USER_CUSTOM_CARDS.md) is implemented by migrations 010–011 and a replaceable Security.Apps_getForUser lookup.
+
+## Personal cards
+
+See [custom-card setup](../docs/USER_CUSTOM_CARDS.md) for the local-only apps/grants, integration lookup, schema order and runtime type/procedure permissions. The default credentials resolve the employee; JSON never selects UserId. The UI/API recheck allowed apps and launch uses current grants. `tools/Test-UserCards.ps1` performs CRUD/authorization acceptance and restores test data; `-TestSampleRevocation` additionally changes/restores a local demo grant. It must not target the real security database.
 
 ## Card order
 

@@ -6,6 +6,8 @@ window.CompanyPortalWorkspacePolicy = {
       && cards.every(card => keys.includes(card?.cardKey) && typeof card.cardName === 'string'
         && card.cardName.trim().length > 0 && card.cardName.length <= 200
         && typeof card.isFixed === 'boolean' && Number.isInteger(card.displayOrder)
+        && typeof card.isCustom === 'boolean'
+        && (!card.isCustom || (!card.isFixed && Number.isInteger(card.userCardId) && card.userCardId > 0 && card.cardKey === 'custom-' + card.userCardId))
         && card.displayOrder >= 1 && (!card.isFixed || card.displayOrder <= keys.length))
       && new Set(cards.filter(card => card.isFixed).map(card => card.displayOrder)).size === cards.filter(card => card.isFixed).length;
   },

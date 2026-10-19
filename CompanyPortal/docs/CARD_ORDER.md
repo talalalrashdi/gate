@@ -1,6 +1,6 @@
 # Employee card order
 
-> Current behavior is documented in [master card policy](MASTER_CARD_POLICY.md): five active master cards, fixed positions controlled by administration, and custom cards deferred until per-user ownership and authorized app data are available. The 22-card/local-group behavior below records the earlier migration 008 stage.
+> Current behavior is documented in [master card policy](MASTER_CARD_POLICY.md): five active master cards, fixed positions controlled by administration, and [account-owned custom cards](USER_CUSTOM_CARDS.md) using an authorized app lookup. The 22-card/local-group behavior below records the earlier migration 008 stage.
 
 19 October 2026. Scope: synchronize the order of the 22 existing built-in workspace cards with the signed-in employee's account. Existing pinning, content concealment and custom groups remain browser-local. No admin interface or card creation/deletion API is added.
 

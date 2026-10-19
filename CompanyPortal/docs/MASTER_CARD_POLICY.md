@@ -1,5 +1,7 @@
 # Master cards, fixed positions and future personal cards
 
+> Personal cards are now implemented separately: see [account-owned custom cards](USER_CUSTOM_CARDS.md) and migrations 010–011. The five master definitions and administration policy below still apply; future/gated-editor notes describe the earlier stage.
+
 19 October 2026. This supersedes the 22-active-card catalog described in CARD_ORDER.md. Migration 009 was applied locally on 19 October 2026 and rerun while a temporary fixed setting was present; that setting survived the rerun. All five are now restored to movable, in the requested default order. The first migration attempt rolled back because sqlcmd required explicit session settings for a filtered index; the completed script includes those settings.
 
 ## Current master set

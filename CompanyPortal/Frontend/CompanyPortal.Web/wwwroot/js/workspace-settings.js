@@ -11,7 +11,7 @@
   toolbar.append(status);
   const show = text => { status.textContent = text; };
   const policy = window.CompanyPortalWorkspacePolicy;
-  const cacheKey = 'companyportal-master-card-policy-v1';
+  const cacheKey = 'companyportal-master-card-policy-v2';
   let definitions = null;
   const keys = () => [...workspace.querySelectorAll('[data-work-system]:not([data-work-group])')].map(card => card.dataset.workSystem);
   const valid = ids => Array.isArray(ids) && ids.length === keys().length
@@ -35,12 +35,14 @@
   const initial = (async () => {
     show('جارٍ تحميل ترتيب البطاقات…');
     try {
+      // Custom cards are fetched for this account, never restored from browser data.
+      await window.CompanyPortalCustomCards?.ready;
       const response = await request();
       if (!response.ok) { show(failed(response)); return; }
       const result = await response.json();
       if (!valid(result.cardKeys) || !policy.valid(result.cards, keys())) throw new Error('Card catalog mismatch');
       definitions = result.cards;
-      try { localStorage.setItem(cacheKey, JSON.stringify(definitions)); } catch { /* Account saves remain available. */ }
+      try { localStorage.setItem(cacheKey, JSON.stringify(definitions.filter(card => !card.isCustom))); } catch { /* Account saves remain available. */ }
       apply(policy.normalize(version || !result.isSaved ? keys() : result.cardKeys, definitions));
       if (!version) show(result.isSaved ? 'تم تحميل ترتيب بطاقات حسابك.' : 'يُحفظ ترتيب البطاقات في حسابك عند تغييره.');
     } catch {

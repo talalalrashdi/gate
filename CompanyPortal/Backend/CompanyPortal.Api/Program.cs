@@ -10,11 +10,12 @@ builder.Services.AddProblemDetails();
 builder.Services.AddHealthChecks();
 builder.Services.AddScoped<DatabaseConnectionCheck>();
 builder.Services.AddScoped<UserSettingsStore>();
+builder.Services.AddScoped<UserCardsStore>();
 builder.Services.AddCors(options => options.AddPolicy("Portal", policy =>
 {
     var origins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
     if (origins.Length > 0)
-        policy.WithOrigins(origins).WithMethods("GET", "PUT")
+        policy.WithOrigins(origins).WithMethods("GET", "POST", "PUT", "DELETE")
             .WithHeaders("Content-Type", "X-CompanyPortal-Request").AllowCredentials();
 }));
 builder.Services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)

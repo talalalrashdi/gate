@@ -12,6 +12,8 @@ Migration `008_UserCardOrder.sql` adds the existing card catalog and employee or
 
 Migration `009_MasterCardPolicy.sql` selects five active master definitions, adds IsFixed and fixed-position validation, and provides Master.Cards_setPosition for the administration identity only. It was applied locally. See [policy and per-user custom-card requirements](../../docs/MASTER_CARD_POLICY.md). Apply it after 008; its rerun preserves administrator choices and retained employee rows.
 
+Migrations `010_UserCustomCards.sql` and `011_UserCardNameComparison.sql` add employee-owned cards, app membership, combined workspace ordering and accurate name-change timestamps. Local sample apps/grants are in Development/002; the replaceable app lookup sample is in Integration/ConfigureAppAccess.sample.sql. See [personal-card deployment and permissions](../../docs/USER_CUSTOM_CARDS.md). Do not run Development scripts internally.
+
 ## Create the database
 
 From `Backend/`, run with a Windows account authorized to create databases:

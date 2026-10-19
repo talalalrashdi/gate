@@ -33,4 +33,4 @@ PUT {{baseUrl}}/api/user-settings/card-order
 Content-Type: application/json
 X-CompanyPortal-Request: card-order
 
-{"cardKeys":["library","inbox","email","requests","services","electronic-services","meetings","tasks","employees","attendance","leave","learning","projects","assets","purchases","finance","contracts","warehouse","reports","archive","ideas","support"]}
+{"cardKeys":["library","inbox","email","requests","electronic-services"]}

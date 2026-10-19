@@ -6,7 +6,9 @@ The current [theme catalog implementation](docs/MASTER_THEMES.md) separates stab
 
 The first employee feature now saves the selected theme through the API using the employee's Windows identity and external SecurityDB UserId. See [theme settings setup and deployment](docs/THEME_SETTINGS.md); sample SecurityDB creation is development-only.
 
-Built-in card ordering now saves through the authenticated API to SQL Server. See [card order setup and verification](docs/CARD_ORDER.md). Migration 008 was applied locally; browser/API/offline-fallback checks passed. Custom groups, pinning and concealment remain local for this step.
+The [master card policy](docs/MASTER_CARD_POLICY.md) now limits the workspace to five active master cards and enforces administrator-selected fixed positions. All five currently remain movable. Custom cards will be per employee and use server-authorized apps; the former local-only editor is gated off until that is implemented.
+
+Built-in card ordering now saves through the authenticated API to SQL Server. See [card order setup and verification](docs/CARD_ORDER.md). Migration 008 was applied locally; browser/API/offline-fallback checks passed. Content concealment remains local. Previous local group and pin records are retained, but do not define current master cards or permissions.
 
 ## Current migration stage
 

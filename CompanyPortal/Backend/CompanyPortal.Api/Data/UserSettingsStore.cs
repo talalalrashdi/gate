@@ -15,7 +15,8 @@ public sealed class UserSettingsStore(IConfiguration configuration)
         var rows = (await connection.QueryAsync<CardOrderRow>(Command(
             "Portal.UserCardOrder_get", new { UserId = userId.Value }, token))).AsList();
         if (rows.Count == 0) throw new InvalidOperationException("No active workspace cards are configured.");
-        return new(rows.Select(row => row.CardKey).ToArray(), rows.Any(row => row.IsSaved),
+        return new(rows.Select(row => row.CardKey).ToArray(),
+            rows.Select(row => new MasterCardDefinition(row.CardKey, row.CardName, row.IsFixed, row.DisplayOrder)).ToArray(), rows.Any(row => row.IsSaved),
             rows.Max(row => row.LastChangeAt));
     }
 
@@ -33,7 +34,7 @@ public sealed class UserSettingsStore(IConfiguration configuration)
         return true;
     }
 
-    private sealed record CardOrderRow(string CardKey, bool IsSaved, DateTime? LastChangeAt);
+    private sealed record CardOrderRow(string CardKey, string CardName, bool IsFixed, int DisplayOrder, bool IsSaved, DateTime? LastChangeAt);
 
     public async Task<IReadOnlyList<ThemeDefinition>> GetThemesAsync(CancellationToken cancellationToken)
     {

@@ -80,6 +80,8 @@ dotnet build CompanyPortal.Backend.slnx --no-restore
 
 `NuGetAudit=false` is only for that disconnected restore because vulnerability metadata requires a reachable audit service; it does not replace the connected audit. Repeat export/audit when dependencies change. Framework-dependent publish includes application libraries, but the destination still needs the ASP.NET Core runtime/Hosting Bundle. Publish for the intended architecture if using RID-specific or self-contained deployment later. Keep secrets out of source, exported packages and appsettings; configure future connection secrets through deployment configuration.
 
+Current [master card policy](../docs/MASTER_CARD_POLICY.md) requires migration 009: five active definitions, policy metadata on GET, fixed-position enforcement on PUT. Master.Cards_setPosition is reserved for administration; it is not exposed to employee HTTP requests. Custom card ownership/app authorization remains a later feature.
+
 ## Card order
 
 [Card order](../docs/CARD_ORDER.md) uses Master.Cards, Portal.UserCardOrder and the Portal.CardOrderInput table type. Migration 008 is applied locally; deploy it and grant procedure/type permissions before enabling the updated code elsewhere. `powershell -File tools/Test-CardOrder.ps1` verifies saves, timestamps, validation and write protection, then restores the starting order.

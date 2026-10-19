@@ -159,6 +159,7 @@ body { overflow-x: clip; }
 .portal-dashboard .portal-workspace-card-actions { position: static; align-self: auto; margin: 0; margin-inline-start: auto; gap: 4px; }
 .portal-dashboard .portal-work-card:has(.portal-widget-pages) > .portal-work-footer { margin-top: 8px; padding-top: 0; }
 .portal-dashboard .portal-workspace-card-actions :is(.systems-pin, .portal-workspace-grip, .portal-workspace-conceal, .portal-group-edit) { width: 40px; height: 40px; }
+.portal-dashboard .portal-workspace-card-actions .portal-workspace-grip:disabled { cursor: default; opacity: .4; touch-action: pan-y; background: transparent; }
 .portal-dashboard .portal-work-card :is(.portal-work-footer button, .systems-details, .portal-group-system-list button, .portal-doc-categories button) { min-height: 40px; }
 .portal-dashboard .portal-work-card .portal-doc-copy { flex-wrap: wrap; }
 .portal-dashboard .portal-work-inbox .portal-inbox-list { flex: 1; max-height: none; grid-auto-rows: minmax(min-content,1fr); align-content: stretch; }

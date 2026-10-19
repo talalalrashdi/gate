@@ -10,6 +10,8 @@ Use SQL Server with a new database named `CompanyPortal`. Development uses the d
 
 Migration `008_UserCardOrder.sql` adds the existing card catalog and employee order tables/procedures, using the Portal.CardOrderInput table type. It was completed and rerun locally; API and browser acceptance passed. See [card order deployment](../../docs/CARD_ORDER.md) for scope and runtime type/procedure permissions.
 
+Migration `009_MasterCardPolicy.sql` selects five active master definitions, adds IsFixed and fixed-position validation, and provides Master.Cards_setPosition for the administration identity only. It was applied locally. See [policy and per-user custom-card requirements](../../docs/MASTER_CARD_POLICY.md). Apply it after 008; its rerun preserves administrator choices and retained employee rows.
+
 ## Create the database
 
 From `Backend/`, run with a Windows account authorized to create databases:

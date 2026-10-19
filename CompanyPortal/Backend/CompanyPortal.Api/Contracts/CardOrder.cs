@@ -4,7 +4,8 @@ using System.Text.RegularExpressions;
 
 namespace CompanyPortal.Api.Contracts;
 
-public sealed record CardOrderResponse(string[] CardKeys, bool IsSaved, DateTime? LastChangeAt);
+public sealed record MasterCardDefinition(string CardKey, string CardName, bool IsFixed, int DisplayOrder);
+public sealed record CardOrderResponse(string[] CardKeys, MasterCardDefinition[] Cards, bool IsSaved, DateTime? LastChangeAt);
 
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class SaveCardOrderRequest : IValidatableObject

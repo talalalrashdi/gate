@@ -24,6 +24,13 @@ const canonicalHtml = text => normalize(text.replace(/<script\b[^>]*>[\s\S]*?<\/
   .replace(/<title>[^<]*<\/title>/, '<title></title>')
   .replace(/\s*<link rel="icon"[^>]*>/g, '')
   .replace(/\?v=[^"&]+/g, '')
+  .replace(/<article class="portal-work-card portal-work-services"[\s\S]*?<\/article>/, '')
+  .replace(/(<h2 id="work-inbox-title">)[^<]*/, '$1مرسالات')
+  .replace(/(<h2 id="work-email-title">)[^<]*/, '$1البريد الالكتروني')
+  .replace(/(<h2 id="work-electronic-services-title">)[^<]*/, '$1الخدمات الالكترونية')
+  .replace('كل أدواتك في مكان واحد. اختر ما تحتاجه، واجعله أقرب في مساحة العمل.', 'دليل الأنظمة والخدمات.')
+  .replace('ثبّت النظام للوصول إليه من مساحة العمل', 'أسماء الأنظمة وخدماتها نماذج توضيحية')
+  .replace('تفضيلات التثبيت تُحفظ على هذا المتصفح. أسماء الأنظمة وخدماتها نماذج توضيحية.', 'أسماء الأنظمة وخدماتها نماذج توضيحية.')
   .replace(/<div class="portal-theme-switch"[\s\S]*?<small id="personal-theme-name">[^<]*<\/small><\/div>/, '<!-- theme controls -->');
 
 function migratedPath(file) {
@@ -71,7 +78,7 @@ for (const route of ['', 'index.html', 'design-b.html']) {
   const buttons = [...html.matchAll(/<button[^>]*data-theme-option="([^"]+)"[^>]*>(\d)<\/button>/g)];
   assert.deepEqual(buttons.map(button => [button[1], button[2]]), [['official', '1'], ['work', '2'], ['national-day', '3']], 'Visible theme mapping');
   const scripts = [...html.matchAll(/<script\b[^>]*src="([^"]+)"[^>]*><\/script>/g)].map(match => match[1].split('?')[0]);
-  assert.deepEqual(scripts, [...baseline.portalScripts.map(file => mount + '/' + migratedPath(file.slice(2))), mount + '/js/theme-settings.js', mount + '/js/workspace-settings.js'], 'Original script order and appended account persistence');
+  assert.deepEqual(scripts, [...baseline.portalScripts.flatMap(file => { const script = mount + '/' + migratedPath(file.slice(2)); return script.endsWith('/workspace-order.js') ? [mount + '/js/workspace-policy.js', script] : [script]; }), mount + '/js/theme-settings.js', mount + '/js/workspace-settings.js'], 'Original script order and appended account persistence');
   assert.ok(html.indexOf('id="personal-announcement-dialog"') < html.indexOf(`src="${mount}/js/personal-workspace.js"`), 'Dialog markup must exist before initialization');
 }
 for (const route of ['profile', 'profile/', 'user-profile.html']) {
@@ -98,6 +105,7 @@ for (let offset = 0; offset < resources.length; offset += 8) {
     if (file.path === 'design-b-layout.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/layout.css'));
     if (file.path === 'design-b-workspace-groups.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/workspace-groups.js'));
     // Account ordering adds a change event and an order-application bridge.
+    if (file.path === 'design-b-systems.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/systems-catalog.js'));
     if (file.path === 'design-b-workspace-order.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/workspace-order.js'));
     if (file.path === 'design-b-majestic-news.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/news-headlines.js'));
     assert.equal(digest(actual), digest(expected), `Resource differs: ${file.path}`);
@@ -127,7 +135,7 @@ for (const oldThemeFile of ['theme-majestic.css', 'theme-formal.css', 'theme-nat
   await request('css/' + oldThemeFile, 404);
 await request('js/design-b.js', 404);
 for (const removed of cleanup.removed) await request(removed.path, 404);
-for (const resource of ['css/profile.css', 'js/theme-settings.js', 'js/workspace-settings.js', 'vendor/iconsax/icons.css', ...['eot','woff2','woff','ttf','svg'].map(extension => `vendor/iconsax/files/iconsax.${extension}`)]) {
+for (const resource of ['css/profile.css', 'js/theme-settings.js', 'js/workspace-settings.js', 'js/workspace-policy.js', 'vendor/iconsax/icons.css', ...['eot','woff2','woff','ttf','svg'].map(extension => `vendor/iconsax/files/iconsax.${extension}`)]) {
   const response = await request(resource);
   const actual = Buffer.from(await response.arrayBuffer());
   const expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot', resource));
@@ -145,7 +153,7 @@ console.log(JSON.stringify({
   matchingStaticResources: resources.length,
   resolvedCssReferences: cssReferences,
   orderedPortalStyles: baseline.portalStyles.length,
-  orderedPortalScripts: baseline.portalScripts.length + 2,
+  orderedPortalScripts: baseline.portalScripts.length + 3,
   apiAndViteReviewNotExposed: true,
   browserInteractionsTested: false
 }, null, 2));

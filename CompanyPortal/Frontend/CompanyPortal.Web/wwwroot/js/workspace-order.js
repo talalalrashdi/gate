@@ -4,6 +4,8 @@
   const concealKey='clerio-workspace-concealed-cards-v1';
   const cards=[...workspace.querySelectorAll('[data-work-system]')];
   const byId=new Map(cards.map(card=>[card.dataset.workSystem,card]));
+  const policy=window.CompanyPortalWorkspacePolicy;
+  let definitions=null;
   const visible=()=>[...workspace.querySelectorAll('[data-work-system]')].filter(card=>!card.hidden);
   let concealed;try{const saved=JSON.parse(localStorage.getItem(concealKey));concealed=new Set(Array.isArray(saved)?saved:[]);}catch{concealed=new Set();}
   let drag=null,frame=0;
@@ -11,8 +13,9 @@
   function restore(raw){
     let ids;try{ids=JSON.parse(raw);}catch{return;}
     if(!Array.isArray(ids))return;
-    const ordered=[...new Set(ids)].filter(id=>byId.has(id));
+    let ordered=[...new Set(ids)].filter(id=>byId.has(id));
     cards.forEach(card=>{if(!ordered.includes(card.dataset.workSystem))ordered.push(card.dataset.workSystem);});
+    if(definitions)ordered=policy.normalize(ordered,definitions);
     ordered.forEach(id=>workspace.insertBefore(byId.get(id),workspace.querySelector('.portal-workspace-add-group')||workspace.querySelector('.systems-work-empty')));
     refresh();
   }
@@ -31,6 +34,8 @@
   window.addEventListener('pageshow',()=>{userNavigated=false;requestAnimationFrame(alignStart);});
   document.fonts?.ready.then(()=>requestAnimationFrame(alignStart));
   function save(card){
+    if(!definitions)return;
+    restore(JSON.stringify([...workspace.querySelectorAll('[data-work-system]')].map(item=>item.dataset.workSystem)));
     let saved=true;try{localStorage.setItem(key,JSON.stringify([...workspace.querySelectorAll('[data-work-system]')].map(item=>item.dataset.workSystem)));}catch{saved=false;}
     refresh();const position=visible().indexOf(card)+1;
     if(typeof showToast==='function')showToast(`تم نقل ${card.querySelector('h2').textContent} إلى الموضع ${position.toLocaleString('ar-EG-u-nu-latn')}${saved?'':' · تعذّر حفظ الترتيب؛ متاح لهذه الجلسة فقط'}`);
@@ -38,11 +43,20 @@
   }
   workspace.addEventListener('workspace:order-select',event=>{
     const ids=event.detail?.cardKeys;
-    if(!Array.isArray(ids))return;
+    if(!Array.isArray(ids)||!policy.valid(event.detail?.cards,cards.map(card=>card.dataset.workSystem)))return;
     const current=[...workspace.querySelectorAll('[data-work-system]')];
     const builtin=current.filter(card=>!card.hasAttribute('data-work-group'));
     if(ids.length!==builtin.length||new Set(ids).size!==ids.length||ids.some(id=>!builtin.some(card=>card.dataset.workSystem===id)))return;
     finish(false);
+    definitions=event.detail.cards;
+    definitions.forEach(definition=>{
+      const card=byId.get(definition.cardKey),handle=card.querySelector('.portal-workspace-grip');
+      card.querySelector('h2').textContent=definition.cardName;
+      card.dataset.cardFixed=String(definition.isFixed);
+      handle.disabled=definition.isFixed;
+      handle.setAttribute('aria-label',definition.isFixed?`${definition.cardName}: موضع ثابت`:`ترتيب ${definition.cardName}: اسحب أو استخدم سهمي اليمين واليسار`);
+      handle.title=definition.isFixed?'موضع البطاقة محدد من الإدارة':'اسحب لتغيير الموضع · أو استخدم سهمي اليمين واليسار';
+    });
     // Keep locally created groups in their slots while ordering the built-in cards.
     let index=0;
     const merged=current.map(card=>card.hasAttribute('data-work-group')?card.dataset.workSystem:ids[index++]);
@@ -86,6 +100,7 @@
   function bindCard(card){
     if(bound.has(card))return;bound.add(card);
     const handle=document.createElement('button');handle.type='button';handle.className='portal-workspace-grip';
+    handle.disabled=!definitions||card.dataset.cardFixed==='true';
     const title=card.querySelector('h2').textContent;
     handle.setAttribute('aria-label',`ترتيب ${title}: اسحب أو استخدم سهمي اليمين واليسار`);
     handle.title='اسحب لتغيير الموضع · أو استخدم سهمي اليمين واليسار';
@@ -105,12 +120,12 @@
     if(!pinGroup)actions.append(conceal);
     actions.append(handle);card.append(actions);
     handle.addEventListener('keydown',event=>{
-      if(!['ArrowLeft','ArrowRight'].includes(event.key)||drag)return;
-      event.preventDefault();event.stopPropagation();const list=visible(),index=list.indexOf(card),step=event.key==='ArrowLeft'?1:-1,target=list[index+step];if(!target)return;
+      if(!definitions||card.dataset.cardFixed==='true'||!['ArrowLeft','ArrowRight'].includes(event.key)||drag)return;
+      event.preventDefault();event.stopPropagation();const list=visible().filter(item=>item.dataset.cardFixed!=='true'),index=list.indexOf(card),step=event.key==='ArrowLeft'?1:-1,target=list[index+step];if(!target)return;
       workspace.insertBefore(card,step>0?target.nextSibling:target);handle.focus({preventScroll:true});card.scrollIntoView({behavior:'instant',block:'nearest',inline:'nearest'});save(card);
     });
     handle.addEventListener('pointerdown',event=>{
-      if(event.button!==0||!event.isPrimary||drag)return;
+      if(!definitions||card.dataset.cardFixed==='true'||event.button!==0||!event.isPrimary||drag)return;
       drag={card:card,handle,pointer:event.pointerId,startX:event.clientX,startY:event.clientY,x:event.clientX,y:event.clientY,active:false,valid:false};handle.setPointerCapture(event.pointerId);
     });
     handle.addEventListener('pointermove',event=>{

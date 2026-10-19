@@ -1,5 +1,8 @@
 (() => {
   const workspace=document.getElementById('workspace-cards');if(!workspace)return;
+  // Enable only after account-owned cards and authorized application data exist.
+  // Keep old local definitions intact; do not render them as account-owned cards.
+  if(workspace.dataset.allowCustomCards!=='true')return;
   const storageKey='clerio-workspace-groups-v1';
   const systems=[...document.querySelectorAll('#systems-grid .systems-card[data-system-id]')].map(card=>({id:card.dataset.systemId,title:card.querySelector('h3').textContent}));
   const byId=new Map(systems.map(system=>[system.id,system]));

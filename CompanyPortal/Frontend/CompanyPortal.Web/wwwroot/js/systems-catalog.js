@@ -3,7 +3,8 @@
   if(!root||!workspace)return;
   const cards=[...root.querySelectorAll('[data-system-id]')];
   const systems=new Map(cards.map(card=>[card.dataset.systemId,{id:card.dataset.systemId,category:card.dataset.systemCategory,categoryName:card.querySelector('.systems-category').textContent,title:card.querySelector('h3').textContent,description:card.querySelector('.systems-description').textContent,icon:card.dataset.systemIcon,card}]));
-  const storageKey='clerio-design-b-pinned-systems-v1',defaults=['library','inbox','requests','services'];
+  // Applications remain illustrative until an authorized per-user catalog is connected.
+  root.querySelectorAll('[data-systems-pin]').forEach(button=>button.remove());
   const search=root.querySelector('#systems-search'),categories=[...root.querySelectorAll('[data-systems-category]')],pinnedFilter=root.querySelector('#systems-pinned-filter');
   const motion=matchMedia('(prefers-reduced-motion: reduce)');
   let textureVisible=false;
@@ -11,32 +12,15 @@
   const textureObserver=new IntersectionObserver(entries=>{textureVisible=entries[0].isIntersecting;if(textureVisible)root.classList.add('systems-has-entered');updateTexture();},{threshold:0});
   textureObserver.observe(root.querySelector('.systems-heading'));
   document.addEventListener('visibilitychange',updateTexture);motion.addEventListener('change',updateTexture);
-  let category='all',onlyPinned=false;
-  function decode(raw){try{const value=JSON.parse(raw);return Array.isArray(value)?new Set(value.filter(id=>typeof id==='string'&&systems.has(id))):new Set(defaults);}catch{return new Set(defaults);}}
-  let pinned;try{pinned=decode(localStorage.getItem(storageKey));}catch{pinned=new Set(defaults);}
+  let category='all';
+  pinnedFilter.hidden=true;
   const normalize=value=>value.normalize('NFKD').replace(/[\u064B-\u065F\u0670\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').toLowerCase().trim();
   const number=value=>value.toLocaleString('ar-EG-u-nu-latn');
   function make(tag,className,text){const el=document.createElement(tag);if(className)el.className=className;if(text)el.textContent=text;return el;}
-  function icon(name){const el=make('i','iconsax');el.setAttribute('icon-name',name);el.setAttribute('aria-hidden','true');return el;}
-  function pinButton(id){const button=make('button','systems-pin');button.type='button';button.dataset.systemsPin=id;button.append(icon('add'),make('span',null,'تثبيت في ساحة العمل'));return button;}
-  const workCards=new Map([...workspace.querySelectorAll('[data-work-system]')].map(card=>[card.dataset.workSystem,card]));
-  systems.forEach(system=>{
-    let card=workCards.get(system.id);
-    if(!card){
-      card=make('article','portal-work-card systems-work-added');card.dataset.workSystem=system.id;card.dataset.widgetCategory=({daily:'communication',people:'attendance',operations:'services',finance:'forms',knowledge:'applications'})[system.category]||'applications';
-      const heading=make('header','portal-work-heading'),badge=make('div','portal-work-icon'),copy=make('div'),title=make('h2',null,system.title);
-      title.id=`work-system-${system.id}`;card.setAttribute('aria-labelledby',title.id);badge.append(icon(system.icon));copy.append(title);heading.append(badge,copy);
-      const details=make('button','systems-details','تشغيل النظام ←');details.type='button';details.dataset.systemsDetails=system.id;
-      card.append(heading,make('span','systems-work-category',system.categoryName),details);workspace.append(card);workCards.set(system.id,card);
-    }
-    const label=make('div','systems-work-label');label.append(pinButton(system.id));card.querySelector(':scope > .portal-work-heading').append(label);
-  });
-  const emptyWorkspace=make('div','systems-work-empty');emptyWorkspace.append(make('h3',null,'مساحة العمل تبدأ باختياراتك'),make('p',null,'ثبّت الأنظمة التي تستخدمها من دليل الأنظمة.'));
-  const browse=make('a',null,'استكشف الأنظمة ←');browse.href='#library';emptyWorkspace.append(browse);workspace.append(emptyWorkspace);
   const dialog=make('dialog','systems-system-dialog');dialog.setAttribute('aria-labelledby','systems-dialog-title');
   const dialogTop=make('div','systems-dialog-top'),dialogCategory=make('span'),close=make('button',null,'×');close.type='button';close.setAttribute('aria-label','إغلاق نافذة النظام');dialogTop.append(dialogCategory,close);
-  const dialogTitle=make('h2');dialogTitle.id='systems-dialog-title';const dialogCopy=make('p'),dialogPin=pinButton('');
-  dialog.append(dialogTop,dialogTitle,dialogCopy,make('small',null,'لم يُربط هذا النظام برابط تشغيل فعلي بعد. يمكنك تثبيته في مساحة العمل، وسيُتاح التشغيل عند إضافة رابط النظام.'),dialogPin);document.body.append(dialog);close.addEventListener('click',()=>dialog.close());
+  const dialogTitle=make('h2');dialogTitle.id='systems-dialog-title';const dialogCopy=make('p');
+  dialog.append(dialogTop,dialogTitle,dialogCopy,make('small',null,'هذا عرض توضيحي؛ لم يُربط النظام برابط تشغيل فعلي بعد.'));document.body.append(dialog);close.addEventListener('click',()=>dialog.close());
   const sheet=document.getElementById('systems-sheet'),sheetTrigger=document.getElementById('systems-sheet-trigger');
   if(sheet&&sheetTrigger){
     const sheetContent=sheet.querySelector('.portal-systems-sheet-content'),sheetSearch=make('label','portal-systems-sheet-search');
@@ -61,32 +45,17 @@
   }
   function filter(){
     const terms=normalize(search.value).split(/\s+/).filter(Boolean);let count=0;
-    systems.forEach(system=>{const text=normalize(system.title+' '+system.description+' '+system.categoryName);const visible=(category==='all'||system.category===category)&&(!onlyPinned||pinned.has(system.id))&&terms.every(term=>text.includes(term));system.card.hidden=!visible;if(visible)count++;});
-    categories.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.systemsCategory===category)));pinnedFilter.setAttribute('aria-pressed',String(onlyPinned));
-    root.querySelector('#systems-results').textContent=`${number(count)} من ${number(systems.size)} نظامًا${onlyPinned?' · في مساحة العمل':''}`;root.querySelector('#systems-empty').hidden=count!==0;
+    systems.forEach(system=>{const text=normalize(system.title+' '+system.description+' '+system.categoryName);const visible=(category==='all'||system.category===category)&&terms.every(term=>text.includes(term));system.card.hidden=!visible;if(visible)count++;});
+    categories.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.systemsCategory===category)));
+    root.querySelector('#systems-results').textContent=`${number(count)} من ${number(systems.size)} نظامًا`;root.querySelector('#systems-empty').hidden=count!==0;
   }
-  function paintPin(button){const id=button.dataset.systemsPin,system=systems.get(id);if(!system)return;const selected=pinned.has(id);button.setAttribute('aria-pressed',String(selected));button.setAttribute('aria-label',selected?`إزالة تثبيت ${system.title} من مساحة العمل`:`تثبيت في ساحة العمل: ${system.title}`);button.title=button.getAttribute('aria-label');button.querySelector('span').textContent=selected?'إزالة التثبيت':'تثبيت في ساحة العمل';button.querySelector('i').setAttribute('icon-name',selected?'archive-book':'add');}
-  function sync(){
-    systems.forEach(system=>{const selected=pinned.has(system.id);system.card.classList.toggle('is-pinned',selected);system.card.querySelector('[data-systems-presence]').hidden=!selected;workCards.get(system.id).hidden=!selected;});
-    document.querySelectorAll('[data-systems-pin]').forEach(paintPin);root.querySelector('#systems-filter-count').textContent=number(pinned.size);emptyWorkspace.hidden=pinned.size!==0||!!workspace.querySelector('[data-work-group]');filter();
-    requestAnimationFrame(()=>{if(typeof updateWorkspaceNavigation==='function')updateWorkspaceNavigation();});
-  }
-  function reset(){search.value='';category='all';onlyPinned=false;filter();}
+  function reset(){search.value='';category='all';filter();}
   function focusCatalog(){reset();root.scrollIntoView({behavior:motion.matches?'instant':'smooth',block:'start'});search.focus({preventScroll:true});}
-  search.addEventListener('input',filter);categories.forEach(button=>button.addEventListener('click',()=>{category=button.dataset.systemsCategory;filter();}));pinnedFilter.addEventListener('click',()=>{onlyPinned=!onlyPinned;filter();});root.querySelector('#systems-reset').addEventListener('click',()=>{reset();search.focus();});
-  document.querySelector('.portal-add-system')?.addEventListener('click',focusCatalog);browse.addEventListener('click',event=>{event.preventDefault();focusCatalog();});
+  search.addEventListener('input',filter);categories.forEach(button=>button.addEventListener('click',()=>{category=button.dataset.systemsCategory;filter();}));root.querySelector('#systems-reset').addEventListener('click',()=>{reset();search.focus();});
+  document.querySelector('.portal-add-system')?.addEventListener('click',focusCatalog);
   document.addEventListener('click',event=>{
-    const pin=event.target.closest('[data-systems-pin]');
-    if(pin&&systems.has(pin.dataset.systemsPin)){
-      const id=pin.dataset.systemsPin,adding=!pinned.has(id);if(adding)pinned.add(id);else pinned.delete(id);
-      let saved=true;try{localStorage.setItem(storageKey,JSON.stringify([...pinned]));}catch{saved=false;}
-      sync();
-      if(pin.closest('[hidden]')){const next=pin.closest('#workspace-cards')?workspace.querySelector('[data-work-system]:not([hidden]) [data-systems-pin]')||browse:root.querySelector('.systems-card:not([hidden]) [data-systems-pin]')||search;next.focus({preventScroll:true});}
-      if(typeof showToast==='function')showToast(`${adding?'تم تثبيت':'تمت إزالة تثبيت'} ${systems.get(id).title}${adding?' في مساحة العمل':''}${saved?'':' · تعذّر الحفظ الدائم؛ الاختيار لهذه الجلسة فقط'}`);
-      return;
-    }
     const details=event.target.closest('[data-systems-details]');if(!details)return;const system=systems.get(details.dataset.systemsDetails);if(!system)return;
-    dialogCategory.textContent=system.categoryName;dialogTitle.textContent=system.title;dialogCopy.textContent=system.description;dialogPin.dataset.systemsPin=system.id;paintPin(dialogPin);if(!dialog.open)dialog.showModal();
+    dialogCategory.textContent=system.categoryName;dialogTitle.textContent=system.title;dialogCopy.textContent=system.description;if(!dialog.open)dialog.showModal();
   });
   document.addEventListener('systems:reveal',event=>{
     const target=event.detail?.target;if(!target)return;
@@ -94,7 +63,5 @@
     if(work?.hidden&&systems.has(work.dataset.workSystem)){reset();event.detail.target=systems.get(work.dataset.workSystem).card;}
     else if(target.closest('.systems-card'))reset();
   });
-  window.addEventListener('storage',event=>{if(event.key===storageKey||event.key===null){pinned=decode(event.newValue);sync();}});
-  workspace.addEventListener('workspace:cards-changed',sync);
-  sync();
+  filter();
 })();

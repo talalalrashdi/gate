@@ -26,7 +26,10 @@ Assert ($original.Count -ge 2) 'Expected at least two card definitions.'
 $header=@{ 'X-CompanyPortal-Request'='card-order' }
 try {
     Assert ((Request 'GET' '' @{} $false).Status -eq 401) 'Anonymous read was accepted.'
-    $target=@($original); $first=$target[0]; $target[0]=$target[1]; $target[1]=$first
+    $movable=@($saved.cards | Where-Object { -not $_.isFixed } | ForEach-Object { $_.cardKey })
+    Assert ($movable.Count -ge 2) 'At least two movable cards are needed for this test.'
+    $a=[Array]::IndexOf($original,$movable[0]); $b=[Array]::IndexOf($original,$movable[1])
+    $target=@($original); $first=$target[$a]; $target[$a]=$target[$b]; $target[$b]=$first
     $body=@{cardKeys=$target} | ConvertTo-Json -Compress
     Start-Sleep -Milliseconds 50
     Assert ((Request 'PUT' $body $header).Status -eq 204) 'Card-order save failed.'
@@ -37,6 +40,12 @@ try {
     Assert ((Request 'PUT' $body $header).Status -eq 204) 'Repeated save failed.'
     $unchanged=(Request).Content | ConvertFrom-Json
     Assert ($unchanged.lastChangeAt -eq $result.lastChangeAt) 'No-op save changed LastChangeAt.'
+    $fixed=@($saved.cards | Where-Object isFixed)
+    if ($fixed.Count -gt 0) {
+        $bad=@($target); $index=[Array]::IndexOf($bad,$fixed[0].cardKey)
+        $other=($index+1)%$bad.Count; $value=$bad[$index]; $bad[$index]=$bad[$other]; $bad[$other]=$value
+        Assert ((Request 'PUT' (@{cardKeys=$bad} | ConvertTo-Json -Compress) $header).Status -eq 400) 'Fixed position was bypassed.'
+    }
     $invalid=@($target); $invalid[0]='unknown-card'
     Assert ((Request 'PUT' (@{cardKeys=$invalid} | ConvertTo-Json -Compress) $header).Status -eq 400) 'Unknown card accepted.'
     $duplicate=@($target); $duplicate[0]=$duplicate[1]

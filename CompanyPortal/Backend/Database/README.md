@@ -55,3 +55,7 @@ ConnectionStrings__CompanyPortal=Server=INTERNAL-SQL-SERVER;Database=CompanyPort
 Integrated security connects as the API's service/process identity by default, not automatically as the employee calling the API. Provision the approved IIS service identity with database rights appropriate to the implemented features; use a separate deployment account for schema creation. Do not grant the runtime account sysadmin/db_owner merely to simplify deployment. AD employee identity and database connection identity are separate concerns.
 
 The intended application handoff is the same code plus ordered SQL scripts and an environment-specific connection string. The destination must also have the agreed SQL Server features/version, network access, service-account permissions and certificate trust. Those infrastructure settings cannot be replaced by a connection string alone. No mailbox/task/calendar records are created in this database.
+
+## Interface images
+
+After 014, apply `Scripts/015_InterfaceImages.sql`. Images are SQL BLOBs; it adds no sample data or assignments. See `../../docs/INTERFACE_IMAGES.md` for object/type permissions, limits, backup/storage and deployment details.

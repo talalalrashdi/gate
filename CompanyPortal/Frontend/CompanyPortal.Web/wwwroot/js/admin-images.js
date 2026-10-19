@@ -1,0 +1,118 @@
+(() => {
+  const panel = document.querySelector('[data-admin-panel="images"]');
+  const base = document.querySelector('meta[name="companyportal-api-base"]')?.content;
+  if (!panel || !base) return;
+  const api = new URL(base.replace(/\/?$/, '/'),location.href), byId = id => document.getElementById(id);
+  const status = byId('images-status'), content = byId('images-content'), retry = byId('images-retry');
+  const picker = byId('image-group-picker'), library = byId('image-library'), itemsRoot = byId('image-group-items');
+  const form = byId('image-group-form'), name = byId('image-group-name'), rotate = byId('image-group-rotate'), seconds = byId('image-group-seconds'), active = byId('image-group-active');
+  let data = {images:[],groups:[],items:[],themes:[]}, selection = [], groupId = null, defaultId = null, busy = false, loaded = false, dirty = false;
+  const url = path => new URL(path,api);
+  const say = (text,error=false) => { status.textContent=text; status.dataset.error=String(error); };
+  const node = (tag,text,className) => { const n=document.createElement(tag); if(text!==undefined)n.textContent=text; if(className)n.className=className; return n; };
+  const option = (value,text) => {const n=node('option',text);n.value=String(value ?? '');return n;};
+  const mark = () => {dirty=true;byId('image-group-dirty').textContent='تغييرات غير محفوظة';};
+  async function request(path,method='GET',body) {
+    const response=await fetch(url(path),{method,credentials:'include',cache:'no-store',signal:AbortSignal.timeout(method==='POST'?60000:15000),
+      headers:method==='GET'?{}:{'X-CompanyPortal-Request':'admin-images',...(body instanceof FormData?{}:{'Content-Type':'application/json'})},
+      ...(body===undefined?{}:{body:body instanceof FormData?body:JSON.stringify(body)})});
+    if(!response.ok){
+      if(response.status===401||response.status===403){content.hidden=true;loaded=false;throw new Error('ليس لديك صلاحية إدارة الصور.');}
+      throw new Error(response.status===400||response.status===413?'تعذر الحفظ. تحقق من الاسم والصور والأحجام والصيغة. SVG يجب أن يكون ثابتًا بدون سكربتات أو أنماط أو روابط خارجية.':'تعذر الاتصال بخدمة الصور. أعد المحاولة.');
+    }
+    return response.status===204?null:response.json();
+  }
+  async function run(action) {
+    if(busy)return;busy=true;panel.querySelectorAll('button,input,select').forEach(n=>{n.disabled=true;});
+    try{await action();}catch(error){say(error.message,true);retry.hidden=loaded;}
+    finally{busy=false;panel.querySelectorAll('button,input,select').forEach(n=>{n.disabled=false;});refreshConstraints();}
+  }
+  function refreshConstraints(){seconds.disabled=!rotate.checked;itemsRoot.querySelectorAll('input[type=radio]').forEach((n,i)=>{n.disabled=!selection[i]?.active;});itemsRoot.querySelectorAll('[data-up]').forEach((n,i)=>{n.disabled=i===0;});itemsRoot.querySelectorAll('[data-down]').forEach((n,i)=>{n.disabled=i===selection.length-1;});}
+  const preview = image => { const img=node('img');img.src=url(`api/images/${image.imageId}/content`);img.alt='';img.loading='lazy';return img; };
+  function renderLibrary(){
+    library.replaceChildren();byId('images-count').textContent=`(${data.images.length})`;
+    byId('images-selected-count').textContent=`${selection.length} صورة مختارة`;
+    if(!data.images.length)library.append(node('p','المكتبة فارغة. ارفع الصور للبدء.'));
+    data.images.forEach(image=>{
+      const tile=node('label',undefined,'image-tile'),check=node('input');check.type='checkbox';check.checked=selection.some(i=>i.imageId===image.imageId);
+      check.setAttribute('aria-label','اختيار '+image.imageName);
+      check.addEventListener('change',()=>{
+        if(check.checked) {if(selection.length>=100){check.checked=false;say('يمكن اختيار 100 صورة كحد أقصى للمجموعة.',true);return;}selection.push({imageId:image.imageId,active:true});}
+        else {selection=selection.filter(i=>i.imageId!==image.imageId);if(defaultId===image.imageId)defaultId=null;}
+        mark();renderSelection();
+      });
+      const line=node('span');line.append(check,node('span','اختيار الصورة'));
+      tile.append(preview(image),node('strong',image.imageName),node('small',`${image.pixelWidth} × ${image.pixelHeight} · ${Math.ceil(image.byteLength/1024)} KB`),line);library.append(tile);
+    });
+  }
+  function renderSelection(){
+    itemsRoot.replaceChildren();byId('images-selected-count').textContent=`${selection.length} صورة مختارة`;
+    if(defaultId===null||!selection.some(i=>i.imageId===defaultId&&i.active))defaultId=selection.find(i=>i.active)?.imageId??null;
+    if(!selection.length)itemsRoot.append(node('p','اختر الصور من المكتبة أعلاه. يمكنك حفظ مجموعة فارغة وتجهيزها لاحقًا.'));
+    selection.forEach((item,index)=>{
+      const image=data.images.find(i=>i.imageId===item.imageId);if(!image)return;
+      const row=node('div',undefined,'image-item'),heading=node('div',undefined,'image-item-heading'),tools=node('div',undefined,'image-item-tools');
+      heading.append(preview(image),node('strong',`${index+1}. ${image.imageName}`));
+      const toggle=node('input');toggle.type='checkbox';toggle.checked=item.active;
+      const toggleLabel=node('label');toggleLabel.append(toggle,node('span','نشطة'));
+      toggle.addEventListener('change',()=>{item.active=toggle.checked;mark();renderSelection();});
+      const radio=node('input');radio.type='radio';radio.name='default-image';radio.checked=defaultId===item.imageId;radio.disabled=!item.active;
+      const radioLabel=node('label');radioLabel.append(radio,node('span','افتراضية'));radio.addEventListener('change',()=>{defaultId=item.imageId;mark();});
+      const up=node('button','↑'),down=node('button','↓'),remove=node('button','إزالة');
+      [up,down,remove].forEach(n=>{n.type='button';});up.dataset.up='';down.dataset.down='';
+      up.setAttribute('aria-label','تقديم '+image.imageName);down.setAttribute('aria-label','تأخير '+image.imageName);
+      const move=delta=>{[selection[index],selection[index+delta]]=[selection[index+delta],selection[index]];mark();renderSelection();};
+      up.addEventListener('click',()=>move(-1));down.addEventListener('click',()=>move(1));
+      remove.addEventListener('click',()=>{selection.splice(index,1);mark();renderLibrary();renderSelection();});
+      tools.append(toggleLabel,radioLabel,up,down,remove);row.append(heading,tools);itemsRoot.append(row);
+    });
+    refreshConstraints();
+  }
+  function renderPicker(){
+    picker.replaceChildren(option('','مجموعة جديدة'));
+    data.groups.forEach(g=>picker.append(option(g.imageGroupId,g.groupName+(g.active?'':' (غير نشطة)'))));picker.value=String(groupId??'');
+  }
+  function editGroup(id){
+    groupId=id;const group=data.groups.find(g=>g.imageGroupId===id);
+    name.value=group?.groupName??'';rotate.checked=group?.rotateImages??true;seconds.value=group?.rotationSeconds??8;active.checked=group?.active??true;defaultId=group?.defaultImageId??null;
+    selection=data.items.filter(i=>i.imageGroupId===id).sort((a,b)=>a.displayOrder-b.displayOrder).map(i=>({imageId:i.imageId,active:i.active}));
+    dirty=false;byId('image-group-dirty').textContent='';renderPicker();renderLibrary();renderSelection();
+  }
+  function renderLinks(){
+    const target=byId('image-theme-links');target.replaceChildren();
+    data.themes.forEach(theme=>{
+      const row=node('form',undefined,'images-theme-form'),label=node('label','مجموعة الصور'),select=node('select'),save=node('button','حفظ الربط','admin-primary');
+      row.append(node('strong',theme.themeName));select.append(option('','الصور الأصلية للثيم'));
+      data.groups.filter(g=>g.active||g.imageGroupId===theme.imageGroupId).forEach(g=>select.append(option(g.imageGroupId,g.groupName+(g.active?'':' (غير نشطة)'))));select.value=String(theme.imageGroupId??'');
+      select.setAttribute('aria-label','مجموعة صور '+theme.themeName);label.append(select);row.append(label,save);save.type='submit';
+      row.addEventListener('submit',event=>{event.preventDefault();run(async()=>{say('جارٍ حفظ ربط الثيم…');await request(`api/admin/images/themes/${theme.themeId}/group`,'PUT',{imageGroupId:select.value?Number(select.value):null});theme.imageGroupId=select.value?Number(select.value):null;say('تم حفظ صور الثيم. أعد تحميل البوابة لمشاهدتها.');});});target.append(row);
+    });
+  }
+  async function load(){
+    await run(async()=>{say('جارٍ تحميل مكتبة الصور…');data=await request('api/admin/images');loaded=true;content.hidden=false;retry.hidden=true;editGroup(null);renderLinks();say('المكتبة جاهزة. اختر مجموعة أو أنشئ مجموعة جديدة.');});
+  }
+  picker.addEventListener('change',()=>{if(dirty&&!window.confirm('توجد تغييرات غير محفوظة. هل تريد الانتقال إلى مجموعة أخرى؟')){picker.value=String(groupId??'');return;}editGroup(picker.value?Number(picker.value):null);});
+  form.addEventListener('input',mark);form.addEventListener('change',mark);rotate.addEventListener('change',refreshConstraints);
+  form.addEventListener('submit',event=>{event.preventDefault();if(!name.value.trim()){name.focus();return;}run(async()=>{
+    say('جارٍ حفظ المجموعة…');
+    const result=await request('api/admin/images/groups'+(groupId?'/'+groupId:''),groupId?'PUT':'POST',{groupName:name.value.trim(),rotateImages:rotate.checked,rotationSeconds:Number(seconds.value),defaultImageId:defaultId,active:active.checked,items:selection.map((i,index)=>({...i,displayOrder:index+1}))});
+    groupId=result.imageGroupId;
+    data=await request('api/admin/images');editGroup(groupId);renderLinks();say('تم حفظ المجموعة وترتيب الصور وإعدادات العرض.');
+  });});
+  byId('image-upload').addEventListener('submit',event=>{event.preventDefault();const files=[...byId('image-files').files];if(!files.length)return;run(async()=>{
+    const added=[];let failure;
+    for(const file of files){
+      if(file.size>(file.name.toLowerCase().endsWith('.svg')?1024*1024:10*1024*1024)){failure=new Error('تجاوزت إحدى الصور الحجم المسموح.');break;}
+      say(`جارٍ رفع ${file.name}…`);const body=new FormData();body.append('file',file);
+      try{const result=await request('api/admin/images','POST',body);added.push(result.imageId);}catch(error){failure=error;break;}
+    }
+    if(added.length){data=await request('api/admin/images');renderLibrary();}
+    byId('image-files').value='';
+    if(failure){say(`تم رفع ${added.length} صورة. ${failure.message}`,true);return;}
+    say(`تم رفع ${added.length} صورة. اختر الصور لإضافتها إلى المجموعة.`);
+  });});
+  retry.addEventListener('click',load);
+  const observe=new MutationObserver(()=>{if(!loaded&&!busy&&!panel.hidden&&!byId('admin-workspace').hidden)load();});
+  observe.observe(panel,{attributes:true,attributeFilter:['hidden']});observe.observe(byId('admin-workspace'),{attributes:true,attributeFilter:['hidden']});
+  if(!panel.hidden&&!byId('admin-workspace').hidden)load();
+})();

@@ -82,7 +82,7 @@ for (const route of ['', 'index.html', 'design-b.html']) {
   assert.deepEqual(buttons.map(button => [button[1], button[2]]), [['official', '1'], ['work', '2'], ['national-day', '3']], 'Visible theme mapping');
   const scripts = [...html.matchAll(/<script\b[^>]*src="([^"]+)"[^>]*><\/script>/g)].map(match => match[1].split('?')[0]);
   assert.deepEqual(scripts, [...baseline.portalScripts.flatMap(file => { const script = mount + '/' + migratedPath(file.slice(2)); return script.endsWith('/workspace-order.js') ? [mount + '/js/workspace-policy.js', script] : [script]; }), mount + '/js/theme-settings.js', mount + '/js/workspace-settings.js', mount + '/js/admin-access.js', mount + '/js/email.js'], 'Original script order and appended account persistence/admin/email');
-  assert.ok(html.indexOf('id="personal-announcement-dialog"') < html.indexOf(`src="${mount}/js/personal-workspace.js"`), 'Dialog markup must exist before initialization');
+  assert.ok(html.indexOf('id="personal-announcement-dialog"') < html.indexOf(`src="${mount}/js/personal-workspace.js`), 'Dialog markup must exist before initialization');
 }
 for (const route of ['profile', 'profile/', 'user-profile.html']) {
   const html = await (await request(route)).text();
@@ -103,6 +103,7 @@ for (let offset = 0; offset < resources.length; offset += 8) {
     // The default/preference behavior was intentionally changed in this script.
     if (file.path === 'design-b-intro.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/personal-workspace.js'));
     // User-requested full-width, flush-top default-theme header.
+    if (migratedPath(file.path) === 'css/theme-national-day.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/theme-national-day.css'));
     if (file.path === 'design-b-majestic-theme.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/theme-official.css'));
     // Browser acceptance fixes: shared responsive header and unique group choices.
     if (file.path === 'design-b-layout.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/layout.css'));
@@ -142,7 +143,7 @@ for (const oldThemeFile of ['theme-majestic.css', 'theme-formal.css', 'theme-nat
   await request('css/' + oldThemeFile, 404);
 await request('js/design-b.js', 404);
 for (const removed of cleanup.removed) await request(removed.path, 404);
-for (const resource of ['css/profile.css', 'js/theme-settings.js', 'js/workspace-settings.js', 'js/workspace-policy.js', 'js/admin-access.js', 'js/admin-cards.js', 'js/email.js', 'css/admin-cards.css', 'css/admin.css', 'js/admin-navigation.js', 'vendor/iconsax/icons.css', ...['eot','woff2','woff','ttf','svg'].map(extension => `vendor/iconsax/files/iconsax.${extension}`)]) {
+for (const resource of ['css/profile.css', 'js/theme-settings.js', 'js/workspace-settings.js', 'js/workspace-policy.js', 'js/admin-access.js', 'js/admin-cards.js', 'js/email.js', 'css/admin-cards.css', 'css/admin.css', 'js/admin-navigation.js', 'css/admin-images.css', 'js/admin-images.js', 'vendor/iconsax/icons.css', ...['eot','woff2','woff','ttf','svg'].map(extension => `vendor/iconsax/files/iconsax.${extension}`)]) {
   const response = await request(resource);
   const actual = Buffer.from(await response.arrayBuffer());
   const expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot', resource));

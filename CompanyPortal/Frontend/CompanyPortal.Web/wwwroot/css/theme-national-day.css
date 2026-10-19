@@ -5,7 +5,7 @@ body.portal-dashboard[data-site-theme="national-day"] .portal-personal-zone {
   margin: 0 calc(50% - 50vw);
   padding: 145px clamp(24px, 5vw, 80px) 0;
   overflow: clip;
-  background: radial-gradient(ellipse 58% 100% at 0% 65%, #b4ddc7 0%, transparent 78%), radial-gradient(ellipse 40% 65% at 14% 0%, #f0c9c8 0%, transparent 80%), linear-gradient(115deg, #dceee3 0%, #f5f9f3 52%, #fffaf4 100%);
+  background: var(--portal-national-background, radial-gradient(ellipse 58% 100% at 0% 65%, #b4ddc7 0%, transparent 78%), radial-gradient(ellipse 40% 65% at 14% 0%, #f0c9c8 0%, transparent 80%), linear-gradient(115deg, #dceee3 0%, #f5f9f3 52%, #fffaf4 100%));
 }
 body.portal-dashboard[data-site-theme="national-day"] .portal-personal-zone::before {
   content: "";

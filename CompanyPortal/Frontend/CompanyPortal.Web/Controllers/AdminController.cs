@@ -8,9 +8,11 @@ public sealed class AdminController : Controller
     // the API authorizes every read/write. Never use the MVC process identity here.
     [HttpGet("/admin/cards")]
     [HttpGet("/admin")]
+    [HttpGet("/admin/images")]
     public IActionResult Cards()
     {
         ViewData["AdminSection"] = Request.Path.Value?.TrimEnd('/').EndsWith("/cards", StringComparison.OrdinalIgnoreCase) == true ? "cards" : "overview";
+        if (Request.Path.Value?.TrimEnd('/').EndsWith("/images", StringComparison.OrdinalIgnoreCase) == true) ViewData["AdminSection"] = "images";
         return View();
     }
 }

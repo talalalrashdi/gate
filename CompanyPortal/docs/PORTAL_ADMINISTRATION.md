@@ -64,6 +64,6 @@ The Arabic/RTL admin area has its own shared `_AdminLayout`, local fonts and res
 
 The overview shows actual active/fixed/movable card counts after the protected catalog loads. The card editor has explicit labels, fixed/movable switches, unsaved-change indicators and per-card save buttons. Saving one row preserves unsaved edits in other rows. Authentication failures hide the workspace and leave section buttons disabled; the API remains the authorization boundary.
 
-Image management and theme creation currently have clearly labelled planned sections only. They describe future image upload/order/activation, automatic rotation on/off, and theme creation/default selection. No upload, rotation or theme-administration backend was added by this visual redesign.
+Image management is now implemented at `/admin/images`: upload/library, groups, membership ordering/activation, rotation/static defaults and theme-image assignments. See [INTERFACE_IMAGES.md](INTERFACE_IMAGES.md). Theme creation remains planned. The shared layout still separates employee portal styling from administration.
 
 Redesign verification: frontend Release build passed with zero warnings/errors; JavaScript syntax checks passed. Actual desktop browser checked section navigation, saved/restored a card name and confirmed another row's draft survived the save. Mobile layout checked at 390px without document overflow. Existing master-card names, order and fixed policy were restored.

@@ -2,15 +2,16 @@
     Layout = "_AdminLayout";
 }
 @section Styles {
+  <link rel="stylesheet" href="@Url.Content("~/css/admin-images.css")" asp-append-version="true">
   <link rel="stylesheet" href="@Url.Content("~/css/admin-cards.css")" asp-append-version="true">
 }
 <section data-admin-panel="overview" aria-label="نظرة عامة" hidden>
-  <div class="admin-welcome"><div><span class="admin-eyebrow">أهلًا بك في مساحة الإدارة</span><h2>تفاصيل صغيرة،<br>تجربة أفضل للجميع.</h2><p>رتّب البطاقات الأساسية وحدّد مواضعها. ستجد هنا لاحقًا إدارة صور الواجهة والثيمات.</p><button type="button" class="admin-primary" data-admin-section="cards">إدارة البطاقات <span aria-hidden="true">←</span></button></div><div class="admin-welcome-art" aria-hidden="true"><div class="admin-art-card"><span></span><i></i><i></i><i></i></div><div class="admin-art-mini"><span>✓</span><i></i><i></i></div><div class="admin-art-dot"></div></div></div>
+  <div class="admin-welcome"><div><span class="admin-eyebrow">أهلًا بك في مساحة الإدارة</span><h2>تفاصيل صغيرة،<br>تجربة أفضل للجميع.</h2><p>رتّب البطاقات الأساسية وحدّد مواضعها. أدر صور الواجهة ومجموعاتها، وحدّد صور كل ثيم.</p><button type="button" class="admin-primary" data-admin-section="cards">إدارة البطاقات <span aria-hidden="true">←</span></button></div><div class="admin-welcome-art" aria-hidden="true"><div class="admin-art-card"><span></span><i></i><i></i><i></i></div><div class="admin-art-mini"><span>✓</span><i></i><i></i></div><div class="admin-art-dot"></div></div></div>
   <div class="admin-stats"><article><span class="admin-stat-icon" aria-hidden="true">▦</span><div><strong data-admin-total>—</strong><span>بطاقات أساسية</span></div></article><article><span class="admin-stat-icon" aria-hidden="true">⌖</span><div><strong data-admin-fixed>—</strong><span>بطاقات ثابتة</span></div></article><article><span class="admin-stat-icon" aria-hidden="true">↔</span><div><strong data-admin-movable>—</strong><span>بطاقات قابلة للترتيب</span></div></article></div>
   <div class="admin-section-heading"><div><h2>أقسام الإدارة</h2><p>اختر القسم الذي تريد إدارته.</p></div><span class="admin-muted">المحتوى والمظهر</span></div>
   <div class="admin-feature-grid">
     <button type="button" class="admin-feature" data-admin-section="cards"><span class="admin-feature-top"><span class="admin-feature-icon" aria-hidden="true">▦</span><span class="admin-badge is-ready">متاح الآن</span></span><strong>البطاقات الأساسية</strong><span>أسماء البطاقات، ترتيبها الافتراضي، وتثبيتها في مواضع محددة.</span><span class="admin-feature-action">إدارة البطاقات <span aria-hidden="true">←</span></span></button>
-    <button type="button" class="admin-feature" data-admin-section="images"><span class="admin-feature-top"><span class="admin-feature-icon" aria-hidden="true">▧</span><span class="admin-badge">مخطط له</span></span><strong>صور الواجهة</strong><span>إضافة الصور وترتيبها، والتحكم بتشغيل التدوير التلقائي أو إيقافه.</span><span class="admin-feature-action">استعراض القسم <span aria-hidden="true">←</span></span></button>
+    <button type="button" class="admin-feature" data-admin-section="images"><span class="admin-feature-top"><span class="admin-feature-icon" aria-hidden="true">▧</span><span class="admin-badge is-ready">متاح الآن</span></span><strong>صور الواجهة</strong><span>إضافة الصور وترتيبها، والتحكم بتشغيل التدوير التلقائي أو إيقافه.</span><span class="admin-feature-action">استعراض القسم <span aria-hidden="true">←</span></span></button>
     <button type="button" class="admin-feature" data-admin-section="themes"><span class="admin-feature-top"><span class="admin-feature-icon" aria-hidden="true">◐</span><span class="admin-badge">مخطط له</span></span><strong>الثيمات والمظهر</strong><span>إضافة ثيمات وإدارة مظهر البوابة والثيم الافتراضي للمستخدمين.</span><span class="admin-feature-action">استعراض القسم <span aria-hidden="true">←</span></span></button>
   </div>
 </section>
@@ -19,12 +20,11 @@
   <div class="admin-panel"><div class="admin-panel-header"><div><h2>إعدادات البطاقات</h2><p>عدّل الاسم والموضع، ثم احفظ تغييرات كل بطاقة على حدة.</p></div><span class="admin-badge is-ready">إعدادات مشتركة</span></div><div id="admin-cards"></div></div>
   <aside class="admin-help"><span aria-hidden="true">ⓘ</span><div><h3>كيف يعمل ترتيب البطاقات؟</h3><p>الموضع يبدأ من 1. البطاقة الثابتة تبقى في الموضع الذي تحدّده، أما المتحركة فيمكن للمستخدم إعادة ترتيبها. يحتفظ المستخدم بترتيبه المحفوظ للبطاقات المتحركة.</p><p>إذا كان الموضع مشغولًا ببطاقة ثابتة، غيّر موضعها أو ألغ تثبيتها أولًا.</p></div></aside>
 </section>
-<section data-admin-panel="images" aria-label="صور الواجهة" hidden>
-  <div class="admin-planned"><div class="admin-planned-symbol" aria-hidden="true">▧</div><span class="admin-badge">مخطط له · غير مفعّل بعد</span><h2>واجهة تتجدد بصورك.</h2><p>سيُضاف هنا قسم لإدارة صور الواجهة، مع التحكم في ترتيبها وطريقة عرضها.</p><div class="admin-planned-options"><article><span aria-hidden="true">＋</span><h3>إضافة الصور</h3><p>رفع الصور واختيار الصور التي تظهر في البوابة.</p></article><article><span aria-hidden="true">↔</span><h3>ترتيب العرض</h3><p>تحديد ترتيب الصور وإدارة الصور النشطة.</p></article><article><span aria-hidden="true">↻</span><h3>التدوير التلقائي</h3><p>تشغيل التدوير أو إيقافه لعرض صورة ثابتة.</p></article></div><p class="admin-planned-note">هذا القسم يوضح النطاق القادم؛ رفع الصور وإعدادات التدوير لم تُنفّذ بعد.</p></div>
-</section>
+@await Html.PartialAsync("_Images")
 <section data-admin-panel="themes" aria-label="الثيمات والمظهر" hidden>
   <div class="admin-planned"><div class="admin-planned-symbol" aria-hidden="true">◐</div><span class="admin-badge">مخطط له · غير مفعّل بعد</span><h2>مظهر يناسب بوابتك.</h2><p>سيُضاف هنا قسم لإدارة الثيمات المتاحة للمستخدمين وتحديد المظهر الافتراضي.</p><div class="admin-planned-options"><article><span aria-hidden="true">＋</span><h3>إضافة ثيمة</h3><p>إعداد ثيمة جديدة ضمن إمكانات التصميم المعتمدة.</p></article><article><span aria-hidden="true">◐</span><h3>إدارة المظهر</h3><p>تعديل أسماء الثيمات وتنظيم الخيارات المتاحة.</p></article><article><span aria-hidden="true">✓</span><h3>الثيم الافتراضي</h3><p>تحديد المظهر الافتراضي وتفعيل الثيمات.</p></article></div><p class="admin-planned-note">هذا القسم يوضح النطاق القادم؛ إنشاء الثيمات وإدارتها من هذه الصفحة لم يُنفّذا بعد.</p></div>
 </section>
 @section Scripts {
+  <script src="@Url.Content("~/js/admin-images.js")" asp-append-version="true"></script>
   <script src="@Url.Content("~/js/admin-cards.js")" asp-append-version="true"></script>
 }

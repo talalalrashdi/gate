@@ -142,7 +142,7 @@ for (const oldThemeFile of ['theme-majestic.css', 'theme-formal.css', 'theme-nat
   await request('css/' + oldThemeFile, 404);
 await request('js/design-b.js', 404);
 for (const removed of cleanup.removed) await request(removed.path, 404);
-for (const resource of ['css/profile.css', 'js/theme-settings.js', 'js/workspace-settings.js', 'js/workspace-policy.js', 'js/admin-access.js', 'js/admin-cards.js', 'js/email.js', 'css/admin-cards.css', 'vendor/iconsax/icons.css', ...['eot','woff2','woff','ttf','svg'].map(extension => `vendor/iconsax/files/iconsax.${extension}`)]) {
+for (const resource of ['css/profile.css', 'js/theme-settings.js', 'js/workspace-settings.js', 'js/workspace-policy.js', 'js/admin-access.js', 'js/admin-cards.js', 'js/email.js', 'css/admin-cards.css', 'css/admin.css', 'js/admin-navigation.js', 'vendor/iconsax/icons.css', ...['eot','woff2','woff','ttf','svg'].map(extension => `vendor/iconsax/files/iconsax.${extension}`)]) {
   const response = await request(resource);
   const actual = Buffer.from(await response.arrayBuffer());
   const expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot', resource));

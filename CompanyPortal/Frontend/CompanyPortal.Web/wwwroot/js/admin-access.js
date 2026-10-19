@@ -10,7 +10,7 @@
       const link = document.createElement('a');
       link.className = 'portal-theme-trigger portal-admin-link';
       link.setAttribute('aria-label', 'إدارة البوابة'); link.title = 'إدارة البوابة';
-      link.href = new URL('admin/cards', document.baseURI).href;
+      link.href = new URL('admin', document.baseURI).href;
       const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       for (const [name, value] of Object.entries({ viewBox:'0 0 24 24', width:'20', height:'20', fill:'none', stroke:'currentColor', 'stroke-width':'1.7', 'stroke-linecap':'round', 'stroke-linejoin':'round', 'aria-hidden':'true' })) svg.setAttribute(name, value);
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');

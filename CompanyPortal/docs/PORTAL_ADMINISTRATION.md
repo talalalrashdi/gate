@@ -1,6 +1,6 @@
 # Portal administration
 
-The portal header now displays a shield/check admin icon immediately beside the theme button, only after `/api/access` confirms `isAdmin: true`. It opens `/admin/cards`; the former workspace-toolbar admin text link has been removed. Failed/denied lookups leave the icon absent. Notices and alerts start hidden and can be shown with the existing bell toggle; no storage keys or visibility persistence were introduced.
+The portal header now displays a shield/check admin icon immediately beside the theme button, only after `/api/access` confirms `isAdmin: true`. It opens `/admin`; the former workspace-toolbar admin text link has been removed. Failed/denied lookups leave the icon absent. Notices and alerts start hidden and can be shown with the existing bell toggle; no storage keys or visibility persistence were introduced.
 
 Implemented 19 October 2026. `/admin/cards` manages existing active master cards: display name, one-based default order and fixed/movable policy. It does not create/delete master cards, manage app grants, edit themes or grant roles.
 
@@ -12,7 +12,7 @@ Users and roles remain in the external security database. Replace the role proce
 
 Every admin read/write resolves the user and checks current roles; there is no role cache. Inactive/unregistered users or missing roles receive 403; lookup failures yield 503 and never grant access. Anonymous API requests receive 401. Revocation takes effect on the next request; an already in-flight request may complete.
 
-MVC serves a public HTML shell containing no protected card data. The browser calls the API with the visitor's Windows credentials; MVC's process identity is not used to authorize the visitor. The portal displays an `إدارة البطاقات` link only when the capability lookup succeeds. The API remains the authorization boundary.
+MVC serves a public HTML shell containing no protected card data. The browser calls the API with the visitor's Windows credentials; MVC's process identity is not used to authorize the visitor. The portal displays the admin icon only when the capability lookup succeeds. The API remains the authorization boundary.
 
 ## Endpoints and data
 
@@ -38,7 +38,7 @@ After existing scripts through 011, run in order with your development Windows S
 
 Development/003 creates SecurityDB Roles/UserRoles with identity keys, explicit nvarchar lengths, Active default 1 and LastChangeAt default GETDATE(). It explicitly assigns CompanyPortal.Admin to the existing sample user matching ORIGINAL_LOGIN(), not every employee. Reruns do not reactivate inactive existing grants. No role-management HTTP endpoint is included.
 
-Start both solutions and visit `http://localhost:5080/admin/cards`, or follow the portal's admin link. Swagger lists the API endpoints, subject to the same permissions.
+Start both solutions and visit `http://localhost:5080/admin`, or follow the portal's admin link. Swagger lists the API endpoints, subject to the same permissions.
 
 ## Internal / air-gapped deployment
 
@@ -57,3 +57,13 @@ Use existing Windows authentication, HTTPS, exact frontend CORS origins and envi
 - Frontend parity: 328 original files unchanged, six existing routes and 313 original static resources verified; portal scripts now include the admin-capability check. Workspace synchronization checks passed.
 
 The test temporarily changes shared master-card settings. Run only against an isolated development API/database with no concurrent editing. `-TestSampleRevocation` additionally changes the current local sample role grant; omit it to skip grant changes.
+
+## Administration layout
+
+The Arabic/RTL admin area has its own shared `_AdminLayout`, local fonts and responsive green sidebar, independent of employee-portal header styles. `/admin` opens the overview; `/admin/cards` opens card management directly. Section navigation uses URL fragments and supports browser back navigation.
+
+The overview shows actual active/fixed/movable card counts after the protected catalog loads. The card editor has explicit labels, fixed/movable switches, unsaved-change indicators and per-card save buttons. Saving one row preserves unsaved edits in other rows. Authentication failures hide the workspace and leave section buttons disabled; the API remains the authorization boundary.
+
+Image management and theme creation currently have clearly labelled planned sections only. They describe future image upload/order/activation, automatic rotation on/off, and theme creation/default selection. No upload, rotation or theme-administration backend was added by this visual redesign.
+
+Redesign verification: frontend Release build passed with zero warnings/errors; JavaScript syntax checks passed. Actual desktop browser checked section navigation, saved/restored a card name and confirmed another row's draft survived the save. Mobile layout checked at 390px without document overflow. Existing master-card names, order and fixed policy were restored.

@@ -1,5 +1,7 @@
 # CompanyPortal
 
+Master-card administration is available at `/admin/cards`, backed by the external `CompanyPortal.Admin` role. See [setup, permissions and verification](docs/PORTAL_ADMINISTRATION.md).
+
 ASP.NET Core MVC frontend and a separate .NET 10 Web API foundation. Open `Frontend/CompanyPortal.Frontend.slnx` for the portal or `Backend/CompanyPortal.Backend.slnx` for the API. See the [API run instructions](Backend/README.md), [API/Exchange decisions](docs/API_FOUNDATION.md) and [frontend → API → SQL connection check](docs/CONNECTION_CHECK.md).
 
 The current [theme catalog implementation](docs/MASTER_THEMES.md) separates stable ThemeId, editable ThemeName and LayoutKey. Migration 007 was applied locally by the user; direct SQL reads and constraint checks passed on 19 October 2026. Other environments require the migration before running the updated API. Code checks passed; Authenticated API save/read, validation and timestamp checks passed on 19 October 2026; ThemeId 1 was restored and verified in SQL. Migration rerun and browser/IIS acceptance remain pending.

@@ -1,5 +1,7 @@
 # CompanyPortal database deployment
 
+For administration, apply `Scripts/012_MasterCardAdministration.sql` after 011 and configure `Security.UserRoles_get` against the real effective-role source. Local development only: `Development/003_CreateSampleRoles.sql`, then `Integration/ConfigureRoleLookup.sample.sql`, provides an explicit sample admin grant. Never deploy development grants internally. See [administration setup](../../docs/PORTAL_ADMINISTRATION.md).
+
 Follow the [database general rules](../../docs/DATABASE_GENERAL_RULES.md) when designing tables, including string lengths, identity, Active/date columns and NTName → UserId lookup.
 
 The current code introduces [Master.Themes and ThemeId selection](../../docs/MASTER_THEMES.md). Migration `007_MasterThemes.sql` was applied by the user and direct SQL reads/constraint checks passed on 19 October 2026. Authenticated API save/read, validation and timestamp checks passed on 19 October 2026; ThemeId 1 was restored and verified in SQL. Migration rerun and browser/IIS acceptance remain pending. Apply it on other databases before running the new API code. Read the linked deployment and validation steps; Arabic seed labels require UTF-8 input (`sqlcmd -f 65001`).

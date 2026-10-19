@@ -1,0 +1,13 @@
+.portal-admin { background:#f5f1ea; color:#263c36; margin:0; }
+.admin-content { max-width:960px; margin:32px auto; padding:24px; }
+.admin-content h1 { font-size:1.7rem; }
+.admin-content p { line-height:1.9; }
+.admin-card { display:flex; flex-wrap:wrap; align-items:end; gap:20px; margin:16px 0; padding:24px; background:#fff; border:1px solid #d5ded8; border-radius:12px; }
+.admin-card label { display:flex; flex-direction:column; gap:8px; }
+.admin-card input { font:inherit; padding:8px; border:1px solid #a3b1a9; border-radius:5px; max-width:100%; box-sizing:border-box; }
+.admin-card input[type=number] { width:90px; }
+.admin-card .admin-fixed { flex-direction:row; align-items:center; padding:8px 0; }
+.admin-card button { font:inherit; padding:9px 22px; background:#225647; color:#fff !important; border:0; border-radius:5px; cursor:pointer; }
+.admin-card button:disabled { opacity:.55; cursor:wait; }
+.admin-card input:focus-visible,.admin-card button:focus-visible { outline:3px solid #b68e45; outline-offset:3px; }
+@media(max-width:600px) { .admin-content { margin:0; padding:16px; } .admin-card label:first-child { width:100%; } }

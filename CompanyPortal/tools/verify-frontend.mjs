@@ -78,7 +78,7 @@ for (const route of ['', 'index.html', 'design-b.html']) {
   const buttons = [...html.matchAll(/<button[^>]*data-theme-option="([^"]+)"[^>]*>(\d)<\/button>/g)];
   assert.deepEqual(buttons.map(button => [button[1], button[2]]), [['official', '1'], ['work', '2'], ['national-day', '3']], 'Visible theme mapping');
   const scripts = [...html.matchAll(/<script\b[^>]*src="([^"]+)"[^>]*><\/script>/g)].map(match => match[1].split('?')[0]);
-  assert.deepEqual(scripts, [...baseline.portalScripts.flatMap(file => { const script = mount + '/' + migratedPath(file.slice(2)); return script.endsWith('/workspace-order.js') ? [mount + '/js/workspace-policy.js', script] : [script]; }), mount + '/js/theme-settings.js', mount + '/js/workspace-settings.js'], 'Original script order and appended account persistence');
+  assert.deepEqual(scripts, [...baseline.portalScripts.flatMap(file => { const script = mount + '/' + migratedPath(file.slice(2)); return script.endsWith('/workspace-order.js') ? [mount + '/js/workspace-policy.js', script] : [script]; }), mount + '/js/theme-settings.js', mount + '/js/workspace-settings.js', mount + '/js/admin-access.js'], 'Original script order and appended account persistence/admin access');
   assert.ok(html.indexOf('id="personal-announcement-dialog"') < html.indexOf(`src="${mount}/js/personal-workspace.js"`), 'Dialog markup must exist before initialization');
 }
 for (const route of ['profile', 'profile/', 'user-profile.html']) {
@@ -136,7 +136,7 @@ for (const oldThemeFile of ['theme-majestic.css', 'theme-formal.css', 'theme-nat
   await request('css/' + oldThemeFile, 404);
 await request('js/design-b.js', 404);
 for (const removed of cleanup.removed) await request(removed.path, 404);
-for (const resource of ['css/profile.css', 'js/theme-settings.js', 'js/workspace-settings.js', 'js/workspace-policy.js', 'vendor/iconsax/icons.css', ...['eot','woff2','woff','ttf','svg'].map(extension => `vendor/iconsax/files/iconsax.${extension}`)]) {
+for (const resource of ['css/profile.css', 'js/theme-settings.js', 'js/workspace-settings.js', 'js/workspace-policy.js', 'js/admin-access.js', 'js/admin-cards.js', 'css/admin-cards.css', 'vendor/iconsax/icons.css', ...['eot','woff2','woff','ttf','svg'].map(extension => `vendor/iconsax/files/iconsax.${extension}`)]) {
   const response = await request(resource);
   const actual = Buffer.from(await response.arrayBuffer());
   const expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot', resource));
@@ -154,7 +154,7 @@ console.log(JSON.stringify({
   matchingStaticResources: resources.length,
   resolvedCssReferences: cssReferences,
   orderedPortalStyles: baseline.portalStyles.length,
-  orderedPortalScripts: baseline.portalScripts.length + 3,
+  orderedPortalScripts: baseline.portalScripts.length + 4,
   apiAndViteReviewNotExposed: true,
   browserInteractionsTested: false
 }, null, 2));

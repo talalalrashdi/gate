@@ -1,0 +1,21 @@
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["BodyClass"] = "portal-admin";
+}
+@section Metadata {
+  <meta name="companyportal-api-base" content="@(Configuration["Api:BaseUrl"] ?? Url.Content("~/"))">
+}
+@section Styles {
+  <link rel="stylesheet" href="@Url.Content("~/css/admin-cards.css")" asp-append-version="true">
+}
+<main class="admin-content">
+  <a href="@Url.Content("~/")">العودة إلى البوابة</a>
+  <h1>إدارة البطاقات الأساسية</h1>
+  <p>تطبق هذه الإعدادات على جميع المستخدمين. الموضع يبدأ من 1؛ البطاقة الثابتة تبقى في موضعها، وترتيب البطاقة المتحركة هو ترتيبها الافتراضي للمستخدم الجديد. يحتفظ المستخدم بترتيبه المحفوظ للبطاقات المتحركة.</p>
+  <p>إذا شغلت بطاقة ثابتة الموضع المطلوب، غيّر موضعها أو ألغ تثبيتها أولاً. احفظ كل بطاقة على حدة.</p>
+  <p id="admin-status" role="status" aria-live="polite">جارٍ التحقق من الصلاحية…</p>
+  <div id="admin-cards"></div>
+</main>
+@section Scripts {
+  <script src="@Url.Content("~/js/admin-cards.js")" asp-append-version="true"></script>
+}

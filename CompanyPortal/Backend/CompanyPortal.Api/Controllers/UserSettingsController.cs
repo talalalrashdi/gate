@@ -12,9 +12,6 @@ namespace CompanyPortal.Api.Controllers;
 public sealed class UserSettingsController(UserSettingsStore settings, IConfiguration configuration,
     ILogger<UserSettingsController> logger) : ControllerBase
 {
-    // 1 الرسمي: official; 2 العملي: work; 3 اليوم الوطني: national-day.
-    private static readonly string[] Themes = ["official", "work", "national-day"];
-
     [HttpGet]
     [ProducesResponseType<ThemeSettingsResponse>(StatusCodes.Status200OK)]
     public async Task<ActionResult<ThemeSettingsResponse>> Get(CancellationToken cancellationToken)
@@ -27,7 +24,7 @@ public sealed class UserSettingsController(UserSettingsStore settings, IConfigur
             var result = await settings.GetThemeAsync(name, cancellationToken);
             return result is null ? Unregistered() : Ok(result);
         }
-        catch (SqlException exception) { return DatabaseFailure(exception); }
+        catch (Exception exception) when (exception is SqlException or InvalidOperationException) { return DatabaseFailure(exception); }
     }
 
     [HttpPut]
@@ -47,26 +44,26 @@ public sealed class UserSettingsController(UserSettingsStore settings, IConfigur
         var sameOrigin = $"{Request.Scheme}://{Request.Host}";
         if (origin.Length > 0 && origin != sameOrigin && !allowedOrigins.Contains(origin, StringComparer.Ordinal))
             return Problem(statusCode: 403, title: "Origin is not permitted.");
-        if (!Themes.Contains(request.ThemeName, StringComparer.Ordinal))
-        {
-            ModelState.AddModelError(nameof(request.ThemeName), "Choose official, work or national-day.");
-            return ValidationProblem(ModelState);
-        }
         var name = User.Identity?.Name;
         if (string.IsNullOrWhiteSpace(name) || name.Length > 512) return Unauthorized();
         try
         {
-            return await settings.SaveThemeAsync(name, request.ThemeName, cancellationToken)
+            return await settings.SaveThemeAsync(name, request.ThemeId, cancellationToken)
                 ? NoContent() : Unregistered();
         }
-        catch (SqlException exception) { return DatabaseFailure(exception); }
+        catch (SqlException exception) when (exception.Number == 50002)
+        {
+            ModelState.AddModelError(nameof(request.ThemeId), "Select an available theme.");
+            return ValidationProblem(ModelState);
+        }
+        catch (Exception exception) when (exception is SqlException or InvalidOperationException) { return DatabaseFailure(exception); }
     }
 
     private ObjectResult Unregistered() => Problem(statusCode: 403,
         title: "User is not registered or is inactive.",
         detail: "Contact the administrator to register your Windows account in the security database.");
 
-    private ObjectResult DatabaseFailure(SqlException exception)
+    private ObjectResult DatabaseFailure(Exception exception)
     {
         logger.LogError(exception, "Theme settings database operation failed.");
         return Problem(statusCode: 503, title: "Theme settings are temporarily unavailable.");

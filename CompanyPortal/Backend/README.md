@@ -17,6 +17,7 @@ The default Project profile uses `http://localhost:5081` on loopback so the init
 | `/health` | Process liveness (`Healthy`), visible in Swagger; does not check SQL Server, Exchange, or AD availability |
 | `/api/me` | Requires Windows authentication; returns account name, SID when supplied by Windows, and authentication type; response is not cached |
 | `/api/diagnostics/database` | Development only; requires Windows authentication and queries the configured SQL database with Dapper |
+| `/api/themes` | Windows-authenticated active theme catalog; stable IDs, display labels and layout keys |
 | `/api/user-settings/theme` | Windows-authenticated GET/PUT for the employee's theme, resolved through the external security database |
 | `/swagger` | Development only, Swagger UI; same-origin Windows authentication |
 | `/swagger/v1/swagger.json` | Development only, generated Swagger document |
@@ -47,7 +48,7 @@ The script checks anonymous rejection, actual Windows identity, local Swagger as
 
 Add feature-specific data/services/integration classes when implementing real features. No empty repository/service layers, template WeatherForecast endpoints or sample business data are included. Built-in logging and Problem Details handle diagnostics/errors. Configure a retained log destination during IIS deployment; the application does not create its own file logging subsystem.
 
-Windows authentication, Swagger, Dapper and Microsoft.Data.SqlClient are installed. The database access is currently a read-only connection check, not a business feature. EF Core and the Microsoft.AspNetCore.OpenApi generator are excluded. Swashbuckle uses the OpenAPI specification and its own Microsoft.OpenApi dependency internally. See the [connection check](../docs/CONNECTION_CHECK.md) for the MVC → API → SQL test and configuration.
+Windows authentication, Swagger, Dapper and Microsoft.Data.SqlClient are installed. Database access includes the connection diagnostic and employee theme settings through stored procedures. EF Core and the Microsoft.AspNetCore.OpenApi generator are excluded. Swashbuckle uses the OpenAPI specification and its own Microsoft.OpenApi dependency internally. See the [connection check](../docs/CONNECTION_CHECK.md) for the MVC → API → SQL test and configuration.
 
 ## IIS
 
@@ -59,7 +60,7 @@ dotnet publish CompanyPortal.Api --configuration Release --no-restore --output a
 
 Install the matching .NET 10 Hosting Bundle and IIS Windows Authentication feature. Create a separate application/app pool (No Managed Code); enable Windows Authentication, disable Anonymous Authentication, configure HTTPS and the approved host binding, and keep the environment `Production`. `launchSettings.json` configures local launch profiles only; it does not configure production IIS authentication. `/swagger` and its document are unavailable in Production. A Windows-authenticated request can verify their absence; an anonymous request can receive 401 from the authorization policy or IIS first.
 
-No CORS policy is configured. A Development-only MVC connection check now calls the API using the MVC process/service identity; the two solutions remain independently buildable. Before employee-specific features are connected, choose the identity flow: a server-to-server request does not automatically forward the employee's Windows identity. Kerberos delegation and Exchange access require explicit infrastructure configuration; do not substitute the app-pool account for the employee or trust an account name supplied by the client. Mutating browser endpoints will also need an explicit CSRF protection strategy before introduction.
+Employee theme requests go directly from the browser to the API with Windows credentials. Configure exact credentialed CORS origins and the browser-reachable API URL; PUT requires JSON, the custom request header and Origin validation. The separate MVC connection diagnostic uses process credentials. See [theme deployment configuration](../docs/THEME_SETTINGS.md). Exchange delegation remains a separate infrastructure step.
 
 ## Offline delivery
 
@@ -79,5 +80,7 @@ dotnet build CompanyPortal.Backend.slnx --no-restore
 `NuGetAudit=false` is only for that disconnected restore because vulnerability metadata requires a reachable audit service; it does not replace the connected audit. Repeat export/audit when dependencies change. Framework-dependent publish includes application libraries, but the destination still needs the ASP.NET Core runtime/Hosting Bundle. Publish for the intended architecture if using RID-specific or self-contained deployment later. Keep secrets out of source, exported packages and appsettings; configure future connection secrets through deployment configuration.
 
 ## Next steps
+
+The current [theme catalog and ThemeId contracts](../docs/MASTER_THEMES.md) require migration 007, which the user applied locally. Direct SQL reads and constraint checks passed on 19 October 2026. Code builds and automated JavaScript checks passed; Authenticated API save/read, validation and timestamp checks passed on 19 October 2026; ThemeId 1 was restored and verified in SQL. Migration rerun and browser/IIS acceptance remain pending.
 
 The first employee feature is [theme settings](../docs/THEME_SETTINGS.md), using external NTName → UserId lookup and `Portal.UserSettings`. Its local-only sample SecurityDB and internal mapping/permission requirements are documented there. After setup, run `powershell -File tools/Test-ThemeSettings.ps1` with Windows PowerShell and a registered test account. It saves/restores that account's theme; if no setting existed, it leaves a row containing the original default. Other preferences and Exchange integration remain separate steps.

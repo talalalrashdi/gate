@@ -1,5 +1,7 @@
 # Employee theme settings
 
+> Current catalog/ThemeId implementation and pending migration 007 are documented in [Master themes](MASTER_THEMES.md). The ThemeName schema/API examples below describe the historical implementation through migration 006; use the new document for current contracts. Identity and environment configuration below still apply.
+
 Implemented: 18 October 2026. This first feature saves only the employee's selected theme. It does not integrate Exchange, import browser tasks, or introduce other preferences.
 
 ## Data and schemas

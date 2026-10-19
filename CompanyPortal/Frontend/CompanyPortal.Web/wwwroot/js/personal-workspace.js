@@ -91,7 +91,7 @@
   const defaultTheme = 'official';
   // Start CompanyPortal with its new default without overwriting the original portal preference.
   const themePreferenceKey = 'companyportal-opening-theme-v2';
-  function selectTheme(option) {
+  function selectTheme(option, themeName) {
     option = Object.hasOwn(themes, option) && byId(themes[option].panel) ? option : defaultTheme;
     const selected = themes[option];
     section.dataset.theme = selected.theme;
@@ -128,13 +128,18 @@
     if (byId('personal-calendar-title')) byId('personal-calendar-title').textContent = option === 'work' ? 'برنامج اليوم' : 'تقويم الأعمال';
     floatingCalendar?.showPopover?.();
     section.setAttribute('aria-labelledby', selected.labelledBy);
-    byId('personal-theme-name').textContent = selected.label;
+    byId('personal-theme-name').textContent = themeName || selected.label;
     save(themePreferenceKey, option);
     syncOfficialPlayback();
     document.dispatchEvent(new CustomEvent('companyportal:theme-change', { detail: { theme: selected.theme } }));
   }
   const themeMenu = byId('portal-theme-options')?.closest('details');
   themeButtons.forEach(button => button.addEventListener('click', () => { selectTheme(button.dataset.themeOption); if (themeMenu) themeMenu.open = false; }));
+  // The API identifies themes by ThemeId; this bridge only selects a supported layout.
+  document.addEventListener('companyportal:theme-select', event => {
+    if (Object.hasOwn(themes, event.detail?.layoutKey))
+      selectTheme(event.detail.layoutKey, event.detail.themeName);
+  });
   function showOfficialScene(index) {
     sceneIndex = index;
     const scene = sceneImages[index]?.dataset.officialImage;

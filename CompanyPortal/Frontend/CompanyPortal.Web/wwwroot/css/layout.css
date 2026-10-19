@@ -1,4 +1,5 @@
 /* CompanyPortal layout refinements: stable header and compact business workspace. */
+.portal-theme-catalog { flex-wrap: wrap; gap: 4px; }
 .portal-dashboard .systems-section[hidden] { display: none !important; }
 .portal-header,
 .portal-header.is-scrolled {

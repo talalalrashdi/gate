@@ -3,11 +3,12 @@ using System.Text.Json.Serialization;
 
 namespace CompanyPortal.Api.Contracts;
 
-public sealed record ThemeSettingsResponse(string ThemeName, bool IsSaved, DateTime? LastChangeAt);
+public sealed record ThemeDefinition(int ThemeId, string ThemeName, string LayoutKey, int DisplayOrder, bool IsDefault);
+public sealed record ThemeSettingsResponse(int ThemeId, string ThemeName, string LayoutKey, bool IsSaved, DateTime? LastChangeAt);
 
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class SaveThemeRequest
 {
-    [Required, StringLength(50)]
-    public string ThemeName { get; init; } = string.Empty;
+    [Range(1, int.MaxValue)]
+    public int ThemeId { get; init; }
 }

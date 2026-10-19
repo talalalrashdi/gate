@@ -14,9 +14,13 @@ Accept: application/json
 ### Current employee's theme; requires Windows credentials
 GET {{baseUrl}}/api/user-settings/theme
 
+### Available active themes, ordered by DisplayOrder (requires Windows credentials)
+GET {{baseUrl}}/api/themes
+
 ### Save current employee's theme (no UserId/NTName in the body)
+# Replace 2 with an actual themeId from GET /api/themes; display order is not the ID.
 PUT {{baseUrl}}/api/user-settings/theme
 Content-Type: application/json
 X-CompanyPortal-Request: theme
 
-{"themeName":"work"}
+{"themeId":2}

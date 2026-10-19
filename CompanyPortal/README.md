@@ -2,6 +2,8 @@
 
 ASP.NET Core MVC frontend and a separate .NET 10 Web API foundation. Open `Frontend/CompanyPortal.Frontend.slnx` for the portal or `Backend/CompanyPortal.Backend.slnx` for the API. See the [API run instructions](Backend/README.md), [API/Exchange decisions](docs/API_FOUNDATION.md) and [frontend → API → SQL connection check](docs/CONNECTION_CHECK.md).
 
+The current [theme catalog implementation](docs/MASTER_THEMES.md) separates stable ThemeId, editable ThemeName and LayoutKey. Migration 007 was applied locally by the user; direct SQL reads and constraint checks passed on 19 October 2026. Other environments require the migration before running the updated API. Code checks passed; Authenticated API save/read, validation and timestamp checks passed on 19 October 2026; ThemeId 1 was restored and verified in SQL. Migration rerun and browser/IIS acceptance remain pending.
+
 The first employee feature now saves the selected theme through the API using the employee's Windows identity and external SecurityDB UserId. See [theme settings setup and deployment](docs/THEME_SETTINGS.md); sample SecurityDB creation is development-only.
 
 ## Current migration stage
@@ -30,7 +32,7 @@ Run .NET commands from `Frontend/` so its `global.json` SDK selection applies.
 
 Open `http://127.0.0.1:5080/` for the portal and `http://127.0.0.1:5080/profile` for the profile page. Old `/index.html` and `/user-profile.html` links also resolve through MVC; `/design-b.html` redirects to `/` and preserves the query string.
 
-The frontend local development profile intentionally uses HTTP on loopback. Its Development-only `/diagnostics/connection` page now checks MVC → Windows-authenticated API → SQL. Employee-specific API features/authentication are not connected; existing employee/business content remains illustrative. See [the connection check instructions](docs/CONNECTION_CHECK.md).
+The frontend local development profile intentionally uses HTTP on loopback. Its Development-only `/diagnostics/connection` page now checks MVC → Windows-authenticated API → SQL. Theme settings use direct browser-to-API Windows authentication; other employee/business content remains illustrative. See [the connection check instructions](docs/CONNECTION_CHECK.md).
 
 ## Browser data
 
@@ -71,6 +73,7 @@ With MVC running, execute from this directory:
 ```powershell
 node tools/verify-frontend.mjs
 node tools/verify-theme-selection.mjs
+node tools/verify-theme-catalog.mjs
 node tools/verify-offline-assets.mjs
 ```
 
@@ -94,6 +97,6 @@ See [IIS and offline deployment](docs/IIS_AND_OFFLINE_DEPLOYMENT.md) for prerequ
 
 ## Next steps
 
-1. Verify portal/profile appearance and existing interactions on desktop/mobile, including visible themes 1/2/3 and storage behavior. Theme 1 (`majestic`) is the default.
+1. Verify portal/profile appearance and existing interactions on desktop/mobile, including visible themes 1/2/3 and storage behavior. Theme 1 الرسمي (`official` layout) is the initial default.
 2. Complete the offline browser and actual internal IIS acceptance checks.
 3. Retire/archive legacy files outside `CompanyPortal` only after frontend acceptance is confirmed. Continue the authorized API milestone using [the backend plan](docs/API_FOUNDATION.md).

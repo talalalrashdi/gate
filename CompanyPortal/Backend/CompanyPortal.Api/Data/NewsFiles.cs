@@ -1,17 +1,15 @@
 namespace CompanyPortal.Api.Data;
 
 // File roots must be trusted, read-only for portal employees, and readable by the API identity.
-public sealed class NewsFiles(IConfiguration configuration, IHostEnvironment environment)
+public sealed class NewsFiles(FolderPathsStore folders)
 {
     public async Task<(FileStream Stream, string ContentType)?> OpenAsync(string path, bool pdf, CancellationToken token)
     {
-        var roots = configuration.GetSection("News:AllowedRoots").Get<string[]>() ?? [];
-        if (roots.Length == 0) throw new InvalidOperationException("Configure News:AllowedRoots before serving news files.");
+        var roots = await folders.GetAsync("PubsInfo", token);
         if (!Path.IsPathFullyQualified(path)) return null;
         var fullPath = Path.GetFullPath(path);
         var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-        if (!roots.Any(root => !string.IsNullOrWhiteSpace(root)
-            && fullPath.StartsWith(Path.TrimEndingDirectorySeparator(Path.GetFullPath(root, environment.ContentRootPath)) + Path.DirectorySeparatorChar, comparison))) return null;
+        if (!roots.Any(root => fullPath.StartsWith(Path.TrimEndingDirectorySeparator(Path.GetFullPath(root)) + Path.DirectorySeparatorChar, comparison))) return null;
         // Reject alternate data streams, device paths and reparse points (including parent directories).
         if (OperatingSystem.IsWindows() && (fullPath.StartsWith(@"\\?\", StringComparison.Ordinal)
             || fullPath.StartsWith(@"\\.\", StringComparison.Ordinal)

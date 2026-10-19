@@ -23,4 +23,6 @@ $sqlRoot=$newsRoot.Replace("'","''")
 $env:NewsRoot=$sqlRoot
 & sqlcmd -S localhost -E -b -I -f 65001 -i (Join-Path $backend 'Database\Development\004_CreateSampleNews.sql')
 if ($LASTEXITCODE -ne 0) { throw 'News fixture SQL setup failed.' }
+& sqlcmd -S localhost -E -b -I -f 65001 -i (Join-Path $backend 'Database\Development\005_ConfigureSampleNewsFolder.sql')
+if ($LASTEXITCODE -ne 0) { throw 'News fixture folder setup failed. Apply migration014 first.' }
 Write-Output "Local fixture files: $newsRoot"

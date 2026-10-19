@@ -15,6 +15,7 @@ builder.Services.AddScoped<UserCardsStore>();
 builder.Services.AddScoped<AdministrationStore>();
 builder.Services.AddScoped<NewsStore>();
 builder.Services.AddScoped<NewsFiles>();
+builder.Services.AddScoped<FolderPathsStore>();
 builder.Services.AddScoped<MailIdentityStore>();
 builder.Services.AddScoped<MailSessionFactory>();
 builder.Services.AddSingleton<MailStreamLimits>();

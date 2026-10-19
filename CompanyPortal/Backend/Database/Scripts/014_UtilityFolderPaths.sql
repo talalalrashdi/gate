@@ -1,0 +1,27 @@
+USE [CompanyPortal];
+GO
+SET XACT_ABORT ON;
+BEGIN TRANSACTION;
+IF SCHEMA_ID(N'Mstr') IS NULL EXEC(N'CREATE SCHEMA Mstr');
+IF OBJECT_ID(N'Mstr.Utls',N'U') IS NULL
+BEGIN
+ CREATE TABLE Mstr.Utls (
+  UtlsId int IDENTITY(1,1) NOT NULL CONSTRAINT PK_Utls PRIMARY KEY,
+  [Key] nvarchar(200) NOT NULL,
+  strVal nvarchar(4000) NOT NULL,
+  Active bit NOT NULL CONSTRAINT DF_Utls_Active DEFAULT(1),
+  LastChangeAt datetime NOT NULL CONSTRAINT DF_Utls_LastChangeAt DEFAULT(GETDATE())
+ );
+END;
+COMMIT;
+GO
+CREATE OR ALTER PROCEDURE Mstr.Utls_GetFolderPaths
+AS
+BEGIN
+ SET NOCOUNT ON;
+ SELECT [Key],strVal AS [Path]
+ FROM Mstr.Utls
+ WHERE Active=1
+ ORDER BY UtlsId;
+END;
+GO

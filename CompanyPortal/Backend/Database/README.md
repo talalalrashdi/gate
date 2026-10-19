@@ -1,5 +1,7 @@
 # CompanyPortal database deployment
 
+Folder configuration now uses `Mstr.Utls` and `Mstr.Utls_GetFolderPaths` from migration014. News reads active `PubsInfo` rows; appsettings folder roots are removed. See [folder-path setup](../../docs/FOLDER_PATHS.md). Development/005 only seeds the local sample directory and is excluded from internal deployment.
+
 News uses the existing `CompanyPortal.dbo.VNews` backed by `Pubs_Info_V4`. Apply `Scripts/013_NewsRead.sql` after 012; do not deploy `Development/004_CreateSampleNews.sql` internally. Configure news file roots/read permissions separately from the connection string. See [news setup and verified assumptions](../../docs/NEWS.md).
 
 For administration, apply `Scripts/012_MasterCardAdministration.sql` after 011 and configure `Security.UserRoles_get` against the real effective-role source. Local development only: `Development/003_CreateSampleRoles.sql`, then `Integration/ConfigureRoleLookup.sample.sql`, provides an explicit sample admin grant. Never deploy development grants internally. See [administration setup](../../docs/PORTAL_ADMINISTRATION.md).

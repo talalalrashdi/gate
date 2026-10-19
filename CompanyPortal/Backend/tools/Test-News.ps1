@@ -1,4 +1,4 @@
-param([string]$BaseUrl='http://localhost:5081',[switch]$TestSampleData)
+param([string]$BaseUrl='http://localhost:5081',[switch]$TestSampleData,[switch]$TestFolderPaths)
 $ErrorActionPreference='Stop'
 function Assert($Value,[string]$Message) { if (-not $Value) { throw $Message } }
 function Request([string]$Path,[bool]$Authenticated=$true,[bool]$Range=$false) {
@@ -56,4 +56,40 @@ if ($TestSampleData) {
         if($unpublished) { & sqlcmd -S localhost -E -b -d Pubs_Info_V4 -Q "UPDATE dbo.Public_info_News SET PIN_Publish=1 WHERE PIN_ID=1;"; if($LASTEXITCODE -ne 0) { throw 'Restore sample publication failed.' } }
     }
 }
-'PASS: authenticated news, pagination, hidden physical paths, and optional sample filters/deduplication/files/ranges/conflicts/publication rechecks.'
+if ($TestFolderPaths) {
+    Assert $TestSampleData 'Folder configuration tests require -TestSampleData and the isolated local fixture.'
+    $connection=[Data.SqlClient.SqlConnection]::new('Server=localhost;Database=CompanyPortal;Integrated Security=True;Encrypt=True;TrustServerCertificate=True')
+    $connection.Open()
+    $id=$null; $otherId=$null; $original=$null
+    function FolderSql([string]$Query,[hashtable]$Values=@{}) {
+        $command=$connection.CreateCommand(); $command.CommandText=$Query
+        foreach($name in $Values.Keys) { [void]$command.Parameters.AddWithValue($name,$Values[$name]) }
+        try { $command.ExecuteScalar() } finally { $command.Dispose() }
+    }
+    try {
+        $count=FolderSql "SELECT COUNT(*) FROM Mstr.Utls WHERE [Key]=N'PubsInfo';"
+        Assert ($count -eq 1) 'Folder tests need exactly one local PubsInfo fixture row.'
+        $id=[int](FolderSql "SELECT UtlsId FROM Mstr.Utls WHERE [Key]=N'PubsInfo' AND Active=1;")
+        $original=[string](FolderSql 'SELECT strVal FROM Mstr.Utls WHERE UtlsId=@id;' @{'@id'=$id})
+        $expected=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\artifacts\news-fixture'))
+        Assert ($original -eq $expected -and $id -gt 0) 'Expected the active local fixture folder.'
+        $parent=Split-Path $original -Parent
+        $otherId=[int](FolderSql "INSERT Mstr.Utls([Key],strVal) VALUES(N'NewsFolderTest-'+CONVERT(nvarchar(36),NEWID()),@path); SELECT CONVERT(int,SCOPE_IDENTITY());" @{'@path'=$parent})
+        Assert ((Request '/api/news/9/pdf').Status -eq 404) 'Folder roots from another key were allowed for news.'
+        [void](FolderSql 'UPDATE Mstr.Utls SET Active=0,LastChangeAt=GETDATE() WHERE UtlsId=@id;' @{'@id'=$id})
+        Assert ((Request '/api/news/1/pdf').Status -eq 503) 'Missing PubsInfo roots fell back to appsettings.'
+        Assert ((Request '/api/news').Status -eq 200) 'Folder configuration broke news summaries.'
+        [void](FolderSql 'UPDATE Mstr.Utls SET Active=1,strVal=@path,LastChangeAt=GETDATE() WHERE UtlsId=@id;' @{'@id'=$id;'@path'=$parent})
+        Assert ((Request '/api/news/9/pdf').Status -eq 200) 'Updated database root was not used without restarting.'
+        [void](FolderSql 'UPDATE Mstr.Utls SET strVal=@path,LastChangeAt=GETDATE() WHERE UtlsId=@id;' @{'@id'=$id;'@path'='relative-folder'})
+        Assert ((Request '/api/news/1/pdf').Status -eq 503) 'Relative database root accepted.'
+    } finally {
+        try {
+            if($id -and $original) { [void](FolderSql 'UPDATE Mstr.Utls SET Active=1,strVal=@path,LastChangeAt=GETDATE() WHERE UtlsId=@id;' @{'@id'=$id;'@path'=$original}) }
+            if($otherId) { [void](FolderSql "DELETE Mstr.Utls WHERE UtlsId=@id AND [Key] LIKE N'NewsFolderTest-%';" @{'@id'=$otherId}) }
+        } finally { $connection.Dispose() }
+    }
+    Assert ((Request '/api/news/1/pdf').Status -eq 200) 'Original root was not restored.'
+    Assert ((Request '/api/news/9/pdf').Status -eq 404) 'Restored root no longer blocks out-of-root files.'
+}
+'PASS: authenticated news and optional sample filters/files/publication checks/database folder configuration.'

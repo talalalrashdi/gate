@@ -17,6 +17,7 @@ The default Project profile uses `http://localhost:5081` on loopback so the init
 | `/health` | Process liveness (`Healthy`), visible in Swagger; does not check SQL Server, Exchange, or AD availability |
 | `/api/me` | Requires Windows authentication; returns account name, SID when supplied by Windows, and authentication type; response is not cached |
 | `/api/diagnostics/database` | Development only; requires Windows authentication and queries the configured SQL database with Dapper |
+| `/api/user-settings/card-order` | Windows-authenticated GET/PUT for the employee's complete built-in card order |
 | `/api/themes` | Windows-authenticated active theme catalog; stable IDs, display labels and layout keys |
 | `/api/user-settings/theme` | Windows-authenticated GET/PUT for the employee's theme, resolved through the external security database |
 | `/swagger` | Development only, Swagger UI; same-origin Windows authentication |
@@ -78,6 +79,10 @@ dotnet build CompanyPortal.Backend.slnx --no-restore
 ```
 
 `NuGetAudit=false` is only for that disconnected restore because vulnerability metadata requires a reachable audit service; it does not replace the connected audit. Repeat export/audit when dependencies change. Framework-dependent publish includes application libraries, but the destination still needs the ASP.NET Core runtime/Hosting Bundle. Publish for the intended architecture if using RID-specific or self-contained deployment later. Keep secrets out of source, exported packages and appsettings; configure future connection secrets through deployment configuration.
+
+## Card order
+
+[Card order](../docs/CARD_ORDER.md) uses Master.Cards, Portal.UserCardOrder and the Portal.CardOrderInput table type. Migration 008 is applied locally; deploy it and grant procedure/type permissions before enabling the updated code elsewhere. `powershell -File tools/Test-CardOrder.ps1` verifies saves, timestamps, validation and write protection, then restores the starting order.
 
 ## Next steps
 

@@ -34,7 +34,22 @@
     let saved=true;try{localStorage.setItem(key,JSON.stringify([...workspace.querySelectorAll('[data-work-system]')].map(item=>item.dataset.workSystem)));}catch{saved=false;}
     refresh();const position=visible().indexOf(card)+1;
     if(typeof showToast==='function')showToast(`تم نقل ${card.querySelector('h2').textContent} إلى الموضع ${position.toLocaleString('ar-EG-u-nu-latn')}${saved?'':' · تعذّر حفظ الترتيب؛ متاح لهذه الجلسة فقط'}`);
+    workspace.dispatchEvent(new CustomEvent('workspace:order-changed',{detail:{cardKeys:[...workspace.querySelectorAll('[data-work-system]:not([data-work-group])')].map(item=>item.dataset.workSystem)}}));
   }
+  workspace.addEventListener('workspace:order-select',event=>{
+    const ids=event.detail?.cardKeys;
+    if(!Array.isArray(ids))return;
+    const current=[...workspace.querySelectorAll('[data-work-system]')];
+    const builtin=current.filter(card=>!card.hasAttribute('data-work-group'));
+    if(ids.length!==builtin.length||new Set(ids).size!==ids.length||ids.some(id=>!builtin.some(card=>card.dataset.workSystem===id)))return;
+    finish(false);
+    // Keep locally created groups in their slots while ordering the built-in cards.
+    let index=0;
+    const merged=current.map(card=>card.hasAttribute('data-work-group')?card.dataset.workSystem:ids[index++]);
+    restore(JSON.stringify(merged));
+    try{localStorage.setItem(key,JSON.stringify(merged));}catch{}
+    alignStart();
+  });
   function clearMarkers(){cards.forEach(card=>card.classList.remove('drop-before','drop-after'));}
   function locate(){
     clearMarkers();const others=visible().filter(card=>card!==drag.card);

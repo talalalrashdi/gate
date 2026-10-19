@@ -54,6 +54,10 @@ Use the destination server and approved SQL authentication/certificate configura
 
 ## Verification and remaining work
 
+Browser acceptance completed 19 October 2026 after manual approvals resumed: all three catalog themes saved through the browser and survived refresh with account-loaded status. With the API stopped, the portal displayed local-only status and theme controls continued working. The starting saved choice was work (ThemeId 2), which was restored in the browser and confirmed directly in SQL; no constraint violations. Both test servers were stopped. This verifies API-unavailable fallback, not a full air-gapped/IIS deployment. Advanced delayed-response and catalog-administration scenarios remain covered only by code checks or pending live verification. This supersedes the partial browser attempt below.
+
+Partial browser acceptance, 19 October 2026: the in-app browser loaded the MVC portal, authenticated to the API, displayed all three catalog labels in order, selected الرسمي, and reported تم تحميل مظهر حسابك. Automatic approval review failed at model capacity before the attempted work-theme click executed. Browser save/reload and offline acceptance remain pending; no theme was changed during this browser attempt. Both test servers were stopped afterward.
+
 Live API acceptance passed on 19 October 2026 using `Backend/tools/Test-ThemeSettings.ps1`. Fixed Windows PowerShell 5 JSON array enumeration in the test harness. ThemeId 1 was restored and verified in SQL. This does not replace actual browser/IIS checks.
 
 Completed: API and MVC Release builds (zero warnings/errors), JavaScript syntax check, theme catalog VM checks, original theme selection compatibility checks, offline asset checks and diff whitespace checks. `node tools/verify-theme-catalog.mjs` covers arbitrary IDs/names, shared layouts, renamed labels, latest-choice writes, delayed reads and offline fallback. These are automated code checks, not live browser or SQL acceptance.
@@ -65,4 +69,4 @@ Remaining acceptance checks:
 3. Verify an additional definition using an existing layout, renamed labels, inactive selected-theme fallback, and rejection of inactive IDs against SQL and the authenticated API.
 4. Check actual browser menu selection/reload, delayed responses, offline fallback and internal IIS Windows authentication.
 
-Card creation, deletion, ordering and grouping remain a later feature. No card tables or endpoints are added here.
+Card ordering was subsequently implemented separately in [card order](CARD_ORDER.md), using migration 008. Account-backed custom group creation/deletion and pin/conceal settings remain later steps.

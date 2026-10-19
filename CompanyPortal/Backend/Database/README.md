@@ -8,6 +8,8 @@ The first feature now adds `Portal.UserSettings` and procedures in `Security`/`P
 
 Use SQL Server with a new database named `CompanyPortal`. Development uses the default instance `localhost`, selected by the user. The inspected local instance reports SQL Server 2019 Developer Edition (15.0.2000.5). SQL Server instance selection, credentials, certificates and access permissions are environment configuration; application code and SQL schema scripts stay the same between development and the air-gapped network.
 
+Migration `008_UserCardOrder.sql` adds the existing card catalog and employee order tables/procedures, using the Portal.CardOrderInput table type. It was completed and rerun locally; API and browser acceptance passed. See [card order deployment](../../docs/CARD_ORDER.md) for scope and runtime type/procedure permissions.
+
 ## Create the database
 
 From `Backend/`, run with a Windows account authorized to create databases:

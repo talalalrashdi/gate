@@ -7,6 +7,34 @@ namespace CompanyPortal.Api.Data;
 
 public sealed class UserSettingsStore(IConfiguration configuration)
 {
+    public async Task<CardOrderResponse?> GetCardOrderAsync(string ntName, CancellationToken token)
+    {
+        await using var connection = await OpenAsync(token);
+        var userId = await GetUserIdAsync(connection, ntName, token);
+        if (userId is null) return null;
+        var rows = (await connection.QueryAsync<CardOrderRow>(Command(
+            "Portal.UserCardOrder_get", new { UserId = userId.Value }, token))).AsList();
+        if (rows.Count == 0) throw new InvalidOperationException("No active workspace cards are configured.");
+        return new(rows.Select(row => row.CardKey).ToArray(), rows.Any(row => row.IsSaved),
+            rows.Max(row => row.LastChangeAt));
+    }
+
+    public async Task<bool> SaveCardOrderAsync(string ntName, string[] cardKeys, CancellationToken token)
+    {
+        await using var connection = await OpenAsync(token);
+        var userId = await GetUserIdAsync(connection, ntName, token);
+        if (userId is null) return false;
+        var cards = new DataTable();
+        cards.Columns.Add("SortOrder", typeof(int));
+        cards.Columns.Add("CardKey", typeof(string));
+        for (var index = 0; index < cardKeys.Length; index++) cards.Rows.Add(index, cardKeys[index]);
+        await connection.ExecuteAsync(Command("Portal.UserCardOrder_set",
+            new { UserId = userId.Value, Cards = cards.AsTableValuedParameter("Portal.CardOrderInput") }, token));
+        return true;
+    }
+
+    private sealed record CardOrderRow(string CardKey, bool IsSaved, DateTime? LastChangeAt);
+
     public async Task<IReadOnlyList<ThemeDefinition>> GetThemesAsync(CancellationToken cancellationToken)
     {
         await using var connection = await OpenAsync(cancellationToken);

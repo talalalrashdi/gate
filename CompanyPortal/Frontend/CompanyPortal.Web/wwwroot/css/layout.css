@@ -92,7 +92,8 @@ body { overflow-x: clip; }
   border-radius: 0;
   background: transparent;
 }
-.portal-workspace-toolbar { margin: 0 0 16px; padding: 0; border: 0; }
+.portal-workspace-toolbar { margin: 0 0 16px; padding: 0; border: 0; flex-wrap: wrap; gap: 8px; }
+#workspace-sync-status { flex-basis: 100%; font-size: 12px; font-weight: 400; }
 /* One RTL track; category accents never determine size or saved order. */
 .portal-dashboard .portal-workspace-grid { display: flex; direction: rtl; align-items: stretch; gap: 20px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
 .portal-dashboard .portal-workspace-grid > .portal-work-card { --widget-accent: var(--brand-primary); --widget-tint: var(--surface-navy); flex: 0 0 calc((100% - 80px) / 4.5); width: auto; min-width: 0; min-height: 420px; height: auto; padding: 22px; border: 1px solid var(--brand-line); border-radius: 20px; background: var(--surface-white); box-shadow: 0 3px 12px #0a294709; scroll-snap-align: start; }

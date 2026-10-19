@@ -6,6 +6,8 @@ The current [theme catalog implementation](docs/MASTER_THEMES.md) separates stab
 
 The first employee feature now saves the selected theme through the API using the employee's Windows identity and external SecurityDB UserId. See [theme settings setup and deployment](docs/THEME_SETTINGS.md); sample SecurityDB creation is development-only.
 
+Built-in card ordering now saves through the authenticated API to SQL Server. See [card order setup and verification](docs/CARD_ORDER.md). Migration 008 was applied locally; browser/API/offline-fallback checks passed. Custom groups, pinning and concealment remain local for this step.
+
 ## Current migration stage
 
 The MVC frontend is organized into a shared layout and feature partials, essential assets are local, and the new project has been cleaned. Verification evidence and remaining recorded checks are in the [frontend acceptance checklist](docs/FRONTEND_ACCEPTANCE.md). The user authorized proceeding to the API foundation on the assumption that frontend browser/IIS acceptance is complete. The API foundation now builds independently; its actual domain/IIS deployment, database and Exchange integration are later steps.
@@ -74,6 +76,7 @@ With MVC running, execute from this directory:
 node tools/verify-frontend.mjs
 node tools/verify-theme-selection.mjs
 node tools/verify-theme-catalog.mjs
+node tools/verify-workspace-settings.mjs
 node tools/verify-offline-assets.mjs
 ```
 

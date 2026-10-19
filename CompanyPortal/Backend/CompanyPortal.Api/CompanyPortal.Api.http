@@ -24,3 +24,13 @@ Content-Type: application/json
 X-CompanyPortal-Request: theme
 
 {"themeId":2}
+
+### Current employee's built-in card order; requires Windows credentials
+GET {{baseUrl}}/api/user-settings/card-order
+
+### Save a complete order from GET; all active keys exactly once, no UserId/NTName
+PUT {{baseUrl}}/api/user-settings/card-order
+Content-Type: application/json
+X-CompanyPortal-Request: card-order
+
+{"cardKeys":["library","inbox","email","requests","services","electronic-services","meetings","tasks","employees","attendance","leave","learning","projects","assets","purchases","finance","contracts","warehouse","reports","archive","ideas","support"]}

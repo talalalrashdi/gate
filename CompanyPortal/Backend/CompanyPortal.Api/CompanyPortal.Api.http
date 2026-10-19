@@ -1,5 +1,15 @@
 @baseUrl = http://localhost:5081
 
+### Published news for every active portal account; Windows credentials required
+GET {{baseUrl}}/api/news?page=1&pageSize=8
+Accept: application/json
+
+### Replace 1 with a newsId from the list; existing PDF opens inline
+GET {{baseUrl}}/api/news/1/pdf
+
+### Optional news picture, served by ID without exposing physical paths
+GET {{baseUrl}}/api/news/1/picture
+
 ### Process liveness; does not check SQL Server or Exchange
 GET {{baseUrl}}/health
 

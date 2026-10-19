@@ -104,6 +104,8 @@ for (let offset = 0; offset < resources.length; offset += 8) {
     // Browser acceptance fixes: shared responsive header and unique group choices.
     if (file.path === 'design-b-layout.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/layout.css'));
     if (file.path === 'design-b-workspace.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/workspace.css'));
+    // Published database news now reuses the editorial layout without demo sources.
+    if (migratedPath(file.path) === 'css/editorial.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/editorial.css'));
     if (file.path === 'design-b-workspace-groups.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/workspace-groups.js'));
     // Account ordering adds a change event and an order-application bridge.
     if (file.path === 'design-b-systems.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/systems-catalog.js'));

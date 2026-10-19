@@ -17,6 +17,7 @@ The default Project profile uses `http://localhost:5081` on loopback so the init
 | `/health` | Process liveness (`Healthy`), visible in Swagger; does not check SQL Server, Exchange, or AD availability |
 | `/api/me` | Requires Windows authentication; returns account name, SID when supplied by Windows, and authentication type; response is not cached |
 | `/api/access` | Current employee's admin capability from the external role lookup |
+| `/api/news` | All active portal users: paginated published news; `/api/news/{id}/pdf` and `/picture` stream existing files; see [setup](../docs/NEWS.md) |
 | `/api/admin/cards` | Admin-only GET and PUT by card ID for name, default order and fixed policy; see [setup](../docs/PORTAL_ADMINISTRATION.md) |
 | `/api/diagnostics/database` | Development only; requires Windows authentication and queries the configured SQL database with Dapper |
 | `/api/applications` | The employee's currently authorized app choices; launch requests use `/api/applications/{id}/launch` and recheck grants |

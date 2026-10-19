@@ -12,6 +12,8 @@ builder.Services.AddScoped<DatabaseConnectionCheck>();
 builder.Services.AddScoped<UserSettingsStore>();
 builder.Services.AddScoped<UserCardsStore>();
 builder.Services.AddScoped<AdministrationStore>();
+builder.Services.AddScoped<NewsStore>();
+builder.Services.AddScoped<NewsFiles>();
 builder.Services.AddCors(options => options.AddPolicy("Portal", policy =>
 {
     var origins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];

@@ -1,5 +1,7 @@
 # CompanyPortal
 
+Published news now reads from `dbo.VNews`, with PDF links on news titles. See [news source, local fixtures and deployment](docs/NEWS.md).
+
 Master-card administration is available at `/admin/cards`, backed by the external `CompanyPortal.Admin` role. See [setup, permissions and verification](docs/PORTAL_ADMINISTRATION.md).
 
 ASP.NET Core MVC frontend and a separate .NET 10 Web API foundation. Open `Frontend/CompanyPortal.Frontend.slnx` for the portal or `Backend/CompanyPortal.Backend.slnx` for the API. See the [API run instructions](Backend/README.md), [API/Exchange decisions](docs/API_FOUNDATION.md) and [frontend → API → SQL connection check](docs/CONNECTION_CHECK.md).

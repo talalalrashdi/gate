@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.OpenApi;
 using CompanyPortal.Api.Data;
+using CompanyPortal.Api.Mail;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,9 @@ builder.Services.AddScoped<UserCardsStore>();
 builder.Services.AddScoped<AdministrationStore>();
 builder.Services.AddScoped<NewsStore>();
 builder.Services.AddScoped<NewsFiles>();
+builder.Services.AddScoped<MailIdentityStore>();
+builder.Services.AddScoped<MailSessionFactory>();
+builder.Services.AddSingleton<MailStreamLimits>();
 builder.Services.AddCors(options => options.AddPolicy("Portal", policy =>
 {
     var origins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];

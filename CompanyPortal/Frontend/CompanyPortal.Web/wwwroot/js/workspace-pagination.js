@@ -27,7 +27,7 @@
     grid.querySelectorAll('.portal-work-card').forEach(card => {
       const heading = card.querySelector('.portal-work-heading');
       const notificationBadge = heading?.querySelector('[data-work-notification-count]');
-      if (notificationBadge) {
+      if (notificationBadge && notificationBadge.dataset.countSource !== 'exchange') {
         const forms = card.dataset.workSystem === 'requests';
         const count = forms
           ? Number(card.querySelector('.portal-request-summary > div:first-child b')?.textContent.trim()) || 0

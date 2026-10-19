@@ -1,5 +1,7 @@
 # CompanyPortal
 
+Read-only email now has an event-driven inbox card and Outlook Web links. Exchange remains disabled until its internal settings and scoped access are supplied. See [email setup and tests](docs/EMAIL.md).
+
 Published news now reads from `dbo.VNews`, with PDF links on news titles. See [news source, local fixtures and deployment](docs/NEWS.md).
 
 Master-card administration is available at `/admin/cards`, backed by the external `CompanyPortal.Admin` role. See [setup, permissions and verification](docs/PORTAL_ADMINISTRATION.md).

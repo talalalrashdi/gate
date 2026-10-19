@@ -1,5 +1,7 @@
 # Portal administration
 
+The portal header now displays a shield/check admin icon immediately beside the theme button, only after `/api/access` confirms `isAdmin: true`. It opens `/admin/cards`; the former workspace-toolbar admin text link has been removed. Failed/denied lookups leave the icon absent. Notices and alerts start hidden and can be shown with the existing bell toggle; no storage keys or visibility persistence were introduced.
+
 Implemented 19 October 2026. `/admin/cards` manages existing active master cards: display name, one-based default order and fixed/movable policy. It does not create/delete master cards, manage app grants, edit themes or grant roles.
 
 ## Identity and permissions

@@ -161,6 +161,7 @@ body.has-alert-sheet { overflow: hidden; }
 .portal-email-list { display: grid; gap: 7px; }
 .portal-email-card-icon svg { width: 23px; height: 23px; }
 .portal-email-item { display: grid; grid-template-columns: 30px minmax(0,1fr) auto; align-items: center; gap: 10px; width: 100%; padding: 12px 10px; border: 1px solid transparent; border-radius: 11px; background: transparent; text-align: right; }
+.portal-mail-status { margin: 8px 0; font-size: 11px; line-height: 1.7; }
 .portal-email-item:is([data-state="new"],[data-state="unread"]) { border-color: #d9e5e9; background: #edf5f7; }
 .portal-email-item:hover { border-color: #bfd0d7; background: #f2f7f8; }.portal-email-item > span:nth-child(2) { min-width: 0; }.portal-email-item strong { display: block; overflow: hidden; font-size: 12px; line-height: 1.6; text-overflow: ellipsis; white-space: nowrap; }.portal-email-item small { display: block; margin-top: 3px; overflow: hidden; color: #74838b; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }.portal-email-item time { color: #7c898f; font-size: 9px; white-space: nowrap; }
 .portal-email-row-icon { position: relative; display: grid; width: 30px; height: 30px; place-items: center; border-radius: 9px; color: #647780; background: #f1f4f5; }

@@ -1,5 +1,15 @@
 @baseUrl = http://localhost:5081
 
+### Read-only inbox, configured Exchange required; current Windows account only
+GET {{baseUrl}}/api/mail/inbox
+
+### Live event stream (held connection; browser uses this without inbox polling)
+GET {{baseUrl}}/api/mail/stream
+Accept: text/event-stream
+
+### Open configured internal Outlook Web
+GET {{baseUrl}}/api/mail/inbox/open
+
 ### Published news for every active portal account; Windows credentials required
 GET {{baseUrl}}/api/news?page=1&pageSize=8
 Accept: application/json

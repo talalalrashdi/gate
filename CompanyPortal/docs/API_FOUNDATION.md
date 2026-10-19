@@ -20,6 +20,8 @@ Swagger UI necessarily consumes an OpenAPI document; Swashbuckle's transitive Mi
 
 ## Exchange findings
 
+Later implementation: the read-only inbox/event-stream client is now prepared with live access disabled pending internal configuration. See [EMAIL.md](EMAIL.md) for the current implementation and verified limits; the earlier foundation-stage deferrals below remain historical.
+
 The user reported build **15.2.2562.17**. Microsoft's build table identifies this as **Exchange Server Subscription Edition (SE) RTM**, released July 1, 2025. The feature table confirms EWS application support for Exchange Server SE.
 
 The reported version identifies the product/base release; it is not a completed audit of installed security/hotfix updates. In particular, an AdminDisplayVersion result alone should not be used to certify the exact installed servicing level. The administrator can verify the installed ExSetup.exe file version against Microsoft's table.

@@ -20,6 +20,9 @@ function Upload([string]$name,[byte[]]$bytes,[string]$mime='image/svg+xml') {
 }
 $imageIds=[Collections.Generic.List[int]]::new();$groupIds=[Collections.Generic.List[int]]::new();$original=$null;$themeId=0
 try {
+    $swagger=Send GET '/swagger/v1/swagger.json';Assert ($swagger.Status -eq 200) 'Swagger document generation failed.'
+    $document=$swagger.Body|ConvertFrom-Json
+    Assert ($null -ne $document.paths.'/api/admin/images'.post.requestBody.content.'multipart/form-data') 'Swagger upload form is missing.'
     $before=Send GET '/api/admin/images';Assert ($before.Status -eq 200) 'Admin catalog failed.'
     $catalog=$before.Body|ConvertFrom-Json;$theme=$catalog.themes|Where-Object layoutKey -eq 'official'|Select-Object -First 1
     $themeId=[int]$theme.themeId;$original=$theme.imageGroupId
@@ -35,6 +38,15 @@ try {
         @{name='interface-test-alpha.webp';data='UklGRlIAAABXRUJQVlA4WAoAAAAQAAAAAQAAAQAAQUxQSAUAAAAAeHh4eABWUDggJgAAAHABAJ0BKgIAAgABQCYlmAJ0AXUAAP71t/vd/+Fa/la/lat8AAAA'}
     )
     foreach($format in $formats){$r=Upload $format.name ([Convert]::FromBase64String($format.data));Assert ($r.Status -eq 200) "Raster upload failed: $($format.name) $($r.Body)";$imageIds.Add([int](($r.Body|ConvertFrom-Json).imageId))}
+    $artworkPath=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../Frontend/CompanyPortal.Web/wwwroot/assets/national-day-complete.svg'))
+    $artwork=[IO.File]::ReadAllBytes($artworkPath)
+    $animated=Upload 'interface-test-animated.svg' $artwork
+    Assert ($animated.Status -eq 200) "Bundled animated SVG failed: $($animated.Body)"
+    $animatedId=[int](($animated.Body|ConvertFrom-Json).imageId);$imageIds.Add($animatedId)
+    $animatedResponse=$client.GetAsync($BaseUrl+"/api/images/$animatedId/content").GetAwaiter().GetResult()
+    try{Assert (($animatedResponse.Headers.GetValues('Content-Security-Policy') -join ';').Contains("img-src data:")) 'Bundled SVG image policy missing.'}finally{$animatedResponse.Dispose()}
+    $tampered=[Text.Encoding]::UTF8.GetBytes([Text.Encoding]::UTF8.GetString($artwork).Replace('</svg>','<script>alert(1)</script></svg>'))
+    Assert ((Upload 'national-day-complete.svg' $tampered).Status -eq 400) 'Modified bundled artwork was trusted by filename.'
     foreach($bad in @(
         '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><script>alert(1)</script></svg>',
         '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" onload="alert(1)"/>',

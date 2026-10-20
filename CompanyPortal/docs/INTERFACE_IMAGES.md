@@ -2,6 +2,8 @@
 
 Implemented 19 October 2026. Open **صور الواجهة** in administration, or `/admin/images`.
 
+For recommended dimensions, export formats, compression, cropping and SVG specifications, see [IMAGE_SPECIFICATIONS.md](IMAGE_SPECIFICATIONS.md).
+
 ## What administrators can do
 
 - Upload one or several JPEG, PNG, WebP or passive SVG files and preview them in the shared library.
@@ -61,3 +63,30 @@ The API runtime SQL identity needs EXECUTE on the seven procedures above plus ex
 
 
 Verified locally: migration application/rerun and foreign-key/check constraints; both Release builds with zero warnings/errors; integration checks for JPEG, PNG and three WebP container variants, passive/unsafe SVG, false signatures, anonymous denial, required write header, rejected origin/unknown JSON/null members, no-op timestamps, group order/removal/default/rotation/activation, theme assignment and image serving. Desktop browser uploaded an SVG, saved/reordered a group, selected a static default, observed automatic rotation and checked all three theme surfaces. The editor was checked at 390px with no document overflow. Frontend parity passed: 328 original files unchanged, six routes and 313 original resources checked. All temporary fixture images/groups were removed; three theme assignments remain null and the original employee ThemeId 1 was restored. Real internal IIS/SQL identities and deployment remain environment acceptance checks.
+
+Swagger compatibility: the upload action uses inferred IFormFile binding. Do not apply [FromForm] directly to IFormFile; it prevents Swashbuckle from generating the document. The integration script now checks Swagger JSON and the multipart upload schema before exercising uploads. Swagger generation and upload regression checks passed after this fix.
+
+
+## Import the existing frontend theme images
+
+On 20 October 2026, the three landscape photographs, national-day portrait and flag artwork were imported into the local image library with Arabic names. They remain selectable in administration; no group was created and no theme assignment changed. Original static assets remain available as fallbacks. Avatars, logos and decorative SVG textures are not part of this theme-photo import.
+
+To populate a new internal database after migration015, start the API and run `powershell -NoProfile -File Backend/tools/Import-FrontendImages.ps1 -BaseUrl https://YOUR-API` from CompanyPortal. This uses the current Windows account's existing admin access and normal validated upload endpoint. Use a trusted HTTPS certificate internally. The default API address is local http://localhost:5081. The script compares SHA-256 content of same-sized active PNG/JPEG entries and skips existing images even if renamed, preserving their metadata. Partial imports can be rerun; already uploaded images are retained. It never creates groups, changes existing metadata or assigns themes. Once imported, choose images, save the group, save the theme link, and reload the portal.
+
+
+## Combined national-day artwork
+
+The complete calligraphy, Sultan portrait and flag composition is now available as **اليوم الوطني - التصميم الكامل.jpg** in the image library (local ImageId 32). Its source asset is `Frontend/CompanyPortal.Web/wwwroot/assets/national-day-complete.jpg`: 2560 × 1440, 212,103 bytes. It was rendered deterministically from the existing SVG paths, portrait and flag artwork, with animations frozen. The browser export is JPEG; it is stored and served as image/jpeg.
+
+`tools/export-national-day-artwork.py` prepares a standalone HTML composition under the ignored `Backend/artifacts/national-day-export` directory. Render that page at 2560 × 1440 to re-export the static artwork. The importer includes the combined JPEG alongside the five original assets, with byte-content duplicate detection. Import/readback/rerun checks passed, preserving group/theme assignments. This adds one selectable library image; it does not remove the existing national-day foreground layers or assign a group automatically.
+
+
+## Animated national-day SVG
+
+The user's requested version is **اليوم الوطني - التصميم المتحرك.svg**, stored locally as ImageId 41. `Frontend/CompanyPortal.Web/wwwroot/assets/national-day-complete.svg` is a self-contained 2560 × 1440 SVG: original vector calligraphy paths retain their drawing/fill animation, flag layers retain their entrance animation, and the portrait/flag PNGs are embedded in the file. Reduced-motion rules show the final artwork without animation. It needs no scripts, network resources or installed fonts. The static JPEG remains available; no group assignments changed.
+
+Ordinary uploaded SVG files retain the existing passive-element rules and 1 MiB limit. This exact bundled asset is an explicit exception, accepted by a compiled SHA-256 fingerprint in `Data/BundledArtwork.cs`, within the existing 10 MiB overall limit. Neither its filename nor client metadata grants trust. Its response alone allows inline styles and data images under a sandbox/default-deny CSP; scripts and external resources remain blocked. The general SVG response policy stays unchanged. The `.gitattributes` entry preserves the reviewed SVG bytes across checkouts.
+
+Build/deploy the updated API before importing this asset with `Import-FrontendImages.ps1`. The generator now writes the animated SVG deterministically and prints its fingerprint; intentional artwork updates require review and updating the compiled fingerprint. The SVG is not serialized or modified during its approved upload, preserving its bytes and animation rules. Imports deduplicate the approved SVG by exact content as well as raster assets.
+
+Verified: Release API build with zero warnings/errors; Swagger/upload/group regressions; successful approved SVG upload; rejection of a modified SVG under the same filename; data-image policy only for the approved asset; browser loading from the real database endpoint with 36 animated calligraphy paths and flag animation; image-context preview showing the initial phase and final composition. Temporary test uploads were removed.

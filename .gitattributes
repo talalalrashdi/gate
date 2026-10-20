@@ -1,0 +1,2 @@
+# Preserve the reviewed SVG bytes used by the bundled-artwork fingerprint.
+CompanyPortal/Frontend/CompanyPortal.Web/wwwroot/assets/national-day-complete.svg -text

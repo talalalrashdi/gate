@@ -72,6 +72,8 @@ public static partial class ImageValidation
     }
     private static ValidatedImage Svg(byte[] data)
     {
+        // Only this exact bundled artwork may contain animation/embedded PNGs.
+        if (BundledArtwork.IsNationalDay(data)) return new(data, "image/svg+xml", 2560, 1440);
         if (data.Length > 1024*1024) throw new ArgumentException("SVG images must be at most 1 MB.");
         try
         {

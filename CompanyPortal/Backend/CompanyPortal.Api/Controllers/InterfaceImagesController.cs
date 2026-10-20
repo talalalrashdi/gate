@@ -14,7 +14,8 @@ public sealed class InterfaceImagesController(InterfaceImagesStore images, Admin
     public Task<IActionResult> Get(CancellationToken token) => Execute(async _ => Ok(await images.GetAsync(token)), true, false, token);
 
     [HttpPost, Consumes("multipart/form-data"), RequestFormLimits(MultipartBodyLengthLimit = 11*1024*1024)]
-    public Task<IActionResult> Upload([FromForm] IFormFile file, CancellationToken token) => Execute(async _ =>
+    // IFormFile infers form-file binding; explicit FromForm breaks Swagger generation.
+    public Task<IActionResult> Upload(IFormFile file, CancellationToken token) => Execute(async _ =>
     {
         var limit = Math.Clamp(configuration.GetValue("InterfaceImages:MaximumUploadMb",10),1,10)*1024*1024;
         if (file.Length < 12 || file.Length > limit) return Problem(statusCode:400,title:$"Upload an image up to {limit/1024/1024} MB.");
@@ -54,7 +55,9 @@ public sealed class InterfaceImagesController(InterfaceImagesStore images, Admin
         var content = await images.ContentAsync(id,admin,token);
         if (content is null) return NotFound();
         Response.Headers.XContentTypeOptions="nosniff";
-        Response.Headers.ContentSecurityPolicy="default-src 'none'; style-src 'none'; sandbox";
+        Response.Headers.ContentSecurityPolicy=content.ContentType=="image/svg+xml" && BundledArtwork.IsNationalDay(content.ImageData)
+            ? "default-src 'none'; img-src data:; style-src 'unsafe-inline'; sandbox"
+            : "default-src 'none'; style-src 'none'; sandbox";
         Response.Headers.ContentDisposition=$"inline; filename=\"portal-image-{id}\"";
         return File(content.ImageData,content.ContentType);
     },false,false,token);

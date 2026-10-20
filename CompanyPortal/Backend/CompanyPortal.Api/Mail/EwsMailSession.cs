@@ -8,7 +8,7 @@ using CompanyPortal.Api.Contracts;
 
 namespace CompanyPortal.Api.Mail;
 
-public sealed class EwsMailSession : IAsyncDisposable
+public sealed partial class EwsMailSession : IAsyncDisposable
 {
     private static readonly XNamespace Soap = "http://schemas.xmlsoap.org/soap/envelope/";
     private static readonly XNamespace T = "http://schemas.microsoft.com/exchange/services/2006/types";

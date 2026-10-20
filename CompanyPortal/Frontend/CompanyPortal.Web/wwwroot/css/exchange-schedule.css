@@ -1,0 +1,52 @@
+/* Outlook-backed read-only planner, shared by the three portal templates. */
+#systems .exchange-planner{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+#systems .exchange-planner .personal-planner-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#systems .exchange-planner .personal-planner-head small{display:block;font-size:10px;color:#607568;margin:5px 0}
+#systems .exchange-planner label{display:grid;gap:6px;font-size:12px;margin:8px 0}
+#systems .exchange-planner select{width:100%;padding:8px;border:1px solid #cbdcd4;border-radius:7px;background:#fff;color:#173d33;font:inherit;font-size:12px}
+#systems .exchange-schedule-status{font-size:11px;line-height:1.8;color:#536b61;margin:8px 0}
+#systems .exchange-planner .personal-month-nav{gap:5px}#systems .exchange-planner .personal-month-nav button{padding:5px;font-size:11px}
+#systems .exchange-planner .personal-month-grid .is-outside{opacity:.45}
+#systems .exchange-agenda h3{font-size:13px;line-height:1.6;margin:8px 0}
+#systems .exchange-agenda-items,#systems .exchange-task-items{max-height:230px;overflow:auto;scrollbar-width:thin}
+#systems :is(.exchange-agenda-items,.exchange-task-items)>p{font-size:12px;line-height:1.9;color:#536b61}
+#systems :is(.exchange-appointment,.exchange-task){padding:10px;margin-bottom:7px;border:1px solid #d3e2d9;border-radius:9px;background:#f3f8f5;color:#193e33}
+#systems :is(.exchange-appointment,.exchange-task) strong{font-size:12px;line-height:1.8;display:block;overflow-wrap:anywhere}
+#systems :is(.exchange-appointment,.exchange-task) small{font-size:10px;line-height:1.8;display:block;margin-top:3px;color:#526b5e}
+#systems .exchange-appointment.is-cancelled strong{text-decoration:line-through}#systems .exchange-task.is-overdue{border-inline-start:3px solid #a34539}
+#systems .exchange-task-filters{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0}
+#systems .exchange-task-filters button,#systems .exchange-planner .personal-planner-head>button{padding:5px 8px;border:1px solid #c9dcd0;border-radius:7px;background:#fff;color:#21533e;font-size:10px}
+#systems .exchange-task-filters button[aria-pressed=true]{--text-primary:var(--theme-button-ink,#fff);background:var(--brand-primary,#21533e);color:var(--theme-button-ink,#fff)}
+#systems .exchange-schedule-warning{color:#864b25!important}
+#systems .exchange-planner :is(button,select):focus-visible{outline:2px solid var(--brand-primary,#32684e);outline-offset:2px}
+/* Keep the Exchange markup out of the work template's legacy flattened grid. */
+body[data-site-theme=work] #systems #theme-work-calendar .exchange-planner{
+ display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);align-items:start;
+ gap:20px;padding:20px;border-radius:20px;background:#fffffff2;color:#193e33;
+ max-height:660px;overflow:auto;container-type:inline-size;
+}
+body[data-site-theme=work] #systems #theme-work-calendar .exchange-planner .personal-calendar-main{display:block;min-width:0}
+body[data-site-theme=work] #systems #theme-work-calendar .exchange-planner .personal-planner-head{
+ display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;
+}
+body[data-site-theme=work] #systems #theme-work-calendar .exchange-planner .personal-planner-head>div{display:block}
+body[data-site-theme=work] #systems #theme-work-calendar .exchange-planner .personal-planner-head>button{flex:none;min-height:32px}
+body[data-site-theme=work] #systems #theme-work-calendar .exchange-planner .personal-month-nav{
+ display:flex;align-items:center;justify-content:space-between;gap:5px;
+ padding:8px;margin-block:12px 8px;border:1px solid #d3e2d9;border-radius:10px;
+ background:#f3f8f5;box-shadow:none;backdrop-filter:none;
+}
+body[data-site-theme=work] #systems #theme-work-calendar .exchange-planner .personal-month-grid button{
+ width:100%;max-width:34px;justify-self:center;
+}
+body[data-site-theme=work] #systems #theme-work-calendar .exchange-agenda{
+ min-width:0;padding-inline-start:18px;border-inline-start:1px solid #d3e2d9;
+}
+@container(max-width:480px){
+ body[data-site-theme=work] #systems #theme-work-calendar .exchange-planner .exchange-agenda{
+  padding-inline-start:0;border-inline-start:0;padding-top:12px;border-top:1px solid #d3e2d9;
+ }
+ body[data-site-theme=work] #systems #theme-work-calendar .exchange-planner .personal-calendar-main,
+ body[data-site-theme=work] #systems #theme-work-calendar .exchange-planner .exchange-agenda{grid-column:1 / -1}
+}
+@media(max-width:600px){#systems .exchange-planner{grid-template-columns:1fr}}

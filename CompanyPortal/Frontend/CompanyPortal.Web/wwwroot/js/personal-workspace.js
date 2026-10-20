@@ -182,6 +182,8 @@
   const previousTheme = read('companyportal-opening-theme-v1', null);
   const previousNames = { majestic: 'official', formal: 'work', official: 'national-day' };
   selectTheme(savedTheme ?? legacyThemeNames[previousTheme] ?? previousNames[previousTheme] ?? defaultTheme);
+  // Exchange owns this planner. Preserve legacy browser data without reading, seeding or uploading it.
+  if (section.querySelector('[data-schedule-source="exchange"]')) return;
   const today = new Date();
   const dateKey = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   const todayKey = dateKey(today);

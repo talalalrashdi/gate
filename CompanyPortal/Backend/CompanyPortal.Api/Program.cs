@@ -20,6 +20,7 @@ builder.Services.AddScoped<NewsFiles>();
 builder.Services.AddScoped<FolderPathsStore>();
 builder.Services.AddScoped<MailIdentityStore>();
 builder.Services.AddScoped<MailSessionFactory>();
+builder.Services.AddScoped<ScheduleService>();
 builder.Services.AddSingleton<MailStreamLimits>();
 builder.Services.AddCors(options => options.AddPolicy("Portal", policy =>
 {

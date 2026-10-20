@@ -93,3 +93,7 @@ Real Exchange authentication, certificate/SPN setup, event delivery timing, succ
 - [GetStreamingEvents operation](https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/getstreamingevents-operation)
 - [Outlook Web read-form links](https://learn.microsoft.com/en-us/dotnet/api/microsoft.exchange.webservices.data.item.webclientreadformquerystring)
 - [EWS impersonation](https://learn.microsoft.com/en-us/exchange/client-developer/exchange-web-services/impersonation-and-ews-in-exchange)
+
+## Calendar/task extension
+
+Read-only calendar/tasks now reuse the same Exchange configuration and authentication; see [EXCHANGE_CALENDAR_TASKS.md](EXCHANGE_CALENDAR_TASKS.md). ScheduleEnabled remains false until configured. Mail/schedule now share a configurable stream budget (default4 per account,100 per process), superseding the earlier fixed two-stream description. A normal tab has one mail stream plus one schedule stream.

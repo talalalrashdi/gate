@@ -14,6 +14,22 @@ public sealed class MailOptions
     public int LatestMessageCount { get; set; } = 10;
     public Dictionary<string, string> MailboxAddresses { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
+    public bool ScheduleEnabled { get; set; }
+    public string ScheduleTimeZone { get; set; } = "Asia/Muscat";
+    public Dictionary<string, SharedCalendarOptions[]> SharedCalendars { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+    public string ScheduleZoneId()=>TimeZoneInfo.TryConvertWindowsIdToIanaId(ScheduleTimeZone,out var iana)?iana:ScheduleTimeZone;
+    public TimeZoneInfo ScheduleZone() => TimeZoneInfo.FindSystemTimeZoneById(ScheduleTimeZone);
+    public SharedCalendarOptions[] CalendarsFor(string account)
+    {
+        var calendars=SharedCalendars.FirstOrDefault(p=>string.Equals(p.Key,account,StringComparison.OrdinalIgnoreCase)).Value??[];
+        if(calendars.Length>10 || calendars.Any(c=>string.IsNullOrWhiteSpace(c.Name)||c.Name.Length>200
+            || !System.Text.RegularExpressions.Regex.IsMatch(c.Key??"","^[a-zA-Z0-9_-]{1,40}$") || c.Key=="own"
+            || !MailAddress.TryCreate(c.Mailbox,out var address)||address.Address!=c.Mailbox)
+            || calendars.Select(c=>c.Key).Distinct(StringComparer.Ordinal).Count()!=calendars.Length)
+            throw new InvalidOperationException("Configure valid, distinct shared calendar keys and mailbox addresses.");
+        return calendars;
+    }
     public void Validate()
     {
         if (!Enabled || AccessMode != "ScopedServiceAccountImpersonation")
@@ -68,4 +84,13 @@ public sealed class MailOptions
             throw new InvalidOperationException("Configure an HTTPS Exchange address without embedded credentials.");
         return uri;
     }
+}
+
+public sealed class SharedCalendarOptions
+{
+    public string Key {get;set;}="";
+    public string Name {get;set;}="";
+    public string Mailbox {get;set;}="";
+    // Enable only after owner-scoped subscriptions have been approved internally.
+    public bool EnableNotifications {get;set;}
 }

@@ -58,14 +58,15 @@ function renderNotifications(){
     items.forEach(item=>{const row=document.createElement('li'),title=document.createElement('strong'),meta=document.createElement('small');title.textContent=item.title;meta.textContent=item.meta;row.append(title,meta);list.append(row);});
   }
   const systems=[...document.querySelectorAll('#portal-alerts-section .portal-alert')].filter(card=>!card.hidden&&card.querySelector('.portal-alert-badge')?.textContent.includes('نظام')).map(card=>({title:card.querySelector('h3').textContent,meta:card.querySelector('p').textContent}));
-  let tasks=[];try{const saved=JSON.parse(localStorage.getItem('clerio-personal-tasks'));if(Array.isArray(saved))tasks=saved;}catch{}
+  const exchangePlanner=!!document.querySelector('[data-schedule-source=exchange]');
+  let tasks=[];if(!exchangePlanner)try{const saved=JSON.parse(localStorage.getItem('clerio-personal-tasks'));if(Array.isArray(saved))tasks=saved;}catch{}
   const today=new Date(),todayKey=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-  const calendar=tasks.filter(task=>task&&typeof task.title==='string'&&task.done===false&&task.type!=='note'&&typeof task.date==='string'&&task.date>=todayKey).sort((a,b)=>`${a.date} ${a.time||''}`.localeCompare(`${b.date} ${b.time||''}`)).map(task=>({title:task.title,meta:[task.date,typeof task.time==='string'?task.time:''].filter(Boolean).join(' · ')}));
+  const calendar=exchangePlanner?(window.CompanyPortalSchedule?.notifications||[]):tasks.filter(task=>task&&typeof task.title==='string'&&task.done===false&&task.type!=='note'&&typeof task.date==='string'&&task.date>=todayKey).sort((a,b)=>`${a.date} ${a.time||''}`.localeCompare(`${b.date} ${b.time||''}`)).map(task=>({title:task.title,meta:[task.date,typeof task.time==='string'?task.time:''].filter(Boolean).join(' · ')}));
   systems.push(
     {title:'تم اعتماد طلبك في نظام الاستمارات',meta:'تجريبي · نظام الاستمارات · منذ 10 دقائق'},
     {title:'مراسلة جديدة بانتظار الاطلاع',meta:'تجريبي · نظام المراسلات · منذ 20 دقيقة'}
   );
-  calendar.push(
+  if(!exchangePlanner)calendar.push(
     {title:'تذكير باجتماع متابعة الفريق',meta:'تجريبي · اليوم · 10:00 صباحًا'},
     {title:'موعد تسليم تقرير الأسبوع',meta:'تجريبي · غدًا · 02:00 مساءً'}
   );
@@ -76,6 +77,7 @@ function renderNotifications(){
   renderList(calendarList,calendar,'لا توجد مهام قادمة في تقويم الأعمال.');
 }
 document.addEventListener('DOMContentLoaded',renderNotifications,{once:true});
+document.addEventListener('companyportal:schedule-updated',renderNotifications);
 notificationsTrigger?.addEventListener('click',()=>{
   if(!notificationsPanel.hidden){closeNotifications();return;}
   closeProfile();closeSearch(false);renderNotifications();notificationsPanel.hidden=false;header.classList.add('is-profile-open');notificationsTrigger.setAttribute('aria-expanded','true');positionProfile();

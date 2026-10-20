@@ -14,7 +14,7 @@ For recommended dimensions, export formats, compression, cropping and SVG specif
 
 Uploads are saved immediately. Group edits are saved using **حفظ المجموعة**; theme assignments have their own **حفظ الربط** buttons. Removing an image from a group keeps it in the library. There is no library-delete endpoint in this version. Group edits use last-save-wins; no concurrent-edit locking UI or audit history is included.
 
-Image groups are global administrator content, not employee-owned custom cards. Employee ThemeId preferences are unchanged. Creating themes remains a separate upcoming feature; a future theme can reference ImageGroupId without duplicating image data or requiring an English name. LayoutKey still selects an implemented layout.
+Image groups are global administrator content, not employee-owned custom cards. Employee ThemeId preferences are unchanged. Theme creation is now implemented: see [THEME_ADMINISTRATION.md](THEME_ADMINISTRATION.md). Themes reference ImageGroupId without duplicating image data or requiring an English display name. LayoutKey still selects an implemented layout.
 
 ## Database
 
@@ -78,7 +78,7 @@ To populate a new internal database after migration015, start the API and run `p
 
 The complete calligraphy, Sultan portrait and flag composition is now available as **اليوم الوطني - التصميم الكامل.jpg** in the image library (local ImageId 32). Its source asset is `Frontend/CompanyPortal.Web/wwwroot/assets/national-day-complete.jpg`: 2560 × 1440, 212,103 bytes. It was rendered deterministically from the existing SVG paths, portrait and flag artwork, with animations frozen. The browser export is JPEG; it is stored and served as image/jpeg.
 
-`tools/export-national-day-artwork.py` prepares a standalone HTML composition under the ignored `Backend/artifacts/national-day-export` directory. Render that page at 2560 × 1440 to re-export the static artwork. The importer includes the combined JPEG alongside the five original assets, with byte-content duplicate detection. Import/readback/rerun checks passed, preserving group/theme assignments. This adds one selectable library image; it does not remove the existing national-day foreground layers or assign a group automatically.
+`tools/export-national-day-artwork.py` prepares a standalone HTML composition under the ignored `Backend/artifacts/national-day-export` directory. Render that page at 2560 × 1440 to re-export the static artwork. The importer includes the combined JPEG alongside the five original assets, with byte-content duplicate detection. Import/readback/rerun checks passed, preserving group/theme assignments. This adds one selectable library image; it does not assign a group automatically. Theme administration now offers complete-artwork presentation to hide the original decorative layers when this composition is selected.
 
 
 ## Animated national-day SVG
@@ -90,3 +90,9 @@ Ordinary uploaded SVG files retain the existing passive-element rules and 1 MiB 
 Build/deploy the updated API before importing this asset with `Import-FrontendImages.ps1`. The generator now writes the animated SVG deterministically and prints its fingerprint; intentional artwork updates require review and updating the compiled fingerprint. The SVG is not serialized or modified during its approved upload, preserving its bytes and animation rules. Imports deduplicate the approved SVG by exact content as well as raster assets.
 
 Verified: Release API build with zero warnings/errors; Swagger/upload/group regressions; successful approved SVG upload; rejection of a modified SVG under the same filename; data-image policy only for the approved asset; browser loading from the real database endpoint with 36 animated calligraphy paths and flag animation; image-context preview showing the initial phase and final composition. Temporary test uploads were removed.
+
+## Image deletion
+
+Apply migration `017_ImageDeletion.sql` after 016. `DELETE /api/admin/images/{id}` requires the current admin role and the existing admin-images request header/origin checks. Grant the runtime account EXECUTE on `Master.Images_delete`.
+
+The library offers **حذف الصورة** with confirmation. Deletion marks an unused image inactive and updates LastChangeAt; binary content is retained for controlled recovery, but is no longer listed or served. Missing/deleted images return 404. Images referenced by any saved group (including inactive memberships or a group default) return 409. Remove the image from those groups and save first, so deletion never silently changes published artwork. Unsaved group edits are preserved during library deletion.

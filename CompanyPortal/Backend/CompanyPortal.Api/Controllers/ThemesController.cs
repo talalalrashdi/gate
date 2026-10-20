@@ -16,7 +16,11 @@ public sealed class ThemesController(UserSettingsStore settings, ILogger<ThemesC
     public async Task<ActionResult<IReadOnlyList<ThemeDefinition>>> Get(CancellationToken cancellationToken)
     {
         Response.Headers.CacheControl = "no-store";
-        try { return Ok(await settings.GetThemesAsync(cancellationToken)); }
+        try {
+            if(string.IsNullOrWhiteSpace(User.Identity?.Name))return Unauthorized();
+            var themes=await settings.GetThemesAsync(User.Identity.Name,cancellationToken);
+            return themes.Count==0?Forbid():Ok(themes);
+        }
         catch (Exception exception) when (exception is SqlException or InvalidOperationException)
         {
             logger.LogError(exception, "Theme catalog could not be loaded.");

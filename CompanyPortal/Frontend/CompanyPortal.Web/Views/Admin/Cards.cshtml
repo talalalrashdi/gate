@@ -2,6 +2,7 @@
     Layout = "_AdminLayout";
 }
 @section Styles {
+  <link rel="stylesheet" href="@Url.Content("~/css/admin-themes.css")" asp-append-version="true">
   <link rel="stylesheet" href="@Url.Content("~/css/admin-images.css")" asp-append-version="true">
   <link rel="stylesheet" href="@Url.Content("~/css/admin-cards.css")" asp-append-version="true">
 }
@@ -12,7 +13,7 @@
   <div class="admin-feature-grid">
     <button type="button" class="admin-feature" data-admin-section="cards"><span class="admin-feature-top"><span class="admin-feature-icon" aria-hidden="true">▦</span><span class="admin-badge is-ready">متاح الآن</span></span><strong>البطاقات الأساسية</strong><span>أسماء البطاقات، ترتيبها الافتراضي، وتثبيتها في مواضع محددة.</span><span class="admin-feature-action">إدارة البطاقات <span aria-hidden="true">←</span></span></button>
     <button type="button" class="admin-feature" data-admin-section="images"><span class="admin-feature-top"><span class="admin-feature-icon" aria-hidden="true">▧</span><span class="admin-badge is-ready">متاح الآن</span></span><strong>صور الواجهة</strong><span>إضافة الصور وترتيبها، والتحكم بتشغيل التدوير التلقائي أو إيقافه.</span><span class="admin-feature-action">استعراض القسم <span aria-hidden="true">←</span></span></button>
-    <button type="button" class="admin-feature" data-admin-section="themes"><span class="admin-feature-top"><span class="admin-feature-icon" aria-hidden="true">◐</span><span class="admin-badge">مخطط له</span></span><strong>الثيمات والمظهر</strong><span>إضافة ثيمات وإدارة مظهر البوابة والثيم الافتراضي للمستخدمين.</span><span class="admin-feature-action">استعراض القسم <span aria-hidden="true">←</span></span></button>
+    <button type="button" class="admin-feature" data-admin-section="themes"><span class="admin-feature-top"><span class="admin-feature-icon" aria-hidden="true">◐</span><span class="admin-badge is-ready">متاح الآن</span></span><strong>الثيمات والمظهر</strong><span>إضافة ثيمات وإدارة مظهر البوابة والثيم الافتراضي للمستخدمين.</span><span class="admin-feature-action">استعراض القسم <span aria-hidden="true">←</span></span></button>
   </div>
 </section>
 <section data-admin-panel="cards" aria-label="البطاقات الأساسية" hidden>
@@ -21,10 +22,9 @@
   <aside class="admin-help"><span aria-hidden="true">ⓘ</span><div><h3>كيف يعمل ترتيب البطاقات؟</h3><p>الموضع يبدأ من 1. البطاقة الثابتة تبقى في الموضع الذي تحدّده، أما المتحركة فيمكن للمستخدم إعادة ترتيبها. يحتفظ المستخدم بترتيبه المحفوظ للبطاقات المتحركة.</p><p>إذا كان الموضع مشغولًا ببطاقة ثابتة، غيّر موضعها أو ألغ تثبيتها أولًا.</p></div></aside>
 </section>
 @await Html.PartialAsync("_Images")
-<section data-admin-panel="themes" aria-label="الثيمات والمظهر" hidden>
-  <div class="admin-planned"><div class="admin-planned-symbol" aria-hidden="true">◐</div><span class="admin-badge">مخطط له · غير مفعّل بعد</span><h2>مظهر يناسب بوابتك.</h2><p>سيُضاف هنا قسم لإدارة الثيمات المتاحة للمستخدمين وتحديد المظهر الافتراضي.</p><div class="admin-planned-options"><article><span aria-hidden="true">＋</span><h3>إضافة ثيمة</h3><p>إعداد ثيمة جديدة ضمن إمكانات التصميم المعتمدة.</p></article><article><span aria-hidden="true">◐</span><h3>إدارة المظهر</h3><p>تعديل أسماء الثيمات وتنظيم الخيارات المتاحة.</p></article><article><span aria-hidden="true">✓</span><h3>الثيم الافتراضي</h3><p>تحديد المظهر الافتراضي وتفعيل الثيمات.</p></article></div><p class="admin-planned-note">هذا القسم يوضح النطاق القادم؛ إنشاء الثيمات وإدارتها من هذه الصفحة لم يُنفّذا بعد.</p></div>
-</section>
+@await Html.PartialAsync("_Themes")
 @section Scripts {
+  <script src="@Url.Content("~/js/admin-themes.js")" asp-append-version="true"></script>
   <script src="@Url.Content("~/js/admin-images.js")" asp-append-version="true"></script>
   <script src="@Url.Content("~/js/admin-cards.js")" asp-append-version="true"></script>
 }

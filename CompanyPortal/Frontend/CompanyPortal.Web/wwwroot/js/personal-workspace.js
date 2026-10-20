@@ -28,9 +28,7 @@
     section.append(floatingCalendar);
     floatingCalendar.showPopover?.();
   }
-  let sceneImages = [...document.querySelectorAll('[data-official-image]')];
-  const originalSceneImages = sceneImages;
-  let managedScenes = null, rotateScenes = true, rotationMilliseconds = 8000, imageGeneration = 0;
+  const sceneImages = [...document.querySelectorAll('[data-official-image]')];
   const sceneStories = {
     fort: ['منيو جديد، لخيارات أكثر.', 'اكتشف خيارات الفطور والغداء في مطعم الشركة، وخطّط لاستراحتك القادمة.', 'جديد مطعم الشركة', 'استعرض المنيو', [['الفطور', 'ساندويتشات طازجة، فواكه موسمية، وقهوة وشاي.'], ['الغداء', 'أطباق رئيسية متنوعة، سلطات، وخيارات نباتية.'], ['قبل الطلب', 'اسأل فريق المطعم عن مكونات الوجبات ومسببات الحساسية.']]],
     mosque: ['خدمات الموظفين، أقرب إليك.', 'تعرّف على خطوات الوصول إلى الاستمارات والوثائق التي تحتاجها في يومك.', 'توضيح للموظفين', 'اعرف التفاصيل', [['وصول سريع', 'افتح الاستمارات والوثائق من القائمة الرئيسية واختر الخدمة المطلوبة.'], ['قبل إرسال الطلب', 'راجع البيانات والمرفقات اللازمة لضمان اكتمال الطلب.']]],
@@ -144,21 +142,6 @@
   });
   function showOfficialScene(index) {
     sceneIndex = index;
-    if (managedScenes) {
-      const image = sceneImages[index], generation = imageGeneration;
-      const activate = () => {
-        if (generation !== imageGeneration || sceneIndex !== index) return;
-        sceneImages.forEach(n => n.classList.toggle('is-active', n === image));
-        document.body.style.setProperty('--portal-national-background', `linear-gradient(115deg,#dceee3cc,#f5f9f3dd 52%,#fffaf4cc), url("${managedScenes[index].url}") center / cover no-repeat`);
-        // Keep the active image and release earlier decoded images after their fade.
-        setTimeout(() => sceneImages.forEach(n => { if (generation === imageGeneration && n !== sceneImages[sceneIndex]) n.removeAttribute('src'); }),2500);
-      };
-      image.onload = activate;
-      image.onerror = () => { if (generation === imageGeneration) document.dispatchEvent(new CustomEvent('companyportal:theme-images', {detail:null})); };
-      if (!image.getAttribute('src')) image.src = managedScenes[index].url;
-      if (image.complete && image.naturalWidth) activate();
-      return;
-    }
     const scene = sceneImages[index]?.dataset.officialImage;
     sceneImages.forEach(image => image.classList.toggle('is-active', image.dataset.officialImage === scene));
     const story = sceneStories[scene];
@@ -171,30 +154,18 @@
   }
   function syncOfficialPlayback() {
     clearTimeout(sceneTimer);
-    if (!backdrop || !sceneImages.length) return;
+    if (!backdrop || !sceneImages.length || backdrop.dataset.managed) return;
     const paused = playbackPaused;
     const photoTheme = document.body.dataset.siteTheme === 'official' || (document.body.dataset.siteTheme === 'work' && document.querySelector('.portal-news-personal'));
-    const running = rotateScenes && sceneImages.length > 1 && !paused && !document.hidden && !announcementDialog?.open && (photoTheme || (managedScenes && document.body.dataset.siteTheme === 'national-day'));
+    const running = !backdrop.dataset.managed && !paused && !document.hidden && !announcementDialog?.open && photoTheme;
     backdrop.dataset.paused = String(!running);
     if (running) sceneTimer = setTimeout(() => {
       showOfficialScene((sceneIndex + 1) % sceneImages.length);
       syncOfficialPlayback();
-    }, rotationMilliseconds);
+    }, 8000);
   }
-  document.addEventListener('companyportal:theme-images', event => {
-    imageGeneration++;
-    clearTimeout(sceneTimer);
-    sceneImages.filter(image => !originalSceneImages.includes(image)).forEach(image => image.remove());
-    managedScenes = event.detail?.images?.length ? event.detail.images : null;
-    document.body.style.removeProperty('--portal-national-background');
-    originalSceneImages.forEach(image => { image.hidden = !!managedScenes; });
-    if (managedScenes && backdrop) {
-      sceneImages = managedScenes.map(() => { const image = document.createElement('img'); image.alt = ''; image.decoding = 'async'; backdrop.append(image); return image; });
-      rotateScenes = !!event.detail.rotateImages;
-      rotationMilliseconds = Math.max(3, Math.min(3600, event.detail.rotationSeconds || 8)) * 1000;
-      const start = managedScenes.findIndex(image => image.imageId === event.detail.defaultImageId);
-      showOfficialScene(Math.max(0,start));
-    } else { sceneImages = originalSceneImages; rotateScenes = true; rotationMilliseconds = 8000; showOfficialScene(0); }
+  document.addEventListener('companyportal:theme-images', () => {
+    if (!backdrop?.dataset.managed) showOfficialScene(0);
     syncOfficialPlayback();
   });
   if (backdrop) {

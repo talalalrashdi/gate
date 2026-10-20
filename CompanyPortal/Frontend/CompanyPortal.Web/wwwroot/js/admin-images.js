@@ -18,6 +18,7 @@
       ...(body===undefined?{}:{body:body instanceof FormData?body:JSON.stringify(body)})});
     if(!response.ok){
       if(response.status===401||response.status===403){content.hidden=true;loaded=false;throw new Error('ليس لديك صلاحية إدارة الصور.');}
+      if(response.status===409)throw new Error('الصورة مستخدمة في مجموعة محفوظة. أزلها من المجموعات واحفظ التغييرات أولًا، ثم احذفها.');
       throw new Error(response.status===400||response.status===413?'تعذر الحفظ. تحقق من الاسم والصور والأحجام والصيغة. SVG يجب أن يكون ثابتًا بدون سكربتات أو أنماط أو روابط خارجية.':'تعذر الاتصال بخدمة الصور. أعد المحاولة.');
     }
     return response.status===204?null:response.json();
@@ -34,15 +35,24 @@
     byId('images-selected-count').textContent=`${selection.length} صورة مختارة`;
     if(!data.images.length)library.append(node('p','المكتبة فارغة. ارفع الصور للبدء.'));
     data.images.forEach(image=>{
-      const tile=node('label',undefined,'image-tile'),check=node('input');check.type='checkbox';check.checked=selection.some(i=>i.imageId===image.imageId);
+      const tile=node('article',undefined,'image-tile'),check=node('input');check.type='checkbox';check.checked=selection.some(i=>i.imageId===image.imageId);
       check.setAttribute('aria-label','اختيار '+image.imageName);
       check.addEventListener('change',()=>{
         if(check.checked) {if(selection.length>=100){check.checked=false;say('يمكن اختيار 100 صورة كحد أقصى للمجموعة.',true);return;}selection.push({imageId:image.imageId,active:true});}
         else {selection=selection.filter(i=>i.imageId!==image.imageId);if(defaultId===image.imageId)defaultId=null;}
         mark();renderSelection();
       });
-      const line=node('span');line.append(check,node('span','اختيار الصورة'));
-      tile.append(preview(image),node('strong',image.imageName),node('small',`${image.pixelWidth} × ${image.pixelHeight} · ${Math.ceil(image.byteLength/1024)} KB`),line);library.append(tile);
+      const line=node('label');line.append(check,node('span','اختيار الصورة'));
+      const remove=node('button','حذف الصورة','image-delete');remove.type='button';remove.setAttribute('aria-label','حذف '+image.imageName);
+      remove.addEventListener('click',()=>{
+        if(!window.confirm('حذف الصورة «'+image.imageName+'» من المكتبة؟ لا يمكن حذف صورة مستخدمة في مجموعة محفوظة.'))return;
+        run(async()=>{
+          await request(`api/admin/images/${image.imageId}`,'DELETE');
+          selection=selection.filter(item=>item.imageId!==image.imageId);if(defaultId===image.imageId)defaultId=null;
+          data=await request('api/admin/images');renderLibrary();renderSelection();say('تم حذف الصورة من المكتبة.');
+        });
+      });
+      tile.append(preview(image),node('strong',image.imageName),node('small',`${image.pixelWidth} × ${image.pixelHeight} · ${Math.ceil(image.byteLength/1024)} KB`),line,remove);library.append(tile);
     });
   }
   function renderSelection(){

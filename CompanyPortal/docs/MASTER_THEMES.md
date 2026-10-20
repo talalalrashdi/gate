@@ -4,6 +4,12 @@ Prepared 19 October 2026. This document supersedes the ThemeName-based schema an
 
 **Deployment status, 19 October 2026:** the user applied migration 007 in SSMS. Direct Windows-authenticated SQL access now works after changing Codex approval routing to manual approval. Verified all three catalog definitions, the saved ThemeId 1 setting, an enabled/trusted foreign key, no UserSettings constraint violations, and the getTheme procedure returning the saved definition. Authenticated API checks also passed: catalog reads, theme save/reload, timestamp change/no-op behavior, anonymous rejection, invalid IDs/legacy names/client-selected identity rejection, and write header/Origin checks. Direct SQL confirmed the original ThemeId 1 restored with no constraint violations. LastChangeAt advanced during the deliberate change and restoration. The test API process was stopped afterward. Migration rerun, inactive-definition scenarios, browser and IIS acceptance remain unverified.
 
+## Current administration
+
+Theme creation, editing/copying, appearance controls, activation/default/order and read-only desktop preview are implemented. See [THEME_ADMINISTRATION.md](THEME_ADMINISTRATION.md). Migration016 adds appearance fields and extends the catalog; earlier deployment notes below describe the original catalog milestone.
+
+Visibility, role previews, soft deletion and an explicit default/apply-to-all action are now available; see [THEME_PUBLICATION.md](THEME_PUBLICATION.md).
+
 ## Simple model
 
 `Master.Themes` contains available theme definitions. `Portal.UserSettings` stays in the Portal schema and references a definition using ThemeId. `Security.User_getByUsername` continues resolving authenticated NTName to the external SecurityDB UserId. No duplicate employee table is introduced.

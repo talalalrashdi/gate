@@ -1,0 +1,25 @@
+/* These overrides activate only for administrator-supplied settings. */
+body[data-theme-primary]{--brand-primary:var(--theme-primary);--ink:var(--theme-primary);--deep:var(--theme-primary);--work-maroon:var(--theme-primary);--system-icon-ink:var(--theme-primary)}
+body[data-theme-accent]{--brand-accent:var(--theme-accent);--terra:var(--theme-accent);--work-tangerine:var(--theme-accent)}
+body[data-theme-background]{background-color:var(--theme-background)!important}
+body[data-theme-primary] :is(.portal-section-heading h2,.portal-work-heading h2,.systems-heading h2,.portal-digital-book h3){color:var(--theme-primary)!important}
+body[data-theme-primary] :is(.portal-theme-switch button[aria-pressed=true],#planner-task-form button,.personal-month-grid button[aria-pressed=true]){background:var(--theme-primary)!important;color:var(--theme-button-ink)!important}
+body[data-theme-primary] .portal-header .portal-nav a::after{background:var(--theme-primary)!important}
+body[data-theme-accent] :is(.personal-calendar-key span+span i,.personal-month-grid button.has-tasks::after){background:var(--theme-accent)!important}
+body[data-theme-accent] .portal-header .portal-nav a[aria-current]::after{background:var(--theme-accent)!important}
+body[data-theme-foreground=light]{--theme-hero-ink:#fff;--theme-hero-muted:#edf1ee}
+body[data-theme-foreground=dark]{--theme-hero-ink:#173b30;--theme-hero-muted:#415d52}
+body[data-theme-foreground] .portal-header .portal-nav a,body[data-theme-foreground] .portal-header .portal-media-subnav-links a{color:var(--theme-hero-ink)!important;--text-primary:var(--theme-hero-ink)}
+body[data-theme-foreground] #systems :is(.theme-national-day-description,.theme-national-day-kicker,.theme-national-day-date){color:var(--theme-hero-ink)!important;--text-primary:var(--theme-hero-ink);--text-secondary:var(--theme-hero-muted)}
+body[data-theme-overlay] .theme-official-backdrop::after{background:rgb(var(--theme-overlay-rgb) / var(--theme-overlay-opacity))!important}
+/* Complete artwork stays in the existing hero, filling its width without distortion or zoom. */
+body[data-theme-image-mode=artwork] .theme-official-backdrop{display:block!important;background:var(--theme-background,#f5f1ea)}
+body[data-theme-image-mode=artwork] .theme-official-backdrop img{object-fit:cover;object-position:center;transform:none;animation:none!important}
+body[data-theme-image-mode=artwork] .theme-official-backdrop::before{display:none}
+body[data-theme-image-mode=artwork][data-site-theme=national-day]:not([data-theme-overlay]) .theme-official-backdrop::after{background:none}
+body[data-theme-image-mode=artwork] :is(.theme-national-day-copy,.theme-national-day-portrait,.theme-national-day-silk){display:none!important}
+body[data-theme-image-mode=artwork][data-site-theme=national-day] .theme-official-backdrop{position:absolute;inset:0;z-index:0;overflow:hidden}
+body[data-theme-image-mode=artwork][data-site-theme=national-day] #theme-national-day{min-height:480px}
+body[data-theme-image-mode=artwork] .portal-personal-zone > .theme-official-glass{display:none!important}
+
+body[data-theme-background][data-site-theme="national-day"] .portal-personal-zone{background:var(--portal-national-background,var(--theme-background))!important}

@@ -1,0 +1,21 @@
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{ Layout="_Layout"; ViewData["BodyClass"]="portal-dashboard theme-preview-document"; }
+@section Metadata {<meta name="companyportal-api-base" content="@(Configuration["Api:BaseUrl"] ?? Url.Content("~/"))">}
+@section Head {<link rel="stylesheet" href="@Url.Content("~/vendor/iconsax/icons.css")">}
+@section Styles {
+  @await Html.PartialAsync("~/Views/Home/_PortalStyles.cshtml")
+  <style>html{scrollbar-width:thin}body{pointer-events:none}#preview-shell[hidden]{display:none}#preview-message{padding:30px;font-family:Arial,sans-serif;direction:rtl}.portal-floating-alert,.portal-floating-notice{display:none!important}</style>
+}
+<p id="preview-message" role="status">جارٍ التحقق من صلاحية المعاينة…</p>
+<div id="preview-shell" hidden>
+  @await Html.PartialAsync("~/Views/Shared/_PortalHeader.cshtml")
+  <main><div class="theme-official-frame" id="theme-official-frame">
+    @await Html.PartialAsync("~/Views/Home/_PersonalWorkspace.cshtml")
+    @await Html.PartialAsync("~/Views/Home/_Workspace.cshtml")
+  </div></main>
+  @await Html.PartialAsync("~/Views/Home/_Overlays.cshtml")
+</div>
+@section Scripts {
+  <script src="@Url.Content("~/js/theme-appearance.js")" asp-append-version="true"></script>
+  <script src="@Url.Content("~/js/theme-preview.js")" asp-append-version="true"></script>
+}

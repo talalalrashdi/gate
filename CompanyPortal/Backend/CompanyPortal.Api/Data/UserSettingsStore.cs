@@ -36,10 +36,12 @@ public sealed class UserSettingsStore(IConfiguration configuration)
 
     private sealed record CardOrderRow(string CardKey, string CardName, bool IsFixed, int DisplayOrder, bool IsCustom, int? UserCardId, bool IsSaved, DateTime? LastChangeAt);
 
-    public async Task<IReadOnlyList<ThemeDefinition>> GetThemesAsync(CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<ThemeDefinition>> GetThemesAsync(string ntName, CancellationToken cancellationToken)
     {
         await using var connection = await OpenAsync(cancellationToken);
-        var themes = (await connection.QueryAsync<ThemeDefinition>(Command("Master.Themes_getAll", new { }, cancellationToken))).AsList();
+        var userId=await GetUserIdAsync(connection,ntName,cancellationToken);
+        if(userId is null)return [];
+        var themes = (await connection.QueryAsync<ThemeDefinition>(Command("Master.Themes_getAll", new {UserId=userId.Value}, cancellationToken))).AsList();
         if (themes.Count == 0 || themes.Count(theme => theme.IsDefault) != 1)
             throw new InvalidOperationException("Configure one active default theme.");
         return themes;

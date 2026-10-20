@@ -100,3 +100,7 @@ The landscape PNGs remain usable; they do not have to be re-exported before sele
 4. Check both static display and rotation if rotation will be enabled. Reduced-motion preferences and hidden pages pause rotation.
 
 For database storage, permissions, deployment and the import script, see [INTERFACE_IMAGES.md](INTERFACE_IMAGES.md).
+
+## Current desktop hero behaviour
+
+The portal is intended for desktop use; the theme editor no longer has a mobile preview. Both image modes fill the hero width with proportional cover cropping. Panoramic photographs such as 2560 × 960 reduce vertical cropping compared with 16:9; keep important details away from the top/bottom edges and inspect the current desktop preview. Complete-design mode replaces the original decoration; it no longer adds a separate contained image block or side gaps. See THEME_PUBLICATION.md for the current display rules.

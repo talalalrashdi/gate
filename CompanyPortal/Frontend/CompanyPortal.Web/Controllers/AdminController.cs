@@ -9,10 +9,14 @@ public sealed class AdminController : Controller
     [HttpGet("/admin/cards")]
     [HttpGet("/admin")]
     [HttpGet("/admin/images")]
+    [HttpGet("/admin/themes")]
     public IActionResult Cards()
     {
         ViewData["AdminSection"] = Request.Path.Value?.TrimEnd('/').EndsWith("/cards", StringComparison.OrdinalIgnoreCase) == true ? "cards" : "overview";
         if (Request.Path.Value?.TrimEnd('/').EndsWith("/images", StringComparison.OrdinalIgnoreCase) == true) ViewData["AdminSection"] = "images";
+        if (Request.Path.Value?.TrimEnd('/').EndsWith("/themes", StringComparison.OrdinalIgnoreCase) == true) ViewData["AdminSection"] = "themes";
         return View();
     }
+    [HttpGet("/admin/theme-preview")]
+    public IActionResult ThemePreview() => View();
 }

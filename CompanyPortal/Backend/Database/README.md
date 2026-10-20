@@ -59,3 +59,15 @@ The intended application handoff is the same code plus ordered SQL scripts and a
 ## Interface images
 
 After 014, apply `Scripts/015_InterfaceImages.sql`. Images are SQL BLOBs; it adds no sample data or assignments. See `../../docs/INTERFACE_IMAGES.md` for object/type permissions, limits, backup/storage and deployment details.
+
+## Theme administration
+
+After 015, apply `Scripts/016_ThemeAdministration.sql`. Existing appearance overrides start null; no employee preferences or image assignments are seeded/reset. See `../../docs/THEME_ADMINISTRATION.md` for endpoints, object-specific SQL grants and deployment verification.
+
+## Image deletion
+
+After 016, apply `Scripts/017_ImageDeletion.sql`; grant EXECUTE on `Master.Images_delete`. It safely deactivates unused images and rejects images referenced by saved groups.
+
+## Theme publication
+
+After 017, apply `Scripts/018_ThemePublication.sql`. It adds hidden/role-preview/public states and soft deletion, updates role-aware employee/image reads, and adds transactional global default application. Grant EXECUTE on `Master.Themes_delete` and `Master.Themes_applyToAll`. See `../../docs/THEME_PUBLICATION.md`.

@@ -24,6 +24,11 @@ public sealed class InterfaceImagesStore(IConfiguration configuration)
         await using var connection = Connection();
         return await connection.QuerySingleAsync<int>(Command("Master.Images_add", new { ImageName = name, image.ContentType, ImageData = image.Data, PixelWidth = image.Width, PixelHeight = image.Height }, token));
     }
+    public async Task<bool> DeleteAsync(int id, CancellationToken token)
+    {
+        await using var connection = Connection();
+        return await connection.QuerySingleAsync<bool>(Command("Master.Images_delete", new { ImageId = id }, token));
+    }
     public async Task<int> SaveGroupAsync(int? id, SaveImageGroup request, CancellationToken token)
     {
         var items = new DataTable();
@@ -37,16 +42,18 @@ public sealed class InterfaceImagesStore(IConfiguration configuration)
         await using var connection = Connection();
         await connection.ExecuteAsync(Command("Master.Themes_setImageGroup", new { ThemeId = id, ImageGroupId = groupId }, token));
     }
-    public async Task<ThemeImages> ThemeAsync(int id, CancellationToken token)
+    public async Task<ThemeImages> ThemeAsync(int id, string account, CancellationToken token)
     {
         await using var connection = Connection();
-        using var rows = await connection.QueryMultipleAsync(Command("Master.Themes_getImages", new { ThemeId = id }, token));
+        var userId=await connection.QuerySingleOrDefaultAsync<int?>(Command("Security.User_getByUsername",new {Username=account},token));
+        using var rows = await connection.QueryMultipleAsync(Command("Master.Themes_getImages", new { ThemeId = id,UserId=userId }, token));
         return new(await rows.ReadSingleOrDefaultAsync<ThemeImageSettings>(), (await rows.ReadAsync<ThemeImage>()).AsList());
     }
     public sealed record Content(byte[] ImageData, string ContentType);
-    public async Task<Content?> ContentAsync(int id, bool admin, CancellationToken token)
+    public async Task<Content?> ContentAsync(int id, bool admin, string account, CancellationToken token)
     {
         await using var connection = Connection();
-        return await connection.QuerySingleOrDefaultAsync<Content>(Command("Master.Images_getContent", new { ImageId = id, IsAdmin = admin }, token));
+        var userId=await connection.QuerySingleOrDefaultAsync<int?>(Command("Security.User_getByUsername",new {Username=account},token));
+        return await connection.QuerySingleOrDefaultAsync<Content>(Command("Master.Images_getContent", new { ImageId = id, IsAdmin = admin,UserId=userId }, token));
     }
 }

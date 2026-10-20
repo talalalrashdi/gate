@@ -52,9 +52,10 @@
         detail: { layoutKey: theme.layoutKey, themeName: theme.themeName }
       }));
     } finally { applying = false; }
+    window.CompanyPortalTheme?.apply(theme);
     options.querySelectorAll('[data-theme-id]').forEach(button =>
       button.setAttribute('aria-pressed', String(Number(button.dataset.themeId) === selectedId)));
-    try { localStorage.setItem(cacheKey, JSON.stringify({ themeId: theme.themeId, themeName: theme.themeName, layoutKey: theme.layoutKey })); }
+    try { localStorage.setItem(cacheKey, JSON.stringify(theme)); }
     catch { /* Account persistence works even if local storage is blocked. */ }
   }
 

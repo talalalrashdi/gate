@@ -1,0 +1,41 @@
+<section data-admin-panel="themes" aria-label="الثيمات والمظهر" hidden>
+  <div class="admin-section-heading"><div><h2>ثيمات تناسب بوابتك</h2><p>اختر قالبًا، أضف صورك وألوانك، ثم عاين النتيجة قبل الحفظ.</p></div><button id="theme-add" type="button" class="admin-primary" disabled>＋ إضافة ثيم</button></div>
+  <p id="themes-status" role="status" aria-live="polite" class="images-status">جارٍ تحميل الثيمات…</p><button id="themes-retry" type="button" hidden>إعادة المحاولة</button>
+  <div id="theme-gallery" class="theme-gallery"></div>
+  <section id="theme-editor" class="theme-editor" hidden aria-label="محرر الثيم">
+    <form id="theme-form" class="theme-settings admin-panel">
+      <div class="admin-panel-header"><div><h2 id="theme-editor-title">ثيم جديد</h2><p id="theme-dirty">لم يُحفظ بعد</p></div></div>
+      <div class="theme-editor-tabs" role="tablist" aria-label="إعدادات الثيم"><button type="button" role="tab" id="theme-tab-details" aria-controls="theme-details" aria-selected="true" data-theme-tab="details">التفاصيل</button><button type="button" role="tab" id="theme-tab-colours" aria-controls="theme-colours" aria-selected="false" tabindex="-1" data-theme-tab="colours">الألوان</button><button type="button" role="tab" id="theme-tab-images" aria-controls="theme-images" aria-selected="false" tabindex="-1" data-theme-tab="images">الصور</button></div>
+      <div class="theme-editor-fields">
+        <div id="theme-details" role="tabpanel" aria-labelledby="theme-tab-details">
+          <label>اسم الثيم<input id="theme-name" maxlength="200" required placeholder="مثال: مناسبة المؤسسة"></label>
+          <fieldset class="theme-template-field"><legend>قالب التصميم</legend><div id="theme-templates" class="theme-template-options"></div></fieldset>
+          <label>ترتيب الظهور<input id="theme-order" type="number" min="0" max="1000000" step="1" value="1" required></label>
+          <label>حالة النشر<select id="theme-visibility"><option value="hidden">مخفي — للإدارة فقط</option><option value="preview">معاينة — لأدوار محددة</option><option value="public">مباشر — متاح لجميع المستخدمين</option></select></label>
+          <label id="theme-roles-field" hidden>أدوار المعاينة<textarea id="theme-preview-roles" rows="4" maxlength="10049" placeholder="CompanyPortal.ThemeReviewers"></textarea><span class="theme-note">اسم الدور كما يعيده مصدر الصلاحيات، دور واحد في كل سطر. أصحاب هذه الأدوار فقط يستطيعون اختيار الثيم قبل نشره للجميع.</span></label>
+          <p id="theme-publication-note" class="theme-publication-note" role="status"></p>
+          <label class="theme-check"><input id="theme-default" type="checkbox"> تعيين افتراضي وتطبيقه على جميع المستخدمين</label>
+          <p class="theme-note" id="theme-default-note">عند تعيين افتراضي جديد، يُطبّق على الجميع عند فتح البوابة أو إعادة تحميلها، ويستبدل اختياراتهم الحالية. يمكنهم اختيار ثيم آخر لاحقًا.</p>
+        </div>
+        <div id="theme-colours" role="tabpanel" aria-labelledby="theme-tab-colours" hidden>
+          <p class="theme-note">اترك ألوان القالب الأصلية، أو اختر ألوانًا خاصة. ألوان التنبيهات والحالات تبقى مستقلة.</p>
+          <div id="theme-colour-fields"></div>
+          <label>لون النص فوق الصورة<select id="theme-foreground"><option value="">إعداد القالب الأصلي</option><option value="light">نص فاتح</option><option value="dark">نص داكن</option></select></label>
+          <label>قوة طبقة تباين الصورة <span id="theme-overlay-value">إعداد القالب</span><input id="theme-overlay" type="range" min="0" max="85" value="0"></label><button id="theme-overlay-reset" type="button" class="theme-text-button">استعادة طبقة القالب</button>
+          <p id="theme-colour-advice" class="theme-note" role="status"></p>
+        </div>
+        <div id="theme-images" role="tabpanel" aria-labelledby="theme-tab-images" hidden>
+          <label>مجموعة الصور<select id="theme-image-group"><option value="">الصور الأصلية للقالب</option></select></label>
+          <p id="theme-group-summary" class="theme-note"></p><a class="theme-text-button" href="@Url.Content("~/admin/images")" target="_blank" rel="noopener">إدارة مجموعات الصور ↗</a>
+          <fieldset class="theme-template-field"><legend>طريقة عرض الصور</legend><label class="theme-check"><input type="radio" name="theme-presentation" value="background" checked> خلفية — تملأ المساحة وقد تُقص أطرافها</label><label class="theme-check"><input type="radio" name="theme-presentation" value="artwork"> تصميم كامل — يملأ عرض الواجهة</label></fieldset>
+          <p class="theme-note">التصميم الكامل يملأ عرض الواجهة مع الحفاظ على تناسب الصورة وقد يُقص منها رأسيًا. يستبدل الرسم الأصلي للقالب؛ الخط والصورة والعلم لا تظهر مرتين. التدوير والترتيب يُحدّدان من إعدادات المجموعة.</p>
+        </div>
+      </div>
+      <div class="theme-save-bar"><button id="theme-save" type="submit" class="admin-primary">حفظ التغييرات</button><button id="theme-cancel" type="button">إلغاء</button></div>
+    </form>
+    <div class="theme-preview-panel"><div class="theme-preview-heading"><div><h3>معاينة مباشرة</h3><p>المعاينة لا تغيّر إعدادات حسابك.</p></div></div><div class="theme-preview-window"><iframe id="theme-preview-frame" title="معاينة الثيم" src="about:blank" data-preview-url="@Url.Content("~/admin/theme-preview")"></iframe></div></div>
+  </section>
+  <dialog id="theme-preview-dialog" class="theme-preview-dialog"><header><h2>معاينة الثيم</h2><button type="button" id="theme-preview-close">إغلاق</button></header><div class="theme-gallery-preview-window"><iframe id="theme-gallery-preview" title="معاينة الثيم المحفوظ" src="about:blank"></iframe></div></dialog>
+</section>
+
+<dialog id="theme-action-dialog" class="theme-action-dialog" aria-labelledby="theme-action-title"><h2 id="theme-action-title"></h2><p id="theme-action-message"></p><div><button type="button" id="theme-action-confirm" class="admin-primary">تأكيد</button><button type="button" id="theme-action-cancel">إلغاء</button></div></dialog>

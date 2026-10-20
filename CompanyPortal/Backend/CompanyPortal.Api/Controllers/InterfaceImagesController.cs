@@ -28,6 +28,10 @@ public sealed class InterfaceImagesController(InterfaceImagesStore images, Admin
         return Ok(new { imageId = await images.AddAsync(name,validated,token) });
     },true,true,token);
 
+    [HttpDelete("{id:int:min(1)}")]
+    public Task<IActionResult> Delete(int id, CancellationToken token) => Execute(async _ =>
+        await images.DeleteAsync(id,token) ? NoContent() : NotFound(),true,true,token);
+
     [HttpPost("groups"), Consumes("application/json"), RequestSizeLimit(32768)]
     public Task<IActionResult> CreateGroup(SaveImageGroup request, CancellationToken token) => Save(null,request,token);
     [HttpPut("groups/{id:int:min(1)}"), Consumes("application/json"), RequestSizeLimit(32768)]
@@ -47,12 +51,12 @@ public sealed class InterfaceImagesController(InterfaceImagesStore images, Admin
     },true,true,token);
 
     [HttpGet("/api/themes/{id:int:min(1)}/images")]
-    public Task<IActionResult> Theme(int id, CancellationToken token) => Execute(async _ => Ok(await images.ThemeAsync(id,token)),false,false,token);
+    public Task<IActionResult> Theme(int id, CancellationToken token) => Execute(async _ => Ok(await images.ThemeAsync(id,User.Identity!.Name!,token)),false,false,token);
 
     [HttpGet("/api/images/{id:int:min(1)}/content")]
     public Task<IActionResult> Content(int id, CancellationToken token) => Execute(async admin =>
     {
-        var content = await images.ContentAsync(id,admin,token);
+        var content = await images.ContentAsync(id,admin,User.Identity!.Name!,token);
         if (content is null) return NotFound();
         Response.Headers.XContentTypeOptions="nosniff";
         Response.Headers.ContentSecurityPolicy=content.ContentType=="image/svg+xml" && BundledArtwork.IsNationalDay(content.ImageData)
@@ -81,6 +85,7 @@ public sealed class InterfaceImagesController(InterfaceImagesStore images, Admin
             }
             return await action(admin);
         }
+        catch (SqlException exception) when (exception.Number==50009) { return Problem(statusCode:409,title:"Remove the image from saved groups before deleting it."); }
         catch (ArgumentException exception) { return Problem(statusCode:400,title:exception.Message); }
         catch (SqlException exception) when (exception.Number==50007) { return Problem(statusCode:400,title:"Check the group, images, default image and theme selection."); }
         catch (Exception exception) when (exception is SqlException or InvalidOperationException)

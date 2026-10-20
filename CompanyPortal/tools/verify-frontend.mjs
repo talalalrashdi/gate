@@ -20,6 +20,7 @@ const normalize = text => text.replaceAll('\r\n', '\n').replace(/>\s+</g, '><').
 const canonicalHtml = text => normalize(text.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, ''))
   .replace(/<button\b[^>]*id="portal-notices-visibility"[^>]*>/g, '<button id="portal-notices-visibility">')
   .replace(/(<section id="portal-floating-alert"[^>]*?) hidden/g, '$1')
+  .replace(/<link[^>]*href="[^"]*\/css\/theme-appearance\.css[^"]*"[^>]*>/g, '')
   .replace(/<base[^>]*>/, '')
   .replace(/<meta name="companyportal-api-base"[^>]*>/g, '')
   .replace('<body class="">', '<body>')
@@ -81,7 +82,7 @@ for (const route of ['', 'index.html', 'design-b.html']) {
   const buttons = [...html.matchAll(/<button[^>]*data-theme-option="([^"]+)"[^>]*>(\d)<\/button>/g)];
   assert.deepEqual(buttons.map(button => [button[1], button[2]]), [['official', '1'], ['work', '2'], ['national-day', '3']], 'Visible theme mapping');
   const scripts = [...html.matchAll(/<script\b[^>]*src="([^"]+)"[^>]*><\/script>/g)].map(match => match[1].split('?')[0]);
-  assert.deepEqual(scripts, [...baseline.portalScripts.flatMap(file => { const script = mount + '/' + migratedPath(file.slice(2)); return script.endsWith('/workspace-order.js') ? [mount + '/js/workspace-policy.js', script] : [script]; }), mount + '/js/theme-settings.js', mount + '/js/workspace-settings.js', mount + '/js/admin-access.js', mount + '/js/email.js'], 'Original script order and appended account persistence/admin/email');
+  assert.deepEqual(scripts, [mount + '/js/theme-appearance.js', ...baseline.portalScripts.flatMap(file => { const script = mount + '/' + migratedPath(file.slice(2)); return script.endsWith('/workspace-order.js') ? [mount + '/js/workspace-policy.js', script] : [script]; }), mount + '/js/theme-settings.js', mount + '/js/workspace-settings.js', mount + '/js/admin-access.js', mount + '/js/email.js'], 'Original script order and appended account persistence/admin/email');
   assert.ok(html.indexOf('id="personal-announcement-dialog"') < html.indexOf(`src="${mount}/js/personal-workspace.js`), 'Dialog markup must exist before initialization');
 }
 for (const route of ['profile', 'profile/', 'user-profile.html']) {
@@ -143,12 +144,16 @@ for (const oldThemeFile of ['theme-majestic.css', 'theme-formal.css', 'theme-nat
   await request('css/' + oldThemeFile, 404);
 await request('js/design-b.js', 404);
 for (const removed of cleanup.removed) await request(removed.path, 404);
-for (const resource of ['css/profile.css', 'js/theme-settings.js', 'js/workspace-settings.js', 'js/workspace-policy.js', 'js/admin-access.js', 'js/admin-cards.js', 'js/email.js', 'css/admin-cards.css', 'css/admin.css', 'js/admin-navigation.js', 'css/admin-images.css', 'js/admin-images.js', 'vendor/iconsax/icons.css', ...['eot','woff2','woff','ttf','svg'].map(extension => `vendor/iconsax/files/iconsax.${extension}`)]) {
+for (const resource of ['css/profile.css', 'js/theme-settings.js', 'js/workspace-settings.js', 'js/workspace-policy.js', 'js/admin-access.js', 'js/admin-cards.js', 'js/email.js', 'css/admin-cards.css', 'css/admin.css', 'js/admin-navigation.js', 'css/admin-images.css', 'js/admin-images.js', 'css/admin-themes.css', 'js/admin-themes.js', 'js/theme-appearance.js', 'css/theme-appearance.css', 'js/theme-preview.js', 'vendor/iconsax/icons.css', ...['eot','woff2','woff','ttf','svg'].map(extension => `vendor/iconsax/files/iconsax.${extension}`)]) {
   const response = await request(resource);
   const actual = Buffer.from(await response.arrayBuffer());
   const expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot', resource));
   assert.equal(digest(actual), digest(expected), `Additional local resource differs: ${resource}`);
 }
+const previewHtml = await (await request('admin/theme-preview')).text();
+const previewScripts = [...previewHtml.matchAll(/<script\b[^>]*src="([^"]+)"/g)].map(match => match[1].split('?')[0]);
+assert.deepEqual(previewScripts, [mount + '/js/theme-appearance.js', mount + '/js/theme-preview.js'], 'Preview must omit employee persistence/business scripts');
+for (const route of ['admin', 'admin/cards', 'admin/images', 'admin/themes']) await request(route);
 const legacy = await fetch(new URL('design-b.html?section=workspace', base), { redirect: 'manual' });
 assert.equal(legacy.status, 302, 'Legacy portal route redirects');
 assert.equal(legacy.headers.get('location'), mount + '/?section=workspace', 'Legacy query preserved');
@@ -160,8 +165,8 @@ console.log(JSON.stringify({
   matchingPageRoutes: 6,
   matchingStaticResources: resources.length,
   resolvedCssReferences: cssReferences,
-  orderedPortalStyles: baseline.portalStyles.length,
-  orderedPortalScripts: baseline.portalScripts.length + 5,
+  orderedPortalStyles: baseline.portalStyles.length + 1,
+  orderedPortalScripts: baseline.portalScripts.length + 6,
   apiAndViteReviewNotExposed: true,
   browserInteractionsTested: false
 }, null, 2));

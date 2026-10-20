@@ -1,4 +1,4 @@
-param([string]$BaseUrl='http://localhost:5081', [switch]$KeepFixtures)
+﻿param([string]$BaseUrl='http://localhost:5081', [switch]$KeepFixtures)
 $ErrorActionPreference='Stop'
 if (-not ([uri]$BaseUrl).IsLoopback) { throw 'Run only against the local development API.' }
 Add-Type -AssemblyName System.Net.Http
@@ -28,6 +28,15 @@ try {
     $themeId=[int]$theme.themeId;$original=$theme.imageGroupId
     $svg='<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700"><rect width="1200" height="700" fill="#234e40"/><circle cx="900" cy="180" r="90" fill="#d4bb7c"/><path d="M0 700L350 220L800 700Z" fill="#638970"/></svg>'
     foreach($suffix in 1,2){$upload=Upload "interface-test-$suffix.svg" ([Text.Encoding]::UTF8.GetBytes($svg.Replace('#234e40',$(if($suffix -eq 1){'#234e40'}else{'#6b433f'}))));Assert ($upload.Status -eq 200) "SVG upload failed: $($upload.Body)";$imageIds.Add([int](($upload.Body|ConvertFrom-Json).imageId))}
+    $deletable=Upload 'interface-delete-test.svg' ([Text.Encoding]::UTF8.GetBytes($svg))
+    Assert ($deletable.Status -eq 200) 'Delete fixture upload failed.'
+    $deleteId=[int](($deletable.Body|ConvertFrom-Json).imageId)
+    Assert ((Send DELETE "/api/admin/images/$deleteId" $null $false).Status -eq 400) 'Delete accepted incorrect request header.'
+    Assert ((Send DELETE "/api/admin/images/$deleteId" $null $true 'https://untrusted.invalid').Status -eq 403) 'Delete accepted untrusted origin.'
+    Assert ((Send DELETE "/api/admin/images/$deleteId").Status -eq 204) 'Unused image deletion failed.'
+    Assert ((Send DELETE "/api/admin/images/$deleteId").Status -eq 404) 'Repeated deletion should be not found.'
+    Assert ((Send GET "/api/images/$deleteId/content").Status -eq 404) 'Deleted content is still accessible.'
+    Assert (-not @(((Send GET '/api/admin/images').Body|ConvertFrom-Json).images|Where-Object imageId -eq $deleteId).Count) 'Deleted image remains in library.'
     $pngPath=Join-Path $PSScriptRoot '../../Frontend/CompanyPortal.Web/wwwroot/assets/hero-oman-fort.png'
     $png=Upload 'interface-test.png' ([IO.File]::ReadAllBytes([IO.Path]::GetFullPath($pngPath))) 'text/plain'
     Assert ($png.Status -eq 200) 'PNG signature detection failed.';$imageIds.Add([int](($png.Body|ConvertFrom-Json).imageId))
@@ -63,6 +72,7 @@ try {
     $invalid=$group.Clone();$invalid.items=@($null);Assert ((Send POST '/api/admin/images/groups' $invalid).Status -eq 400) 'Null image member accepted.'
     $created=Send POST '/api/admin/images/groups' $group;Assert ($created.Status -eq 200) "Group create failed: $($created.Body)"
     $id=[int](($created.Body|ConvertFrom-Json).imageGroupId);$groupIds.Add($id)
+    Assert ((Send DELETE "/api/admin/images/$($imageIds[0])").Status -eq 409) 'Linked image deletion was not blocked.'
     $snapshot=((Send GET '/api/admin/images').Body|ConvertFrom-Json).groups|Where-Object imageGroupId -eq $id
     Assert ((Send PUT "/api/admin/images/groups/$id" $group).Status -eq 200) 'No-op group save failed.'
     $same=((Send GET '/api/admin/images').Body|ConvertFrom-Json).groups|Where-Object imageGroupId -eq $id
@@ -82,13 +92,13 @@ try {
     Assert ((Send PUT "/api/admin/images/groups/$id" $group).Status -eq 200) 'Restore fixture group failed.'
     $anonymous=[Net.Http.HttpClient]::new()
     try{foreach($route in '/api/admin/images',"/api/themes/$themeId/images","/api/images/$($imageIds[0])/content"){$r=$anonymous.GetAsync($BaseUrl+$route).GetAwaiter().GetResult();try{Assert ([int]$r.StatusCode -eq 401) 'Anonymous image access accepted.'}finally{$r.Dispose()}}}finally{$anonymous.Dispose()}
-    Write-Output "PASS: uploads, passive SVG checks, signature checks, group save/order/removal/default/rotation/active state, theme assignment, content and anonymous denial."
+    Write-Output "PASS: protected image deletion, linked-image conflict, uploads, passive SVG checks, signature checks, group save/order/removal/default/rotation/active state, theme assignment, content and anonymous denial."
     if($KeepFixtures){Write-Output ("Fixtures kept for browser verification: group {0}; image IDs {1}; original theme group {2}." -f $id,($imageIds -join ','),$original)}
 }
 finally {
     if($themeId -gt 0){$restore=Send PUT "/api/admin/images/themes/$themeId/group" @{imageGroupId=$original};Assert ($restore.Status -eq 204) 'Original theme image group could not be restored.'}
     if(-not $KeepFixtures -and $imageIds.Count -gt 0){
-        $groups=(@(0)+@($groupIds)) -join ',';$images=$imageIds -join ','
+        $groups=(@(0)+@($groupIds)) -join ',';$images=(@($imageIds)+@($deleteId)) -join ','
         $sql="SET XACT_ABORT ON; BEGIN TRAN; DELETE FROM Master.ImageGroupItems WHERE ImageGroupId IN ($groups); DELETE FROM Master.ImageGroups WHERE ImageGroupId IN ($groups) AND NOT EXISTS(SELECT 1 FROM Master.Themes t WHERE t.ImageGroupId=Master.ImageGroups.ImageGroupId); DELETE FROM Master.Images WHERE ImageId IN ($images) AND NOT EXISTS(SELECT 1 FROM Master.ImageGroupItems m WHERE m.ImageId=Master.Images.ImageId) AND NOT EXISTS(SELECT 1 FROM Master.ImageGroups g WHERE g.DefaultImageId=Master.Images.ImageId); COMMIT;"
         & sqlcmd -S localhost -E -b -d CompanyPortal -Q $sql
         Assert ($LASTEXITCODE -eq 0) 'Fixture cleanup failed.'

@@ -5,6 +5,7 @@
   <link rel="stylesheet" href="@Url.Content("~/css/admin-themes.css")" asp-append-version="true">
   <link rel="stylesheet" href="@Url.Content("~/css/admin-images.css")" asp-append-version="true">
   <link rel="stylesheet" href="@Url.Content("~/css/admin-cards.css")" asp-append-version="true">
+  <link rel="stylesheet" href="@Url.Content("~/css/admin-applications.css")" asp-append-version="true">
 }
 <section data-admin-panel="overview" aria-label="نظرة عامة" hidden>
   <div class="admin-welcome"><div><span class="admin-eyebrow">أهلًا بك في مساحة الإدارة</span><h2>تفاصيل صغيرة،<br>تجربة أفضل للجميع.</h2><p>رتّب البطاقات الأساسية وحدّد مواضعها. أدر صور الواجهة ومجموعاتها، وحدّد صور كل ثيم.</p><button type="button" class="admin-primary" data-admin-section="cards">إدارة البطاقات <span aria-hidden="true">←</span></button></div><div class="admin-welcome-art" aria-hidden="true"><div class="admin-art-card"><span></span><i></i><i></i><i></i></div><div class="admin-art-mini"><span>✓</span><i></i><i></i></div><div class="admin-art-dot"></div></div></div>
@@ -23,8 +24,10 @@
 </section>
 @await Html.PartialAsync("_Images")
 @await Html.PartialAsync("_Themes")
+@await Html.PartialAsync("_Applications")
 @section Scripts {
   <script src="@Url.Content("~/js/admin-themes.js")" asp-append-version="true"></script>
   <script src="@Url.Content("~/js/admin-images.js")" asp-append-version="true"></script>
   <script src="@Url.Content("~/js/admin-cards.js")" asp-append-version="true"></script>
+  <script src="@Url.Content("~/js/admin-applications.js")" asp-append-version="true"></script>
 }

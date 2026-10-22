@@ -18,6 +18,8 @@ const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 const normalize = text => text.replaceAll('\r\n', '\n').replace(/>\s+</g, '><').trim();
 // User-approved changes after initial parity: tab metadata and theme controls.
 const canonicalHtml = text => normalize(text.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, ''))
+  // The sample directory was replaced by an authorized, API-rendered header sheet.
+  .replace(/<section\b[^>]*id="library"[^>]*>[\s\S]*?<\/section>/g, '<!-- authorized application directory -->')
   .replace(/<a class="portal-setup-link"[^>]*>[\s\S]*?<\/a>/g, '')
   .replace(/<button\b[^>]*id="portal-notices-visibility"[^>]*>/g, '<button id="portal-notices-visibility">')
   .replace(/(<section id="portal-floating-alert"[^>]*?) hidden/g, '$1')
@@ -115,6 +117,7 @@ for (let offset = 0; offset < resources.length; offset += 8) {
     // Browser acceptance fixes: shared responsive header and unique group choices.
     if (file.path === 'design-b-layout.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/layout.css'));
     if (file.path === 'design-b-workspace.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/workspace.css'));
+    if (migratedPath(file.path) === 'css/systems-catalog.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/systems-catalog.css'));
     // Published database news now reuses the editorial layout without demo sources.
     if (migratedPath(file.path) === 'css/editorial.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/editorial.css'));
     if (file.path === 'design-b-workspace-groups.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/workspace-groups.js'));

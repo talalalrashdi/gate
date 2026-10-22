@@ -11,6 +11,14 @@ public sealed class UserCardsStore(IConfiguration configuration)
     private sealed record CardRow(int UserCardId, string CardName, DateTime LastChangeAt);
     private sealed record CardAppRow(int UserCardId, int AppId, string AppName);
 
+    public async Task<IReadOnlyList<DirectoryApplication>?> GetDirectoryAsync(string ntName,CancellationToken token)
+    {
+        await using var connection=await OpenAsync(token);
+        var userId=await ResolveAsync(connection,ntName,token);
+        if(userId is null) return null;
+        return (await connection.QueryAsync<DirectoryApplication>(Command("Master.Applications_getForUser",new {UserId=userId.Value},token))).AsList();
+    }
+
     public async Task<IReadOnlyList<ApplicationAccess>?> GetApplicationsAsync(string ntName, CancellationToken token)
     {
         await using var connection = await OpenAsync(token);

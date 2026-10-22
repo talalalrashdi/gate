@@ -1,5 +1,7 @@
 # CompanyPortal
 
+The top **الأنظمة الإلكترونية** menu now searches authorized apps by name, description and category. Administrators manage categories/descriptions at `/admin/applications`; external security remains responsible for grants and launch URLs. See [application directory and migration 020](docs/APPLICATION_DIRECTORY.md).
+
 Master-card administration now supports application cards, audience rules and show/hide settings while retaining employee app permissions. See [master application cards](docs/MASTER_APPLICATION_CARDS.md) for migration 019, the new catalog adapter and deployment steps.
 
 Exchange authentication decision is deferred while other portal work continues. See the [authentication options, security considerations, IIS test results and exact resume point](docs/EXCHANGE_AUTHENTICATION_DECISION.md). No switch from the current service-account EWS impersonation approach has been made.

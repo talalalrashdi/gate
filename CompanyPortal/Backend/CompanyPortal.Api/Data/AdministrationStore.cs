@@ -47,6 +47,27 @@ public sealed class AdministrationStore(IConfiguration configuration)
     }
 
     private sealed record CardRow(int CardId,string CardKey,string CardName,int DisplayOrder,bool IsFixed,DateTime LastChangeAt,string CardType,bool Active,string Audience);
+
+    public async Task<ApplicationDirectoryAdministration> GetApplicationDirectoryAsync(CancellationToken token)
+    {
+        await using var connection=Connection(); await connection.OpenAsync(token);
+        using var results=await connection.QueryMultipleAsync(Command("Master.Applications_adminGet",null,token));
+        var apps=(await results.ReadAsync<AdminDirectoryApplication>()).ToArray();
+        var categories=(await results.ReadAsync<ApplicationCategory>()).ToArray();
+        return new(apps,categories);
+    }
+
+    public async Task SaveApplicationDetailsAsync(int id,SaveApplicationDetailsRequest request,CancellationToken token)
+    {
+        await using var connection=Connection(); await connection.OpenAsync(token);
+        await connection.ExecuteAsync(Command("Master.Applications_save",new {AppId=id,request.Description,request.CategoryId},token));
+    }
+
+    public async Task<int> SaveApplicationCategoryAsync(int? id,SaveApplicationCategoryRequest request,CancellationToken token)
+    {
+        await using var connection=Connection(); await connection.OpenAsync(token);
+        return await connection.QuerySingleAsync<int>(Command("Master.ApplicationCategories_save",new {CategoryId=id,request.CategoryName,request.DisplayOrder,request.Active},token));
+    }
     private sealed record CardApp(int CardId,int AppId);
     private sealed record CardRole(int CardId,string RoleName);
 

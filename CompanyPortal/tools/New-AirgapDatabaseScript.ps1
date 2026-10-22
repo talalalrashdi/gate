@@ -3,7 +3,7 @@ $ErrorActionPreference = 'Stop'
 $database = Join-Path $PSScriptRoot '../Backend/Database'
 $parts = [Collections.Generic.List[string]]::new()
 $parts.Add(@'
-/* CompanyPortal fresh installation, generated from migrations 001-019.
+/* CompanyPortal fresh installation, generated from migrations 001-020.
    Open this entire UTF-8 file in SSMS and Execute (normal mode, no SQLCMD mode).
    Or: sqlcmd -S SQLSERVER -E -b -f 65001 -i CompanyPortal-Setup.sql
    FRESH INSTALL ONLY. Never run on an existing CompanyPortal database.
@@ -48,7 +48,7 @@ foreach ($file in Get-ChildItem (Join-Path $database 'Scripts/*.sql') | Sort-Obj
  $parts.Add("`n-- BEGIN $($file.Name)`n" + [IO.File]::ReadAllText($file.FullName) + "`nGO`n")
 }
 # Each dynamic batch runs in this connection, sharing #PortalDeployment.
-foreach ($name in '001_CreateSampleSecurityDB.sql','002_CreateSampleApplications.sql','003_CreateSampleRoles.sql') {
+foreach ($name in '001_CreateSampleSecurityDB.sql','002_CreateSampleApplications.sql','003_CreateSampleRoles.sql','006_SeedApplicationDirectory.sql') {
  $source = [IO.File]::ReadAllText((Join-Path $database "Development/$name"))
  $source = $source.Replace('ORIGINAL_LOGIN()', '(SELECT TestNTName FROM #PortalDeployment)')
  $source = $source.Replace("N'http://localhost:5080/#workspace'", "(SELECT PortalUrl+N'#workspace' FROM #PortalDeployment)")

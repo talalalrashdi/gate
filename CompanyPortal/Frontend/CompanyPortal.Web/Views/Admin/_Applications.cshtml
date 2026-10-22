@@ -1,0 +1,12 @@
+<section data-admin-panel="applications" aria-label="إدارة الأنظمة الإلكترونية" hidden>
+  <aside class="admin-help"><span aria-hidden="true">ⓘ</span><div><h3>معلومات العرض فقط</h3><p>تأتي التطبيقات والأسماء والصلاحيات من قاعدة الأمن. هنا تضيف الوصف والتصنيف فقط؛ لا تمنح هذه الإعدادات أي صلاحية. يرى كل موظف التطبيقات المصرح بها فقط.</p><p>التطبيق بلا تصنيف نشط يظهر تحت «غير مصنف». إيقاف تصنيف لا يخفي التطبيقات ولا يلغي صلاحياتها.</p></div></aside>
+  <div id="admin-applications">
+    <p id="admin-applications-status" role="status" aria-live="polite">افتح هذا القسم لتحميل دليل التطبيقات.</p>
+    <button type="button" class="admin-primary" id="admin-applications-retry" hidden>إعادة المحاولة</button>
+    <div class="admin-panel"><div class="admin-panel-header"><div><h2>تصنيفات الأنظمة</h2><p>أنشئ التصنيفات وحدّد ترتيبها وإتاحتها.</p></div><button type="button" class="admin-primary" id="admin-category-add" disabled>إضافة تصنيف +</button></div><div id="admin-application-categories" class="admin-directory-list"></div></div>
+    <div class="admin-panel"><div class="admin-panel-header"><div><h2>أوصاف التطبيقات</h2><p>اختر تصنيفًا واكتب وصفًا، ثم احفظ كل تطبيق على حدة.</p></div></div>
+      <label class="admin-directory-search">البحث في التطبيقات<input type="search" id="admin-application-search" placeholder="ابحث باسم التطبيق…"></label>
+      <div id="admin-application-details" class="admin-directory-list"></div>
+    </div>
+  </div>
+</section>

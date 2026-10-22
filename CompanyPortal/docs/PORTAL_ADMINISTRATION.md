@@ -1,5 +1,7 @@
 # Portal administration
 
+22 October directory update: [application directory administration](APPLICATION_DIRECTORY.md) at `/admin/applications` manages categories/descriptions only. It does not create apps or change grants/launch URLs.
+
 22 October update: [master application-card administration](MASTER_APPLICATION_CARDS.md) now adds creation, app selection, everyone/role audiences and show/hide controls. The historical update-only contracts below are superseded by that document. The five connected cards retain their renderers.
 
 The portal header now displays a shield/check admin icon immediately beside the theme button, only after `/api/access` confirms `isAdmin: true`. It opens `/admin`; the former workspace-toolbar admin text link has been removed. Failed/denied lookups leave the icon absent. Notices and alerts start hidden and can be shown with the existing bell toggle; no storage keys or visibility persistence were introduced.

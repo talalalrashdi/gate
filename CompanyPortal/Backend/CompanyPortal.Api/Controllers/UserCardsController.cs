@@ -36,14 +36,14 @@ public sealed class UserCardsController(UserCardsStore cards, IConfiguration con
     }
 
     [HttpGet("/api/applications")]
-    [ProducesResponseType<AuthorizedApplication[]>(StatusCodes.Status200OK)]
+    [ProducesResponseType<DirectoryApplication[]>(StatusCodes.Status200OK)]
     public async Task<IActionResult> Applications(CancellationToken token)
     {
         if (Prepare(write: false) is { } error) return error;
         try
         {
-            var result = await cards.GetApplicationsAsync(User.Identity!.Name!, token);
-            return result is null ? Unregistered() : Ok(result.Select(app => new AuthorizedApplication(app.AppId, app.AppName)));
+            var result = await cards.GetDirectoryAsync(User.Identity!.Name!, token);
+            return result is null ? Unregistered() : Ok(result);
         }
         catch (Exception exception) when (exception is SqlException or InvalidOperationException) { return Failure(exception); }
     }

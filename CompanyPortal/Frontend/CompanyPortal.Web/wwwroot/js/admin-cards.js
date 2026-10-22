@@ -101,7 +101,7 @@
       const catalog=await request('api/admin/cards/applications');catalogAvailable=catalog.ok;apps=catalog.ok?await catalog.json():[];
       if(catalog.status===401||catalog.status===403){authorize(false);setStatus(unavailable(catalog),'error',true);return;}
       root.replaceChildren(...records.map(card=>renderCard(card)));summaries();authorize(true);refresh();
-      setStatus(catalogAvailable?'إعدادات البطاقات جاهزة. يمكنك إنشاء بطاقة تطبيقات أو تعديل البطاقات الحالية.':'البطاقات متاحة؛ إعداد دليل التطبيقات مطلوب قبل إنشاء أو تعديل بطاقة تطبيقات.',catalogAvailable?'ready':'error',!catalogAvailable);
+      setStatus(catalogAvailable?'تم التحقق من صلاحية الإدارة. الأقسام جاهزة.':'البطاقات متاحة؛ إعداد دليل التطبيقات مطلوب قبل إنشاء أو تعديل بطاقة تطبيقات.',catalogAvailable?'ready':'error',!catalogAvailable);
     }catch{authorize(false);setStatus('خدمة الإدارة غير متاحة حاليًا.','error',true);}
   }
   create.addEventListener('click',()=>{

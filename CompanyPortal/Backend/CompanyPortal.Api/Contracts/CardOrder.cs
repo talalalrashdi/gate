@@ -4,13 +4,14 @@ using System.Text.RegularExpressions;
 
 namespace CompanyPortal.Api.Contracts;
 
-public sealed record WorkspaceCardDefinition(string CardKey, string CardName, bool IsFixed, int DisplayOrder, bool IsCustom, int? UserCardId);
+public sealed record WorkspaceCardDefinition(string CardKey, string CardName, bool IsFixed, int DisplayOrder, bool IsCustom, int? UserCardId,
+    string CardType, AuthorizedApplication[] Applications);
 public sealed record CardOrderResponse(string[] CardKeys, WorkspaceCardDefinition[] Cards, bool IsSaved, DateTime? LastChangeAt);
 
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class SaveCardOrderRequest : IValidatableObject
 {
-    [Required, MinLength(1), MaxLength(200)]
+    [Required, MaxLength(200)]
     public string[] CardKeys { get; init; } = [];
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

@@ -6,7 +6,7 @@ const policySource = await readFile(new URL('../Frontend/CompanyPortal.Web/wwwro
 const policyContext = { window: {} };
 vm.runInNewContext(policySource, policyContext);
 const policy = policyContext.window.CompanyPortalWorkspacePolicy;
-const definitions = ['library', 'inbox', 'email'].map((cardKey, index) => ({ cardKey, cardName: cardKey, displayOrder: index + 1, isFixed: false, isCustom: false, userCardId: null }));
+const definitions = ['library', 'inbox', 'email'].map((cardKey, index) => ({ cardKey, cardName: cardKey, displayOrder: index + 1, isFixed: false, isCustom: false, userCardId: null, cardType:'connected', applications:[] }));
 const locked = definitions.map(card => ({ ...card, isFixed: card.cardKey === 'inbox' }));
 const customDefinition = { cardKey: 'custom-41', cardName: 'Private card name', displayOrder: 4, isFixed: false, isCustom: true, userCardId: 41 };
 assert.equal(policy.valid([...locked, customDefinition], ['library','inbox','email','custom-41']), true);
@@ -23,9 +23,10 @@ async function fixture({ held = false, offline = false, isSaved = true, mismatch
   let currentKeys = ['library', 'inbox', 'email'];
   const cached = new Map();
   const workspace = {
-    querySelectorAll: () => currentKeys.map(id => ({ dataset: { workSystem: id } })),
+    setAttribute() {},
+    querySelectorAll: selector => currentKeys.filter(id => !selector.includes('data-user-card-id') || !id.startsWith('custom-')).map(id => ({ dataset: { workSystem: id }, remove() { currentKeys=currentKeys.filter(key=>key!==id); } })),
     addEventListener: (type, action) => listeners.set(type, action),
-    dispatchEvent: event => { applied.push(event.detail.cardKeys); currentKeys = Array.from(event.detail.cardKeys); }
+    dispatchEvent: event => { if(event.type==='workspace:order-select'){applied.push(event.detail.cardKeys); currentKeys = Array.from(event.detail.cardKeys);} }
   };
   let release;
   const gate = held ? new Promise(resolve => { release = resolve; }) : Promise.resolve();
@@ -33,7 +34,7 @@ async function fixture({ held = false, offline = false, isSaved = true, mismatch
     window: { CompanyPortalWorkspacePolicy: policy, CompanyPortalCustomCards: { ready: Promise.resolve().then(() => { if (custom) currentKeys.push('custom-41'); }) } },
     localStorage: { getItem: () => offline ? JSON.stringify(definitions) : null, setItem(key,value) { cached.set(key,value); } },
     URL, location: { href: 'http://portal.test/' }, AbortSignal: { timeout() {} },
-    CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options.detail; } },
+    CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options?.detail; } },
     document: {
       querySelector: selector => selector.startsWith('meta') ? { content: 'http://api.test/' } : { append() {} },
       getElementById: () => workspace, createElement: () => status
@@ -60,7 +61,7 @@ const saved = await fixture();
 assert.deepEqual(JSON.parse(JSON.stringify(saved.applied)), [['email', 'library', 'inbox']]);
 assert.equal(saved.writes.length, 0, 'Loading must not write');
 const unsaved = await fixture({ isSaved: false });
-assert.deepEqual(Array.from(unsaved.applied[0]), ['library','inbox','email'], 'Load policy without importing a different order');
+assert.deepEqual(Array.from(unsaved.applied[0]), ['email','library','inbox'], 'Use the server default order for an unsaved account');
 saved.reorder(['inbox', 'email', 'library']); saved.reorder(['email', 'inbox', 'library']);
 await settle();
 assert.deepEqual(saved.writes, [['email', 'inbox', 'library']], 'Keep latest unsent order');
@@ -73,10 +74,10 @@ assert.deepEqual(Array.from(delayed.applied[0]), ['inbox','library','email'], 'L
 assert.deepEqual(delayed.writes, [['inbox', 'library', 'email']]);
 const offline = await fixture({ offline: true });
 offline.reorder(['email', 'inbox', 'library']); await settle();
-assert.deepEqual(Array.from(offline.applied.at(-1)), ['email','inbox','library']);
-assert.match(offline.status.textContent, /محلي/);
+assert.equal(offline.applied.length,0,'Never restore a cached audience/catalog as authorization');
+assert.equal(offline.writes.length,0,'Do not save an unverified catalog');
 assert.equal((await fixture({ mismatch: true })).applied.length, 0, 'Catalog mismatch must preserve local layout');
 const personal = await fixture({ custom: true });
 assert.equal(personal.applied[0].length, 4, 'Wait for account-owned cards before loading their combined order');
 assert.equal([...personal.cached.values()].some(value => value.includes('Private card name') || value.includes('custom-41')), false, 'Never cache personal card definitions');
-console.log('Workspace synchronization checks passed: read-only loading, local compatibility, latest order, delayed reads, invalid lists and offline fallback.');
+console.log('Workspace synchronization checks passed: read-only loading, server defaults, latest order, delayed reads, invalid lists and fail-closed offline catalog.');

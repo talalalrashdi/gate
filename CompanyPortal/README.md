@@ -1,5 +1,7 @@
 # CompanyPortal
 
+Master-card administration now supports application cards, audience rules and show/hide settings while retaining employee app permissions. See [master application cards](docs/MASTER_APPLICATION_CARDS.md) for migration 019, the new catalog adapter and deployment steps.
+
 Exchange authentication decision is deferred while other portal work continues. See the [authentication options, security considerations, IIS test results and exact resume point](docs/EXCHANGE_AUTHENTICATION_DECISION.md). No switch from the current service-account EWS impersonation approach has been made.
 
 Read-only email now has an event-driven inbox card and Outlook Web links. Exchange remains disabled until its internal settings and scoped access are supplied. See [email setup and tests](docs/EMAIL.md).

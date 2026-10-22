@@ -18,7 +18,7 @@ function SampleRole([bool]$Active) {
 }
 $header=@{'X-CompanyPortal-Request'='admin-cards'}
 function Save($Card,[string]$Name,[bool]$Fixed,[int]$Order) {
-    Request 'PUT' "/api/admin/cards/$($Card.cardId)" (@{cardName=$Name;isFixed=$Fixed;displayOrder=$Order}|ConvertTo-Json -Compress) $header
+    Request 'PUT' "/api/admin/cards/$($Card.cardId)" (@{cardName=$Name;isFixed=$Fixed;displayOrder=$Order;active=$Card.active;audience=$Card.audience;appIds=@($Card.appIds);roleNames=@($Card.roleNames)}|ConvertTo-Json -Compress) $header
 }
 function Cards {
     $response=Request 'GET' '/api/admin/cards'; Assert ($response.Status -eq 200) 'Admin catalog failed.'
@@ -29,7 +29,7 @@ Assert ((Request 'GET' '/api/access' '' @{} $false).Status -eq 401) 'Anonymous a
 Assert (((Request 'GET' '/api/access').Content|ConvertFrom-Json).isAdmin) 'Current account needs an explicit development admin grant.'
 $before=@(Cards); Assert ($before.Count -ge 2) 'Need two master cards.'
 $first=$before[0]; $second=$before[1]; $revoked=$false
-$body=@{cardName=$first.cardName;isFixed=$first.isFixed;displayOrder=$first.displayOrder}|ConvertTo-Json -Compress
+$body=@{cardName=$first.cardName;isFixed=$first.isFixed;displayOrder=$first.displayOrder;active=$first.active;audience=$first.audience;appIds=@($first.appIds);roleNames=@($first.roleNames)}|ConvertTo-Json -Compress
 try {
     Assert ((Request 'PUT' "/api/admin/cards/$($first.cardId)" $body).Status -eq 400) 'Missing write header accepted.'
     Assert ((Request 'PUT' "/api/admin/cards/$($first.cardId)" $body @{'X-CompanyPortal-Request'='admin-cards';Origin='https://untrusted.invalid'}).Status -eq 403) 'Untrusted origin accepted.'

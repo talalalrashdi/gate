@@ -6,7 +6,7 @@ using Microsoft.Data.SqlClient;
 
 namespace CompanyPortal.Api.Controllers;
 
-[ApiController, Authorize, Route("api/admin/cards"), RequestSizeLimit(4096)]
+[ApiController, Authorize, Route("api/admin/cards"), RequestSizeLimit(32768)]
 public sealed class AdministrationController(AdministrationStore store, IConfiguration configuration,
     ILogger<AdministrationController> logger) : ControllerBase
 {
@@ -17,6 +17,18 @@ public sealed class AdministrationController(AdministrationStore store, IConfigu
     [HttpGet]
     [ProducesResponseType<MasterCard[]>(StatusCodes.Status200OK)]
     public Task<IActionResult> Get(CancellationToken token) => Execute(async _ => Ok(await store.GetCardsAsync(token)), true, false, token);
+
+    [HttpGet("applications")]
+    [ProducesResponseType<AuthorizedApplication[]>(StatusCodes.Status200OK)]
+    public Task<IActionResult> Applications(CancellationToken token) => Execute(async _ => Ok(await store.GetApplicationsAsync(token)), true, false, token);
+
+    [HttpPost, Consumes("application/json")]
+    [ProducesResponseType<MasterCardIdentity>(StatusCodes.Status201Created)]
+    public Task<IActionResult> Create(SaveMasterCardRequest request, CancellationToken token) => Execute(async _ =>
+    {
+        var id = await store.SaveCardAsync(null,request,token);
+        return StatusCode(StatusCodes.Status201Created,new MasterCardIdentity(id));
+    },true,true,token);
 
     [HttpPut("{id:int:min(1)}"), Consumes("application/json")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

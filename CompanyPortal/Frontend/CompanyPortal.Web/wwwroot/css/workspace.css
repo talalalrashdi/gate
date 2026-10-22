@@ -296,3 +296,5 @@ body .portal-workspace-card-actions .portal-group-edit:hover,body .portal-worksp
 body .portal-group-error { color: #a33a29 !important; font-size: 12px; }
 .portal-group-dialog footer { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin-top: 20px; }.portal-group-dialog footer button { padding: 10px 15px; border-radius: 10px; background: #ecefe9; font-size: 12px; }body .portal-group-dialog .portal-group-save { background: #3e6350; color: #fff !important; }.portal-group-dialog .portal-group-delete { margin-inline-end: auto; background: #f5e6df; }
 @media(max-width:480px) { .portal-group-dialog { padding: 18px; }.portal-group-choices { grid-template-columns: 1fr; } }
+/* Employee master-card visibility is obtained from the current API catalog. */
+.portal-dashboard:not(.theme-preview-document) #workspace-cards:not([data-card-catalog-ready]) > [data-work-system]:not([data-user-card-id]) { display: none !important; }

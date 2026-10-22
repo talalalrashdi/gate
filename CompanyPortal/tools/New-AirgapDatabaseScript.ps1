@@ -3,12 +3,12 @@ $ErrorActionPreference = 'Stop'
 $database = Join-Path $PSScriptRoot '../Backend/Database'
 $parts = [Collections.Generic.List[string]]::new()
 $parts.Add(@'
-/* CompanyPortal fresh installation, generated from migrations 001-018.
+/* CompanyPortal fresh installation, generated from migrations 001-019.
    Open this entire UTF-8 file in SSMS and Execute (normal mode, no SQLCMD mode).
    Or: sqlcmd -S SQLSERVER -E -b -f 65001 -i CompanyPortal-Setup.sql
    FRESH INSTALL ONLY. Never run on an existing CompanyPortal database.
    TestSources=1 creates NEW sample SecurityDB and Pubs_Info_V4 databases.
-   TestSources=0 leaves external databases alone; configure the three Security
+   TestSources=0 leaves external databases alone; configure the four Security
    adapter procedures and dbo.VNews against the real sources AFTER this script.
    No current employee preferences, uploaded images or custom themes are exported.
 */
@@ -109,7 +109,7 @@ IF (SELECT TestSources FROM #PortalDeployment)=1
  JOIN Pubs_Info_V4.dbo.Public_info_News_Prodc p ON p.News_ID=n.PIN_ID;');
 GO
 '@)
-foreach ($name in 'ConfigureSecurityLookup.sample.sql','ConfigureAppAccess.sample.sql','ConfigureRoleLookup.sample.sql') {
+foreach ($name in 'ConfigureSecurityLookup.sample.sql','ConfigureAppAccess.sample.sql','ConfigureRoleLookup.sample.sql','ConfigureAdminAppCatalog.sample.sql') {
  foreach ($batch in [regex]::Split([IO.File]::ReadAllText((Join-Path $database "Integration/$name")), '(?im)^\s*GO\s*\r?$')) {
   if ($batch.Trim()) {
    $parts.Add("IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'$($batch.Replace("'", "''"))');`nGO`n")

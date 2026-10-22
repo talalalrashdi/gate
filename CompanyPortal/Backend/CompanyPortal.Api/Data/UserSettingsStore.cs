@@ -12,12 +12,13 @@ public sealed class UserSettingsStore(IConfiguration configuration)
         await using var connection = await OpenAsync(token);
         var userId = await GetUserIdAsync(connection, ntName, token);
         if (userId is null) return null;
-        var rows = (await connection.QueryAsync<CardOrderRow>(Command(
-            "Portal.UserCardOrder_get", new { UserId = userId.Value }, token))).AsList();
-        if (rows.Count == 0) throw new InvalidOperationException("No active workspace cards are configured.");
+        using var results = await connection.QueryMultipleAsync(Command("Portal.UserCardOrder_get", new { UserId = userId.Value }, token));
+        var rows = (await results.ReadAsync<CardOrderRow>()).AsList();
+        var apps = (await results.ReadAsync<MasterAppRow>()).ToLookup(app => app.CardKey);
         return new(rows.Select(row => row.CardKey).ToArray(),
-            rows.Select(row => new WorkspaceCardDefinition(row.CardKey, row.CardName, row.IsFixed, row.DisplayOrder, row.IsCustom, row.UserCardId)).ToArray(), rows.Any(row => row.IsSaved),
-            rows.Max(row => row.LastChangeAt));
+            rows.Select(row => new WorkspaceCardDefinition(row.CardKey, row.CardName, row.IsFixed, row.DisplayOrder, row.IsCustom, row.UserCardId,
+                row.CardType,apps[row.CardKey].Select(app => new AuthorizedApplication(app.AppId,app.AppName)).ToArray())).ToArray(), rows.Any(row => row.IsSaved),
+            rows.Count == 0 ? null : rows.Max(row => row.LastChangeAt));
     }
 
     public async Task<bool> SaveCardOrderAsync(string ntName, string[] cardKeys, CancellationToken token)
@@ -34,7 +35,8 @@ public sealed class UserSettingsStore(IConfiguration configuration)
         return true;
     }
 
-    private sealed record CardOrderRow(string CardKey, string CardName, bool IsFixed, int DisplayOrder, bool IsCustom, int? UserCardId, bool IsSaved, DateTime? LastChangeAt);
+    private sealed record CardOrderRow(string CardKey, string CardName, bool IsFixed, int DisplayOrder, bool IsCustom, int? UserCardId, bool IsSaved, DateTime? LastChangeAt,string CardType);
+    private sealed record MasterAppRow(string CardKey,int AppId,string AppName);
 
     public async Task<IReadOnlyList<ThemeDefinition>> GetThemesAsync(string ntName, CancellationToken cancellationToken)
     {

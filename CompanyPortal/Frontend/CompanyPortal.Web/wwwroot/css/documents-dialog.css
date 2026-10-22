@@ -70,5 +70,7 @@ html:has(.portal-documents-sheet[open]) { overflow: hidden; }
 .portal-policy-example { margin-top: 0; padding: 0; }
 
 .portal-policies-sheet .portal-policy-preferred { --text-primary: #216e4b; --text-secondary: #216e4b; color: #216e4b; font-weight: 700; }
-.portal-policies-sheet .portal-policy-previous { --text-primary: #9d4a3d; --text-secondary: #9d4a3d; color: #9d4a3d; font-weight: 700; }
+.portal-policies-sheet .portal-policy-previous { --text-primary: #8a5a13; --text-secondary: #8a5a13; color: #8a5a13; font-weight: 700; }
 @media(max-width:760px) { .portal-policy-timeline > li { grid-template-columns: 48px minmax(0,1fr); gap: 18px; }.portal-policy-timeline::before { inset-inline-start: 57px; }.portal-policy-timeline > li::before { inset-inline-start: 50px; top: 27px; }.portal-policy-year { padding-top: 21px; font-size: 18px; }.portal-policy-entry { padding: 18px 14px; border-radius: 14px; }.portal-policy-entry h3 { font-size: 20px; }.portal-policy-entry p { font-size: 15px; }.portal-policy-years a { flex-basis: 42px; } }
+/* Database-backed directives, including undated and empty responses. */
+.portal-policies-sheet [hidden]{display:none!important}.portal-policy-entry p{white-space:pre-wrap;overflow-wrap:anywhere}.portal-policy-entry h3{overflow-wrap:anywhere}.portal-policy-timeline>li{scroll-margin-top:85px}.portal-policy-year{overflow-wrap:anywhere}.portal-policy-years a{min-width:52px;flex-basis:auto}.portal-fixed-orders-retry{margin:16px 0;padding:10px 18px;border:1px solid #bdd0c4;border-radius:10px;background:#edf4ef;color:#285c4b;font:inherit}.portal-fixed-orders-retry:focus-visible,.portal-policy-years a:focus-visible{outline:2px solid #285c4b;outline-offset:3px}#fixed-orders-status{padding:20px 0;color:#52666d;font-size:14px}

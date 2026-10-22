@@ -1,5 +1,7 @@
 # CompanyPortal
 
+The top **التوجيهات السامية** menu now reads the dated timeline from `Portal.FixedOrders`, with distinct colours for previous and replacement text. See [schema, rendering and migration 021](docs/FIXED_ORDERS.md).
+
 The top **الأنظمة الإلكترونية** menu now searches authorized apps by name, description and category. Administrators manage categories/descriptions at `/admin/applications`; external security remains responsible for grants and launch URLs. See [application directory and migration 020](docs/APPLICATION_DIRECTORY.md).
 
 Master-card administration now supports application cards, audience rules and show/hide settings while retaining employee app permissions. See [master application cards](docs/MASTER_APPLICATION_CARDS.md) for migration 019, the new catalog adapter and deployment steps.

@@ -3,7 +3,7 @@ $ErrorActionPreference = 'Stop'
 $database = Join-Path $PSScriptRoot '../Backend/Database'
 $parts = [Collections.Generic.List[string]]::new()
 $parts.Add(@'
-/* CompanyPortal fresh installation, generated from migrations 001-020.
+/* CompanyPortal fresh installation, generated from migrations 001-021.
    Open this entire UTF-8 file in SSMS and Execute (normal mode, no SQLCMD mode).
    Or: sqlcmd -S SQLSERVER -E -b -f 65001 -i CompanyPortal-Setup.sql
    FRESH INSTALL ONLY. Never run on an existing CompanyPortal database.

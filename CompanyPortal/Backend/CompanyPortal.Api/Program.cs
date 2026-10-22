@@ -16,6 +16,7 @@ builder.Services.AddScoped<AdministrationStore>();
 builder.Services.AddScoped<ThemeAdministrationStore>();
 builder.Services.AddScoped<InterfaceImagesStore>();
 builder.Services.AddScoped<NewsStore>();
+builder.Services.AddScoped<FixedOrdersStore>();
 builder.Services.AddScoped<NewsFiles>();
 builder.Services.AddScoped<FolderPathsStore>();
 builder.Services.AddScoped<MailIdentityStore>();

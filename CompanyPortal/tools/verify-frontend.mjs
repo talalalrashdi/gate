@@ -21,6 +21,8 @@ const canonicalHtml = text => normalize(text.replace(/<script\b[^>]*>[\s\S]*?<\/
   // The sample directory was replaced by an authorized, API-rendered header sheet.
   .replace(/<section\b[^>]*id="library"[^>]*>[\s\S]*?<\/section>/g, '<!-- authorized application directory -->')
   .replace(/<section\b[^>]*id="policies"[^>]*>[\s\S]*?<\/section>/g, '<!-- database fixed orders -->')
+  .replace(/<aside class="portal-work-card portal-work-library"[\s\S]*?<\/aside>/g, '<!-- permission-filtered legal decisions -->')
+  .replace(/<dialog class="portal-doc-dialog"[\s\S]*?<\/dialog>/g, '')
   .replace(/<a class="portal-setup-link"[^>]*>[\s\S]*?<\/a>/g, '')
   .replace(/<button\b[^>]*id="portal-notices-visibility"[^>]*>/g, '<button id="portal-notices-visibility">')
   .replace(/(<section id="portal-floating-alert"[^>]*?) hidden/g, '$1')
@@ -87,7 +89,7 @@ for (const route of ['', 'index.html', 'design-b.html']) {
   const buttons = [...html.matchAll(/<button[^>]*data-theme-option="([^"]+)"[^>]*>(\d)<\/button>/g)];
   assert.deepEqual(buttons.map(button => [button[1], button[2]]), [['official', '1'], ['work', '2'], ['national-day', '3']], 'Visible theme mapping');
   const scripts = [...html.matchAll(/<script\b[^>]*src="([^"]+)"[^>]*><\/script>/g)].map(match => match[1].split('?')[0]);
-  assert.deepEqual(scripts, [mount + '/js/theme-appearance.js', ...baseline.portalScripts.flatMap(file => { const script = mount + '/' + migratedPath(file.slice(2)); return script.endsWith('/workspace-order.js') ? [mount + '/js/workspace-policy.js', script] : [script]; }), mount + '/js/theme-settings.js', mount + '/js/workspace-settings.js', mount + '/js/admin-access.js', mount + '/js/email.js', mount + '/js/exchange-schedule.js'], 'Original script order and appended account persistence/admin/email');
+  assert.deepEqual(scripts, [mount + '/js/theme-appearance.js', ...baseline.portalScripts.flatMap(file => { const script = mount + '/' + migratedPath(file.slice(2)); return script.endsWith('/workspace-order.js') ? [mount + '/js/workspace-policy.js', script] : [script]; }), mount + '/js/theme-settings.js', mount + '/js/workspace-settings.js', mount + '/js/admin-access.js', mount + '/js/email.js', mount + '/js/exchange-schedule.js', mount + '/js/decisions.js'], 'Original script order and appended account persistence/admin/email/decisions');
   assert.ok(html.indexOf('id="personal-announcement-dialog"') < html.indexOf(`src="${mount}/js/personal-workspace.js`), 'Dialog markup must exist before initialization');
 }
 for (const route of ['profile', 'profile/', 'user-profile.html']) {

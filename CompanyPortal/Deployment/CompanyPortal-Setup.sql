@@ -1,4 +1,4 @@
-﻿/* CompanyPortal fresh installation, generated from migrations 001-021.
+﻿/* CompanyPortal fresh installation, generated from migrations 001-022.
    Open this entire UTF-8 file in SSMS and Execute (normal mode, no SQLCMD mode).
    Or: sqlcmd -S SQLSERVER -E -b -f 65001 -i CompanyPortal-Setup.sql
    FRESH INSTALL ONLY. Never run on an existing CompanyPortal database.
@@ -1895,6 +1895,21 @@ BEGIN
  SELECT FixedOrderID,[Timestamp],Timestamp2,ContentBefor,ContentAfter,ContentText,TimestampType
  FROM Portal.FixedOrders ORDER BY [Timestamp] DESC,FixedOrderID DESC;
 END;
+GO
+
+GO
+
+
+-- BEGIN 022_LegalDecisions.sql
+USE CompanyPortal;
+GO
+IF SCHEMA_ID(N'Legal') IS NULL EXEC(N'CREATE SCHEMA Legal');
+GO
+-- Integration adapter: replace with the real permission-filtered lookup.
+-- Rerunning a migration must never overwrite an installed adapter.
+IF OBJECT_ID(N'Legal.Decisions_getForUser',N'P') IS NULL
+ EXEC(N'CREATE PROCEDURE Legal.Decisions_getForUser @UserId int,@DecisionId bigint=NULL AS
+ BEGIN SET NOCOUNT ON; THROW 50030,''Legal decisions source is not configured.'',1; END');
 GO
 
 GO

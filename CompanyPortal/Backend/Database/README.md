@@ -1,5 +1,7 @@
 # CompanyPortal database deployment
 
+Legal decisions use migration 022 and `Legal.Decisions_getForUser`. Local-only LegelAffairs samples are separate from production migrations. See [decisions setup](../../docs/LEGAL_DECISIONS.md).
+
 For an exact copy of the currently exported sample state, use [CompanyPortal-CurrentData.sql](../../Deployment/CompanyPortal-CurrentData.sql) and [its import instructions](../../Deployment/CURRENT_DATA_README.md), instead of the minimal setup below. This includes the three databases and all current rows/image BLOBs; external news files accompany it. Destination NTNames/service logins and file paths still need environment configuration.
 
 For a **fresh offline test installation**, use the consolidated [CompanyPortal-Setup.sql](../../Deployment/CompanyPortal-Setup.sql) and [simple offline IIS guide](../../docs/AIRGAP_IIS_GUIDE.md). The consolidated file refuses existing CompanyPortal databases; optional sample-source mode also refuses existing SecurityDB/Pubs_Info_V4. It must never be used as an upgrade script. To retain current uploads/theme settings, backup/restore the database instead. Regenerate the file after adding migrations with `tools/New-AirgapDatabaseScript.ps1` from the CompanyPortal folder.

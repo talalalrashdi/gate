@@ -99,10 +99,10 @@ body.has-alert-sheet { overflow: hidden; }
 .portal-doc-categories button[aria-pressed="true"] { background: #504d65; color: #fff; }
 .portal-doc-categories button:hover:not([aria-pressed="true"]) { background: #efedf4; }
 .portal-work-docs { gap: 5px; margin-top: 12px; }
-.portal-work-docs button { display: flex; align-items: stretch; gap: 7px; padding: 0; min-height: 68px; background: transparent; border: 0; border-radius: 17px; }
+.portal-work-docs :is(button,.portal-decision-link) { display: flex; align-items: stretch; gap: 7px; padding: 0; min-height: 68px; background: transparent; border: 0; border-radius: 17px; text-decoration: none; color: inherit; }
 .portal-work-docs .portal-doc-surface { display: flex; flex: 1; min-width: 0; align-items: stretch; gap: 7px; padding: 8px; border-radius: 17px; background: #f8f7fa; }
 .portal-work-docs [data-state="read"] .portal-doc-surface { background: #fcfcfd; }
-.portal-work-docs button:hover .portal-doc-copy b { color: #765895; }
+.portal-work-docs :is(button,.portal-decision-link):hover .portal-doc-copy b { color: #216e4b; }
 .portal-work-docs .portal-file-icon { font-size: 21px; color: #887699; flex-shrink: 0; }
 .portal-work-docs .portal-doc-copy { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; padding: 7px; background: transparent; color: #34483f; }
 .portal-work-docs .portal-doc-copy > b { flex: 1; min-width: 0; }
@@ -172,13 +172,13 @@ body.has-alert-sheet { overflow: hidden; }
 .portal-doc-surface,.portal-inbox-surface { transition: transform .22s cubic-bezier(.2,.7,.2,1),box-shadow .22s ease; }
 .portal-doc-new-dot,.portal-inbox-state-dot { transition: transform .22s ease; }
 @media(hover:hover) and (pointer:fine) {
-  .portal-work-docs button:hover .portal-doc-surface,.portal-inbox-message:hover .portal-inbox-surface { transform: translateY(-2px); box-shadow: 0 7px 18px #263a3612,0 0 0 1px #dcd7e580; }
-  .portal-work-docs button:hover .portal-doc-new-dot,.portal-inbox-message:hover .portal-inbox-state-dot { transform: scale(1.15); }
+  .portal-work-docs :is(button,.portal-decision-link):hover .portal-doc-surface,.portal-inbox-message:hover .portal-inbox-surface { transform: translateY(-2px); box-shadow: 0 7px 18px #263a3612,0 0 0 1px #dcd7e580; }
+  .portal-work-docs :is(button,.portal-decision-link):hover .portal-doc-new-dot,.portal-inbox-message:hover .portal-inbox-state-dot { transform: scale(1.15); }
 }
-.portal-work-docs button:focus-visible .portal-doc-surface { box-shadow: 0 0 0 2px #b7a8c5; }
+.portal-work-docs :is(button,.portal-decision-link):focus-visible .portal-doc-surface { box-shadow: 0 0 0 2px #86ad99; }
 @media(prefers-reduced-motion:reduce) {
   .portal-doc-surface,.portal-inbox-surface,.portal-doc-new-dot,.portal-inbox-state-dot { transition: none; }
-  .portal-work-docs button:hover .portal-doc-surface,.portal-inbox-message:hover .portal-inbox-surface,.portal-work-docs button:hover .portal-doc-new-dot,.portal-inbox-message:hover .portal-inbox-state-dot { transform: none; }
+  .portal-work-docs :is(button,.portal-decision-link):hover .portal-doc-surface,.portal-inbox-message:hover .portal-inbox-surface,.portal-work-docs :is(button,.portal-decision-link):hover .portal-doc-new-dot,.portal-inbox-message:hover .portal-inbox-state-dot { transform: none; }
 }
 .portal-request-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .portal-request-summary > div { display: flex; flex-direction: column; gap: 10px; padding: 15px; border-radius: 12px; background: #edf3ec; }
@@ -298,3 +298,10 @@ body .portal-group-error { color: #a33a29 !important; font-size: 12px; }
 @media(max-width:480px) { .portal-group-dialog { padding: 18px; }.portal-group-choices { grid-template-columns: 1fr; } }
 /* Employee master-card visibility is obtained from the current API catalog. */
 .portal-dashboard:not(.theme-preview-document) #workspace-cards:not([data-card-catalog-ready]) > [data-work-system]:not([data-user-card-id]) { display: none !important; }
+
+/* Live permission-filtered decisions. */
+.portal-decision-link .portal-doc-copy { overflow-wrap: anywhere; }
+.portal-decision-link:focus-visible { outline: 2px solid #216e4b; outline-offset: 2px; }
+#decisions-refresh { align-self: flex-start; border: 1px solid #d5e3dc; border-radius: 8px; background: #f3f7f4; color: #216e4b; padding: 5px 10px; font: inherit; cursor: pointer; }
+#decisions-status { color: #526170; font-size: 12px; }
+#decision-types[hidden],#decisions-status[hidden] { display: none; }

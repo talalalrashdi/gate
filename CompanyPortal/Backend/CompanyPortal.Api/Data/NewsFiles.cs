@@ -3,9 +3,9 @@ namespace CompanyPortal.Api.Data;
 // File roots must be trusted, read-only for portal employees, and readable by the API identity.
 public sealed class NewsFiles(FolderPathsStore folders)
 {
-    public async Task<(FileStream Stream, string ContentType)?> OpenAsync(string path, bool pdf, CancellationToken token)
+    public async Task<(FileStream Stream, string ContentType)?> OpenAsync(string path, bool pdf, CancellationToken token, string folderKey = "PubsInfo")
     {
-        var roots = await folders.GetAsync("PubsInfo", token);
+        var roots = await folders.GetAsync(folderKey, token);
         if (!Path.IsPathFullyQualified(path)) return null;
         var fullPath = Path.GetFullPath(path);
         var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;

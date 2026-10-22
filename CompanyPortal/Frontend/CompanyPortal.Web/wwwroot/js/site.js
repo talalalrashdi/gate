@@ -215,7 +215,7 @@ function openResult(index){
   if(selectedEntry.contact){setActiveResult(index);results.children[index].focus({preventScroll:true});return;}
   const reveal={target:selectedEntry.target};document.dispatchEvent(new CustomEvent('systems:reveal',{detail:reveal}));
   const entry={...selectedEntry,target:reveal.target};
-  if(entry.target.matches('[data-doc-id]')){libraryInput.value='';activeDocCategory='all';renderLibrary();}
+
   closeSearch(false);highlightedTarget?.classList.remove('portal-search-target');clearTimeout(highlightTimer);
   highlightedTarget=entry.target;entry.target.classList.add('portal-search-target');
   if(!entry.target.matches('button,a'))entry.target.setAttribute('tabindex','-1');
@@ -243,52 +243,6 @@ document.addEventListener('keydown',event=>{
 });
 document.addEventListener('pointerdown',event=>{if(!searchPanel.hidden&&!header.contains(event.target))closeSearch(false)});
 header.addEventListener('focusout',()=>requestAnimationFrame(()=>{if(!searchPanel.hidden&&!header.contains(document.activeElement))closeSearch(false)}));
-
-// Combined library search + category filters, with explicit sample reading states.
-const libraryInput=document.getElementById('work-library-search');
-const docButtons=[...document.querySelectorAll('[data-doc-id]')];
-const categoryButtons=[...document.querySelectorAll('[data-doc-category]')];
-let activeDocCategory='all';
-function renderLibrary(){
-  const query=normalizeSearch(libraryInput.value);let count=0;
-  docButtons.forEach(button=>{
-    const matches=(activeDocCategory==='all'||button.dataset.category===activeDocCategory)&&normalizeSearch(button.querySelector('.portal-doc-copy').textContent+' '+button.querySelector('.portal-doc-type').textContent).includes(query);
-    button.hidden=!matches;if(matches)count++;
-  });
-  categoryButtons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.docCategory===activeDocCategory)));
-  document.querySelector('.portal-doc-empty').hidden=count>0;
-}
-libraryInput.addEventListener('input',renderLibrary);
-categoryButtons.forEach(button=>button.addEventListener('click',()=>{activeDocCategory=button.dataset.docCategory;renderLibrary()}));
-const docDialog=document.querySelector('.portal-doc-dialog');
-const docSamples={
-  guide:'مرحبًا بك في مساحة العمل. استخدم مكتبة العمل للعثور على الأدلة والسياسات، وتابع المراسلات والطلبات من البطاقات المخصصة. يمكنك الجمع بين البحث والتصنيف للوصول إلى المستند المطلوب.',
-  policy:'يقدّم هذا النموذج إرشادات عامة لحماية معلومات العمل: استخدام كلمات مرور قوية، ومشاركة المستندات مع الجهات المخوّلة فقط، والإبلاغ عن الرسائل المشبوهة عبر القنوات المعتمدة.',
-  leave:'نموذج توضيحي لقرار تنظيم الإجازات السنوية وإجراءات تقديم الطلبات واعتمادها.',
-  training:'نموذج توضيحي لقرار اعتماد خطة التدريب وتنسيق مشاركة الموظفين في البرامج.',
-  delegation:'نموذج توضيحي لقرار تفويض الصلاحيات الإدارية وتحديد مسؤوليات متابعة الإجراءات.',
-  report:'يعرض هذا النموذج ملخصًا توضيحيًا للأداء الشهري: تقدم الطلبات، ومستوى إنجاز الخدمات، وأبرز فرص التحسين. تُضاف البيانات الفعلية عند ربط المكتبة بمصدر المستندات.'
-};
-function paintDecisionState(button){
-  const labels={new:'غير مفتوح',unread:'غير مقروء',read:'مقروء'};
-  let status=button.querySelector('.portal-decision-state');
-  if(!status){status=document.createElement('span');status.className='portal-decision-state';button.querySelector('.portal-item-meta').append(status);}
-  status.textContent=labels[button.dataset.state]||labels.unread;
-  const ageLabels={today:'اليوم',yesterday:'أمس',older:'سابق'};
-  const time=button.querySelector('time');
-  time.textContent=(ageLabels[button.dataset.decisionAge]||'')+' · '+time.textContent.split(' · ').at(-1);
-  button.setAttribute('aria-label',button.querySelector('b').textContent+' — '+time.textContent+' — '+status.textContent);
-}
-docButtons.forEach(paintDecisionState);
-docButtons.forEach(button=>button.addEventListener('click',()=>{
-  document.getElementById('doc-preview-title').textContent=button.querySelector('b').textContent;
-  document.getElementById('doc-preview-copy').textContent=docSamples[button.dataset.docId].replace('مكتبة العمل',document.getElementById('work-library-title')?.textContent.trim()||'مكتبة العمل');
-  docDialog.showModal();
-  button.dataset.state='read';
-  paintDecisionState(button);
-}));
-document.querySelector('.portal-doc-close').addEventListener('click',()=>docDialog.close());
-renderLibrary();
 
 // Native RTL scrolling supports touch/trackpads, buttons, and keyboard navigation.
 const alertTrack=document.getElementById('workspace-alerts');

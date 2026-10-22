@@ -176,8 +176,8 @@ body { overflow-x: clip; }
   .portal-dashboard .portal-inbox-copy p { grid-column: 1 / -1; }
   .portal-dashboard .portal-inbox-meta { grid-column: 2; }
 }
-.portal-dashboard .portal-work-library .portal-work-docs { gap: 0; margin-top: 8px; max-height: 340px; overflow-y: auto; scrollbar-width: thin; }
-.portal-dashboard .portal-work-library .portal-work-docs button { min-height: 58px; border-radius: 0; border-bottom: 1px solid #dbe3e780; }
+.portal-dashboard .portal-work-library .portal-work-docs { gap: 0; align-content: start; margin-top: 8px; max-height: 340px; overflow-y: auto; scrollbar-width: thin; }
+.portal-dashboard .portal-work-library .portal-work-docs :is(button,.portal-decision-link) { min-height: 58px; border-radius: 0; border-bottom: 1px solid #dbe3e780; }
 .portal-dashboard .portal-work-library .portal-doc-surface { position: relative; gap: 8px; padding: 8px 0; border-radius: 0; background: transparent; }
 .portal-dashboard .portal-work-library .portal-doc-new-dot { display: none; }
 .portal-dashboard .portal-work-library .portal-doc-copy { flex-direction: column; align-items: stretch; flex-wrap: nowrap; gap: 2px; padding: 0; }

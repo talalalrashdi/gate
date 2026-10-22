@@ -1,5 +1,7 @@
 # CompanyPortal
 
+**القرارات** now reads permission-filtered decisions and opens PDFs through the API. Local LegelAffairs samples are installed; the real source adapter remains an internal deployment step. See [source contract, paths and tests](docs/LEGAL_DECISIONS.md).
+
 The top **التوجيهات السامية** menu now reads the dated timeline from `Portal.FixedOrders`, with distinct colours for previous and replacement text. See [schema, rendering and migration 021](docs/FIXED_ORDERS.md).
 
 The top **الأنظمة الإلكترونية** menu now searches authorized apps by name, description and category. Administrators manage categories/descriptions at `/admin/applications`; external security remains responsible for grants and launch URLs. See [application directory and migration 020](docs/APPLICATION_DIRECTORY.md).

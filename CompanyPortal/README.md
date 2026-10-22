@@ -1,5 +1,7 @@
 # CompanyPortal
 
+Exchange authentication decision is deferred while other portal work continues. See the [authentication options, security considerations, IIS test results and exact resume point](docs/EXCHANGE_AUTHENTICATION_DECISION.md). No switch from the current service-account EWS impersonation approach has been made.
+
 Read-only email now has an event-driven inbox card and Outlook Web links. Exchange remains disabled until its internal settings and scoped access are supplied. See [email setup and tests](docs/EMAIL.md).
 
 Published news now reads from `dbo.VNews`, with PDF links on news titles. See [news source, local fixtures and deployment](docs/NEWS.md).

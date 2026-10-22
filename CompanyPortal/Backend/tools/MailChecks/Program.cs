@@ -8,6 +8,23 @@ using CompanyPortal.Api.Mail;
 static void Assert(bool value, string message) { if (!value) throw new Exception(message); }
 static MailOptions Settings() => new() { Enabled = true, EwsUrl = "https://exchange.test/EWS/Exchange.asmx", OutlookWebUrl = "https://exchange.test/owa/", AccessMode = "ScopedServiceAccountImpersonation", LatestMessageCount = 2 };
 static void Reject(Action action, string message) { try { action(); } catch (InvalidOperationException) { return; } throw new Exception(message); }
+static async Task Fault(string body, string expected, HttpStatusCode status = HttpStatusCode.InternalServerError)
+{
+    await using var mail = new EwsMailSession(new HttpClient(new FakeExchange { ErrorBody = body, ErrorStatus = status }), Settings(), "alice@example.test");
+    try { await mail.ProbeInboxAsync(default); throw new Exception("SOAP fault was accepted."); }
+    catch (EwsResponseException error) { Assert(error.Code == expected && !error.Message.Contains("SECRET"), "Fault code lost or private fault text exposed."); }
+}
+const string soap = "http://schemas.xmlsoap.org/soap/envelope/";
+await Fault($"<s:Envelope xmlns:s='{soap}'><s:Body><s:Fault><faultcode>a:ErrorImpersonateUserDenied</faultcode><faultstring>SECRET server details</faultstring></s:Fault></s:Body></s:Envelope>", "ErrorImpersonateUserDenied");
+await Fault($"<s:Envelope xmlns:s='{soap}'><s:Body><s:Fault><faultcode>s:Server</faultcode><detail><e:ResponseCode xmlns:e='http://schemas.microsoft.com/exchange/services/2006/errors'>ErrorNonExistentMailbox</e:ResponseCode><message>SECRET</message></detail></s:Fault></s:Body></s:Envelope>", "ErrorNonExistentMailbox");
+await Fault($"<s:Envelope xmlns:s='{soap}'><s:Body><s:Fault><faultcode>s:Server</faultcode><faultstring>SECRET</faultstring></s:Fault></s:Body></s:Envelope>", "ErrorUnknownSoapFault", HttpStatusCode.OK);
+await Fault($"<s:Envelope xmlns:s='{soap}'><s:Body><m:ResponseMessages xmlns:m='http://schemas.microsoft.com/exchange/services/2006/messages'><m:ResponseCode>ErrorAccessDenied</m:ResponseCode></m:ResponseMessages></s:Body></s:Envelope>", "ErrorAccessDenied");
+foreach (var body in new[] { "", "<html><body>SECRET</body></html>", "<!DOCTYPE x [<!ENTITY y 'SECRET'>]><x>&y;</x>", "<broken" })
+{
+    await using var failed = new EwsMailSession(new HttpClient(new FakeExchange { ErrorBody = body }), Settings(), "alice@example.test");
+    try { await failed.ProbeInboxAsync(default); throw new Exception("HTTP500 accepted."); }
+    catch (HttpRequestException error) { Assert(error.StatusCode == HttpStatusCode.InternalServerError && !error.Message.Contains("SECRET"), "HTTP status lost or error body exposed."); }
+}
 var options = Settings();
 Reject(() => options.InboxLink(), "Missing inbox URL silently fell back to the general Outlook URL.");
 options.OutlookWebInboxUrl = "https://evil.test/inbox";
@@ -29,6 +46,13 @@ var handler = new FakeExchange();
 await using (var mail = new EwsMailSession(new HttpClient(handler) { Timeout = Timeout.InfiniteTimeSpan }, options, "alice@example.test"))
 {
     Assert(mail.InboxLink == options.OutlookWebInboxUrl, "Open-inbox action used the general Outlook URL.");
+    await mail.ProbeInboxAsync(default);
+    await mail.ProbeTasksAsync(default);
+    Assert(handler.Calls.All(call => call == "GetFolder"), "Setup probes read items or subscribed.");
+    handler.TasksReadable = false;
+    try { await mail.ProbeTasksAsync(default); throw new Exception("Task probe ignored denied access."); }
+    catch (EwsResponseException error) when (error.Code == "ErrorAccessDenied") { }
+    handler.TasksReadable = true;
     var snapshot = await mail.SnapshotAsync(default);
     Assert(snapshot.UnreadCount == 7 && snapshot.Items.Count == 2, "Unread count was inferred from the visible rows.");
     Assert(snapshot.Items[0].Subject == "<b>Latest mail</b>" && !snapshot.Items[0].IsRead, "Message fields not parsed.");
@@ -82,6 +106,9 @@ sealed class FakeExchange : HttpMessageHandler
     public int Unread = 7;
     public string Subject = "<b>Latest mail</b>";
     public bool IsRead, WrongParent;
+    public bool TasksReadable = true;
+    public string? ErrorBody;
+    public HttpStatusCode ErrorStatus = HttpStatusCode.InternalServerError;
     private readonly ChunkStream stream = new();
     public TaskCompletionSource StreamStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
     public async Task Push(string eventName)
@@ -100,13 +127,14 @@ sealed class FakeExchange : HttpMessageHandler
             || request.Headers.GetValues("X-AnchorMailbox").Single() != "alice@example.test") throw new Exception("Wrong mailbox identity or endpoint.");
         var operation = xml.Element(S + "Body")!.Elements().Single().Name.LocalName;
         Calls.Add(operation);
+        if (ErrorBody is not null) return new HttpResponseMessage(ErrorStatus) { Content = new StringContent(ErrorBody) };
         if (operation == "GetStreamingEvents")
         {
             StreamStarted.TrySetResult(); return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(stream) };
         }
         XElement payload = operation switch
         {
-            "GetFolder" => new XElement(M + "Folders", new XElement(T + "Folder", new XElement(T + "FolderId", new XAttribute("Id", "own-inbox")), new XElement(T + "UnreadCount", Unread))),
+            "GetFolder" => new XElement(M + "Folders", new XElement(T + "Folder", new XElement(T + "FolderId", new XAttribute("Id", "own-inbox")), new XElement(T + "UnreadCount", Unread), new XElement(T + "EffectiveRights", new XElement(T + "Read", TasksReadable)))),
             "FindItem" => new XElement(M + "RootFolder", new XElement(T + "Items", Enumerable.Range(0,2).Select(index =>
                 new XElement(T + "Message", new XElement(T + "ItemId", new XAttribute("Id", index == 0 ? "A+/=" : "second")),
                     new XElement(T + "Subject", index == 0 ? Subject : "Other mail"), new XElement(T + "DateTimeReceived", "2026-10-19T08:00:00Z"),

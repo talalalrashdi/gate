@@ -29,6 +29,7 @@
     </aside>
     <main class="admin-main" id="admin-main">
       <header class="admin-topbar"><div>البوابة <span aria-hidden="true">/</span> لوحة الإدارة</div><a href="@Url.Content("~/")">عرض البوابة <span aria-hidden="true">↗</span></a></header>
+      @if (Configuration.GetValue<bool>("Diagnostics:Enabled")) { <a style="margin:12px 32px;display:inline-block" href="@Url.Content("~/admin/diagnostics")">فحص الاتصال — أداة مؤقتة للإعداد</a> }
       <div class="admin-content">
         <div class="admin-page-heading"><div><p class="admin-eyebrow">لوحة الإدارة</p><h1 id="admin-page-title">@(ViewData["AdminSection"] as string == "cards" ? "إدارة البطاقات الأساسية" : "نظرة عامة")</h1><p id="admin-page-description">إدارة محتوى البوابة ومظهرها من مكان واحد.</p></div><span class="admin-context"><span aria-hidden="true"></span> إعدادات البوابة</span></div>
         <div class="admin-status-bar"><span class="admin-status-dot" aria-hidden="true"></span><p id="admin-status" role="status" aria-live="polite">جارٍ التحقق من الصلاحية…</p><button type="button" id="admin-retry" hidden>إعادة المحاولة</button></div>

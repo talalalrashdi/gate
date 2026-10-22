@@ -1,4 +1,5 @@
 <header class="portal-header">
+    @if (Context.RequestServices.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>().GetValue<bool>("Diagnostics:Enabled")) { <a class="portal-setup-link" href="@Url.Content("~/admin/diagnostics")" style="position:fixed;bottom:12px;inset-inline-end:12px;z-index:1000;padding:8px 12px;background:#215c47;color:white;border-radius:8px;font-size:12px">فحص الاتصال (مؤقت)</a> }
     <a class="portal-brand is-emblem" href="@Url.Content("~/")" aria-label="العودة إلى الرئيسية"><img src="@Url.Content("~/assets/oman-khanjar.png")" alt="شعار سلطنة عُمان" width="80" height="75"></a>
     <div class="portal-header-center">
       <div class="portal-navigation">

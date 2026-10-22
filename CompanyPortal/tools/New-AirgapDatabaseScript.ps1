@@ -15,6 +15,13 @@ $parts.Add(@'
 USE master;
 GO
 SET NOCOUNT ON;
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+SET ANSI_PADDING ON;
+SET ANSI_WARNINGS ON;
+SET CONCAT_NULL_YIELDS_NULL ON;
+SET ARITHABORT ON;
+SET NUMERIC_ROUNDABORT OFF;
 CREATE TABLE #PortalDeployment (
  TestSources bit NOT NULL, TestNTName nvarchar(512) NOT NULL,
  ApiIdentity nvarchar(512) NOT NULL, PortalUrl nvarchar(2048) NOT NULL
@@ -45,9 +52,12 @@ foreach ($name in '001_CreateSampleSecurityDB.sql','002_CreateSampleApplications
  $source = [IO.File]::ReadAllText((Join-Path $database "Development/$name"))
  $source = $source.Replace('ORIGINAL_LOGIN()', '(SELECT TestNTName FROM #PortalDeployment)')
  $source = $source.Replace("N'http://localhost:5080/#workspace'", "(SELECT PortalUrl+N'#workspace' FROM #PortalDeployment)")
+ $context = 'master'
  foreach ($batch in [regex]::Split($source, '(?im)^\s*GO\s*\r?$')) {
   if ($batch.Trim()) {
-   $escaped = $batch.Replace("'", "''")
+   $use = [regex]::Match($batch, '(?im)^USE\s+\[?(\w+)\]?;')
+   if ($use.Success) { $context = $use.Groups[1].Value }
+   $escaped = ("USE [$context];`n" + $batch).Replace("'", "''")
    $parts.Add("IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'$escaped');`nGO`n")
   }
  }
@@ -113,8 +123,13 @@ GO
 DECLARE @account nvarchar(512)=(SELECT ApiIdentity FROM #PortalDeployment);
 IF @account<>N''
 BEGIN
- IF SUSER_ID(@account) IS NULL EXEC(N'CREATE LOGIN '+QUOTENAME(@account)+N' FROM WINDOWS');
- DECLARE @sql nvarchar(max)=N'USE CompanyPortal; CREATE USER '+QUOTENAME(@account)+N' FOR LOGIN '+QUOTENAME(@account)+N';';
+ DECLARE @sql nvarchar(max);
+ IF SUSER_ID(@account) IS NULL
+ BEGIN
+  SET @sql=N'CREATE LOGIN '+QUOTENAME(@account)+N' FROM WINDOWS';
+  EXEC(@sql);
+ END;
+ SET @sql=N'USE CompanyPortal; CREATE USER '+QUOTENAME(@account)+N' FOR LOGIN '+QUOTENAME(@account)+N';';
  EXEC(@sql);
 END;
 GO

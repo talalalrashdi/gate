@@ -89,7 +89,7 @@ public sealed partial class EwsMailSession : IAsyncDisposable
                 timeout.CancelAfter(TimeSpan.FromSeconds(90));
                 using var request = Request(operation);
                 using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, timeout.Token);
-                response.EnsureSuccessStatusCode();
+                await EnsureEwsSuccessAsync(response, timeout.Token);
                 await using var stream = await response.Content.ReadAsStreamAsync(timeout.Token);
                 var started = DateTime.UtcNow;
                 await foreach (var envelope in ReadEnvelopesAsync(stream, timeout.Token))
@@ -132,7 +132,7 @@ public sealed partial class EwsMailSession : IAsyncDisposable
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(token); timeout.CancelAfter(TimeSpan.FromSeconds(30));
         using var request = Request(operation); using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, timeout.Token);
-        response.EnsureSuccessStatusCode();
+        await EnsureEwsSuccessAsync(response, timeout.Token);
         await using var stream = await response.Content.ReadAsStreamAsync(timeout.Token);
         using var reader = XmlReader.Create(stream, new XmlReaderSettings { Async = true, DtdProcessing = DtdProcessing.Prohibit, MaxCharactersInDocument = 2_000_000, XmlResolver = null });
         var document = await XElement.LoadAsync(reader, LoadOptions.None, timeout.Token); Check(document); return document;
@@ -141,9 +141,41 @@ public sealed partial class EwsMailSession : IAsyncDisposable
     private static void Check(XElement envelope)
     {
         if (envelope.Name != Soap + "Envelope") throw new XmlException("Invalid EWS envelope.");
-        if (envelope.Descendants(Soap + "Fault").Any()) throw new InvalidOperationException("Exchange SOAP fault.");
+        var fault = envelope.Element(Soap + "Body")?.Element(Soap + "Fault");
+        if (fault is not null)
+        {
+            // Exchange commonly sends SOAP faults with HTTP500. Expose only a
+            // bounded error identifier, never faultstring/MessageText/server XML.
+            var code = fault.Descendants().FirstOrDefault(node => node.Name.LocalName == "ResponseCode"
+                && node.Name.NamespaceName is "http://schemas.microsoft.com/exchange/services/2006/errors"
+                    or "http://schemas.microsoft.com/exchange/services/2006/messages"
+                    or "http://schemas.microsoft.com/exchange/services/2006/types")?.Value;
+            code ??= fault.Elements().FirstOrDefault(node => node.Name.LocalName == "faultcode")?.Value.Split(':').Last();
+            throw new EwsResponseException(SafeCode(code));
+        }
         var errors = envelope.Descendants(M + "ResponseCode").Where(node => node.Value != "NoError").Select(node => node.Value).ToArray();
-        if (errors.Length > 0) throw new EwsResponseException(errors[0]);
+        if (errors.Length > 0) throw new EwsResponseException(SafeCode(errors[0]));
+    }
+
+    private static string SafeCode(string? code) => code is not null
+        && Regex.IsMatch(code, "^Error[A-Za-z0-9_]{1,100}$", RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1))
+        ? code : "ErrorUnknownSoapFault";
+
+    private static async Task EnsureEwsSuccessAsync(HttpResponseMessage response, CancellationToken token)
+    {
+        if (response.IsSuccessStatusCode) return;
+        try
+        {
+            await using var stream = await response.Content.ReadAsStreamAsync(token);
+            using var reader = XmlReader.Create(stream, new XmlReaderSettings
+            {
+                Async = true, DtdProcessing = DtdProcessing.Prohibit,
+                MaxCharactersInDocument = 2_000_000, XmlResolver = null
+            });
+            Check(await XElement.LoadAsync(reader, LoadOptions.None, token));
+        }
+        catch (XmlException) { /* Empty/HTML/invalid error body: retain the HTTP status. */ }
+        response.EnsureSuccessStatusCode();
     }
 
     public static async IAsyncEnumerable<XElement> ReadEnvelopesAsync(Stream stream, [EnumeratorCancellation] CancellationToken token)

@@ -1,0 +1,142 @@
+﻿[
+    {
+        "Database":  "CompanyPortal",
+        "Schema":  "Master",
+        "Table":  "Cards",
+        "Rows":  22,
+        "SHA256":  "FCADC9C0AC8B2ED13275ADD726D73070CDFA077A44B977C151906B0F451435FA"
+    },
+    {
+        "Database":  "CompanyPortal",
+        "Schema":  "Master",
+        "Table":  "ImageGroupItems",
+        "Rows":  4,
+        "SHA256":  "5C4C5B352D3A4FFB6CFD9629A289FE8A35F361B24B6861EB9F0AA3414891C099"
+    },
+    {
+        "Database":  "CompanyPortal",
+        "Schema":  "Master",
+        "Table":  "ImageGroups",
+        "Rows":  2,
+        "SHA256":  "E913AEF67E48051F69205510E5F3D50565EFCE199EB90CB52538B51B71E03083"
+    },
+    {
+        "Database":  "CompanyPortal",
+        "Schema":  "Master",
+        "Table":  "Images",
+        "Rows":  9,
+        "SHA256":  "E8D124D878ECE581AD118529A2F3F95030332FB209B4B1240B0A223C59C76E46"
+    },
+    {
+        "Database":  "CompanyPortal",
+        "Schema":  "Master",
+        "Table":  "ThemePreviewRoles",
+        "Rows":  1,
+        "SHA256":  "51A0DCBE07C86B34519DC21788CC767FF911E2F8E0BDFB504DAE71A4B5F58BBA"
+    },
+    {
+        "Database":  "CompanyPortal",
+        "Schema":  "Master",
+        "Table":  "Themes",
+        "Rows":  7,
+        "SHA256":  "4C9D0D35F303D7F6329BD662D7862E0440E095F5DA64BB2F1A1E7BD34D8814C4"
+    },
+    {
+        "Database":  "CompanyPortal",
+        "Schema":  "Mstr",
+        "Table":  "Utls",
+        "Rows":  1,
+        "SHA256":  "8347BFF02E6516C7D5EEC6B8C4E651303BB5FF207593523580B72A621F9169BC"
+    },
+    {
+        "Database":  "CompanyPortal",
+        "Schema":  "Portal",
+        "Table":  "UserCardApplications",
+        "Rows":  8,
+        "SHA256":  "E08B300ED35FB85EB5AE658EBF0363C17E21E3A442A673836B569A6B00AECB77"
+    },
+    {
+        "Database":  "CompanyPortal",
+        "Schema":  "Portal",
+        "Table":  "UserCardOrder",
+        "Rows":  22,
+        "SHA256":  "765FE7DC2A66FBCA83DAE708660602EE46ABE37F80FDC3FB8A09DA45BC897D16"
+    },
+    {
+        "Database":  "CompanyPortal",
+        "Schema":  "Portal",
+        "Table":  "UserCards",
+        "Rows":  4,
+        "SHA256":  "38ADD6D84E83CD48D630FC405543841C6A44FEC608CC5C13F7D5486DFF82708B"
+    },
+    {
+        "Database":  "CompanyPortal",
+        "Schema":  "Portal",
+        "Table":  "UserSettings",
+        "Rows":  1,
+        "SHA256":  "A1C8DDCFC909CAAF48A784856903DD2839D2E4D2D71DB9F00873F81DE4A808E4"
+    },
+    {
+        "Database":  "CompanyPortal",
+        "Schema":  "Portal",
+        "Table":  "UserWorkspaceOrder",
+        "Rows":  9,
+        "SHA256":  "ED3962B35F6FD26E4C8008C58D958247207DC18F808BD3B71FAD5D60D97E5B98"
+    },
+    {
+        "Database":  "SecurityDB",
+        "Schema":  "dbo",
+        "Table":  "Applications",
+        "Rows":  4,
+        "SHA256":  "4AC4A81A1EAB62600379EE9B1F0740AE378906739D6A73851607127A655F42BB"
+    },
+    {
+        "Database":  "SecurityDB",
+        "Schema":  "dbo",
+        "Table":  "Roles",
+        "Rows":  1,
+        "SHA256":  "E0E91400420F0D063EA41B9BE2C4303867225E837D0E338B0B64572DB7C45EFC"
+    },
+    {
+        "Database":  "SecurityDB",
+        "Schema":  "dbo",
+        "Table":  "UserApplicationAccess",
+        "Rows":  3,
+        "SHA256":  "31DC2A0488A606C2999948A7CDD8DABA1E546A5C2F2401DC2D4DE9D1BAFD3F6C"
+    },
+    {
+        "Database":  "SecurityDB",
+        "Schema":  "dbo",
+        "Table":  "UserRoles",
+        "Rows":  1,
+        "SHA256":  "E945D6EA594FAB6B13673888EF0590E0B4A48CD24A3CE9D30A49067BB7359D21"
+    },
+    {
+        "Database":  "SecurityDB",
+        "Schema":  "dbo",
+        "Table":  "Users",
+        "Rows":  1,
+        "SHA256":  "47FCFCC60A8880CE85209025D7B6E340BF981FC162AB0B61D9D7D973C00DB512"
+    },
+    {
+        "Database":  "Pubs_Info_V4",
+        "Schema":  "dbo",
+        "Table":  "Attachment",
+        "Rows":  7,
+        "SHA256":  "A53145F56E9F5611025B295A9AF9B0990576CF4996532E068233B0A2C087BFD1"
+    },
+    {
+        "Database":  "Pubs_Info_V4",
+        "Schema":  "dbo",
+        "Table":  "Public_info_News",
+        "Rows":  12,
+        "SHA256":  "6CA35701D5C6E313415C9829752B4282C71AE9E951D35BC64B875E23927B0DBD"
+    },
+    {
+        "Database":  "Pubs_Info_V4",
+        "Schema":  "dbo",
+        "Table":  "Public_info_News_Prodc",
+        "Rows":  13,
+        "SHA256":  "18DEAB1A5613CCA9D25685131E83837EBB4D3D594FA89D4A470AEA1A619F81CC"
+    }
+]

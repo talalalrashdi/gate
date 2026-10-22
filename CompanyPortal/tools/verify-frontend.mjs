@@ -18,6 +18,7 @@ const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 const normalize = text => text.replaceAll('\r\n', '\n').replace(/>\s+</g, '><').trim();
 // User-approved changes after initial parity: tab metadata and theme controls.
 const canonicalHtml = text => normalize(text.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, ''))
+  .replace(/<a class="portal-setup-link"[^>]*>[\s\S]*?<\/a>/g, '')
   .replace(/<button\b[^>]*id="portal-notices-visibility"[^>]*>/g, '<button id="portal-notices-visibility">')
   .replace(/(<section id="portal-floating-alert"[^>]*?) hidden/g, '$1')
   .replace(/<link[^>]*href="[^"]*\/css\/(?:theme-appearance|exchange-schedule)\.css[^"]*"[^>]*>/g, '')
@@ -109,6 +110,8 @@ for (let offset = 0; offset < resources.length; offset += 8) {
     // User-requested full-width, flush-top default-theme header.
     if (migratedPath(file.path) === 'css/theme-national-day.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/theme-national-day.css'));
     if (file.path === 'design-b-majestic-theme.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/theme-official.css'));
+    // User-requested work-theme Exchange planner layout fix.
+    if (migratedPath(file.path) === 'css/theme-work.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/theme-work.css'));
     // Browser acceptance fixes: shared responsive header and unique group choices.
     if (file.path === 'design-b-layout.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/layout.css'));
     if (file.path === 'design-b-workspace.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/workspace.css'));

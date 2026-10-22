@@ -81,7 +81,7 @@ public sealed partial class EwsMailSession
             {
                 using var timeout=CancellationTokenSource.CreateLinkedTokenSource(token);timeout.CancelAfter(TimeSpan.FromSeconds(90));
                 using var request=Request(new XElement(M+"GetStreamingEvents",new XElement(M+"SubscriptionIds",new XElement(T+"SubscriptionId",id)),new XElement(M+"ConnectionTimeout",1)));
-                using var response=await client.SendAsync(request,HttpCompletionOption.ResponseHeadersRead,timeout.Token);response.EnsureSuccessStatusCode();
+                using var response=await client.SendAsync(request,HttpCompletionOption.ResponseHeadersRead,timeout.Token);await EnsureEwsSuccessAsync(response,timeout.Token);
                 await using var stream=await response.Content.ReadAsStreamAsync(timeout.Token);var started=DateTime.UtcNow;
                 await foreach(var envelope in ReadEnvelopesAsync(stream,timeout.Token))
                     if(envelope.Descendants().Any(n=>n.Name.Namespace==T&&n.Name.LocalName is "CreatedEvent" or "ModifiedEvent" or "DeletedEvent" or "MovedEvent" or "CopiedEvent" or "FreeBusyChangedEvent"))yield return true;

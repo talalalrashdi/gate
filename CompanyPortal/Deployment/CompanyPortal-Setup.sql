@@ -10,6 +10,13 @@
 USE master;
 GO
 SET NOCOUNT ON;
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+SET ANSI_PADDING ON;
+SET ANSI_WARNINGS ON;
+SET CONCAT_NULL_YIELDS_NULL ON;
+SET ARITHABORT ON;
+SET NUMERIC_ROUNDABORT OFF;
 CREATE TABLE #PortalDeployment (
  TestSources bit NOT NULL, TestNTName nvarchar(512) NOT NULL,
  ApiIdentity nvarchar(512) NOT NULL, PortalUrl nvarchar(2048) NOT NULL
@@ -1515,23 +1522,27 @@ GO
 
 GO
 
-IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'-- DEVELOPMENT ONLY. Never run this against the real internal security database.
+IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'USE [master];
+-- DEVELOPMENT ONLY. Never run this against the real internal security database.
 USE [master];
 ');
 GO
 
-IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'
+IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'USE [master];
+
 IF DB_ID(N''SecurityDB'') IS NULL
     EXEC(N''CREATE DATABASE [SecurityDB];'');
 ');
 GO
 
-IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'
+IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'USE [SecurityDB];
+
 USE [SecurityDB];
 ');
 GO
 
-IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'
+IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'USE [SecurityDB];
+
 IF OBJECT_ID(N''dbo.Users'', N''U'') IS NULL
 BEGIN
     CREATE TABLE dbo.Users
@@ -1545,19 +1556,22 @@ END;
 ');
 GO
 
-IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'
+IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'USE [SecurityDB];
+
 -- This script must be run with the same development Windows account used in the browser.
 IF NOT EXISTS (SELECT 1 FROM dbo.Users WHERE NTName = (SELECT TestNTName FROM #PortalDeployment))
     INSERT dbo.Users (NTName) VALUES ((SELECT TestNTName FROM #PortalDeployment));
 ');
 GO
 
-IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'-- DEVELOPMENT ONLY. Do not run against the real internal security database.
+IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'USE [SecurityDB];
+-- DEVELOPMENT ONLY. Do not run against the real internal security database.
 USE [SecurityDB];
 ');
 GO
 
-IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'
+IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'USE [SecurityDB];
+
 SET XACT_ABORT ON;
 BEGIN TRANSACTION;
 IF OBJECT_ID(N''dbo.Applications'',N''U'') IS NULL
@@ -1598,12 +1612,14 @@ COMMIT TRANSACTION;
 ');
 GO
 
-IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'-- DEVELOPMENT ONLY. Do not deploy these sample grants internally.
+IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'USE [SecurityDB];
+-- DEVELOPMENT ONLY. Do not deploy these sample grants internally.
 USE [SecurityDB];
 ');
 GO
 
-IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'
+IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'USE [SecurityDB];
+
 SET XACT_ABORT ON;
 BEGIN TRANSACTION;
 IF OBJECT_ID(N''dbo.Roles'',N''U'') IS NULL
@@ -1746,8 +1762,13 @@ GO
 DECLARE @account nvarchar(512)=(SELECT ApiIdentity FROM #PortalDeployment);
 IF @account<>N''
 BEGIN
- IF SUSER_ID(@account) IS NULL EXEC(N'CREATE LOGIN '+QUOTENAME(@account)+N' FROM WINDOWS');
- DECLARE @sql nvarchar(max)=N'USE CompanyPortal; CREATE USER '+QUOTENAME(@account)+N' FOR LOGIN '+QUOTENAME(@account)+N';';
+ DECLARE @sql nvarchar(max);
+ IF SUSER_ID(@account) IS NULL
+ BEGIN
+  SET @sql=N'CREATE LOGIN '+QUOTENAME(@account)+N' FROM WINDOWS';
+  EXEC(@sql);
+ END;
+ SET @sql=N'USE CompanyPortal; CREATE USER '+QUOTENAME(@account)+N' FOR LOGIN '+QUOTENAME(@account)+N';';
  EXEC(@sql);
 END;
 GO

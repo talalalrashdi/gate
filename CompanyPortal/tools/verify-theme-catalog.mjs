@@ -37,6 +37,7 @@ async function fixture({ selected = 88, renamed = false, held = false, offline =
     for (const handler of events.get(event.type) ?? []) handler(event);
   }
   vm.runInNewContext(source, {
+    window: {}, // Optional shared appearance renderer is absent in this isolated fixture.
     URL, location: { href: 'http://portal.test/' }, AbortSignal: { timeout() {} },
     CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options.detail; } },
     localStorage: { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: key => storage.delete(key) },

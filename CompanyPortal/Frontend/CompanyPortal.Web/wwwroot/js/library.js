@@ -1,62 +1,48 @@
 (() => {
-  const section = document.getElementById('digital-library');
-  if (!section) return;
-  const names = {rules:'قوانين المؤسسة',guides:'كتيبات',social:'قوانين الحماية الاجتماعية'};
-  const documents = [
-    {category:'rules',title:'قوانين المؤسسة',description:'المرجع الرئيسي للأنظمة والقواعد المنظمة للعمل داخل المؤسسة.'},
-    {category:'rules',title:'سياسات وإجراءات العمل',description:'السياسات الداخلية وإجراءات العمل التي يحتاجها الموظف.'},
-    {category:'guides',title:'كتيب الموظف',description:'دليل التعريف بالخدمات والقنوات التي تساعدك في يوم العمل.'},
-    {category:'guides',title:'كتيب السلامة والإخلاء',description:'مرجع للاطلاع على تعليمات السلامة وخطة الإخلاء المعتمدة.'},
-    {category:'social',title:'قانون الحماية الاجتماعية',description:'مكان مخصص للاطلاع على النسخة الرسمية المعتمدة من القانون.'},
-    {category:'social',title:'دليل الحماية الاجتماعية',description:'مكان مخصص للأدلة التوضيحية والأسئلة الشائعة المرتبطة بالقانون.'}
-  ];
-  let category = 'rules';
-  const results = section.querySelector('#documents-results');
-  const dialog = section.querySelector('#documents-dialog');
-  const body = section.querySelector('#documents-dialog-body');
-  const normalize = value => value.normalize('NFKD').replace(/[\u064B-\u065F\u0670]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').toLowerCase();
-  function openDocument(doc) {
-    section.querySelector('#documents-dialog-title').textContent = doc.title;
-    section.querySelector('#documents-dialog-category').textContent = names[doc.category];
-    section.querySelector('#documents-dialog-description').textContent = doc.description;
-    body.replaceChildren();
-    if (doc.url) {
-      const link = document.createElement('a');
-      link.href = doc.url; link.target = '_blank'; link.rel = 'noopener'; link.textContent = 'فتح ملف PDF في نافذة مستقلة ↗';
-      const frame = document.createElement('iframe');
-      frame.src = doc.url; frame.title = doc.title;
-      body.append(link,frame);
-    } else {
-      const note = document.createElement('p');
-      note.textContent = 'لم يُرفق ملف PDF لهذه الوثيقة بعد. ستظهر النسخة المعتمدة هنا عند إرفاقها.';
-      body.append(note);
-    }
-    dialog.showModal();
+  const section=document.getElementById('digital-library'),base=document.querySelector('meta[name="companyportal-api-base"]')?.content;
+  if(!section||!base)return;
+  const endpoint=path=>new URL('api/document-library'+path,new URL(base.replace(/\/?$/,'/'),location.href)).href;
+  const results=section.querySelector('#documents-results'),categories=section.querySelector('.documents-categories'),status=section.querySelector('#documents-status'),retry=section.querySelector('#documents-retry');
+  const dialog=section.querySelector('#documents-dialog'),body=section.querySelector('#documents-dialog-body');
+  const make=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
+  let tabs=[],selected,controller,generation=0;
+  function clear(){tabs=[];categories.replaceChildren();results.replaceChildren();section.querySelector('#documents-count').textContent='';section.querySelector('#documents-current-title').textContent='الوثائق';dialog.close();body.replaceChildren();}
+  function open(doc,tab){
+    section.querySelector('#documents-dialog-title').textContent=doc.documentName;
+    section.querySelector('#documents-dialog-category').textContent=tab.tabName;
+    section.querySelector('#documents-dialog-description').textContent='استعراض ملف PDF';
+    const url=endpoint('/'+doc.documentId+'/file');
+    const link=make('a',null,'فتح ملف PDF في نافذة مستقلة ↗');link.href=url;link.target='_blank';link.rel='noopener';
+    const frame=make('iframe');frame.src=url;frame.title=doc.documentName;
+    body.replaceChildren(link,frame);dialog.showModal();
   }
-  function render() {
-    const filtered = documents.filter(doc => doc.category === category);
-    section.querySelector('#documents-count').textContent = 'عدد الوثائق: '+filtered.length.toLocaleString('ar-OM-u-nu-latn');
-    results.replaceChildren();
-    for (const doc of filtered) {
-      const row = document.createElement('article'); row.className = 'documents-row';
-      const icon = document.createElement('span'); icon.className = 'documents-file-icon'; icon.textContent = 'PDF'; icon.setAttribute('aria-hidden','true');
-      const content = document.createElement('div');
-      const title = document.createElement('h4'); title.textContent = doc.title;
-      const description = document.createElement('p'); description.textContent = doc.description;
-      const meta = document.createElement('small'); meta.textContent = doc.url ? 'PDF · ملف محلي · '+doc.size : 'نموذج تصنيف · بانتظار إرفاق الملف';
-      content.append(title,description,meta);
-      const button = document.createElement('button'); button.type = 'button'; button.textContent = doc.url ? 'استعراض الملف ↗' : 'تفاصيل الوثيقة ←'; button.setAttribute('aria-label',(doc.url?'استعراض ':'تفاصيل ')+doc.title); button.addEventListener('click',()=>openDocument(doc));
-      row.append(icon,content,button); results.append(row);
-    }
-    if (!filtered.length) { const empty = document.createElement('p'); empty.className='documents-empty'; empty.textContent='لا توجد ملفات في هذا التصنيف حاليًا.'; results.append(empty); }
+  function render(){
+    const tab=tabs.find(t=>t.documentTabId===selected)||tabs[0];selected=tab?.documentTabId;
+    categories.replaceChildren(...tabs.map(t=>{const b=make('button',null,t.tabName);b.type='button';b.setAttribute('aria-pressed',String(t===tab));b.addEventListener('click',()=>{selected=t.documentTabId;render();categories.querySelector('[aria-pressed="true"]')?.focus();});return b;}));
+    section.querySelector('#documents-current-title').textContent=tab?.tabName||'الوثائق';
+    const docs=tab?.documents||[];section.querySelector('#documents-count').textContent='عدد الوثائق: '+docs.length;
+    results.replaceChildren(...docs.map(doc=>{
+      const row=make('article','documents-row');row.setAttribute('role','listitem');
+      const icon=make('span','documents-file-icon','PDF');icon.setAttribute('aria-hidden','true');
+      const content=make('div');content.append(make('h4',null,doc.documentName),make('small',null,'PDF'));
+      const button=make('button',null,'استعراض الملف ↗');button.type='button';button.setAttribute('aria-label','استعراض '+doc.documentName);button.addEventListener('click',()=>open(doc,tab));
+      row.append(icon,content,button);return row;
+    }));
+    status.textContent=tabs.length?'اختر الوثيقة لاستعراضها.':'لا توجد وثائق متاحة حاليًا.';
   }
-  section.querySelectorAll('[data-documents-category]').forEach(button => button.addEventListener('click',()=>{
-    category = button.dataset.documentsCategory;
-    section.querySelectorAll('[data-documents-category]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));
-    section.querySelector('#documents-current-title').textContent = names[category]; render();
-  }));
-  section.querySelector('#documents-close').addEventListener('click',()=>dialog.close());
-  dialog.addEventListener('close',()=>body.replaceChildren());
-  window.addEventListener('pagehide',()=>documents.forEach(doc=>{if(doc.url)URL.revokeObjectURL(doc.url);}));
-  render();
+  async function load(){
+    controller?.abort();controller=new AbortController();const current=++generation;
+    clear();retry.hidden=true;status.textContent='جارٍ تحميل الوثائق…';results.setAttribute('aria-busy','true');
+    try{
+      const response=await fetch(endpoint(''),{credentials:'include',cache:'no-store',signal:AbortSignal.any([controller.signal,AbortSignal.timeout(15000)])});
+      if(current!==generation)return;
+      if(!response.ok)throw new Error(String(response.status));
+      const data=await response.json();if(current!==generation)return;
+      tabs=data;render();
+    }catch(e){if(current!==generation)return;clear();status.textContent=e.message==='401'||e.message==='403'?'حسابك غير مخوّل لعرض الوثائق.':'تعذر تحميل الوثائق. تحقق من الاتصال وأعد المحاولة.';retry.hidden=false;}
+    finally{if(current===generation)results.setAttribute('aria-busy','false');}
+  }
+  section.querySelector('#documents-close').addEventListener('click',()=>dialog.close());dialog.addEventListener('close',()=>body.replaceChildren());retry.addEventListener('click',load);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden){++generation;controller?.abort();clear();}else load();});
+  window.addEventListener('pagehide',()=>{++generation;controller?.abort();clear();});window.addEventListener('pageshow',e=>{if(e.persisted)load();});load();
 })();

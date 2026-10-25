@@ -13,12 +13,14 @@ public sealed class AdminController(IConfiguration configuration) : Controller
     [HttpGet("/admin/images")]
     [HttpGet("/admin/themes")]
     [HttpGet("/admin/applications")]
+    [HttpGet("/admin/documents")]
     public IActionResult Cards()
     {
         ViewData["AdminSection"] = Request.Path.Value?.TrimEnd('/').EndsWith("/cards", StringComparison.OrdinalIgnoreCase) == true ? "cards" : "overview";
         if (Request.Path.Value?.TrimEnd('/').EndsWith("/images", StringComparison.OrdinalIgnoreCase) == true) ViewData["AdminSection"] = "images";
         if (Request.Path.Value?.TrimEnd('/').EndsWith("/themes", StringComparison.OrdinalIgnoreCase) == true) ViewData["AdminSection"] = "themes";
         if (Request.Path.Value?.TrimEnd('/').EndsWith("/applications", StringComparison.OrdinalIgnoreCase) == true) ViewData["AdminSection"] = "applications";
+        if (Request.Path.Value?.TrimEnd('/').EndsWith("/documents", StringComparison.OrdinalIgnoreCase) == true) ViewData["AdminSection"] = "documents";
         return View();
     }
     [HttpGet("/admin/theme-preview")]

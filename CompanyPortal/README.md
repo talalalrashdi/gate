@@ -1,5 +1,7 @@
 # CompanyPortal
 
+**وثائق تهمك** now displays permission-filtered PDF tabs. Admins select registered files, name/order tabs and show or hide them at `/admin/documents`. See [document library, samples and migration 025](docs/DOCUMENT_LIBRARY.md).
+
 **البحث العام** now searches authorized forms/documents and apps, with PDF viewing, file downloads and permission-rechecked app launching. See [search behaviour and verification](docs/AUTHORIZED_SEARCH.md).
 
 The header **الاستمارات والوثائق** searches authorized `Mng.Document` records, displays PDFs and downloads other files with Arabic filenames. Folders use `Mng.Folder` and file roots use the `docs` key. See [setup and migrations 023–024](docs/FORMS_DOCUMENTS.md).

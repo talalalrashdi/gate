@@ -26,7 +26,7 @@ try{
  Assert ((Request '/api/documents' $false).status-eq 401) 'Anonymous list allowed.'
  Assert ((Request (FileUrl 1) $false).status-eq 401) 'Anonymous file allowed.'
  $list=Request '/api/documents';Assert ($list.status-eq 200 -and $list.cache-match 'no-store') 'List/cache failed.'
- $rows=ConvertFrom-Json -InputObject $list.content;Assert ($rows.Count-eq 6) 'Allowed fixture count wrong.'
+ $rows=ConvertFrom-Json -InputObject $list.content;Assert (@($rows|Where-Object documentId -match '^d0250000-0000-0000-0000-00000000000[1-7]$').Count-eq 6) 'Allowed fixture count wrong.'
  Assert ($list.content-notmatch '[A-Z]:\\|document-fixture') 'Physical root exposed.'
  Assert (@($rows|Where-Object folderId -eq 90).Count-eq 0) 'Hidden folder leaked.'
  $pdf=Request (FileUrl 4);Assert ($pdf.status-eq 200 -and $pdf.content.StartsWith('%PDF-') -and $pdf.type-eq 'application/pdf' -and $pdf.disposition-match '^inline;' -and $pdf.nosniff-eq 'nosniff' -and $pdf.cache-match 'no-store') 'PDF display response wrong.'
@@ -38,7 +38,7 @@ try{
  Assert ((Request '/api/documents/00000000-0000-0000-0000-000000000000/file').status-eq 404) 'Unknown GUID accepted.'
  [void](Sql 'UPDATE Mng.DocumentSampleJobs SET Active=0 WHERE ID=@Id' @{'@Id'=$job.ID})
  $limited=ConvertFrom-Json -InputObject (Request '/api/documents').content
- Assert ($limited.Count-eq 4 -and @($limited|Where-Object {$_.folderId-in 74,75}).Count-eq 0) 'Restricted folder or child leaked.'
+ Assert (@($limited|Where-Object documentId -match '^d0250000-0000-0000-0000-00000000000[1-7]$').Count-eq 4 -and @($limited|Where-Object {$_.folderId-in 74,75}).Count-eq 0) 'Restricted folder or child leaked.'
  Assert ((Request (FileUrl 5)).status-eq 404 -and (Request (FileUrl 6)).status-eq 404) 'Restricted direct link allowed.'
  [void](Sql 'UPDATE Mng.DocumentSampleJobs SET Active=1 WHERE ID=@Id' @{'@Id'=$job.ID})
  foreach($parent in @(11,999999)){

@@ -2,6 +2,7 @@
     Layout = "_AdminLayout";
 }
 @section Styles {
+  <link rel="stylesheet" href="@Url.Content("~/css/admin-documents.css")" asp-append-version="true">
   <link rel="stylesheet" href="@Url.Content("~/css/admin-themes.css")" asp-append-version="true">
   <link rel="stylesheet" href="@Url.Content("~/css/admin-images.css")" asp-append-version="true">
   <link rel="stylesheet" href="@Url.Content("~/css/admin-cards.css")" asp-append-version="true">
@@ -25,7 +26,9 @@
 @await Html.PartialAsync("_Images")
 @await Html.PartialAsync("_Themes")
 @await Html.PartialAsync("_Applications")
+@await Html.PartialAsync("_DocumentLibrary")
 @section Scripts {
+  <script src="@Url.Content("~/js/admin-documents.js")" asp-append-version="true"></script>
   <script src="@Url.Content("~/js/admin-themes.js")" asp-append-version="true"></script>
   <script src="@Url.Content("~/js/admin-images.js")" asp-append-version="true"></script>
   <script src="@Url.Content("~/js/admin-cards.js")" asp-append-version="true"></script>

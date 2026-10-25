@@ -19,6 +19,7 @@ builder.Services.AddScoped<NewsStore>();
 builder.Services.AddScoped<FixedOrdersStore>();
 builder.Services.AddScoped<LegalDecisionsStore>();
 builder.Services.AddScoped<DocumentsStore>();
+builder.Services.AddScoped<DocumentTabsStore>();
 builder.Services.AddScoped<DocumentFiles>();
 builder.Services.AddScoped<NewsFiles>();
 builder.Services.AddScoped<FolderPathsStore>();

@@ -75,7 +75,7 @@
     const copy=document.getElementById('editorial-reading-copy');copy.replaceChildren();const list=document.createElement('div');list.className='editorial-more-list';
     function addItem(title,action){const row=document.createElement('button');row.type='button';const text=document.createElement('span'),arrow=document.createElement('span');text.textContent=title;arrow.textContent='←';arrow.setAttribute('aria-hidden','true');row.append(text,arrow);row.addEventListener('click',action);list.append(row);}
     if(collection)collection.ids.forEach(id=>addItem(articles[id].title,()=>openEditorialArticle(id)));
-    else {addItem('ألبوم الصور — بعدساتنا، عُمان أقرب',()=>{readingDialog.close();root.querySelector('[data-editorial-gallery]').click();});addItem('فيديو الفعالية — المشاهدة أو اختيار ملف محلي',()=>{readingDialog.close();const target=root.querySelector('.editorial-video-card');target.setAttribute('tabindex','-1');target.focus({preventScroll:true});target.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'center'});});}
+    else {addItem('ألبوم الصور — بعدساتنا، عُمان أقرب',()=>{readingDialog.close();root.querySelector('[data-editorial-gallery]')?.click();});addItem('فيديو الفعالية — المشاهدة',()=>{readingDialog.close();const target=root.querySelector('.editorial-video-card');if(!target)return;target.setAttribute('tabindex','-1');target.focus({preventScroll:true});target.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'center'});});}
     copy.append(list);readingDialog.showModal();
   }));
   document.querySelectorAll('.editorial-dialog [data-editorial-close]').forEach(button=>button.addEventListener('click',()=>button.closest('dialog').close()));
@@ -85,114 +85,6 @@
     const update=()=>{const selected=saved.includes(id);button.setAttribute('aria-pressed',String(selected));button.setAttribute('aria-label',`${selected?'إلغاء حفظ':'حفظ'} ${title}`);};update();
     button.addEventListener('click',()=>{saved=saved.includes(id)?saved.filter(value=>value!==id):[...saved,id];try{localStorage.setItem('clerio-editorial-saved',JSON.stringify(saved));}catch{}update();});
   });
-  const photos=[{src:'./assets/hero-oman-desert.png',caption:'رمال عُمان · صورة توضيحية'},{src:'./assets/hero-oman-fort.png',caption:'قلاع وحصون · صورة توضيحية'},{src:'./assets/hero-oman-mosque.png',caption:'جمال العمارة العُمانية · صورة توضيحية'}];
-  const preview=root.querySelector('.editorial-photo-slider'),previewSlides=preview?[...preview.querySelectorAll('[data-photo-slide]')]:[];
-  let previewIndex=1;
-  function selectPreview(index){
-    if(!preview)return;
-    previewIndex=(index+photos.length)%photos.length;
-    previewSlides.forEach((slide,i)=>{
-      const difference=(i-previewIndex+photos.length)%photos.length,selected=i===previewIndex;
-      slide.classList.toggle('is-selected',selected);slide.style.setProperty('--photo-slot',selected?'0':difference===1?'-1':'1');
-      slide.querySelector('[data-photo-select]').setAttribute('aria-pressed',String(selected));slide.querySelector('.editorial-photo-enlarge').hidden=!selected;
-    });
-    root.querySelector('[data-photo-status]').textContent=(previewIndex+1)+' / '+photos.length;
-  }
-  if(preview){
-    root.querySelector('[data-photo-prev]').addEventListener('click',()=>selectPreview(previewIndex-1));root.querySelector('[data-photo-next]').addEventListener('click',()=>selectPreview(previewIndex+1));
-    preview.querySelectorAll('[data-photo-select]').forEach(button=>button.addEventListener('click',()=>selectPreview(Number(button.dataset.photoSelect))));
-    preview.addEventListener('keydown',event=>{if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();selectPreview(previewIndex+(event.key==='ArrowLeft'?1:-1));}});
-    let touch;preview.addEventListener('touchstart',event=>{touch={x:event.touches[0].clientX,y:event.touches[0].clientY};},{passive:true});preview.addEventListener('touchend',event=>{if(!touch)return;const dx=event.changedTouches[0].clientX-touch.x,dy=event.changedTouches[0].clientY-touch.y;touch=null;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.5)selectPreview(previewIndex+(dx>0?1:-1));},{passive:true});
-    selectPreview(1);
-  }
-  const gallery=document.getElementById('editorial-gallery-dialog');let photoIndex=0;
-  const photoThumbs=gallery.querySelector('.editorial-gallery-thumbnails'),photoRange=gallery.querySelector('[data-gallery-range]'),photoPage=gallery.querySelector('[data-gallery-page]'),photoZoom=gallery.querySelector('[data-gallery-zoom]'),photoStage=gallery.querySelector('.editorial-gallery-stage');
-  const photoNumber=value=>value.toLocaleString('ar-OM-u-nu-latn');
-  root.querySelector('[data-photo-count]')?.replaceChildren(document.createTextNode(photoNumber(photos.length)+' صور'));
-  if(photoThumbs){
-    photos.forEach((photo,index)=>{
-      const button=document.createElement('button'),image=document.createElement('img');button.type='button';button.dataset.galleryIndex=String(index);button.setAttribute('aria-label','عرض الصورة '+photoNumber(index+1)+': '+photo.caption);
-      image.src=photo.src;image.alt='';image.loading='lazy';image.decoding='async';button.append(image);photoThumbs.append(button);
-    });
-    photoThumbs.addEventListener('click',event=>{const button=event.target.closest('[data-gallery-index]');if(button)selectPhoto(Number(button.dataset.galleryIndex));});
-  }
-  if(photoRange)photoRange.max=String(photos.length);if(photoPage)photoPage.max=String(photos.length);
-  function zoomPhoto(value){
-    gallery.classList.toggle('is-zoomed',value);photoZoom?.setAttribute('aria-pressed',String(value));photoZoom?.setAttribute('aria-label',value?'إعادة الصورة إلى حجمها الطبيعي':'تكبير الصورة');
-    if(!value&&photoStage){photoStage.scrollTop=0;photoStage.scrollLeft=0;}
-  }
-  function renderPhoto(){
-    const photo=photos[photoIndex],image=document.getElementById('editorial-gallery-image');image.src=photo.src;image.alt=photo.caption;
-    document.getElementById('editorial-gallery-caption').textContent=photo.caption;document.getElementById('editorial-gallery-status').textContent=photoNumber(photoIndex+1)+' / '+photoNumber(photos.length);
-    document.getElementById('editorial-gallery-prev').disabled=photoIndex===0;document.getElementById('editorial-gallery-next').disabled=photoIndex===photos.length-1;
-    if(photoRange)photoRange.value=String(photoIndex+1);if(photoPage)photoPage.value=String(photoIndex+1);
-    if(photoThumbs)[...photoThumbs.children].forEach((button,index)=>button.setAttribute('aria-pressed',String(index===photoIndex)));
-    zoomPhoto(false);selectPreview(photoIndex);
-    if(gallery.open)photoThumbs?.children[photoIndex]?.scrollIntoView({block:'nearest',inline:'center',behavior:'instant'});
-  }
-  function selectPhoto(index){photoIndex=Math.max(0,Math.min(photos.length-1,Number(index)||0));renderPhoto();}
-  root.querySelectorAll('[data-editorial-gallery]').forEach(button=>button.addEventListener('click',()=>{selectPhoto(button.dataset.editorialGallery);gallery.showModal();photoThumbs?.children[photoIndex]?.scrollIntoView({block:'nearest',inline:'center',behavior:'instant'});}));
-  function movePhoto(step){selectPhoto(photoIndex+step);}
-  document.getElementById('editorial-gallery-prev').addEventListener('click',()=>movePhoto(-1));document.getElementById('editorial-gallery-next').addEventListener('click',()=>movePhoto(1));
-  photoRange?.addEventListener('input',()=>selectPhoto(Number(photoRange.value)-1));photoPage?.addEventListener('change',()=>selectPhoto(Number(photoPage.value)-1));
-  photoPage?.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();selectPhoto(Number(photoPage.value)-1);}});
-  photoZoom?.addEventListener('click',()=>zoomPhoto(!gallery.classList.contains('is-zoomed')));
-  if(photoZoom)document.getElementById('editorial-gallery-image').addEventListener('dblclick',()=>zoomPhoto(!gallery.classList.contains('is-zoomed')));
-  gallery.addEventListener('keydown',event=>{
-    if(event.target.matches('input'))return;
-    if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();movePhoto(event.key==='ArrowLeft'?1:-1);}
-    else if(event.key==='Home'||event.key==='End'){event.preventDefault();selectPhoto(event.key==='Home'?0:photos.length-1);}
-  });
-  if(photoStage){let touch;photoStage.addEventListener('touchstart',event=>{touch={x:event.touches[0].clientX,y:event.touches[0].clientY};},{passive:true});photoStage.addEventListener('touchend',event=>{if(!touch||gallery.classList.contains('is-zoomed'))return;const dx=event.changedTouches[0].clientX-touch.x,dy=event.changedTouches[0].clientY-touch.y;touch=null;if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.5)movePhoto(dx>0?1:-1);},{passive:true});}
-  const videoCarousel=root.querySelector('.editorial-video-carousel');
-  if(videoCarousel){
-    const track=videoCarousel.querySelector('.editorial-video-track');
-    const slides=[...track.querySelectorAll('.editorial-video-card')];
-    const previous=root.querySelector('[data-video-prev]'),next=root.querySelector('[data-video-next]'),status=root.querySelector('[data-video-status]'),viewport=videoCarousel.querySelector('.editorial-video-viewport');
-    const urls=new Map(),motion=matchMedia('(prefers-reduced-motion: reduce)');
-    let current=0,frame=0;
-    function paint(){
-      previous.disabled=current===0;next.disabled=current===slides.length-1;
-      status.textContent=(current+1)+' / '+slides.length;
-      const offset=Math.abs(track.scrollLeft),max=track.scrollWidth-track.clientWidth;viewport?.classList.toggle('has-hidden-start',offset>2);viewport?.classList.toggle('has-hidden-end',offset<max-2);
-      slides.forEach((slide,index)=>{slide.inert=index!==current;if(index!==current)slide.querySelector('video').pause();});
-    }
-    function position(index){const max=Math.max(0,track.scrollWidth-track.clientWidth);return Math.max(-max,Math.min(0,slides[index].offsetLeft-slides[0].offsetLeft));}
-    function move(step,instant=false){
-      current=Math.max(0,Math.min(slides.length-1,current+step));
-      paint();track.scrollTo({left:position(current),behavior:instant||motion.matches?'instant':'smooth'});
-    }
-    previous.addEventListener('click',()=>move(-1));next.addEventListener('click',()=>move(1));
-    track.addEventListener('keydown',event=>{if(event.target!==track)return;if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();move(event.key==='ArrowLeft'?1:-1);}});
-    track.addEventListener('scroll',()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{current=slides.reduce((best,slide,index)=>Math.abs(position(index)-track.scrollLeft)<Math.abs(position(best)-track.scrollLeft)?index:best,0);paint();});},{passive:true});
-    new ResizeObserver(()=>move(0,true)).observe(track);
-    slides.forEach(slide=>{
-      const video=slide.querySelector('video'),input=slide.querySelector('input[type="file"]'),play=slide.querySelector('.editorial-video-play'),note=slide.querySelector('[role="status"]');
-      const notify=text=>{note.hidden=false;note.textContent=text;};
-      const playing=value=>{slide.classList.toggle('is-playing',value);video.controls=value;};
-      play.addEventListener('click',()=>{if(!urls.has(video)){input.click();return;}video.play().catch(()=>{playing(false);notify('تعذّر تشغيل الفيديو. جرّب ملفًا متوافقًا مع المتصفح.');});});
-      input.addEventListener('change',()=>{
-        const file=input.files[0];if(!file)return;
-        if(!file.type.startsWith('video/')){notify('اختر ملف فيديو صالحًا للمعاينة.');return;}
-        video.pause();if(urls.has(video))URL.revokeObjectURL(urls.get(video));
-        const url=URL.createObjectURL(file);urls.set(video,url);video.src=url;video.load();playing(false);notify('معاينة محلية: '+file.name);
-      });
-      video.addEventListener('play',()=>playing(true));video.addEventListener('pause',()=>playing(false));video.addEventListener('ended',()=>playing(false));
-      video.addEventListener('error',()=>{if(urls.has(video)){playing(false);notify('تعذّر تشغيل هذا الملف. جرّب فيديو MP4 متوافقًا مع المتصفح.');}});
-    });
-    window.addEventListener('pagehide',event=>{slides.forEach(slide=>slide.querySelector('video').pause());if(!event.persisted)urls.forEach(url=>URL.revokeObjectURL(url));});
-    paint();
-  }else{
-  const video=document.getElementById('editorial-event-video');let videoURL;
-  document.getElementById('editorial-video-file').addEventListener('change',event=>{
-    const file=event.target.files[0];if(!file)return;if(!file.type.startsWith('video/')){document.getElementById('editorial-video-note').textContent='اختر ملف فيديو صالحًا للمعاينة.';return;}
-    video.pause();if(videoURL)URL.revokeObjectURL(videoURL);videoURL=URL.createObjectURL(file);video.src=videoURL;video.load();document.getElementById('editorial-video-note').textContent=`معاينة محلية: ${file.name}`;
-  });
-  video.addEventListener('error',()=>{if(videoURL)document.getElementById('editorial-video-note').textContent='تعذّر تشغيل هذا الملف. جرّب فيديو MP4 متوافقًا مع المتصفح.';});
-  window.addEventListener('pagehide',()=>{if(videoURL)URL.revokeObjectURL(videoURL);});
-
-  }
-
   if(!document.getElementById('editorial-book-stage'))return;
   const pages=[
     {cover:true,kicker:'مجلة كليريو / سبتمبر 2026',title:'وُجهات.',text:['من تفاصيل يومنا، تبدأ الحكاية.'],image:'./assets/hero-oman-fort.png'},

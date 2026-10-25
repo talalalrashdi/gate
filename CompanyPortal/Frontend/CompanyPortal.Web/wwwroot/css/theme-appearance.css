@@ -23,3 +23,16 @@ body[data-theme-image-mode=artwork][data-site-theme=national-day] #theme-nationa
 body[data-theme-image-mode=artwork] .portal-personal-zone > .theme-official-glass{display:none!important}
 
 body[data-theme-background][data-site-theme="national-day"] .portal-personal-zone{background:var(--portal-national-background,var(--theme-background))!important}
+
+/* Once the photographic hero leaves view, every theme uses a readable light header. */
+body.portal-dashboard .portal-header.is-past-hero { background: #fff !important; --text-primary: #173b30; --text-secondary: #526159; border-color: #dce5df; }
+body.portal-dashboard .portal-header.is-past-hero :is(.portal-nav,.portal-media-subnav-links) a,
+body.portal-dashboard .portal-header.is-past-hero .portal-nav a:is(:hover,:focus-visible) { color: #173b30 !important; --text-primary: #173b30; }
+body.portal-dashboard .portal-header.is-past-hero .portal-media-subnav { background: inherit; border-color: #dce5df; }
+body.portal-dashboard .portal-header.is-past-hero :is(.portal-alert-visibility,.portal-theme-trigger,.portal-notifications-trigger) { background: #f3f7f1; border-color: #dce5df; --text-primary: #173b30; --text-secondary: #526159; color: #173b30; }
+body.portal-dashboard .portal-header.is-past-hero .portal-media-subnav-links :is(a,button),
+body.portal-dashboard .portal-header.is-past-hero .portal-media-subnav-label { --text-primary: #173b30; --text-secondary: #526159; }
+
+/* Both header rows share one surface; current-section state is maintained by editorial.js. */
+body.portal-dashboard .portal-header .portal-media-subnav { background: inherit !important; }
+body.portal-dashboard .portal-header .portal-media-subnav-links a[aria-current="location"] { background: #dbeade !important; color: #173b30 !important; --text-primary: #173b30; font-weight: 700; border-bottom-color: #34795a; }

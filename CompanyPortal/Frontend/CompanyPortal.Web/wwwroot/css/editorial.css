@@ -395,3 +395,37 @@ body .portal-editorial .editorial-book-caption > span { color: #decda3 !importan
 .editorial-local-pdf-frame { width: 100%; height: 100%; border: 0; background: #fff; }
 .editorial-local-reader.is-pdf .editorial-local-spread { display: none; }
 @media(max-width:760px) { .portal-section.editorial-magazine { padding: 24px 12px; }.editorial-magazine-toolbar { grid-template-columns: minmax(0,1fr); gap: 12px 8px; font-size: 14px; }.editorial-magazine-issue-select select { max-width: 100%; width: 100%; }.editorial-magazine-view-controls { grid-column: 1 / -1; justify-self: end; }.editorial-magazine-book { --book-height: clamp(360px,calc(100dvh - 390px),700px); grid-template-columns: 56px minmax(0,1fr) 56px; gap: 4px; }.editorial-magazine-page-arrow { width: 56px; height: 56px; font-size: 28px; } }
+
+/* Zoomed album photos pan by dragging; keep scroll coordinates independent of RTL text. */
+.editorial-gallery-stage { direction: ltr; }
+.editorial-gallery-stage img { user-select: none; -webkit-user-drag: none; }
+.editorial-gallery-viewer.is-zoomed .editorial-gallery-stage { cursor: grab; touch-action: none; }
+.editorial-gallery-viewer.is-zoomed .editorial-gallery-stage.is-dragging { cursor: grabbing; }
+
+/* Adjacent video cards remain clickable without exposing their playback controls. */
+.editorial-video-select { position: absolute; z-index: 3; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; border-radius: inherit; background: transparent; cursor: pointer; }
+.editorial-video-select:focus-visible { outline: 3px solid #fff; outline-offset: -5px; }
+.editorial-video-select[hidden],.editorial-video-play[hidden] { display: none; }
+
+/* Native modal dialogs retain their own scrolling while the underlying portal stays still. */
+html:has(:is(#editorial-gallery-dialog,#editorial-video-dialog)[open]),body:has(:is(#editorial-gallery-dialog,#editorial-video-dialog)[open]) { overflow: hidden; overscroll-behavior: none; }
+:is(#editorial-gallery-dialog,#editorial-video-dialog) { overscroll-behavior: contain; }
+.editorial-dialog.editorial-video-dialog { width: min(1100px,calc(100vw - 64px)); max-height: calc(100dvh - 48px); padding: 20px; border: 1px solid #ffffff30; border-radius: 20px; background: #0b202e; color: #fff; --text-primary: #fff; --text-secondary: #cfdae0; }
+.editorial-video-dialog::backdrop { background: #03121bba; backdrop-filter: blur(8px); }
+.editorial-video-dialog h2 { margin: 0; font-size: 20px; }
+.editorial-video-dialog header button { width: 40px; height: 40px; border: 1px solid #ffffff40; border-radius: 10px; background: #ffffff15; color: #fff; }
+.editorial-video-dialog video { display: block; width: 100%; max-height: 72dvh; background: #000; border-radius: 12px; }
+.editorial-video-dialog p:empty { display: none; }
+.editorial-video-dialog p { font-size: 13px; line-height: 1.8; }
+
+/* One shared grid cell anchors the overlays to opposite physical edges, independent of RTL. */
+#editorial-events .editorial-video-carousel { display: grid; grid-template-columns: minmax(0,1fr); position: relative; direction: ltr; }
+#editorial-events .editorial-video-viewport { grid-area: 1 / 1; min-width: 0; }
+#editorial-events .editorial-video-edge { --text-primary: #fff; --text-secondary: #fff; grid-area: 1 / 1; position: relative; inset: auto; z-index: 6; align-self: stretch; display: grid; place-items: center; width: 88px; padding: 0; border: 0; color: #fff; opacity: 1; }
+#editorial-events .editorial-video-edge-right { justify-self: end; border-radius: 0 23px 23px 0; background: linear-gradient(to left,rgba(0,0,0,.85),rgba(0,0,0,.35) 45%,transparent); }
+#editorial-events .editorial-video-edge-left { justify-self: start; border-radius: 23px 0 0 23px; background: linear-gradient(to right,rgba(0,0,0,.85),rgba(0,0,0,.35) 45%,transparent); }
+#editorial-events .editorial-video-edge:hover:not(:disabled) svg { transform: scale(1.1); }
+#editorial-events .editorial-video-edge:focus-visible { outline: 2px solid #fff; outline-offset: -5px; }
+#editorial-events .editorial-video-edge:disabled { visibility: visible; cursor: default; }
+#editorial-events .editorial-video-edge:disabled svg { opacity: .35; }
+#editorial-events .editorial-video-edge svg { width: 50px; height: 50px; stroke-width: 2.8; pointer-events: none; transition: transform .18s; }

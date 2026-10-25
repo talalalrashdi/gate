@@ -1,5 +1,7 @@
 # CompanyPortal
 
+**أخبارنا** now reads videos, photos and albums from SP-backed database records. Manage file paths, previews, covers, ordering and visibility at `/admin/media`. See [media integration, offline paths and migration 028](docs/PORTAL_MEDIA.md).
+
 Admins can now create/edit **التوجيهات السامية** at `/admin/fixed-orders`, with marker insertion, wording presets and a live colour preview. See [directive administration and migration 027](docs/FIXED_ORDERS_ADMINISTRATION.md).
 
 **تعليمات السلامة** now uses selected authorized PDFs while retaining the original booklet covers. Manage titles, order and visibility at `/admin/safety`; new booklets follow the same style. See [safety booklets and migration 026](docs/SAFETY_BOOKLETS.md).

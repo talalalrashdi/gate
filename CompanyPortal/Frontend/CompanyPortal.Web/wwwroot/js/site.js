@@ -92,6 +92,8 @@ headerSpace.hidden = true;
 function updateHeader(){
   const current = Math.max(0, window.scrollY);
   header.classList.toggle('is-scrolled', current > 40);
+  const hero=document.querySelector('.portal-personal-zone');
+  header.classList.toggle('is-past-hero',!!hero&&hero.getBoundingClientRect().bottom<=header.offsetHeight);
   if (current <= 40) {
     header.classList.remove('is-pinned');
     headerSpace.hidden = true;
@@ -104,7 +106,7 @@ function updateHeader(){
     header.classList.add('is-pinned');
   }
 }
-window.addEventListener('scroll',updateHeader,{passive:true});updateHeader();
+window.addEventListener('scroll',updateHeader,{passive:true});window.addEventListener('resize',updateHeader);const headerHero=document.querySelector('.portal-personal-zone');if(headerHero)new ResizeObserver(updateHeader).observe(headerHero);updateHeader();
 
 // Illustrative contacts only; masked mobile numbers cannot be mistaken for live contacts.
 const phoneSamples=[

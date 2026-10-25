@@ -133,3 +133,5 @@ See [IIS and offline deployment](docs/IIS_AND_OFFLINE_DEPLOYMENT.md) for prerequ
 1. Verify portal/profile appearance and existing interactions on desktop/mobile, including visible themes 1/2/3 and storage behavior. Theme 1 الرسمي (`official` layout) is the initial default.
 2. Complete the offline browser and actual internal IIS acceptance checks.
 3. Retire/archive legacy files outside `CompanyPortal` only after frontend acceptance is confirmed. Continue the authorized API milestone using [the backend plan](docs/API_FOUNDATION.md).
+
+- [Profile attendance and holiday balance](docs/PROFILE_SUMMARY.md): two current-user read-only SP adapters and local development samples.

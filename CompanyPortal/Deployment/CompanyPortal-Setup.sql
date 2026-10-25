@@ -1,4 +1,4 @@
-﻿/* CompanyPortal fresh installation, generated from migrations 001-028.
+﻿/* CompanyPortal fresh installation, generated from migrations 001-029.
    Open this entire UTF-8 file in SSMS and Execute (normal mode, no SQLCMD mode).
    Or: sqlcmd -S SQLSERVER -E -b -f 65001 -i CompanyPortal-Setup.sql
    FRESH INSTALL ONLY. Never run on an existing CompanyPortal database.
@@ -2303,6 +2303,29 @@ GO
 
 GO
 
+
+-- BEGIN 029_ProfileSummary.sql
+USE [CompanyPortal];
+GO
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+GO
+-- Read-only integration contracts. Replace the SELECTs internally; never return another user.
+-- Keep existing mapped SPs unchanged when this migration is reapplied.
+IF OBJECT_ID(N'Portal.UserAttendance_Get',N'P') IS NULL
+ EXEC(N'CREATE PROCEDURE Portal.UserAttendance_Get @UserId int AS BEGIN SET NOCOUNT ON;
+ SELECT CAST(NULL AS nvarchar(300)) AS DisplayName, CAST(NULL AS nvarchar(300)) AS JobTitle,
+ CAST(NULL AS nvarchar(300)) AS Department, CAST(NULL AS date) AS AttendanceDate,
+ CAST(NULL AS datetime) AS ArrivalAt, CAST(NULL AS datetime) AS ExpectedLeaveAt WHERE 1=0; END;');
+GO
+IF OBJECT_ID(N'Portal.UserLeaveBalance_Get',N'P') IS NULL
+ EXEC(N'CREATE PROCEDURE Portal.UserLeaveBalance_Get @UserId int AS BEGIN SET NOCOUNT ON;
+ SELECT CAST(NULL AS decimal(10,2)) AS HolidayDays, CAST(NULL AS decimal(10,2)) AS DaysToBeDeleted,
+ CAST(NULL AS date) AS AsOfDate, CAST(NULL AS date) AS DeletionDate WHERE 1=0; END;');
+GO
+
+GO
+
 IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'USE [master];
 -- DEVELOPMENT ONLY. Never run this against the real internal security database.
 USE [master];
@@ -2479,7 +2502,7 @@ IF (SELECT TestSources FROM #PortalDeployment)=1
  CREATE TABLE dbo.Public_info_News_Prodc (
   PIP_ID int IDENTITY(1,1) NOT NULL PRIMARY KEY,
   News_ID int NOT NULL REFERENCES dbo.Public_info_News(PIN_ID), Active bit NOT NULL DEFAULT(1));
- INSERT dbo.Public_info_News(PIN_Subject) VALUES(N''Ø®Ø¨Ø± ØªØ¬Ø±ÙŠØ¨ÙŠ Ù„Ø§Ø®ØªØ¨Ø§Ø± Ø§Ù„Ø¨ÙˆØ§Ø¨Ø©'');
+ INSERT dbo.Public_info_News(PIN_Subject) VALUES(N''خبر تجريبي لاختبار البوابة'');
  INSERT dbo.Public_info_News_Prodc(News_ID) VALUES(1);');
 GO
 USE CompanyPortal;

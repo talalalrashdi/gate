@@ -33,6 +33,8 @@ const canonicalHtml = text => normalize(text.replace(/<script\b[^>]*>[\s\S]*?<\/
   .replace('placeholder="ابحث عن استمارة، وثيقة أو نظام…" aria-label="البحث العام"','placeholder="عن ماذا تبحث اليوم؟" aria-label="البحث في محتوى الصفحة"')
   .replace('aria-label="مسح البحث" title="مسح البحث"','aria-label="إغلاق البحث"')
   .replace(/<a class="portal-setup-link"[^>]*>[\s\S]*?<\/a>/g, '')
+  .replace(/<section class="portal-header-profile" id="portal-header-profile"[\s\S]*?<\/section>/g, '')
+  .replace('alt="صورة المستخدم"','alt="أحمد سالم"')
   .replace(/<button\b[^>]*id="portal-notices-visibility"[^>]*>/g, '<button id="portal-notices-visibility">')
   .replace(/(<section id="portal-floating-alert"[^>]*?) hidden/g, '$1')
   .replace(/<link[^>]*href="[^"]*\/css\/(?:theme-appearance|exchange-schedule)\.css[^"]*"[^>]*>/g, '')

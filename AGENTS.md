@@ -2,6 +2,8 @@
 
 ## Authorized CompanyPortal migration
 
+- Profile picture now loads current-user name/job/department/today arrival+expected departure via Portal.UserAttendance_Get and leave balance/scheduled deletion+dates via Portal.UserLeaveBalance_Get. Migration029 adds empty adapters only if missing; no production source tables. Marked Development014 fictional profile/attendance/leave tables/seed and guarded SP mappings installed locally per user approval; reruns preserve data. Windows NTName→active UserId server-side, no browser UserId/write endpoints/polling/storage; independent loading/error/retry, clear/cancel on close/hide. API negative/multirow source errors sanitized. Release/API anonymous/current-user/no-store/null/Swagger and browser values/close-reopen passed, fixture flags restored. Fresh Setup includes029; CurrentData/Airgap not refreshed. See docs/PROFILE_SUMMARY.md.
+
 - Latest arrow correction supersedes prior styling: shared grid overlay cell with LTR alignment puts one88px control at each physical edge; inner track stays RTL. Left-chevron advances at left, right-chevron returns at right. Both black gradients85%→35%→transparent;50px chevrons retained. Browser non-overlapping rectangles/SVG directions/both navigation actions and screenshot passed, Release passed. No API/SQL changes.
 
 - User requested bigger black media-arrow panels: both edges now88px wide, black background,50px white chevrons; disabled boundary controls remain visible/dimmed rather than hidden. Scoped selectors prevent theme overrides. Browser computed black/width/visibility checks and screenshot passed; frontend Release passed. No API/SQL changes.

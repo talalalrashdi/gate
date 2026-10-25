@@ -234,3 +234,8 @@ body .portal-media-new { padding:2px 5px; border-radius:4px; background:#fff0ec;
 #editorial-news,#editorial-events,#editorial-magazine,#safety,#digital-library { scroll-margin-top:var(--portal-section-anchor-offset,160px); }
 @media(max-width:1050px) { .portal-media-subnav { gap:12px; padding-inline:18px; }.portal-media-subnav-label { display:none; } }
 @media(max-width:760px) { .portal-media-subnav { justify-content:flex-start; padding-inline:12px; }.portal-media-subnav-links { width:100%; }.portal-media-subnav-links:has(> .portal-media-subnav-label) { justify-content:flex-start; }.portal-media-subnav-links :is(a,button) { padding-inline:12px; font-size:11px; } }
+
+.portal-profile-source-status { padding: 0 20px 14px; }
+.portal-profile-source-status p { margin: 8px 0; font-size: 12px; line-height: 1.8; color: #526159; }
+.portal-profile-source-status button { padding: 6px 10px; border: 1px solid #c8d8cc; border-radius: 7px; background: #f0f6ee; color: #245e49; font-size: 12px; }
+.portal-profile-source-status [hidden] { display: none; }

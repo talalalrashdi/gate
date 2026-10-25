@@ -382,3 +382,46 @@ updateWorkspaceNavigation();
     close.addEventListener('click',event=>{event.stopPropagation();card.hidden=true;updateDismissed();const next=alertCards.slice(index+1).find(item=>!item.hidden)||alertCards.find(item=>!item.hidden);(next?.querySelector('.portal-alert-open')||restore).focus({preventScroll:true});showToast('تم إخفاء التنبيه · يمكنك استعادته من أسفل البطاقات');});
   });
 })();
+
+
+// Read each profile source separately, only for the signed-in employee and while the panel is open.
+(() => {
+  const base=document.querySelector('meta[name="companyportal-api-base"]')?.content;
+  if(!base||!profilePanel)return;
+  const id=s=>document.getElementById('portal-profile-'+s), number=new Intl.NumberFormat('ar-OM',{maximumFractionDigits:2});
+  const sources={attendance:{fields:['name','position','arrival','departure']},'leave-balance':{fields:['holiday','deduction']}};
+  let generation=0;
+  const time=value=>typeof value==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(value)?value.slice(11,16):'—';
+  const date=value=>typeof value==='string'&&/^\d{4}-\d{2}-\d{2}/.test(value)?value.slice(0,10):null;
+  const label=key=>key==='attendance'?'attendance':'leave';
+  function clear(key){sources[key].fields.forEach(field=>{id(field).textContent='—';});}
+  function cancel(){++generation;Object.values(sources).forEach(source=>source.controller?.abort());Object.keys(sources).forEach(key=>{clear(key);id(label(key)+'-status').textContent='';id(label(key)+'-retry').hidden=true;});}
+  async function load(key){
+    if(profilePanel.hidden||document.hidden)return;
+    const source=sources[key],stamp=generation;source.controller?.abort();const controller=new AbortController();source.controller=controller;
+    const status=id(label(key)+'-status'),retry=id(label(key)+'-retry');clear(key);retry.hidden=true;status.textContent=key==='attendance'?'جارٍ تحميل بيانات الدوام…':'جارٍ تحميل رصيد الإجازات…';
+    try{
+      const response=await fetch(new URL('api/profile/'+key,new URL(base.replace(/\/?$/,'/'),location.href)),{credentials:'include',cache:'no-store',signal:AbortSignal.any([controller.signal,AbortSignal.timeout(15000)])});
+      if(!response.ok)throw new Error(String(response.status));const result=await response.json();
+      if(stamp!==generation||profilePanel.hidden||controller.signal.aborted)return;
+      const row=result.data;
+      if(key==='attendance'){
+        if(!row){status.textContent='لا تتوفر بيانات المستخدم والدوام حاليًا.';return;}
+        id('name').textContent=row.displayName||'—';id('position').textContent=[row.jobTitle,row.department].filter(Boolean).join(' · ')||'—';
+        id('arrival').textContent=time(row.arrivalAt);id('departure').textContent=time(row.expectedLeaveAt);
+        status.textContent=date(row.attendanceDate)?'بيانات الدوام بتاريخ '+date(row.attendanceDate):'لم يُسجّل حضور اليوم.';
+      }else{
+        if(!row){status.textContent='لا يتوفر رصيد إجازات مسجل حاليًا.';return;}
+        id('holiday').textContent=row.holidayDays==null?'—':number.format(row.holidayDays)+' يوم';id('deduction').textContent=row.daysToBeDeleted==null?'—':number.format(row.daysToBeDeleted)+' يوم';
+        status.textContent=[date(row.asOfDate)?'الرصيد بتاريخ '+date(row.asOfDate):'',date(row.deletionDate)?'موعد حذف الأيام: '+date(row.deletionDate):''].filter(Boolean).join(' · ');
+      }
+    }catch(e){
+      if(stamp!==generation||controller.signal.aborted||profilePanel.hidden)return;clear(key);
+      status.textContent=e.message==='401'||e.message==='403'?'حسابك غير مخوّل لعرض هذه البيانات.':key==='attendance'?'تعذر تحميل بيانات المستخدم والدوام. أعد المحاولة.':'تعذر تحميل رصيد الإجازات. أعد المحاولة.';retry.hidden=false;
+    }
+  }
+  new MutationObserver(()=>{cancel();if(!profilePanel.hidden)Object.keys(sources).forEach(load);}).observe(profilePanel,{attributes:true,attributeFilter:['hidden']});
+  Object.keys(sources).forEach(key=>id(label(key)+'-retry').addEventListener('click',()=>load(key)));
+  document.addEventListener('visibilitychange',()=>{cancel();if(!document.hidden&&!profilePanel.hidden)Object.keys(sources).forEach(load);});
+  window.addEventListener('pagehide',cancel);window.addEventListener('pageshow',e=>{if(e.persisted&&!profilePanel.hidden){cancel();Object.keys(sources).forEach(load);}});
+})();

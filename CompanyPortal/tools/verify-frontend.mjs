@@ -23,6 +23,7 @@ const canonicalHtml = text => normalize(text.replace(/<script\b[^>]*>[\s\S]*?<\/
   .replace(/<section\b[^>]*id="policies"[^>]*>[\s\S]*?<\/section>/g, '<!-- database fixed orders -->')
   .replace(/<aside class="portal-work-card portal-work-library"[\s\S]*?<\/aside>/g, '<!-- permission-filtered legal decisions -->')
   .replace(/<dialog class="portal-doc-dialog"[\s\S]*?<\/dialog>/g, '')
+  .replace(/<dialog id="documents-sheet"[\s\S]*?<\/dialog>/g, '<!-- database-backed forms and documents -->')
   .replace(/<a class="portal-setup-link"[^>]*>[\s\S]*?<\/a>/g, '')
   .replace(/<button\b[^>]*id="portal-notices-visibility"[^>]*>/g, '<button id="portal-notices-visibility">')
   .replace(/(<section id="portal-floating-alert"[^>]*?) hidden/g, '$1')
@@ -123,6 +124,7 @@ for (let offset = 0; offset < resources.length; offset += 8) {
     if (migratedPath(file.path) === 'css/systems-catalog.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/systems-catalog.css'));
     if (migratedPath(file.path) === 'css/documents-dialog.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/documents-dialog.css'));
     if (migratedPath(file.path) === 'js/policies-dialog.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/policies-dialog.js'));
+    if (migratedPath(file.path) === 'js/documents-dialog.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/documents-dialog.js'));
     // Published database news now reuses the editorial layout without demo sources.
     if (migratedPath(file.path) === 'css/editorial.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/editorial.css'));
     if (file.path === 'design-b-workspace-groups.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/workspace-groups.js'));

@@ -37,6 +37,20 @@
       <h2 id="documents-sheet-title">الاستمارات والوثائق</h2>
       <button type="button" class="portal-documents-sheet-close" aria-label="إغلاق الاستمارات والوثائق" autofocus><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
     </header>
+    <div class="portal-documents-content">
+      <div class="portal-documents-categories" role="group" aria-label="نوع الملف">
+        <button type="button" data-document-format="all" aria-pressed="true">الكل</button>
+        <button type="button" data-document-format="pdf" aria-pressed="false">ملفات PDF</button>
+        <button type="button" data-document-format="download" aria-pressed="false">ملفات أخرى</button>
+      </div>
+      <div class="portal-documents-filters">
+        <label class="portal-documents-search">البحث عن ملف<input id="document-search" type="search" placeholder="ابحث باسم الملف أو المجلد…" aria-controls="documents-list"></label>
+        <label>المجلد<select id="document-folder" aria-controls="documents-list"><option value="">جميع المجلدات</option></select></label>
+      </div>
+      <div class="portal-documents-summary"><span id="document-status" role="status" aria-live="polite">افتح القائمة لتحميل الملفات.</span><small>PDF للعرض · بقية الملفات للتنزيل</small></div>
+      <button type="button" id="document-retry" class="portal-fixed-orders-retry" hidden>إعادة المحاولة</button>
+      <ul id="documents-list" class="portal-documents-list" aria-label="الاستمارات والوثائق المتاحة"></ul>
+    </div>
   </dialog>
   <dialog class="editorial-dialog" id="editorial-reading-dialog" aria-labelledby="editorial-reading-title"><div class="editorial-dialog-top"><span>مكتبة كليريو · محتوى توضيحي</span><button type="button" data-editorial-close aria-label="إغلاق القراءة">✕</button></div><h2 id="editorial-reading-title"></h2><div id="editorial-reading-copy"></div></dialog>
   <dialog class="editorial-dialog editorial-gallery-dialog editorial-gallery-viewer" id="editorial-gallery-dialog" aria-label="معرض الصور"><header class="editorial-gallery-toolbar"><div><h2 id="editorial-gallery-caption"></h2></div><div class="editorial-gallery-actions"><button type="button" data-gallery-zoom aria-label="تكبير الصورة" aria-pressed="false"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6M7 10h6m-3-3v6"/></svg></button><button type="button" data-editorial-close aria-label="إغلاق معرض الصور">✕</button></div></header><div class="editorial-gallery-stage" tabindex="0" aria-label="الصورة الحالية، استخدم الأسهم للتنقل"><img id="editorial-gallery-image" alt=""></div><div class="editorial-gallery-navigation"><div class="editorial-gallery-controls portal-arrow-controls"><button type="button" class="portal-arrow-button" id="editorial-gallery-prev" aria-label="الصورة السابقة">→</button><button type="button" class="portal-arrow-button" id="editorial-gallery-next" aria-label="الصورة التالية">←</button></div><output id="editorial-gallery-status" aria-live="polite"></output><label class="editorial-gallery-jump">انتقل للصورة <input type="number" data-gallery-page min="1" value="1" inputmode="numeric" aria-label="رقم الصورة"></label></div><div class="editorial-gallery-thumbnails" aria-label="اختيار صورة من المعرض"></div><input type="range" class="editorial-gallery-range" data-gallery-range min="1" value="1" aria-label="التنقل السريع بين الصور"></dialog>

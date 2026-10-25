@@ -1,5 +1,7 @@
 # CompanyPortal database deployment
 
+Forms/documents use migrations 023–024, `Mng.Folder`, `App.CreateFolderPath`, `Portal.Document_GetAll` and the `docs` folder key. Source view samples and the manual access list are described in [forms/documents setup](../../docs/FORMS_DOCUMENTS.md).
+
 Legal decisions use migration 022 and `Legal.Decisions_getForUser`. Local-only LegelAffairs samples are separate from production migrations. See [decisions setup](../../docs/LEGAL_DECISIONS.md).
 
 For an exact copy of the currently exported sample state, use [CompanyPortal-CurrentData.sql](../../Deployment/CompanyPortal-CurrentData.sql) and [its import instructions](../../Deployment/CURRENT_DATA_README.md), instead of the minimal setup below. This includes the three databases and all current rows/image BLOBs; external news files accompany it. Destination NTNames/service logins and file paths still need environment configuration.

@@ -1,73 +1,57 @@
 (() => {
-  const trigger = document.getElementById('documents-sheet-trigger');
-  const sheet = document.getElementById('documents-sheet');
-  if (!trigger || !sheet) return;
-  const departments = {
-    'الموارد البشرية': ['طلب إجازة', 'طلب مباشرة عمل', 'طلب شهادة راتب', 'تحديث بيانات الموظف', 'دليل شؤون الموظفين', 'نموذج تقييم الأداء'],
-    'الشؤون المالية': ['طلب صرف مستحقات', 'نموذج مطالبة مالية', 'طلب سلفة', 'تسوية عهدة مالية', 'دليل الإجراءات المالية', 'نموذج بدل مهمة رسمية'],
-    'تقنية المعلومات': ['طلب صلاحيات نظام', 'طلب دعم فني', 'استلام جهاز حاسب', 'طلب بريد إلكتروني', 'دليل أمن المعلومات', 'نموذج تسليم أجهزة'],
-    'الشؤون الإدارية': ['طلب حجز قاعة', 'طلب مركبة رسمية', 'طلب مستلزمات مكتبية', 'محضر استلام وتسليم', 'دليل الخدمات الإدارية', 'نموذج طلب صيانة'],
-    'المشتريات والعقود': ['طلب شراء', 'نموذج مقارنة عروض', 'محضر فحص مواد', 'نموذج تقييم مورد', 'دليل إجراءات المشتريات', 'نموذج متابعة عقد']
-  };
-  const panel = document.createElement('div');
-  panel.className = 'portal-documents-content';
-  panel.innerHTML = `<div class="portal-documents-categories" role="group" aria-label="تصفية حسب تصنيف الملف"><button type="button" data-category="" aria-pressed="true" aria-controls="documents-list">الكل</button><button type="button" data-category="forms" aria-pressed="false" aria-controls="documents-list">استمارات</button><button type="button" data-category="documents" aria-pressed="false" aria-controls="documents-list">وثائق</button></div><div class="portal-documents-filters"><label class="portal-documents-search">البحث عن ملف<input type="search" placeholder="ابحث باسم الاستمارة أو الوثيقة…" aria-controls="documents-list"></label><label>الجهة<select aria-controls="documents-list"><option value="">جميع الجهات</option></select></label></div><div class="portal-documents-summary"><span role="status" aria-live="polite"></span><small>مسميات توضيحية</small></div><ul id="documents-list" class="portal-documents-list" aria-label="الاستمارات والوثائق المتاحة"></ul><p class="portal-documents-empty" hidden>لا توجد ملفات مطابقة للبحث.</p>`;
-  sheet.append(panel);
-  const search = panel.querySelector('input');
-  const department = panel.querySelector('select');
-  const list = panel.querySelector('ul');
-  const count = panel.querySelector('[role="status"]');
-  const empty = panel.querySelector('.portal-documents-empty');
-  const categories = panel.querySelectorAll('[data-category]');
-  let category = '';
-  const files = [];
-  Object.entries(departments).forEach(([name, titles]) => {
-    department.add(new Option(name, name));
-    titles.forEach((title, index) => files.push({ title, department: name, category: /^(دليل|محضر)/.test(title) ? 'documents' : 'forms', type: index % 3 === 1 ? 'PDF' : 'Word' }));
-  });
-  const normalize = text => text.trim().replace(/[أإآ]/g, 'ا').replace(/[\u064B-\u065F\u0640]/g, '').toLowerCase();
-  function render() {
-    const query = normalize(search.value);
-    const matches = files.filter(file => (!category || file.category === category) && (!department.value || file.department === department.value) && normalize(`${file.title} ${file.department} ${file.type}`).includes(query));
-    list.scrollTop = 0;
-    list.replaceChildren(...matches.map(file => {
-      const row = document.createElement('li');
-      row.className = 'portal-document-row';
-      const icon = document.createElement('span');
-      icon.className = `portal-document-type ${file.type === 'PDF' ? 'is-pdf' : 'is-word'}`;
-      icon.setAttribute('aria-hidden', 'true');
-      icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8zM14 3v5h5M8 12h8M8 16h6"/></svg>';
-      const copy = document.createElement('div');
-      const title = document.createElement('strong');
-      title.textContent = `${file.title}.${file.type === 'PDF' ? 'pdf' : 'docx'}`;
-      const source = document.createElement('small');
-      source.textContent = file.department;
-      copy.append(title, source);
-      const badge = document.createElement('span');
-      badge.className = 'portal-document-format';
-      badge.textContent = file.type;
-      row.append(icon, copy, badge);
-      return row;
-    }));
-    count.textContent = `${matches.length.toLocaleString('ar-EG-u-nu-latn')} ملف`;
-    empty.hidden = matches.length > 0;
+  const trigger=document.getElementById('documents-sheet-trigger'),sheet=document.getElementById('documents-sheet');
+  const base=document.querySelector('meta[name="companyportal-api-base"]')?.content;
+  if(!trigger||!sheet||!base)return;
+  const search=sheet.querySelector('#document-search'),folder=sheet.querySelector('#document-folder');
+  const list=sheet.querySelector('#documents-list'),status=sheet.querySelector('#document-status'),retry=sheet.querySelector('#document-retry');
+  const formats=[...sheet.querySelectorAll('[data-document-format]')];
+  const endpoint=path=>new URL(path,new URL(base.replace(/\/?$/,'/'),location.href)).href;
+  const make=(tag,cls,text)=>{const node=document.createElement(tag);if(cls)node.className=cls;if(text!==undefined)node.textContent=text;return node;};
+  const normalize=text=>text.normalize('NFKC').replace(/[\u064B-\u065F\u0670\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').toLocaleLowerCase('ar').trim();
+  let rows=[],format='all',controller,generation=0,ready=false;
+  function clear(){rows=[];ready=false;list.replaceChildren();folder.replaceChildren(make('option',null,'جميع المجلدات'));folder.firstElementChild.value='';}
+  function render(){
+    if(!ready)return;
+    const query=normalize(search.value);
+    const matches=rows.filter(row=>(format==='all'||(format==='pdf')===row.isPdf)&&(!folder.value||String(row.folderId)===folder.value)
+      &&normalize(row.documentName+' '+row.fileName+' '+row.folderPath).includes(query));
+    list.scrollTop=0;list.replaceChildren();
+    for(const row of matches){
+      const li=make('li'),link=make('a','portal-document-row');link.href=endpoint('api/documents/'+row.documentId+'/file');link.rel='noopener noreferrer';
+      if(row.isPdf)link.target='_blank';
+      link.setAttribute('aria-label',row.documentName+(row.isPdf?' — عرض PDF في علامة تبويب جديدة':' — تنزيل الملف'));
+      const extension=row.fileName.split('.').length>1?row.fileName.split('.').pop().toUpperCase():'ملف';
+      const icon=make('span','portal-document-type '+(row.isPdf?'is-pdf':'is-word'),row.isPdf?'PDF':'↓');icon.setAttribute('aria-hidden','true');
+      const copy=make('div');copy.append(make('strong',null,row.documentName),make('small',null,row.folderPath),make('small',null,row.fileName));
+      link.append(icon,copy,make('span','portal-document-format',extension));li.append(link);list.append(li);
+    }
+    status.textContent=matches.length?matches.length.toLocaleString('ar-OM')+' ملف':rows.length?'لا توجد ملفات مطابقة للبحث.':'لا توجد ملفات متاحة حاليًا.';
   }
-  search.addEventListener('input', render);
-  department.addEventListener('change', render);
-  categories.forEach(button => button.addEventListener('click', () => {
-    category = button.dataset.category;
-    categories.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
-    render();
-  }));
-  render();
-  trigger.addEventListener('click', event => {
-    event.preventDefault();
-    if (!sheet.open) sheet.showModal();
-  });
-  sheet.querySelector('.portal-documents-sheet-close').addEventListener('click', () => sheet.close());
-  sheet.addEventListener('click', event => {
-    const bounds = sheet.getBoundingClientRect();
-    if (event.target === sheet && (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom)) sheet.close();
-  });
-  sheet.addEventListener('close', () => trigger.focus());
+  async function load(){
+    controller?.abort();controller=new AbortController();const current=++generation;
+    clear();retry.hidden=true;status.textContent='جارٍ تحميل الاستمارات والوثائق…';list.setAttribute('aria-busy','true');
+    try{
+      const response=await fetch(endpoint('api/documents'),{credentials:'include',cache:'no-store',signal:AbortSignal.any([controller.signal,AbortSignal.timeout(15000)])});
+      if(!response.ok)throw new Error(response.status===403?'الحساب غير مسجل أو غير نشط في البوابة.':response.status===401?'تعذر التحقق من حساب Windows.':'تعذر تحميل الاستمارات والوثائق. أعد المحاولة.');
+      const data=await response.json();if(current!==generation||!sheet.open)return;
+      if(!Array.isArray(data)||new Set(data.map(row=>row?.documentId?.toLowerCase())).size!==data.length||data.some(row=>!row||typeof row.documentId!=='string'
+        ||! /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(row.documentId)
+        ||!['documentName','fileName','folderName','folderPath'].every(key=>typeof row[key]==='string')||!Number.isInteger(row.folderId)
+        ||!(row.parentId===null||Number.isInteger(row.parentId))||typeof row.isPdf!=='boolean'))throw new Error('تعذر قراءة بيانات الملفات.');
+      rows=data;ready=true;
+      const folders=new Map(rows.map(row=>[row.folderId,row.folderPath]));
+      for(const [id,path] of [...folders].sort((a,b)=>a[1].localeCompare(b[1],'ar'))){const option=make('option',null,path);option.value=String(id);folder.append(option);}
+      render();
+    }catch(error){if(current!==generation||!sheet.open)return;clear();status.textContent=error.name==='Error'?error.message:'تعذر الاتصال بخدمة الملفات. أعد المحاولة.';retry.hidden=false;}
+    finally{if(current===generation)list.setAttribute('aria-busy','false');}
+  }
+  search.addEventListener('input',render);folder.addEventListener('change',render);retry.addEventListener('click',load);
+  formats.forEach(button=>button.addEventListener('click',()=>{format=button.dataset.documentFormat;formats.forEach(item=>item.setAttribute('aria-pressed',String(item===button)));render();}));
+  trigger.setAttribute('aria-expanded','false');
+  trigger.addEventListener('click',event=>{event.preventDefault();if(sheet.open)return;if(typeof closeSearch==='function')closeSearch(false);sheet.showModal();trigger.setAttribute('aria-expanded','true');load();});
+  sheet.querySelector('.portal-documents-sheet-close').addEventListener('click',()=>sheet.close());
+  sheet.addEventListener('click',event=>{const bounds=sheet.getBoundingClientRect();if(event.target===sheet&&(event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom))sheet.close();});
+  sheet.addEventListener('close',()=>{generation++;controller?.abort();clear();trigger.setAttribute('aria-expanded','false');if(!document.querySelector('dialog[open]'))trigger.focus({preventScroll:true});});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden){generation++;controller?.abort();clear();}else if(sheet.open)load();});
+  window.addEventListener('pagehide',()=>{generation++;controller?.abort();clear();});
 })();

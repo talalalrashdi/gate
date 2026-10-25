@@ -31,6 +31,11 @@
 .portal-documents-summary small { color: #788893; font-size: 11px; }
 .portal-documents-list { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; list-style: none; padding: 0; margin: 0; scrollbar-width: thin; }
 .portal-document-row { display: flex; align-items: center; gap: 14px; padding: 15px 8px; border-bottom: 1px solid #edf0f2; }
+.portal-document-row[href] { text-decoration: none; color: inherit; border-radius: 8px; }
+.portal-document-row[href]:hover { background: #f1f6f3; }
+.portal-document-row[href]:focus-visible { outline: 2px solid #285c4b; outline-offset: -2px; }
+#documents-sheet [hidden] { display: none !important; }
+#documents-sheet .portal-document-type { font-size: 11px; font-weight: 700; }
 .portal-document-row > div { min-width: 0; flex: 1; }
 .portal-document-row strong { display: block; font-size: 14px; font-weight: 500; overflow-wrap: anywhere; }
 .portal-document-row small { display: block; margin-top: 4px; font-size: 11px; color: #788893; }

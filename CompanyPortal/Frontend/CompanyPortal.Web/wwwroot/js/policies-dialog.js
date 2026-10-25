@@ -7,15 +7,6 @@
   const endpoint=new URL('api/fixed-orders',new URL(base.replace(/\/?$/,'/'),location.href));
   const make=(tag,cls,text)=>{const node=document.createElement(tag);if(cls)node.className=cls;if(text!==undefined)node.textContent=text;return node;};
   let controller=null,generation=0;
-  // Split only exact markers in the template. Replacement values are inserted
-  // as text once, never parsed as HTML, formatting instructions or more markers.
-  function appendTemplate(paragraph,row){
-    (row.contentText??'').split(/(ds\{0\}de|ss\{1\}se)/g).forEach(part=>{
-      if(part==='ds{0}de')paragraph.append(make('span','portal-policy-previous',row.contentBefor??''));
-      else if(part==='ss{1}se')paragraph.append(make('span','portal-policy-preferred',row.contentAfter??''));
-      else paragraph.append(document.createTextNode(part));
-    });
-  }
   function clear(){years.replaceChildren();timeline.replaceChildren();years.hidden=true;timeline.hidden=true;}
   function valid(rows){
     const date=value=>value===null||(typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value));
@@ -43,7 +34,7 @@
       else header.append(make('span',null,'التاريخ غير محدد'));
       const heading=make('h3',null,row.contentAfter?.trim()?row.contentAfter:'توجيه سامٍ');heading.id='fixed-order-title-'+row.fixedOrderId;
       article.setAttribute('aria-labelledby',heading.id);
-      const content=make('div','portal-policy-example'),paragraph=make('p');appendTemplate(paragraph,row);content.append(paragraph);
+      const content=make('div','portal-policy-example'),paragraph=make('p');window.CompanyPortalFixedOrderText.append(paragraph,row);content.append(paragraph);
       article.append(header,heading,content);li.append(article);timeline.append(li);
     });
     status.hidden=true;years.hidden=false;timeline.hidden=false;

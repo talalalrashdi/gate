@@ -1,5 +1,7 @@
 # CompanyPortal
 
+Admins can now create/edit **التوجيهات السامية** at `/admin/fixed-orders`, with marker insertion, wording presets and a live colour preview. See [directive administration and migration 027](docs/FIXED_ORDERS_ADMINISTRATION.md).
+
 **تعليمات السلامة** now uses selected authorized PDFs while retaining the original booklet covers. Manage titles, order and visibility at `/admin/safety`; new booklets follow the same style. See [safety booklets and migration 026](docs/SAFETY_BOOKLETS.md).
 
 **وثائق تهمك** now displays permission-filtered PDF tabs. Admins select registered files, name/order tabs and show or hide them at `/admin/documents`. See [document library, samples and migration 025](docs/DOCUMENT_LIBRARY.md).

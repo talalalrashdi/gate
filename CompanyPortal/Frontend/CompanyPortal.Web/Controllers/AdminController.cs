@@ -15,6 +15,7 @@ public sealed class AdminController(IConfiguration configuration) : Controller
     [HttpGet("/admin/applications")]
     [HttpGet("/admin/documents")]
     [HttpGet("/admin/safety")]
+    [HttpGet("/admin/fixed-orders")]
     public IActionResult Cards()
     {
         ViewData["AdminSection"] = Request.Path.Value?.TrimEnd('/').EndsWith("/cards", StringComparison.OrdinalIgnoreCase) == true ? "cards" : "overview";
@@ -23,6 +24,7 @@ public sealed class AdminController(IConfiguration configuration) : Controller
         if (Request.Path.Value?.TrimEnd('/').EndsWith("/applications", StringComparison.OrdinalIgnoreCase) == true) ViewData["AdminSection"] = "applications";
         if (Request.Path.Value?.TrimEnd('/').EndsWith("/documents", StringComparison.OrdinalIgnoreCase) == true) ViewData["AdminSection"] = "documents";
         if (Request.Path.Value?.TrimEnd('/').EndsWith("/safety", StringComparison.OrdinalIgnoreCase) == true) ViewData["AdminSection"] = "safety";
+        if (Request.Path.Value?.TrimEnd('/').EndsWith("/fixed-orders", StringComparison.OrdinalIgnoreCase) == true) ViewData["AdminSection"] = "fixed-orders";
         return View();
     }
     [HttpGet("/admin/theme-preview")]

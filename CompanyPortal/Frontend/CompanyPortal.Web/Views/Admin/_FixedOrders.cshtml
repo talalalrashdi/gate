@@ -1,0 +1,21 @@
+<section data-admin-panel="fixed-orders" id="admin-fixed-orders" aria-label="التوجيهات السامية" hidden>
+  <div class="admin-panel">
+    <div class="admin-panel-header"><div><h2>سجل التوجيهات السامية</h2><p>احفظ التوجيه ليظهر لجميع مستخدمي البوابة عند إعادة فتح القائمة.</p></div><button type="button" id="fixed-order-add" class="admin-primary" disabled>إضافة توجيه +</button></div>
+    <p id="fixed-order-admin-status" role="status"></p><button type="button" id="fixed-order-admin-retry" hidden>إعادة تحميل</button>
+    <div class="admin-orders-layout">
+      <aside class="admin-orders-list"><label for="fixed-order-admin-search">ابحث في السجل</label><input type="search" id="fixed-order-admin-search" placeholder="العنوان أو النص أو السنة"><div id="fixed-order-admin-list"></div></aside>
+      <div id="fixed-order-editor" hidden>
+        <form id="fixed-order-form">
+          <h3 id="fixed-order-editor-title">توجيه جديد</h3>
+          <div class="admin-order-dates"><label>التاريخ الرئيسي<input type="date" id="fixed-order-date" max="9999-12-31"><small>اختياري؛ تُستخرج منه السنة المعروضة.</small></label><label>التاريخ الثاني<input type="date" id="fixed-order-date2" max="9999-12-31"><small>اختياري؛ محفوظ للاستخدام لاحقًا.</small></label><label>نوع التاريخ<input type="number" id="fixed-order-date-type" required min="-2147483648" max="2147483647" step="1" placeholder="أدخل الرقم المعتمد"><small>TimestampType: أدخل القيمة المعتمدة، دون افتراض نوع التقويم.</small></label></div>
+          <label>العنوان / النص الجديد<textarea id="fixed-order-after" maxlength="1000" rows="2" required></textarea><small>يُحفظ في ContentAfter ويظهر عنوانًا للتوجيه، وبالأخضر عند إدراجه في الصياغة.</small></label>
+          <label>النص السابق<textarea id="fixed-order-before" maxlength="500" rows="2"></textarea><small>مطلوب عند استخدام زر «إدراج النص السابق»؛ يظهر بلون مميز.</small></label>
+          <fieldset class="admin-order-wording"><legend>صياغة التوجيه</legend><div class="admin-order-template-tools"><button type="button" data-order-preset="change">صياغة تغيير تسمية</button><button type="button" data-order-preset="before">صياغة النص السابق فقط</button><button type="button" data-order-insert="ds{0}de">إدراج النص السابق</button><button type="button" data-order-insert="ss{1}se">إدراج النص الجديد</button></div><label for="fixed-order-content">النص المحيط بالعبارات المميزة</label><textarea id="fixed-order-content" maxlength="1000" rows="5" required spellcheck="false"></textarea><small>استخدم أزرار الإدراج في موضع المؤشر؛ تُحفظ العلامتان ds{0}de وss{1}se بالصيغة التي يفهمها العرض.</small></fieldset>
+          <section class="admin-order-preview" aria-label="معاينة التوجيه"><span>معاينة مباشرة — لا تحفظ بيانات</span><div id="fixed-order-preview-date"></div><h3 id="fixed-order-preview-title"></h3><p id="fixed-order-preview-text"></p></section>
+          <p id="fixed-order-form-error" role="alert" hidden></p>
+          <div class="admin-order-actions"><span id="fixed-order-dirty" role="status"></span><button type="submit" id="fixed-order-save" class="admin-primary">حفظ ونشر التوجيه</button><button type="button" id="fixed-order-cancel">إلغاء</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>

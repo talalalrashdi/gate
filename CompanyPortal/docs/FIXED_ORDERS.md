@@ -1,6 +1,6 @@
 # التوجيهات السامية
 
-The header opens a read-only timeline backed by `CompanyPortal.Portal.FixedOrders`. The API calls `Portal.FixedOrders_getAll`; it requires Windows authentication and a currently registered, active portal employee. There is no administrator editor or write endpoint in this version.
+The header opens a read-only timeline backed by `CompanyPortal.Portal.FixedOrders`. The API calls `Portal.FixedOrders_getAll`; it requires Windows authentication and a currently registered, active portal employee. Creation/editing is now available in the protected [administrator editor](FIXED_ORDERS_ADMINISTRATION.md), added by migration 027. Employee timeline behavior remains unchanged.
 
 ## Database
 

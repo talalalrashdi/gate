@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
+const shared=await readFile(new URL('../Frontend/CompanyPortal.Web/wwwroot/js/fixed-order-text.js',import.meta.url),'utf8');
 const source=await readFile(new URL('../Frontend/CompanyPortal.Web/wwwroot/js/policies-dialog.js',import.meta.url),'utf8');
 class Node {
   constructor(tag){this.tag=tag;this.children=[];this.hidden=false;this.listeners=new Map();this.attributes={};this._text='';}
@@ -21,7 +22,7 @@ async function fixture(rows,{fail=false,held=false}={}){
   const sheet=ids.get('policies-sheet'),trigger=ids.get('policies-sheet-trigger'),close=new Node('button');
   sheet.querySelector=()=>close;sheet.showModal=()=>{sheet.open=true;};sheet.close=()=>{sheet.open=false;sheet.listeners.get('close')();};
   let calls=0,release;const gate=held?new Promise(resolve=>{release=resolve;}):Promise.resolve();
-  vm.runInNewContext(source,{
+  vm.runInNewContext(shared+'\n'+source,{
     URL,AbortController,AbortSignal,Set,window:{addEventListener(){}},location:{href:'http://portal.test/portal/'},
     document:{getElementById:id=>ids.get(id),querySelector:selector=>selector.startsWith('meta')?{content:'http://api.test/backend/'}:null,
       createElement:tag=>new Node(tag),createTextNode:text=>{const node=new Node('#text');node.textContent=text;return node;},addEventListener(){}},

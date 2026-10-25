@@ -97,7 +97,7 @@ for (const route of ['', 'index.html', 'design-b.html']) {
   const buttons = [...html.matchAll(/<button[^>]*data-theme-option="([^"]+)"[^>]*>(\d)<\/button>/g)];
   assert.deepEqual(buttons.map(button => [button[1], button[2]]), [['official', '1'], ['work', '2'], ['national-day', '3']], 'Visible theme mapping');
   const scripts = [...html.matchAll(/<script\b[^>]*src="([^"]+)"[^>]*><\/script>/g)].map(match => match[1].split('?')[0]);
-  assert.deepEqual(scripts, [mount + '/js/theme-appearance.js', ...baseline.portalScripts.flatMap(file => { const script = mount + '/' + migratedPath(file.slice(2)); if(script.endsWith('/site.js'))return [mount + '/js/authorized-search.js',script];return script.endsWith('/workspace-order.js') ? [mount + '/js/workspace-policy.js', script] : [script]; }), mount + '/js/theme-settings.js', mount + '/js/workspace-settings.js', mount + '/js/admin-access.js', mount + '/js/email.js', mount + '/js/exchange-schedule.js', mount + '/js/decisions.js'], 'Original script order and approved integrations including authorized search');
+  assert.deepEqual(scripts, [mount + '/js/theme-appearance.js', ...baseline.portalScripts.flatMap(file => { const script = mount + '/' + migratedPath(file.slice(2)); if(script.endsWith('/policies-dialog.js'))return [mount + '/js/fixed-order-text.js',script];if(script.endsWith('/site.js'))return [mount + '/js/authorized-search.js',script];return script.endsWith('/workspace-order.js') ? [mount + '/js/workspace-policy.js', script] : [script]; }), mount + '/js/theme-settings.js', mount + '/js/workspace-settings.js', mount + '/js/admin-access.js', mount + '/js/email.js', mount + '/js/exchange-schedule.js', mount + '/js/decisions.js'], 'Original script order and approved integrations including authorized search');
   assert.ok(html.indexOf('id="personal-announcement-dialog"') < html.indexOf(`src="${mount}/js/personal-workspace.js`), 'Dialog markup must exist before initialization');
 }
 for (const route of ['profile', 'profile/', 'user-profile.html']) {
@@ -170,7 +170,7 @@ for (const oldThemeFile of ['theme-majestic.css', 'theme-formal.css', 'theme-nat
   await request('css/' + oldThemeFile, 404);
 await request('js/design-b.js', 404);
 for (const removed of cleanup.removed) await request(removed.path, 404);
-for (const resource of ['css/profile.css', 'js/theme-settings.js', 'js/workspace-settings.js', 'js/workspace-policy.js', 'js/admin-access.js', 'js/admin-cards.js', 'js/email.js', 'js/exchange-schedule.js', 'css/exchange-schedule.css', 'css/admin-cards.css', 'css/admin.css', 'js/admin-navigation.js', 'css/admin-images.css', 'js/admin-images.js', 'css/admin-themes.css', 'js/admin-themes.js', 'js/theme-appearance.js', 'css/theme-appearance.css', 'js/theme-preview.js', 'vendor/iconsax/icons.css', ...['eot','woff2','woff','ttf','svg'].map(extension => `vendor/iconsax/files/iconsax.${extension}`)]) {
+for (const resource of ['js/fixed-order-text.js', 'js/admin-fixed-orders.js', 'css/admin-fixed-orders.css', 'css/profile.css', 'js/theme-settings.js', 'js/workspace-settings.js', 'js/workspace-policy.js', 'js/admin-access.js', 'js/admin-cards.js', 'js/email.js', 'js/exchange-schedule.js', 'css/exchange-schedule.css', 'css/admin-cards.css', 'css/admin.css', 'js/admin-navigation.js', 'css/admin-images.css', 'js/admin-images.js', 'css/admin-themes.css', 'js/admin-themes.js', 'js/theme-appearance.js', 'css/theme-appearance.css', 'js/theme-preview.js', 'vendor/iconsax/icons.css', ...['eot','woff2','woff','ttf','svg'].map(extension => `vendor/iconsax/files/iconsax.${extension}`)]) {
   const response = await request(resource);
   const actual = Buffer.from(await response.arrayBuffer());
   const expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot', resource));
@@ -192,7 +192,7 @@ console.log(JSON.stringify({
   matchingStaticResources: resources.length,
   resolvedCssReferences: cssReferences,
   orderedPortalStyles: baseline.portalStyles.length + 2,
-  orderedPortalScripts: baseline.portalScripts.length + 9,
+  orderedPortalScripts: baseline.portalScripts.length + 10,
   apiAndViteReviewNotExposed: true,
   browserInteractionsTested: false
 }, null, 2));

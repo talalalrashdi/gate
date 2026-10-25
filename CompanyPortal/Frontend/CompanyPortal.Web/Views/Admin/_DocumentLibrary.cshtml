@@ -1,8 +1,8 @@
-<section data-admin-panel="documents" id="admin-document-library" aria-label="وثائق تهمك" hidden>
+<section data-admin-panel="documents" id="admin-document-library" data-pdf-library-admin="documents" aria-label="وثائق تهمك" hidden>
   <div class="admin-panel">
-    <div class="admin-panel-header"><div><h2>تبويبات الوثائق</h2><p>اختر ملفات PDF المسجلة في المجلد. لا يغيّر التبويب صلاحية أي موظف.</p></div><button type="button" id="admin-document-tab-add" class="admin-primary" disabled>إضافة تبويب +</button></div>
-    <p id="admin-document-library-status" role="status"></p><button type="button" id="admin-document-library-retry" hidden>إعادة تحميل</button>
-    <div id="admin-document-tabs"></div>
+    <div class="admin-panel-header"><div><h2>تبويبات الوثائق</h2><p>اختر ملفات PDF المسجلة في المجلد. لا يغيّر التبويب صلاحية أي موظف.</p></div><button type="button" id="admin-document-tab-add" data-library-add class="admin-primary" disabled>إضافة تبويب +</button></div>
+    <p id="admin-document-library-status" data-library-status role="status"></p><button type="button" id="admin-document-library-retry" data-library-retry hidden>إعادة تحميل</button>
+    <div id="admin-document-tabs" data-library-list></div>
   </div>
   <aside class="admin-help"><span aria-hidden="true">ⓘ</span><div><h3>اختيار الملفات والصلاحيات</h3><p>تظهر هنا ملفات PDF النشطة المسجلة في Mng.Document ضمن المجلدات المسموح لك بها. وضع ملف في المجلد على القرص وحده لا يسجله في البوابة. تُقرأ الملفات من المسار المضبوط تحت المفتاح docs.</p><p>اختر مجلدًا ثم ملفًا واحدًا على الأقل. يرى الموظف الملفات المصرّح له بها فقط؛ يختفي التبويب إن لم يتضمن ملفات متاحة له. تظل قاعدة المجلد 74 والمجلدات التابعة له سارية.</p><p>الإخفاء يحتفظ بإعدادات التبويب. الاستعراض لا يعدّل الملف؛ قد يتيح قارئ PDF في المتصفح الحفظ أو الطباعة.</p></div></aside>
 </section>

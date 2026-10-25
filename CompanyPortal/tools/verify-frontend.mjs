@@ -18,6 +18,7 @@ const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 const normalize = text => text.replaceAll('\r\n', '\n').replace(/>\s+</g, '><').trim();
 // User-approved changes after initial parity: tab metadata and theme controls.
 const canonicalHtml = text => normalize(text.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, ''))
+  .replace(/<section\b[^>]*id="safety"[^>]*>[\s\S]*?<\/section>/g, '<!-- permission-filtered safety booklets -->')
   .replace(/<section\b[^>]*id="digital-library"[^>]*>[\s\S]*?<\/section>/g, '<!-- permission-filtered PDF library -->')
   // The sample directory was replaced by an authorized, API-rendered header sheet.
   .replace(/<section\b[^>]*id="library"[^>]*>[\s\S]*?<\/section>/g, '<!-- authorized application directory -->')
@@ -132,6 +133,7 @@ for (let offset = 0; offset < resources.length; offset += 8) {
     if (migratedPath(file.path) === 'css/documents-dialog.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/documents-dialog.css'));
     if (migratedPath(file.path) === 'js/policies-dialog.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/policies-dialog.js'));
     if (migratedPath(file.path) === 'js/documents-dialog.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/documents-dialog.js'));
+    if (migratedPath(file.path) === 'js/safety.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/safety.js'));
     if (migratedPath(file.path) === 'js/library.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/library.js'));
     // Published database news now reuses the editorial layout without demo sources.
     if (migratedPath(file.path) === 'css/editorial.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/editorial.css'));

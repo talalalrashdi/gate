@@ -1,5 +1,7 @@
 # CompanyPortal
 
+**تعليمات السلامة** now uses selected authorized PDFs while retaining the original booklet covers. Manage titles, order and visibility at `/admin/safety`; new booklets follow the same style. See [safety booklets and migration 026](docs/SAFETY_BOOKLETS.md).
+
 **وثائق تهمك** now displays permission-filtered PDF tabs. Admins select registered files, name/order tabs and show or hide them at `/admin/documents`. See [document library, samples and migration 025](docs/DOCUMENT_LIBRARY.md).
 
 **البحث العام** now searches authorized forms/documents and apps, with PDF viewing, file downloads and permission-rechecked app launching. See [search behaviour and verification](docs/AUTHORIZED_SEARCH.md).

@@ -14,6 +14,8 @@ Changing a folder clears the draft file selection. Each tab saves independently.
 
 Selection currently means **active PDFs already registered in `Mng.Document`**, within the administrator's current document permissions. Placing a file on disk alone does not register it. There is no upload, filesystem browser, folder creation, PDF editing or grant editor in this feature. Unavailable saved selections are labelled explicitly; removing their checkbox is an explicit removal, not an automatic cleanup.
 
+Safety now reuses this infrastructure with an isolated `safety` section and one PDF per booklet; existing document tabs remain in `documents`. See [safety booklets and migration 026](SAFETY_BOOKLETS.md).
+
 ## Existing storage and authorization
 
 - Reuses `Mng.Folder`, `Mng.Document`, `dbo.VFolder`, `App.CreateFolderPath` and the configured `Mstr.Utls` **docs** root(s).

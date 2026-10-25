@@ -18,18 +18,18 @@ public sealed class DocumentTabsStore(IConfiguration configuration)
         [Required,MinLength(1),MaxLength(500)] Guid[] DocumentIds);
     private SqlConnection Connection()=>new(configuration.GetConnectionString("CompanyPortal")
         ??throw new InvalidOperationException("CompanyPortal connection string is missing."));
-    public async Task<Catalog> GetAsync(bool includeHidden,CancellationToken token)
+    public async Task<Catalog> GetAsync(bool includeHidden,CancellationToken token,string sectionKey="documents")
     {
         await using var connection=Connection();
         using var results=await connection.QueryMultipleAsync(new CommandDefinition("Portal.DocumentTabs_Get",
-            new {IncludeHidden=includeHidden},commandType:CommandType.StoredProcedure,commandTimeout:15,cancellationToken:token));
+            new {IncludeHidden=includeHidden,SectionKey=sectionKey},commandType:CommandType.StoredProcedure,commandTimeout:15,cancellationToken:token));
         return new((await results.ReadAsync<Tab>()).ToArray(),(await results.ReadAsync<Item>()).ToArray());
     }
-    public async Task<int> SaveAsync(int? id,SaveRequest request,CancellationToken token)
+    public async Task<int> SaveAsync(int? id,SaveRequest request,CancellationToken token,string sectionKey="documents")
     {
         await using var connection=Connection();
         return await connection.QuerySingleAsync<int>(new CommandDefinition("Portal.DocumentTabs_Save",
-            new {DocumentTabID=id,TabName=request.TabName.Trim(),request.FolderId,request.DisplayOrder,request.Active,
+            new {SectionKey=sectionKey,DocumentTabID=id,TabName=request.TabName.Trim(),request.FolderId,request.DisplayOrder,request.Active,
                 DocumentIds=JsonSerializer.Serialize(request.DocumentIds)},commandType:CommandType.StoredProcedure,
             commandTimeout:15,cancellationToken:token));
     }

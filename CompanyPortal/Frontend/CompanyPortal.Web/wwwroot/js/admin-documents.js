@@ -1,15 +1,17 @@
-(() => {
-  const root=document.getElementById('admin-document-library'),base=document.querySelector('meta[name="companyportal-api-base"]')?.content;if(!root||!base)return;
-  const endpoint=path=>new URL('api/admin/document-library'+path,new URL(base.replace(/\/?$/,'/'),location.href));
-  const list=document.getElementById('admin-document-tabs'),status=document.getElementById('admin-document-library-status'),retry=document.getElementById('admin-document-library-retry'),add=document.getElementById('admin-document-tab-add');
-  const make=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
+document.querySelectorAll('[data-pdf-library-admin]').forEach(root => {
+  const base=document.querySelector('meta[name="companyportal-api-base"]')?.content;if(!base)return;
+  const section=root.dataset.pdfLibraryAdmin,isSafety=section==='safety',route=isSafety?'safety-library':'document-library';
+  const terms=text=>isSafety?text.replaceAll('تبويبات الوثائق','كتيبات السلامة').replaceAll('التبويب','الكتيب').replaceAll('تبويب','كتيب').replaceAll('إدارة الوثائق','إدارة كتيبات السلامة').replaceAll('تحميل الوثائق','تحميل كتيبات السلامة'):text;
+  const endpoint=path=>new URL('api/admin/'+route+path,new URL(base.replace(/\/?$/,'/'),location.href));
+  const list=root.querySelector('[data-library-list]'),status=root.querySelector('[data-library-status]'),retry=root.querySelector('[data-library-retry]'),add=root.querySelector('[data-library-add]');
+  const make=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=terms(text);return n;};
   let catalog,loaded=false,busy=false;
   const dirty=()=>!!root.querySelector('.is-dirty');
-  const request=(path,method='GET',body)=>fetch(endpoint(path),{method,credentials:'include',cache:'no-store',signal:AbortSignal.timeout(15000),...(method==='GET'?{}:{headers:{'Content-Type':'application/json','X-CompanyPortal-Request':'document-library'},body:JSON.stringify(body)})});
-  function message(text,canRetry=false){status.textContent=text;retry.hidden=!canRetry;}
+  const request=(path,method='GET',body)=>fetch(endpoint(path),{method,credentials:'include',cache:'no-store',signal:AbortSignal.timeout(15000),...(method==='GET'?{}:{headers:{'Content-Type':'application/json','X-CompanyPortal-Request':route},body:JSON.stringify(body)})});
+  function message(text,canRetry=false){status.textContent=terms(text);retry.hidden=!canRetry;}
   function lock(){root.querySelectorAll('input,select,button').forEach(n=>{n.disabled=busy;});add.disabled=busy||!loaded;root.querySelectorAll('form').forEach(f=>f.dispatchEvent(new Event('library:sync')));}
   function form(tab,isNew=false){
-    const f=make('form','admin-document-form');if(isNew)f.dataset.newTab='';f.setAttribute('aria-label',isNew?'تبويب جديد':'تبويب '+tab.tabName);
+    const f=make('form','admin-document-form');if(isNew)f.dataset.newTab='';f.setAttribute('aria-label',terms(isNew?'تبويب جديد':'تبويب '+tab.tabName));
     const field=(text,type='text')=>{const l=make('label',null,text),i=make('input');i.type=type;l.append(i);f.append(l);return i;};
     const name=field('اسم التبويب');name.required=true;name.maxLength=200;name.value=tab.tabName;
     const fl=make('label',null,'المجلد'),folder=make('select');folder.required=true;fl.append(folder);f.append(fl);
@@ -25,12 +27,12 @@
     const note=make('p','admin-document-note');f.append(note);
     const values=()=>({tabName:name.value.trim(),folderId:Number(folder.value),displayOrder:Number(order.value),active:active.checked,documentIds:[...selected].sort()});
     let original=JSON.stringify(values());
-    function sync(){const changed=isNew||JSON.stringify(values())!==original;f.classList.toggle('is-dirty',changed);save.disabled=busy||!changed||!selected.size||!folder.value;note.textContent=changed?'تغييرات غير محفوظة':'تم حفظ إعدادات التبويب.';}
+    function sync(){const changed=isNew||JSON.stringify(values())!==original;f.classList.toggle('is-dirty',changed);save.disabled=busy||!changed||!selected.size||!folder.value;note.textContent=changed?'تغييرات غير محفوظة':terms('تم حفظ إعدادات التبويب.');}
     function filesList(){
-      files.replaceChildren(make('legend',null,'ملفات PDF — اختر ما يظهر في التبويب'));
+      files.replaceChildren(make('legend',null,isSafety?'ملف PDF للكتيب — اختر ملفًا واحدًا':'ملفات PDF — اختر ما يظهر في التبويب'));
       const docs=catalog.documents.filter(d=>d.folderId===Number(folder.value));
       for(const id of selected)if(!docs.some(d=>d.documentId===id))docs.push({documentId:id,documentName:'ملف محفوظ غير متاح في المجلد لحسابك — أزِل اختياره أو راجع الصلاحية'});
-      docs.forEach(doc=>{const l=make('label'),c=make('input');c.type='checkbox';c.value=doc.documentId;c.checked=selected.has(doc.documentId);l.append(c,make('span',null,doc.documentName));files.append(l);c.addEventListener('change',()=>{if(c.checked)selected.add(c.value);else selected.delete(c.value);sync();});});
+      docs.forEach(doc=>{const l=make('label'),c=make('input');c.type=isSafety?'radio':'checkbox';if(isSafety)c.name='booklet-pdf';c.value=doc.documentId;c.checked=selected.has(doc.documentId);l.append(c,make('span',null,doc.documentName));files.append(l);c.addEventListener('change',()=>{if(c.checked){if(isSafety)selected.clear();selected.add(c.value);}else selected.delete(c.value);sync();});});
       if(!docs.length)files.append(make('p',null,'لا توجد ملفات PDF مسجلة ومتاحة في هذا المجلد.'));
     }
     folder.addEventListener('change',()=>{selected.clear();filesList();sync();});f.addEventListener('input',sync);f.addEventListener('change',sync);f.addEventListener('library:sync',sync);
@@ -43,7 +45,7 @@
           if(response.status===401||response.status===403){loaded=false;list.replaceChildren();catalog=null;}
           message(response.status===400?'تحقق من المجلد والملفات المحددة. يجب أن تكون ملفات PDF متاحة لحسابك.':response.status===401||response.status===403?'ليس لديك صلاحية إدارة الوثائق.':response.status===404?'التبويب لم يعد موجودًا؛ أعد تحميل القائمة.':'تعذر حفظ التبويب. أعد المحاولة.',true);return;
         }
-        const result=await response.json();tab.documentTabId=result.documentTabId;Object.assign(tab,value);
+        const result=await response.json();tab.documentTabId=result.documentTabId;Object.assign(tab,value);if(isNew)catalog.tabs.push(tab);
         catalog.items=catalog.items.filter(i=>i.documentTabId!==tab.documentTabId).concat(value.documentIds.map(id=>({documentTabId:tab.documentTabId,documentId:id})));
         original=JSON.stringify(value);f.classList.remove('is-dirty');f.replaceWith(form(tab));message('تم الحفظ. تظهر التغييرات للموظفين عند إعادة تحميل البوابة.');
       }catch{message('تعذر تأكيد الحفظ. أعد تحميل القائمة للتحقق قبل إعادة المحاولة.',true);}
@@ -61,7 +63,7 @@
   }
   add.addEventListener('click',()=>{if(!busy&&!list.querySelector('[data-new-tab]')){const f=form({tabName:'',folderId:0,displayOrder:(catalog.tabs.length+1)*10,active:true},true);list.prepend(f);f.querySelector('input').focus();}});
   retry.addEventListener('click',()=>{if(!dirty()||confirm('إعادة التحميل ستلغي التغييرات غير المحفوظة. متابعة؟'))load();});
-  document.querySelectorAll('[data-admin-section="documents"]').forEach(b=>b.addEventListener('click',()=>{if(!loaded)load();}));
-  window.addEventListener('popstate',()=>{if(location.hash==='#documents'&&!loaded)load();});window.addEventListener('beforeunload',e=>{if(dirty()){e.preventDefault();e.returnValue='';}});
-  if(document.body.dataset.adminStart==='documents'||location.hash==='#documents')load();
-})();
+  document.querySelectorAll('[data-admin-section="'+section+'"]').forEach(b=>b.addEventListener('click',()=>{if(!loaded)load();}));
+  window.addEventListener('popstate',()=>{if(location.hash==='#'+section&&!loaded)load();});window.addEventListener('beforeunload',e=>{if(dirty()){e.preventDefault();e.returnValue='';}});
+  if(document.body.dataset.adminStart===section||location.hash==='#'+section)load();
+});

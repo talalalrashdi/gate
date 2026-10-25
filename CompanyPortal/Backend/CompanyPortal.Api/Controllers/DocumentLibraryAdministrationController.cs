@@ -5,14 +5,16 @@ using Microsoft.Data.SqlClient;
 
 namespace CompanyPortal.Api.Controllers;
 
-[ApiController,Authorize,Route("api/admin/document-library"),RequestSizeLimit(65536)]
+[ApiController,Authorize,Route("api/admin/document-library"),Route("api/admin/safety-library"),RequestSizeLimit(65536)]
 public sealed class DocumentLibraryAdministrationController(DocumentTabsStore tabs,DocumentsStore documents,AdministrationStore administration,
     IConfiguration configuration,ILogger<DocumentLibraryAdministrationController> logger):ControllerBase
 {
+    private bool IsSafety=>Request.Path.StartsWithSegments("/api/admin/safety-library");
+    private string SectionKey=>IsSafety?"safety":"documents";
     [HttpGet]
     public Task<IActionResult> Get(CancellationToken token)=>Execute(async rows=>
     {
-        var catalog=await tabs.GetAsync(true,token);
+        var catalog=await tabs.GetAsync(true,token,SectionKey);
         return Ok(new {Tabs=catalog.Tabs.Select(t=>new {DocumentTabId=t.DocumentTabID,t.TabName,FolderId=t.FolderID,t.DisplayOrder,t.LastChangeAt,t.Active}),
             Items=catalog.Items.Select(i=>new {DocumentTabId=i.DocumentTabID,DocumentId=i.DocumentID}),Documents=rows.Select(r=>new {DocumentId=r.DocumentID,r.DocumentName,
             FileName=r.DocumentPath,FolderId=r.FolderID,r.FolderName}).ToArray()});
@@ -25,10 +27,10 @@ public sealed class DocumentLibraryAdministrationController(DocumentTabsStore ta
 
     private Task<IActionResult> Save(int? id,DocumentTabsStore.SaveRequest request,CancellationToken token)=>Execute(async rows=>
     {
-        if(string.IsNullOrWhiteSpace(request.TabName)||request.DocumentIds.Distinct().Count()!=request.DocumentIds.Length
+        if((IsSafety&&request.DocumentIds.Length!=1)||string.IsNullOrWhiteSpace(request.TabName)||request.DocumentIds.Distinct().Count()!=request.DocumentIds.Length
             ||request.DocumentIds.Any(g=>!rows.Any(r=>r.DocumentID==g&&r.FolderID==request.FolderId)))
             return Problem(statusCode:400,title:"Select authorized PDFs from the selected folder.");
-        return Ok(new {DocumentTabId=await tabs.SaveAsync(id,request,token)});
+        return Ok(new {DocumentTabId=await tabs.SaveAsync(id,request,token,SectionKey)});
     },true,token);
 
     private async Task<IActionResult> Execute(Func<IReadOnlyList<DocumentsStore.Row>,Task<IActionResult>> action,bool write,CancellationToken token)
@@ -40,7 +42,7 @@ public sealed class DocumentLibraryAdministrationController(DocumentTabsStore ta
             if(!await administration.IsAdminAsync(name,token))return Forbid();
             if(write)
             {
-                if(Request.Headers["X-CompanyPortal-Request"]!="document-library")return Problem(statusCode:400,title:"Missing document-library request header.");
+                if(Request.Headers["X-CompanyPortal-Request"]!=(IsSafety?"safety-library":"document-library"))return Problem(statusCode:400,title:"Missing document-library request header.");
                 var origin=Request.Headers.Origin.ToString();var allowed=configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()??[];
                 if(origin.Length>0&&origin!=$"{Request.Scheme}://{Request.Host}"&&!allowed.Contains(origin,StringComparer.Ordinal))return Forbid();
             }

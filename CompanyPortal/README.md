@@ -1,5 +1,7 @@
 # CompanyPortal
 
+**البحث العام** now searches authorized forms/documents and apps, with PDF viewing, file downloads and permission-rechecked app launching. See [search behaviour and verification](docs/AUTHORIZED_SEARCH.md).
+
 The header **الاستمارات والوثائق** searches authorized `Mng.Document` records, displays PDFs and downloads other files with Arabic filenames. Folders use `Mng.Folder` and file roots use the `docs` key. See [setup and migrations 023–024](docs/FORMS_DOCUMENTS.md).
 
 **القرارات** now reads permission-filtered decisions and opens PDFs through the API. Local LegelAffairs samples are installed; the real source adapter remains an internal deployment step. See [source contract, paths and tests](docs/LEGAL_DECISIONS.md).

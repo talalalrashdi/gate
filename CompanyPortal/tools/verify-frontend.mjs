@@ -24,6 +24,11 @@ const canonicalHtml = text => normalize(text.replace(/<script\b[^>]*>[\s\S]*?<\/
   .replace(/<aside class="portal-work-card portal-work-library"[\s\S]*?<\/aside>/g, '<!-- permission-filtered legal decisions -->')
   .replace(/<dialog class="portal-doc-dialog"[\s\S]*?<\/dialog>/g, '')
   .replace(/<dialog id="documents-sheet"[\s\S]*?<\/dialog>/g, '<!-- database-backed forms and documents -->')
+  .replace(/<div class="portal-authorized-search-filters"[\s\S]*?<\/div>/g, '')
+  .replace(/<p id="authorized-search-error"[^>]*>[\s\S]*?<\/p>/g, '')
+  .replace(/<button[^>]*id="authorized-search-retry"[^>]*>[\s\S]*?<\/button>/g, '')
+  .replace('placeholder="ابحث عن استمارة، وثيقة أو نظام…" aria-label="البحث العام"','placeholder="عن ماذا تبحث اليوم؟" aria-label="البحث في محتوى الصفحة"')
+  .replace('aria-label="مسح البحث" title="مسح البحث"','aria-label="إغلاق البحث"')
   .replace(/<a class="portal-setup-link"[^>]*>[\s\S]*?<\/a>/g, '')
   .replace(/<button\b[^>]*id="portal-notices-visibility"[^>]*>/g, '<button id="portal-notices-visibility">')
   .replace(/(<section id="portal-floating-alert"[^>]*?) hidden/g, '$1')
@@ -90,7 +95,7 @@ for (const route of ['', 'index.html', 'design-b.html']) {
   const buttons = [...html.matchAll(/<button[^>]*data-theme-option="([^"]+)"[^>]*>(\d)<\/button>/g)];
   assert.deepEqual(buttons.map(button => [button[1], button[2]]), [['official', '1'], ['work', '2'], ['national-day', '3']], 'Visible theme mapping');
   const scripts = [...html.matchAll(/<script\b[^>]*src="([^"]+)"[^>]*><\/script>/g)].map(match => match[1].split('?')[0]);
-  assert.deepEqual(scripts, [mount + '/js/theme-appearance.js', ...baseline.portalScripts.flatMap(file => { const script = mount + '/' + migratedPath(file.slice(2)); return script.endsWith('/workspace-order.js') ? [mount + '/js/workspace-policy.js', script] : [script]; }), mount + '/js/theme-settings.js', mount + '/js/workspace-settings.js', mount + '/js/admin-access.js', mount + '/js/email.js', mount + '/js/exchange-schedule.js', mount + '/js/decisions.js'], 'Original script order and appended account persistence/admin/email/decisions');
+  assert.deepEqual(scripts, [mount + '/js/theme-appearance.js', ...baseline.portalScripts.flatMap(file => { const script = mount + '/' + migratedPath(file.slice(2)); if(script.endsWith('/site.js'))return [mount + '/js/authorized-search.js',script];return script.endsWith('/workspace-order.js') ? [mount + '/js/workspace-policy.js', script] : [script]; }), mount + '/js/theme-settings.js', mount + '/js/workspace-settings.js', mount + '/js/admin-access.js', mount + '/js/email.js', mount + '/js/exchange-schedule.js', mount + '/js/decisions.js'], 'Original script order and approved integrations including authorized search');
   assert.ok(html.indexOf('id="personal-announcement-dialog"') < html.indexOf(`src="${mount}/js/personal-workspace.js`), 'Dialog markup must exist before initialization');
 }
 for (const route of ['profile', 'profile/', 'user-profile.html']) {
@@ -121,6 +126,7 @@ for (let offset = 0; offset < resources.length; offset += 8) {
     // Browser acceptance fixes: shared responsive header and unique group choices.
     if (file.path === 'design-b-layout.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/layout.css'));
     if (file.path === 'design-b-workspace.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/workspace.css'));
+    if (migratedPath(file.path) === 'css/header.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/header.css'));
     if (migratedPath(file.path) === 'css/systems-catalog.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/systems-catalog.css'));
     if (migratedPath(file.path) === 'css/documents-dialog.css') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/css/documents-dialog.css'));
     if (migratedPath(file.path) === 'js/policies-dialog.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/policies-dialog.js'));
@@ -182,7 +188,7 @@ console.log(JSON.stringify({
   matchingStaticResources: resources.length,
   resolvedCssReferences: cssReferences,
   orderedPortalStyles: baseline.portalStyles.length + 2,
-  orderedPortalScripts: baseline.portalScripts.length + 7,
+  orderedPortalScripts: baseline.portalScripts.length + 9,
   apiAndViteReviewNotExposed: true,
   browserInteractionsTested: false
 }, null, 2));

@@ -9,7 +9,7 @@
   <link rel="icon" type="image/png" href="@Url.Content("~/assets/oman-khanjar.png")">
   @await RenderSectionAsync("Head", required: false)
   <link rel="stylesheet" href="@Url.Content("~/css/site.css")">
-  <link rel="stylesheet" href="@Url.Content("~/css/header.css")">
+  <link rel="stylesheet" href="@Url.Content("~/css/header.css")" asp-append-version="true">
   @await RenderSectionAsync("Styles", required: false)
 </head>
 <body class="@ViewData["BodyClass"]">

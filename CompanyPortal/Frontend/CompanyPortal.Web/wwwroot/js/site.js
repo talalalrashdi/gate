@@ -85,7 +85,7 @@ notificationsTrigger?.addEventListener('click',()=>{
 document.addEventListener('pointerdown',event=>{if(notificationsPanel&&!notificationsPanel.hidden&&!notificationsPanel.contains(event.target)&&!notificationsTrigger.contains(event.target))closeNotifications();});
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&notificationsPanel&&!notificationsPanel.hidden){event.preventDefault();closeNotifications(true);}});
 header.addEventListener('focusout',()=>requestAnimationFrame(()=>{if(notificationsPanel&&!notificationsPanel.hidden&&!header.contains(document.activeElement))closeNotifications();}));
-let selectedResult=-1,visibleResults=[],highlightTimer,highlightedTarget;
+let selectedResult=-1,visibleResults=[];
 const headerSpace = document.createElement('div');
 headerSpace.className = 'portal-header-scroll-space';
 headerSpace.hidden = true;
@@ -106,15 +106,6 @@ function updateHeader(){
 }
 window.addEventListener('scroll',updateHeader,{passive:true});updateHeader();
 
-// Index the rendered content so titles and their destinations stay in sync.
-const searchEntries=[...document.querySelectorAll('.portal-section h2,.portal-section h3,.portal-workspace-section h2,.portal-doc-list button,.portal-library-catalog button')].filter(element=>!element.closest('.systems-empty,.systems-section[hidden]')).map((element,index)=>{
-  const section=element.closest('.portal-section, .portal-workspace-section');
-  const title=element.matches('h2,h3')?element.innerText:(element.querySelector('.portal-doc-copy b')||element.querySelector('b,span'))?.textContent;
-  const target=element.matches('h2')?(element.closest('.portal-work-card')||section):element.closest('article,button')||element;
-  target.dataset.portalSearchTarget=String(index);
-  const category=section?.dataset.searchCategory||section?.querySelector('h2')?.innerText.trim().replace(/\s+/g,' ')||'مساحة العمل';
-  return {title:(title||'').trim().replace(/\s+/g,' '),category,text:element.matches('h2')?title:target.textContent.trim(),target};
-});
 // Illustrative contacts only; masked mobile numbers cannot be mistaken for live contacts.
 const phoneSamples=[
   {title:'أحمد سالم',category:'الإدارة العامة',address:'مدير الشؤون الإدارية · المبنى الرئيسي، الطابق الأول',office:'1033',mobile:'9XXX 1033',photo:'workspace-person.png'},
@@ -128,7 +119,7 @@ try{const saved=JSON.parse(localStorage.getItem(recentSearchKey));for(const mode
 function rememberSearch(){
   clearTimeout(recentSearchTimer);
   const query=searchInput.value.trim().slice(0,80);
-  if(!separateSearch||!query||!visibleResults.length||visibleResults[0].recent)return;
+  if(searchMode!=='phone'||!separateSearch||!query||!visibleResults.length||visibleResults[0].recent)return;
   recentSearches[searchMode]=[query,...recentSearches[searchMode].filter(value=>normalizeSearch(value)!==normalizeSearch(query))].slice(0,6);
   try{localStorage.setItem(recentSearchKey,JSON.stringify(recentSearches));}catch{}
 }
@@ -147,10 +138,11 @@ function setActiveResult(index){
   else searchInput.removeAttribute('aria-activedescendant');
 }
 function renderSearch(showDirectory=false){
+  if(searchMode!=='phone'){window.CompanyPortalAuthorizedSearch?.search();return;}
   const term=normalizeSearch(searchInput.value);
   const phoneOnly=separateSearch?searchMode==='phone':searchPanel.querySelector('[name="portal-search-scope"]:checked')?.value==='phone';
-  const entries=phoneOnly&&separateSearch?phoneSamples:phoneOnly?searchEntries.filter(entry=>entry.target.closest('[data-search-category="دليل الهاتف"]')):searchEntries;
-  visibleResults=term?entries.filter(entry=>normalizeSearch(entry.title+' '+entry.category+' '+entry.text).includes(term)).sort((a,b)=>Number(normalizeSearch(b.title).includes(term))-Number(normalizeSearch(a.title).includes(term))):entries.filter(entry=>phoneOnly||entry.target.matches('.portal-section'));
+  const entries=phoneSamples;
+  visibleResults=term?entries.filter(entry=>normalizeSearch(entry.title+' '+entry.category+' '+entry.text).includes(term)).sort((a,b)=>Number(normalizeSearch(b.title).includes(term))-Number(normalizeSearch(a.title).includes(term))):entries;
   searchStatus.textContent=term?`${visibleResults.length.toLocaleString('ar-EG-u-nu-latn')} نتائج مطابقة`:phoneOnly?'جهات الاتصال':'وصول سريع';
   if(separateSearch&&!term&&!showDirectory&&(phoneOnly||recentSearches[searchMode].length)){
     visibleResults=recentSearches[searchMode].map(query=>({recent:true,title:query,category:phoneOnly?'دليل الهاتف':'البحث العام'}));
@@ -185,10 +177,12 @@ function renderSearch(showDirectory=false){
 }
 function closeSearch(restoreFocus=true){
   if(separateSearch&&!searchPanel.hidden){rememberSearch();}
+  window.CompanyPortalAuthorizedSearch?.close();visibleResults=[];selectedResult=-1;
   searchPanel.hidden=true;navigation.hidden=false;header.classList.remove('is-searching');searchTriggers.forEach(trigger=>trigger.setAttribute('aria-expanded','false'));searchInput.setAttribute('aria-expanded','false');searchInput.removeAttribute('aria-activedescendant');
   if(restoreFocus)activeSearchTrigger.focus({preventScroll:true});
 }
 function openSearch(mode='all',trigger=searchTrigger){
+  window.CompanyPortalAuthorizedSearch?.close();
   if(separateSearch){
     if(!searchPanel.hidden)rememberSearch();
     searchMode=mode==='phone'?'phone':'all';activeSearchTrigger=trigger;
@@ -198,40 +192,40 @@ function openSearch(mode='all',trigger=searchTrigger){
     searchPanel.querySelector('.portal-phone-important').hidden=!phoneOnly;
     searchPanel.querySelector('.portal-phone-directory').hidden=!phoneOnly;
     searchInput.value='';
-    searchInput.placeholder=phoneOnly?'ابحث بالاسم أو الإدارة أو رقم الهاتف':'عن ماذا تبحث اليوم؟';
+    searchInput.placeholder=phoneOnly?'ابحث بالاسم أو الإدارة أو رقم الهاتف':'ابحث عن استمارة، وثيقة أو نظام…';
     searchInput.setAttribute('aria-label',title);
     results.setAttribute('aria-label',phoneOnly?'نتائج دليل الهاتف':'نتائج البحث العام');
-    searchPanel.querySelector('.portal-search-caption small').textContent=phoneOnly?'جهات الاتصال وأرقام التواصل':'الأنظمة والمستندات ومحتوى الصفحة';
+    const caption=searchPanel.querySelector('.portal-search-caption small');caption.textContent=phoneOnly?'جهات الاتصال وأرقام التواصل':'';caption.hidden=!phoneOnly;
     searchTriggers.forEach(button=>button.setAttribute('aria-expanded',String(button===trigger)));
   }
   closeProfile();
   closeNotifications();
-  navigation.hidden=!separateSearch;searchPanel.hidden=false;header.classList.add('is-searching');activeSearchTrigger.setAttribute('aria-expanded','true');searchInput.setAttribute('aria-expanded','true');renderSearch();searchInput.focus({preventScroll:true});
+  navigation.hidden=!separateSearch;searchPanel.hidden=false;header.classList.add('is-searching');activeSearchTrigger.setAttribute('aria-expanded','true');searchInput.setAttribute('aria-expanded','true');
+  if(searchMode==='phone')renderSearch();else{
+    visibleResults=[];selectedResult=-1;
+    if(window.CompanyPortalAuthorizedSearch)window.CompanyPortalAuthorizedSearch.open();
+    else{results.replaceChildren();searchStatus.textContent='خدمة البحث غير متاحة. أعد تحميل الصفحة.';}
+  }
+  searchInput.focus({preventScroll:true});
 }
 function openResult(index){
   const selectedEntry=visibleResults[index];if(!selectedEntry)return;
   if(selectedEntry.recent){searchInput.value=selectedEntry.title;renderSearch();searchInput.focus({preventScroll:true});rememberSearch();return;}
   rememberSearch();
   if(selectedEntry.contact){setActiveResult(index);results.children[index].focus({preventScroll:true});return;}
-  const reveal={target:selectedEntry.target};document.dispatchEvent(new CustomEvent('systems:reveal',{detail:reveal}));
-  const entry={...selectedEntry,target:reveal.target};
 
-  closeSearch(false);highlightedTarget?.classList.remove('portal-search-target');clearTimeout(highlightTimer);
-  highlightedTarget=entry.target;entry.target.classList.add('portal-search-target');
-  if(!entry.target.matches('button,a'))entry.target.setAttribute('tabindex','-1');
-  entry.target.focus({preventScroll:true});entry.target.scrollIntoView({behavior:reducedMotion.matches?'instant':'smooth',block:'center'});
-  highlightTimer=setTimeout(()=>entry.target.classList.remove('portal-search-target'),2400);
 }
 searchTriggers.forEach(trigger=>trigger.addEventListener('click',()=>openSearch(trigger.dataset.searchMode||'all',trigger)));
 searchPanel.querySelector('.portal-phone-directory')?.addEventListener('click',()=>{searchInput.value='';renderSearch(true);searchInput.focus({preventScroll:true});results.scrollTop=0;});
 
-document.querySelector('.portal-search-close').addEventListener('click',()=>closeSearch());
+document.querySelector('.portal-search-close').addEventListener('click',()=>{searchInput.value='';renderSearch();searchInput.focus({preventScroll:true});});
 searchInput.addEventListener('input',()=>{renderSearch();clearTimeout(recentSearchTimer);if(separateSearch)recentSearchTimer=setTimeout(rememberSearch,600);});
 searchPanel.querySelectorAll('[name="portal-search-scope"]').forEach(input=>input.addEventListener('change',()=>{
   searchInput.placeholder=input.value==='phone'?'ابحث بالاسم أو رقم الهاتف':'عن ماذا تبحث اليوم؟';
   renderSearch();
 }));
 searchInput.addEventListener('keydown',event=>{
+  if(searchMode!=='phone'){window.CompanyPortalAuthorizedSearch?.key(event);return;}
   if(event.key==='ArrowDown'||event.key==='ArrowUp'){
     event.preventDefault();if(!visibleResults.length)return;
     const direction=event.key==='ArrowDown'?1:-1;setActiveResult(selectedResult<0?(direction===1?0:visibleResults.length-1):(selectedResult+direction+visibleResults.length)%visibleResults.length);
@@ -241,8 +235,7 @@ document.addEventListener('keydown',event=>{
   if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'){event.preventDefault();openSearch()}
   if(event.key==='Escape'&&!searchPanel.hidden){event.preventDefault();closeSearch()}
 });
-document.addEventListener('pointerdown',event=>{if(!searchPanel.hidden&&!header.contains(event.target))closeSearch(false)});
-header.addEventListener('focusout',()=>requestAnimationFrame(()=>{if(!searchPanel.hidden&&!header.contains(document.activeElement))closeSearch(false)}));
+document.addEventListener('pointerdown',event=>{if(!searchPanel.hidden&&!searchPanel.contains(event.target)&&!event.target.closest('.portal-search'))closeSearch(false)});
 
 // Native RTL scrolling supports touch/trackpads, buttons, and keyboard navigation.
 const alertTrack=document.getElementById('workspace-alerts');

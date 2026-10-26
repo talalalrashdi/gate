@@ -65,4 +65,60 @@
     status.open = false;
     status.querySelector('summary').focus();
   });
+
+  // Current status from Mng.CurrentStatus (ColorValue 1-4 → green/yellow/orange/red) via the API.
+  const apiBase = document.querySelector('meta[name="companyportal-api-base"]')?.content;
+  const summary = status.querySelector('summary');
+  const current = {
+    green: { title: 'الحالة الطبيعية', color: 'أخضر', summary: 'العمل مستمر بصورة طبيعية. اتبع إجراءات العمل المعتادة وراقب القنوات الرسمية للتحديثات.' },
+    ...states
+  };
+  function formatUpdated(value) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(value || '');
+    if (!match) return null;
+    const [, year, month, day, hour, minute] = match.map(Number);
+    const date = new Intl.DateTimeFormat('ar-OM-u-nu-latn', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(year, month - 1, day));
+    const time = `${String(hour % 12 || 12).padStart(2, '0')}:${String(minute).padStart(2, '0')} ${hour < 12 ? 'صباحًا' : 'مساءً'}`;
+    return { date, time, iso: value };
+  }
+  function paint(key, title, badge, text, updated) {
+    summary.querySelector('.portal-org-status-dot').className = `portal-org-status-dot is-${key}`;
+    summary.querySelector('.portal-org-status-copy strong').textContent = title;
+    summary.setAttribute('aria-label', `حالة المؤسسة: ${title}`);
+    const head = menu.querySelector(':scope > header');
+    const label = head.querySelector('.portal-org-status-badge');
+    label.className = `portal-org-status-badge is-${key}`;
+    label.textContent = badge;
+    const dot = document.createElement('span');
+    dot.className = `portal-org-status-dot is-${key}`;
+    dot.setAttribute('aria-hidden', 'true');
+    head.querySelector('h2').replaceChildren(dot, title);
+    menu.querySelector('.portal-org-status-current').textContent = text;
+    const when = formatUpdated(updated);
+    menu.querySelectorAll('.portal-org-status-updated time').forEach(time => {
+      if (when) { time.dateTime = when.iso; time.replaceChildren(when.date, document.createElement('br'), when.time); }
+      else { time.removeAttribute('datetime'); time.textContent = '—'; }
+    });
+  }
+  let loaded = false;
+  async function load() {
+    if (!apiBase) { paint('unknown', 'الحالة غير متاحة', 'غير متاح', 'خدمة حالة المؤسسة غير مهيأة.', null); return; }
+    try {
+      const url = new URL('api/organization-status', new URL(apiBase.replace(/\/?$/, '/'), location.href));
+      const response = await fetch(url, { credentials: 'include', cache: 'no-store', signal: AbortSignal.timeout(15000) });
+      if (response.status === 204) { paint('unknown', 'لم تُسجَّل حالة', 'غير محدد', 'لم تُسجَّل حالة المؤسسة بعد. تابع القنوات الرسمية للتحديثات.', null); return; }
+      if (!response.ok) throw new Error(String(response.status));
+      const data = await response.json();
+      const state = current[data.color];
+      if (!state) throw new Error('Unknown status colour.');
+      paint(data.color, state.title, state.color, state.summary, data.lastUpdated);
+      loaded = true;
+    } catch {
+      if (loaded) return; // keep the last good status on a failed refresh
+      paint('unknown', 'الحالة غير متاحة', 'غير متاح', 'تعذر تحميل حالة المؤسسة. تابع القنوات الرسمية للتحديثات.', null);
+    }
+  }
+  void load();
+  setInterval(() => { if (!document.hidden) void load(); }, 120000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) void load(); });
 })();

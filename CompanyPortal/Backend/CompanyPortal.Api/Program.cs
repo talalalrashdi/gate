@@ -23,6 +23,7 @@ builder.Services.AddScoped<PortalMediaStore>();
 builder.Services.AddScoped<PortalMediaFiles>();
 builder.Services.AddDataProtection();
 builder.Services.AddScoped<FixedOrdersStore>();
+builder.Services.AddScoped<OrganizationStatusStore>();
 builder.Services.AddScoped<LegalDecisionsStore>();
 builder.Services.AddScoped<DecisionNoticesStore>();
 builder.Services.AddScoped<DocumentsStore>();

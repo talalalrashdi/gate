@@ -1,5 +1,7 @@
 # CompanyPortal
 
+**حالة المؤسسة** now reads the current status from `Mng.CurrentStatus` (ColorValue 1–4 = green/yellow/orange/red, LastUpdated = آخر تحديث للحالة) through `Mng.CurrentStatus_get` and `/api/organization-status`. See [organization status and migration 036](docs/ORGANIZATION_STATUS.md).
+
 **أخبارنا** now reads videos, photos and albums from SP-backed database records. Manage file paths, previews, covers, ordering and visibility at `/admin/media`. See [media integration, offline paths and migration 028](docs/PORTAL_MEDIA.md).
 
 Admins can now create/edit **التوجيهات السامية** at `/admin/fixed-orders`, with marker insertion, wording presets and a live colour preview. See [directive administration and migration 027](docs/FIXED_ORDERS_ADMINISTRATION.md).

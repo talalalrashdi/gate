@@ -1,4 +1,4 @@
-﻿/* CompanyPortal fresh installation, generated from migrations 001-035.
+﻿/* CompanyPortal fresh installation, generated from migrations 001-036.
    Open this entire UTF-8 file in SSMS and Execute (normal mode, no SQLCMD mode).
    Or: sqlcmd -S SQLSERVER -E -b -f 65001 -i CompanyPortal-Setup.sql
    FRESH INSTALL ONLY. Never run on an existing CompanyPortal database.
@@ -2563,6 +2563,37 @@ GO
 
 GO
 
+
+-- BEGIN 036_CurrentStatus.sql
+-- Organization status (حالة المؤسسة) shown in the portal header.
+-- ColorValue: 1 green, 2 yellow, 3 orange, 4 red. The current status is the most recently updated row.
+USE [CompanyPortal];
+GO
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+GO
+IF SCHEMA_ID(N'Mng') IS NULL EXEC(N'CREATE SCHEMA Mng');
+GO
+IF OBJECT_ID(N'Mng.CurrentStatus',N'U') IS NULL
+ CREATE TABLE Mng.CurrentStatus
+ (
+  Id int IDENTITY(1,1) NOT NULL CONSTRAINT PK_CurrentStatus PRIMARY KEY,
+  ColorValue tinyint NOT NULL CONSTRAINT CK_CurrentStatus_ColorValue CHECK (ColorValue BETWEEN 1 AND 4),
+  LastUpdated datetime NOT NULL CONSTRAINT DF_CurrentStatus_LastUpdated DEFAULT (GETDATE()),
+  [No] int NULL
+ );
+GO
+CREATE OR ALTER PROCEDURE Mng.CurrentStatus_get AS
+BEGIN
+ SET NOCOUNT ON;
+ SELECT TOP (1) Id,ColorValue,LastUpdated,[No]
+ FROM Mng.CurrentStatus
+ ORDER BY LastUpdated DESC,Id DESC;
+END;
+GO
+
+GO
+
 IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'USE [master];
 -- DEVELOPMENT ONLY. Never run this against the real internal security database.
 USE [master];
@@ -2739,7 +2770,7 @@ IF (SELECT TestSources FROM #PortalDeployment)=1
  CREATE TABLE dbo.Public_info_News_Prodc (
   PIP_ID int IDENTITY(1,1) NOT NULL PRIMARY KEY,
   News_ID int NOT NULL REFERENCES dbo.Public_info_News(PIN_ID), Active bit NOT NULL DEFAULT(1));
- INSERT dbo.Public_info_News(PIN_Subject) VALUES(N''خبر تجريبي لاختبار البوابة'');
+ INSERT dbo.Public_info_News(PIN_Subject) VALUES(N''Ø®Ø¨Ø± ØªØ¬Ø±ÙŠØ¨ÙŠ Ù„Ø§Ø®ØªØ¨Ø§Ø± Ø§Ù„Ø¨ÙˆØ§Ø¨Ø©'');
  INSERT dbo.Public_info_News_Prodc(News_ID) VALUES(1);');
 GO
 USE CompanyPortal;

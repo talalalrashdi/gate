@@ -23,6 +23,18 @@ public sealed class PhoneDirectoryController(IConfiguration configuration, UserS
     public Task<IActionResult> Photo(long personalId,CancellationToken token) =>
         ReadAsset("ThumbnailPath","api/Assest/GetEmplyeeThumb",$"PersonalID={personalId}&Res=128",true,token);
 
+    // Signed-in employee's own photo (header avatar). 404 when no PersonalID is mapped; the page then shows a placeholder.
+    [HttpGet("photo/me")]
+    public async Task<IActionResult> MyPhoto(CancellationToken token)
+    {
+        if(string.IsNullOrWhiteSpace(User.Identity?.Name))return Unauthorized();
+        long? personalId;
+        try{personalId=await users.GetPersonalIdAsync(User.Identity.Name,token);}
+        catch(SqlException ex){logger.LogError(ex,"PersonalID lookup failed");Response.Headers.CacheControl="private, no-store";return Problem(statusCode:503,title:"تعذر تحديد رقم الموظف.");}
+        if(personalId is not > 0){Response.Headers.CacheControl="private, no-store";return NotFound();}
+        return await ReadAsset("ThumbnailPath","api/Assest/GetEmplyeeThumb",$"PersonalID={personalId}&Res=256",true,token);
+    }
+
     private async Task<IActionResult> ReadAsset(string setting,string fallback,string query,bool photo,CancellationToken token)
     {
         Response.Headers.CacheControl="private, no-store";

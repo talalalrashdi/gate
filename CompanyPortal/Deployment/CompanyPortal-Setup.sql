@@ -1,4 +1,4 @@
-﻿/* CompanyPortal fresh installation, generated from migrations 001-036.
+﻿/* CompanyPortal fresh installation, generated from migrations 001-038.
    Open this entire UTF-8 file in SSMS and Execute (normal mode, no SQLCMD mode).
    Or: sqlcmd -S SQLSERVER -E -b -f 65001 -i CompanyPortal-Setup.sql
    FRESH INSTALL ONLY. Never run on an existing CompanyPortal database.
@@ -2590,6 +2590,47 @@ BEGIN
  FROM Mng.CurrentStatus
  ORDER BY LastUpdated DESC,Id DESC;
 END;
+GO
+
+GO
+
+
+-- BEGIN 037_UserPersonalId.sql
+-- Employee PersonalID lookup (NTName → PersonalID) for the header profile photo.
+-- This creates a safe default that returns no row (the portal then shows a placeholder).
+-- Point it at the real security source with Integration/ConfigureUserPersonalId.sample.sql.
+-- Rerunning this script never replaces an already configured procedure.
+USE [CompanyPortal];
+GO
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+GO
+IF OBJECT_ID(N'Security.User_getPersonalId',N'P') IS NULL
+ EXEC(N'CREATE PROCEDURE Security.User_getPersonalId
+    @Username nvarchar(512)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT CAST(NULL AS bigint) AS PersonalID WHERE 1 = 0;
+END;');
+GO
+
+GO
+
+
+-- BEGIN 038_UserProfile.sql
+USE [CompanyPortal];
+GO
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+GO
+-- Employee name and title for the header profile panel (read-only integration contract).
+-- Replace the SELECT internally with the real employee source; never return another user.
+-- Keeps an existing mapped procedure unchanged when this migration is reapplied.
+IF OBJECT_ID(N'Portal.UserProfile_Get',N'P') IS NULL
+ EXEC(N'CREATE PROCEDURE Portal.UserProfile_Get @UserId int AS BEGIN SET NOCOUNT ON;
+ SELECT CAST(NULL AS nvarchar(300)) AS DisplayName, CAST(NULL AS nvarchar(300)) AS JobTitle,
+ CAST(NULL AS nvarchar(300)) AS Department WHERE 1=0; END;');
 GO
 
 GO

@@ -71,6 +71,14 @@ public sealed class UserSettingsStore(IConfiguration configuration)
         return true;
     }
 
+    // NTName → PersonalID through the replaceable Security.User_getPersonalId adapter (null when unmapped).
+    public async Task<long?> GetPersonalIdAsync(string ntName, CancellationToken cancellationToken)
+    {
+        await using var connection = await OpenAsync(cancellationToken);
+        return await connection.QuerySingleOrDefaultAsync<long?>(Command("Security.User_getPersonalId",
+            new { Username = ntName }, cancellationToken));
+    }
+
     private async Task<SqlConnection> OpenAsync(CancellationToken cancellationToken)
     {
         var connection = new SqlConnection(configuration.GetConnectionString("CompanyPortal")

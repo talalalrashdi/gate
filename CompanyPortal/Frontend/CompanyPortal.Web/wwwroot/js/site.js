@@ -255,44 +255,37 @@ updateWorkspaceNavigation();
   document.addEventListener('systems:reveal',event=>{if(event.detail?.target?.closest('#portal-alerts-section'))setAlertsVisible(true);});
 })();
 
-// Read each profile source separately, only for the signed-in employee and while the panel is open.
+// Profile panel for the signed-in employee, read while the panel is open:
+// name/title from Portal.UserProfile_Get, arrival/expected-leave (shown only when present) from
+// Portal.UserAttendance_Get, and leave balance from Portal.UserLeaveBalance_Get.
 (() => {
   const base=document.querySelector('meta[name="companyportal-api-base"]')?.content;
   if(!base||!profilePanel)return;
   const id=s=>document.getElementById('portal-profile-'+s), number=new Intl.NumberFormat('ar-OM',{maximumFractionDigits:2});
-  const sources={attendance:{fields:['name','position','arrival','departure']},'leave-balance':{fields:['holiday','deduction']}};
-  let generation=0;
-  const time=value=>typeof value==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(value)?value.slice(11,16):'—';
-  const date=value=>typeof value==='string'&&/^\d{4}-\d{2}-\d{2}/.test(value)?value.slice(0,10):null;
-  const label=key=>key==='attendance'?'attendance':'leave';
-  function clear(key){sources[key].fields.forEach(field=>{id(field).textContent='—';});}
-  function cancel(){++generation;Object.values(sources).forEach(source=>source.controller?.abort());Object.keys(sources).forEach(key=>{clear(key);id(label(key)+'-status').textContent='';id(label(key)+'-retry').hidden=true;});}
-  async function load(key){
+  const rows={arrival:id('arrival').parentElement,departure:id('departure').parentElement};
+  const time=value=>typeof value==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(value)?value.slice(11,16):null;
+  const days=value=>value==null?'—':number.format(value)+' يوم';
+  function showTime(field,value){id(field).textContent=value||'';rows[field].hidden=!value;}
+  const sources={
+    person:row=>{if(!row)return;if(row.displayName)id('name').textContent=row.displayName;const position=[row.jobTitle,row.department].filter(Boolean).join(' · ');if(position)id('position').textContent=position;},
+    attendance:row=>{showTime('arrival',time(row?.arrivalAt));showTime('departure',time(row?.expectedLeaveAt));},
+    'leave-balance':row=>{id('holiday').textContent=days(row?.holidayDays);id('deduction').textContent=days(row?.daysToBeDeleted);}
+  };
+  let generation=0,controller;
+  function cancel(){++generation;controller?.abort();showTime('arrival',null);showTime('departure',null);id('holiday').textContent='—';id('deduction').textContent='—';}
+  async function load(){
     if(profilePanel.hidden||document.hidden)return;
-    const source=sources[key],stamp=generation;source.controller?.abort();const controller=new AbortController();source.controller=controller;
-    const status=id(label(key)+'-status'),retry=id(label(key)+'-retry');clear(key);retry.hidden=true;status.textContent=key==='attendance'?'جارٍ تحميل بيانات الدوام…':'جارٍ تحميل رصيد الإجازات…';
-    try{
-      const response=await fetch(new URL('api/profile/'+key,new URL(base.replace(/\/?$/,'/'),location.href)),{credentials:'include',cache:'no-store',signal:AbortSignal.any([controller.signal,AbortSignal.timeout(15000)])});
-      if(!response.ok)throw new Error(String(response.status));const result=await response.json();
-      if(stamp!==generation||profilePanel.hidden||controller.signal.aborted)return;
-      const row=result.data;
-      if(key==='attendance'){
-        if(!row){status.textContent='لا تتوفر بيانات المستخدم والدوام حاليًا.';return;}
-        id('name').textContent=row.displayName||'—';id('position').textContent=[row.jobTitle,row.department].filter(Boolean).join(' · ')||'—';
-        id('arrival').textContent=time(row.arrivalAt);id('departure').textContent=time(row.expectedLeaveAt);
-        status.textContent=date(row.attendanceDate)?'بيانات الدوام بتاريخ '+date(row.attendanceDate):'لم يُسجّل حضور اليوم.';
-      }else{
-        if(!row){status.textContent='لا يتوفر رصيد إجازات مسجل حاليًا.';return;}
-        id('holiday').textContent=row.holidayDays==null?'—':number.format(row.holidayDays)+' يوم';id('deduction').textContent=row.daysToBeDeleted==null?'—':number.format(row.daysToBeDeleted)+' يوم';
-        status.textContent=[date(row.asOfDate)?'الرصيد بتاريخ '+date(row.asOfDate):'',date(row.deletionDate)?'موعد حذف الأيام: '+date(row.deletionDate):''].filter(Boolean).join(' · ');
-      }
-    }catch(e){
-      if(stamp!==generation||controller.signal.aborted||profilePanel.hidden)return;clear(key);
-      status.textContent=e.message==='401'||e.message==='403'?'حسابك غير مخوّل لعرض هذه البيانات.':key==='attendance'?'تعذر تحميل بيانات المستخدم والدوام. أعد المحاولة.':'تعذر تحميل رصيد الإجازات. أعد المحاولة.';retry.hidden=false;
-    }
+    const stamp=generation;controller?.abort();const current=controller=new AbortController();
+    await Promise.all(Object.entries(sources).map(async([key,apply])=>{
+      try{
+        const response=await fetch(new URL('api/profile/'+key,new URL(base.replace(/\/?$/,'/'),location.href)),{credentials:'include',cache:'no-store',signal:AbortSignal.any([current.signal,AbortSignal.timeout(15000)])});
+        if(!response.ok)return;const row=(await response.json()).data;
+        if(stamp!==generation||profilePanel.hidden||current.signal.aborted)return;
+        apply(row);
+      }catch{}
+    }));
   }
-  new MutationObserver(()=>{cancel();if(!profilePanel.hidden)Object.keys(sources).forEach(load);}).observe(profilePanel,{attributes:true,attributeFilter:['hidden']});
-  Object.keys(sources).forEach(key=>id(label(key)+'-retry').addEventListener('click',()=>load(key)));
-  document.addEventListener('visibilitychange',()=>{cancel();if(!document.hidden&&!profilePanel.hidden)Object.keys(sources).forEach(load);});
-  window.addEventListener('pagehide',cancel);window.addEventListener('pageshow',e=>{if(e.persisted&&!profilePanel.hidden){cancel();Object.keys(sources).forEach(load);}});
+  new MutationObserver(()=>{cancel();if(!profilePanel.hidden)void load();}).observe(profilePanel,{attributes:true,attributeFilter:['hidden']});
+  document.addEventListener('visibilitychange',()=>{cancel();if(!document.hidden&&!profilePanel.hidden)void load();});
+  window.addEventListener('pagehide',cancel);window.addEventListener('pageshow',e=>{if(e.persisted&&!profilePanel.hidden){cancel();void load();}});
 })();

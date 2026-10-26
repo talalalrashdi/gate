@@ -40,3 +40,10 @@ Both apps must be rebuilt/republished. Historical CurrentData exports and Airgap
 Both Release builds, JS syntax, Swagger generation, anonymous denial, current-user scope (including ignoring a supplied UserId), no-store, decimal balances, independent missing-attendance and missing-balance cases passed locally. API tests restore fixture Active flags. Browser confirmed all SP values, clearing on close and fetching on reopening. Frontend baseline and offline assets checks are included in acceptance.
 
 Run `Backend/tools/Test-ProfileSummary.ps1` against the marked local fixture and a temporary API. No external Exchange connection is involved.
+
+## Header panel update (26 October 2026)
+
+- **Name and title** come from `Portal.UserProfile_Get @UserId` (DisplayName, JobTitle, Department) through `GET /api/profile/person`. Migration `038_UserProfile.sql` creates the default contract (no rows) and never replaces a mapped procedure on rerun; map it to the real employee source internally. Local only: `Development/020_MapSampleUserProfile.sql` maps it to `Development.ProfilePeople`.
+- **وقت الحضور / الخروج المتوقع** (from `Portal.UserAttendance_Get`) are shown only when today's record has a value; nothing is shown for an empty value, no record or an error.
+- **رصيد الإجازات / الأيام التي ستُحذف** (from `Portal.UserLeaveBalance_Get`) are shown as before, «—» when missing.
+- The status lines and retry buttons were removed. Clicking inside the panel no longer closes it.

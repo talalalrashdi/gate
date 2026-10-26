@@ -34,6 +34,7 @@ body.portal-dashboard .portal-header.is-profile-open::after { content: ""; posit
 .portal-profile-person p { margin: 0 0 14px; color: #788379; font-size: 11px; }
 .portal-attendance-status { display: inline-flex; align-items: center; gap: 6px; color: #557558; background: #edf3e7; padding: 5px 10px; border-radius: 999px; font-size: 10px; }
 .portal-attendance-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #71976b; }
+.portal-header-profile:focus { outline: none; }
 .portal-attendance-details { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; align-items: center; }
 .portal-attendance-details > div { display: flex; flex-direction: column; gap: 15px; min-height: 110px; justify-content: center; padding: 14px; border-radius: 14px; background: #f1f3ed; }
 .portal-attendance-details > div:nth-child(2) { background: #eeeaf5; }

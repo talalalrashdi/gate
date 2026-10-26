@@ -8,6 +8,8 @@ namespace CompanyPortal.Api.Controllers;
 public sealed class ProfileSummaryController(ProfileSummaryStore store,ILogger<ProfileSummaryController> logger):ControllerBase
 {
     public sealed record DataResponse<T>(T? Data);
+    [HttpGet("person"),ProducesResponseType<DataResponse<ProfileSummaryStore.Person>>(200)]
+    public Task<IActionResult> Person(CancellationToken token)=>Read(id=>store.GetPersonAsync(id,token),"person",token);
     [HttpGet("attendance"),ProducesResponseType<DataResponse<ProfileSummaryStore.Attendance>>(200)]
     public Task<IActionResult> Attendance(CancellationToken token)=>Read(id=>store.GetAttendanceAsync(id,token),"attendance",token);
     [HttpGet("leave-balance"),ProducesResponseType<DataResponse<ProfileSummaryStore.LeaveBalance>>(200)]

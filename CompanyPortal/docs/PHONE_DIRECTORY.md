@@ -57,3 +57,10 @@ BaseUrl هو عنوان تطبيق Dalil، شاملاً `/dalil/` إذا كان 
 - لا يمكن للمتصفح تغيير مصدر Dalil أو إرسال عنوان خارجي بديل؛ العنوان من إعداد الخادم فقط. لا يتم تتبع redirects أو مشاركة cookies.
 
 تم اختبار عقد JSON والصفحات 10/10/3 لعدد23، رابط To وترميز البريد وغياب الزر عند ntUser فارغ، upstream401/JSON غير صالح، رفض الطلب المجهول والصفحة غير الصحيحة، والواجهة مع خدمة JSON مؤقتة محلية. ذلك لا يثبت مصادقة Dalil الفعلية أو دعم قالب compose في OWA. انشر الواجهة وAPI معًا ثم اختبرهما داخل الشبكة.
+
+## صورة الموظف في الهيدر (Profile photo)
+
+- الصورة في أعلى الصفحة تُحمّل من `GET /api/phone-directory/photo/me`: يحدد الـ API رقم الموظف (PersonalID) من NTName عبر `Security.User_getPersonalId`، ثم يجلب `{BaseUrl}/{ThumbnailPath}?PersonalID=...&Res=256` بنفس حماية صور الدليل (هوية Windows للموظف، PNG/JPEG/WebP فقط، حد 2MB، no-store).
+- عند عدم وجود PersonalID أو عدم وجود صورة أو تعطل الخدمة تبقى الصورة الافتراضية `assets/avatar-placeholder.svg` (تظهر من البداية، دون صورة مكسورة).
+- Migration `037_UserPersonalId.sql` ينشئ إجراءً افتراضيًا لا يعيد صفوفًا (لا يستبدل إجراءً مهيأ عند إعادة التشغيل). اربطه بالمصدر الحقيقي بتعديل `Integration/ConfigureUserPersonalId.sample.sql`. محليًا فقط: `Development/019_AddSamplePersonalId.sql` يضيف عمود PersonalID إلى SecurityDB التجريبية ويعيّن 1244 للحساب الحالي.
+- يتطلب `PhoneDirectory:Enabled=true` و`BaseUrl`؛ بدونها تظهر الصورة الافتراضية. اختُبر محليًا بخدمة بديلة: الصورة، عدم وجود صورة، وعدم وجود PersonalID (`.local/profile-photo-browser.cjs`).

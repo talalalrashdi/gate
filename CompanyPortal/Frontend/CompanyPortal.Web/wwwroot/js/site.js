@@ -85,7 +85,6 @@ notificationsTrigger?.addEventListener('click',()=>{
 document.addEventListener('pointerdown',event=>{if(notificationsPanel&&!notificationsPanel.hidden&&!notificationsPanel.contains(event.target)&&!notificationsTrigger.contains(event.target))closeNotifications();});
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&notificationsPanel&&!notificationsPanel.hidden){event.preventDefault();closeNotifications(true);}});
 header.addEventListener('focusout',()=>requestAnimationFrame(()=>{if(notificationsPanel&&!notificationsPanel.hidden&&!header.contains(document.activeElement))closeNotifications();}));
-let selectedResult=-1,visibleResults=[];
 const headerSpace = document.createElement('div');
 headerSpace.className = 'portal-header-scroll-space';
 headerSpace.hidden = true;
@@ -108,85 +107,18 @@ function updateHeader(){
 }
 window.addEventListener('scroll',updateHeader,{passive:true});window.addEventListener('resize',updateHeader);const headerHero=document.querySelector('.portal-personal-zone');if(headerHero)new ResizeObserver(updateHeader).observe(headerHero);updateHeader();
 
-// Illustrative contacts only; masked mobile numbers cannot be mistaken for live contacts.
-const phoneSamples=[
-  {title:'أحمد سالم',category:'الإدارة العامة',address:'مدير الشؤون الإدارية · المبنى الرئيسي، الطابق الأول',office:'1033',mobile:'9XXX 1033',photo:'workspace-person.png'},
-  {title:'خالد البلوشي',category:'تقنية المعلومات',address:'أخصائي دعم فني · المبنى الرئيسي، الطابق الثاني',office:'1044',mobile:'9XXX 1044',photo:'phone-khalid-mussar.png'},
-  {title:'سعيد الحارثي',category:'الموارد البشرية',address:'أخصائي شؤون الموظفين · مبنى الخدمات، الطابق الأول',office:'1055',mobile:'9XXX 1055',photo:'phone-saeed-mussar.png'}
-].map(person=>({...person,contact:true,text:[person.address,person.office,person.mobile].join(' ')}));
-const normalizeSearch=value=>value.normalize('NFKD').replace(/[\u064B-\u065F\u0670\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/[٠-٩۰-۹]/g,digit=>String(digit.charCodeAt(0)-(digit<='٩'?0x660:0x6f0))).toLowerCase().trim();
-const recentSearchKey='clerio-search-recents-v1';
-let recentSearches={all:[],phone:[]},recentSearchTimer;
-try{const saved=JSON.parse(localStorage.getItem(recentSearchKey));for(const mode of ['all','phone'])if(Array.isArray(saved?.[mode]))recentSearches[mode]=saved[mode].filter(value=>typeof value==='string'&&value.trim()&&value.length<=80).slice(0,6);}catch{}
-function rememberSearch(){
-  clearTimeout(recentSearchTimer);
-  const query=searchInput.value.trim().slice(0,80);
-  if(searchMode!=='phone'||!separateSearch||!query||!visibleResults.length||visibleResults[0].recent)return;
-  recentSearches[searchMode]=[query,...recentSearches[searchMode].filter(value=>normalizeSearch(value)!==normalizeSearch(query))].slice(0,6);
-  try{localStorage.setItem(recentSearchKey,JSON.stringify(recentSearches));}catch{}
-}
-function paintMatch(node,title,query){
-  const term=normalizeSearch(query),normalized=normalizeSearch(title),start=term?normalized.indexOf(term):-1;
-  // Character offsets remain exact for unaccented literal matches.
-  const literal=query.trim(),exact=literal?title.indexOf(literal):-1;
-  if(start<0||exact<0){node.textContent=title;return}
-  node.append(document.createTextNode(title.slice(0,exact)));
-  const mark=document.createElement('mark');mark.textContent=title.slice(exact,exact+literal.length);node.append(mark,document.createTextNode(title.slice(exact+literal.length)));
-}
-function setActiveResult(index){
-  selectedResult=index;
-  [...results.children].forEach((option,i)=>option.setAttribute('aria-selected',String(i===index)));
-  if(index>=0){const option=results.children[index];searchInput.setAttribute('aria-activedescendant',option.id);option.scrollIntoView({block:'nearest'})}
-  else searchInput.removeAttribute('aria-activedescendant');
-}
 function renderSearch(showDirectory=false){
-  if(searchMode!=='phone'){window.CompanyPortalAuthorizedSearch?.search();return;}
-  const term=normalizeSearch(searchInput.value);
-  const phoneOnly=separateSearch?searchMode==='phone':searchPanel.querySelector('[name="portal-search-scope"]:checked')?.value==='phone';
-  const entries=phoneSamples;
-  visibleResults=term?entries.filter(entry=>normalizeSearch(entry.title+' '+entry.category+' '+entry.text).includes(term)).sort((a,b)=>Number(normalizeSearch(b.title).includes(term))-Number(normalizeSearch(a.title).includes(term))):entries;
-  searchStatus.textContent=term?`${visibleResults.length.toLocaleString('ar-EG-u-nu-latn')} نتائج مطابقة`:phoneOnly?'جهات الاتصال':'وصول سريع';
-  if(separateSearch&&!term&&!showDirectory&&(phoneOnly||recentSearches[searchMode].length)){
-    visibleResults=recentSearches[searchMode].map(query=>({recent:true,title:query,category:phoneOnly?'دليل الهاتف':'البحث العام'}));
-    searchStatus.textContent='عمليات البحث الأخيرة';
-  }
-  results.replaceChildren();selectedResult=-1;searchInput.removeAttribute('aria-activedescendant');
-  visibleResults.forEach((entry,index)=>{
-    const option=document.createElement('div');option.className='portal-search-option';option.id=`portal-result-${index}`;option.setAttribute('role','option');option.setAttribute('aria-selected','false');
-    if(entry.recent){
-      option.classList.add('portal-search-recent');
-      const clock=document.createElement('span'),copy=document.createElement('span'),title=document.createElement('strong'),description=document.createElement('small');
-      clock.className='portal-search-recent-icon';clock.setAttribute('aria-hidden','true');clock.textContent='↶';title.textContent=entry.title;
-      copy.append(title);
-      if(!phoneOnly){description.textContent=entry.category;copy.append(description);}
-      option.append(clock,copy);
-      option.addEventListener('pointerdown',event=>event.preventDefault());option.addEventListener('click',()=>openResult(index));results.append(option);return;
-    }
-    if(entry.contact){
-      option.classList.add('portal-search-contact');option.tabIndex=-1;
-      const photo=document.createElement('img');photo.src='./assets/'+entry.photo;photo.alt='صورة توضيحية لشخصية '+entry.title;photo.width=44;photo.height=44;
-      const copy=document.createElement('div'),name=document.createElement('strong'),department=document.createElement('small'),address=document.createElement('p'),numbers=document.createElement('dl'),badge=document.createElement('span');
-      paintMatch(name,entry.title,searchInput.value);department.textContent=entry.category;address.textContent=entry.address;badge.className='portal-search-contact-demo';badge.textContent='نموذج تجريبي';
-      [['رقم المكتب',entry.office],['الهاتف النقال',entry.mobile]].forEach(([label,value])=>{const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;dd.dir='ltr';row.append(dt,dd);numbers.append(row);});
-      copy.append(name,department,address,numbers,badge);option.append(photo,copy);results.append(option);return;
-    }
-    const icon=document.createElement('i');icon.className='iconsax';icon.setAttribute('icon-name','document-text-1');icon.setAttribute('aria-hidden','true');
-    const copy=document.createElement('span'),title=document.createElement('strong'),category=document.createElement('small'),arrow=document.createElement('span');
-    paintMatch(title,entry.title,searchInput.value);category.textContent=entry.category;arrow.textContent='←';arrow.setAttribute('aria-hidden','true');copy.append(title,category);option.append(icon,copy,arrow);
-    option.addEventListener('pointerdown',event=>event.preventDefault());option.addEventListener('click',()=>openResult(index));results.append(option);
-  });
-  if(!visibleResults.length){const empty=document.createElement('p');empty.className='portal-search-empty';empty.textContent=phoneOnly&&!term&&!showDirectory?'لا توجد عمليات بحث سابقة بعد.':phoneOnly?(entries.length?'لم نجد نتيجة في دليل الهاتف. جرّب الاسم أو رقم الهاتف.':'لا توجد بيانات لدليل الهاتف متاحة حاليًا.'):'لم نجد نتيجة. جرّب اسم نظام، مستند أو موضوع.';results.append(empty)}
+  if(searchMode==='phone')window.CompanyPortalPhoneDirectory?.search(showDirectory);
+  else window.CompanyPortalAuthorizedSearch?.search();
 }
 function closeSearch(restoreFocus=true){
-  if(separateSearch&&!searchPanel.hidden){rememberSearch();}
-  window.CompanyPortalAuthorizedSearch?.close();visibleResults=[];selectedResult=-1;
+  window.CompanyPortalPhoneDirectory?.close();window.CompanyPortalAuthorizedSearch?.close();
   searchPanel.hidden=true;navigation.hidden=false;header.classList.remove('is-searching');searchTriggers.forEach(trigger=>trigger.setAttribute('aria-expanded','false'));searchInput.setAttribute('aria-expanded','false');searchInput.removeAttribute('aria-activedescendant');
   if(restoreFocus)activeSearchTrigger.focus({preventScroll:true});
 }
 function openSearch(mode='all',trigger=searchTrigger){
-  window.CompanyPortalAuthorizedSearch?.close();
+  window.CompanyPortalPhoneDirectory?.close();window.CompanyPortalAuthorizedSearch?.close();
   if(separateSearch){
-    if(!searchPanel.hidden)rememberSearch();
     searchMode=mode==='phone'?'phone':'all';activeSearchTrigger=trigger;
     const phoneOnly=searchMode==='phone',title=phoneOnly?'البحث في دليل الهاتف':'البحث العام';
     document.getElementById('portal-search-title').textContent=title;
@@ -204,34 +136,24 @@ function openSearch(mode='all',trigger=searchTrigger){
   closeNotifications();
   navigation.hidden=!separateSearch;searchPanel.hidden=false;header.classList.add('is-searching');activeSearchTrigger.setAttribute('aria-expanded','true');searchInput.setAttribute('aria-expanded','true');
   if(searchMode==='phone')renderSearch();else{
-    visibleResults=[];selectedResult=-1;
+
     if(window.CompanyPortalAuthorizedSearch)window.CompanyPortalAuthorizedSearch.open();
     else{results.replaceChildren();searchStatus.textContent='خدمة البحث غير متاحة. أعد تحميل الصفحة.';}
   }
   searchInput.focus({preventScroll:true});
 }
-function openResult(index){
-  const selectedEntry=visibleResults[index];if(!selectedEntry)return;
-  if(selectedEntry.recent){searchInput.value=selectedEntry.title;renderSearch();searchInput.focus({preventScroll:true});rememberSearch();return;}
-  rememberSearch();
-  if(selectedEntry.contact){setActiveResult(index);results.children[index].focus({preventScroll:true});return;}
-
-}
 searchTriggers.forEach(trigger=>trigger.addEventListener('click',()=>openSearch(trigger.dataset.searchMode||'all',trigger)));
 searchPanel.querySelector('.portal-phone-directory')?.addEventListener('click',()=>{searchInput.value='';renderSearch(true);searchInput.focus({preventScroll:true});results.scrollTop=0;});
 
 document.querySelector('.portal-search-close').addEventListener('click',()=>{searchInput.value='';renderSearch();searchInput.focus({preventScroll:true});});
-searchInput.addEventListener('input',()=>{renderSearch();clearTimeout(recentSearchTimer);if(separateSearch)recentSearchTimer=setTimeout(rememberSearch,600);});
+searchInput.addEventListener('input',()=>renderSearch());
 searchPanel.querySelectorAll('[name="portal-search-scope"]').forEach(input=>input.addEventListener('change',()=>{
   searchInput.placeholder=input.value==='phone'?'ابحث بالاسم أو رقم الهاتف':'عن ماذا تبحث اليوم؟';
   renderSearch();
 }));
 searchInput.addEventListener('keydown',event=>{
   if(searchMode!=='phone'){window.CompanyPortalAuthorizedSearch?.key(event);return;}
-  if(event.key==='ArrowDown'||event.key==='ArrowUp'){
-    event.preventDefault();if(!visibleResults.length)return;
-    const direction=event.key==='ArrowDown'?1:-1;setActiveResult(selectedResult<0?(direction===1?0:visibleResults.length-1):(selectedResult+direction+visibleResults.length)%visibleResults.length);
-  }else if(event.key==='Enter'){event.preventDefault();openResult(selectedResult<0?0:selectedResult)}
+  window.CompanyPortalPhoneDirectory?.key(event);
 });
 document.addEventListener('keydown',event=>{
   if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'){event.preventDefault();openSearch()}

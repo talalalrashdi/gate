@@ -17,7 +17,23 @@
  }
  root.addEventListener('toggle',()=>{if(root.open){position();if(!panel.matches(':popover-open'))panel.showPopover();if(!rules.length)void loadRules();}else if(panel.matches(':popover-open'))panel.hidePopover();});window.addEventListener('resize',position,{passive:true});root.querySelector('[data-simulation-rules]').addEventListener('click',()=>void loadRules());lock(true);
  root.addEventListener('click',event=>{
-  const button=event.target.closest('[data-simulate]');if(!button)return;const kind=button.dataset.simulate;if(kind!=='reset'&&!Object.hasOwn(names,kind))return;
+  const button=event.target.closest('[data-simulate]');if(!button)return;const kind=button.dataset.simulate;if(kind!=='reset'&&kind!=='phone'&&!Object.hasOwn(names,kind))return;
+  if(kind==='phone'){
+    const contacts=[
+      {name:'سالم حمد السالمي',employeeTypeName:'موظف',jobDesignate:'رئيس قسم الأنظمة',attendanceStatus:'غير موجود',personalIDAssignedTo:'simulation-phone-2',assignedToFullName:'خالد سعيد البلوشي'},
+      {name:'خالد سعيد البلوشي',employeeTypeName:'موظف',jobDesignate:'أخصائي أنظمة',attendanceStatus:'موجود'},
+      {name:'مريم أحمد الحارثية',employeeTypeName:'متعاقد',jobDesignate:'مهندسة دعم',attendanceStatus:'موجود'},
+      {name:'أحمد ناصر العامري',employeeTypeName:'موظف',jobDesignate:'أخصائي موارد بشرية',attendanceStatus:'غير موجود'},
+      {name:'فاطمة علي الرواحية',employeeTypeName:'متدرب',jobDesignate:'متدربة تقنية معلومات',attendanceStatus:'موجود',noEmail:true},
+      {name:'سعيد محمد العبري',employeeTypeName:'متقاعد',jobDesignate:'مستشار سابق',attendanceStatus:'غير موجود',isRetired:true,noEmail:true}
+    ].map((p,i)=>({...p,personalID:'simulation-phone-'+(i+1),persID:'simulation-phone-'+(i+1),employeeTypeID:'1',isSimulation:true,
+      officePhoneNumber:i===5?null:String(1312+i),employeeSectionName:i===3?'الموارد البشرية':'تقنية المعلومات',
+      simulationEmail:p.noEmail?null:'sample'+(i+1)+'@email.com',
+      moreInfo:{phoneNumbers:i===5?[]:[{number:String(1312+i),phoneTypeName:'محول',phonePlace:'المكتب',phoneStateName:'مسقط',note:'رقم محاكاة فقط'},{number:'24XX '+(1100+i),phoneTypeName:'هاتف',phonePlace:'الاستقبال'}],contactAddress:i===5?{}:{currentAddress:'السيب',permanentAddress:'مسقط'}}}));
+    root.open=false;
+    document.dispatchEvent(new CustomEvent('portal:phone-simulation',{detail:contacts}));
+    return;
+  }
   let decisionType=select.value;
   if(kind==='notice'||kind==='alert'){const channel=kind==='notice'?1:2,rule=rules.find(r=>r.channelId===channel),preferred=channel===1?'تنويه':'إعلان';decisionType=rule?.decisionTypes.includes(preferred)?preferred:rule?.decisionTypes[0]||decisionType;}
   const notices=rules.filter(r=>r.active&&r.decisionTypes.includes(decisionType)).map(r=>({channelId:r.channelId,fromAt:new Date(Date.now()-1000).toISOString(),toAt:new Date(Date.now()+r.durationDays*86400000).toISOString()}));

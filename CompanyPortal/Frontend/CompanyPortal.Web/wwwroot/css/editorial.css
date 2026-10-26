@@ -429,3 +429,12 @@ html:has(:is(#editorial-gallery-dialog,#editorial-video-dialog)[open]),body:has(
 #editorial-events .editorial-video-edge:disabled { visibility: visible; cursor: default; }
 #editorial-events .editorial-video-edge:disabled svg { opacity: .35; }
 #editorial-events .editorial-video-edge svg { width: 50px; height: 50px; stroke-width: 2.8; pointer-events: none; transition: transform .18s; }
+
+/* List items select the right-hand news panel; only its title opens the attachment. */
+#editorial-news-paged-list > li { position: relative; }
+#editorial-news-paged-list .news-story-selector { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; border-radius: 12px; background: transparent; cursor: pointer; }
+#editorial-news-paged-list > li.is-selected { outline: 2px solid #3d7763; outline-offset: 3px; border-radius: 12px; }
+#editorial-news-paged-list > li.is-selected:not(.is-breaking) { background: #edf5ef; }
+#editorial-news-paged-list > li.is-selected.is-breaking { outline-color: #bf9b4b; }
+#editorial-news-paged-list .news-story-selector:focus-visible { outline: 3px solid #285c47; outline-offset: 2px; }
+#editorial-news-paged-list > li.is-breaking .news-story-selector:focus-visible { outline-color: #f5dc9c; }

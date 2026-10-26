@@ -49,7 +49,7 @@
   const status = make('p', 'news-status', 'جارٍ تحميل الأخبار…');
   status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite'); board.before(status);
   const feature = make('div', 'editorial-news-feature');
-  const selected = make('article', 'editorial-news-feature-story'); selected.id = 'editorial-news-selected'; feature.append(selected);
+  const selected = make('article', 'editorial-news-feature-story'); selected.id = 'editorial-news-selected'; selected.setAttribute('aria-live','polite'); selected.setAttribute('aria-atomic','true'); feature.append(selected);
   const stream = make('div', 'editorial-news-stream'), header = make('header'); header.append(make('h4', null, 'آخر الأخبار'));
   const controls = make('div', 'editorial-news-list-controls'), arrows = make('div', 'portal-arrow-controls');
   const previous = make('button', 'portal-arrow-button', '→'), next = make('button', 'portal-arrow-button', '←');
@@ -60,6 +60,8 @@
   let page = 1, total = 0, loading = false;
   const pageSize = 8;
   const showStory = story => {
+    selected.dataset.newsId=String(story.newsId);
+    [...newsList.children].forEach(item=>{const button=item.querySelector('.news-story-selector'),active=button.dataset.newsId===String(story.newsId);item.classList.toggle('is-selected',active);button.setAttribute('aria-pressed',String(active));});
     selected.classList.toggle('is-breaking', story.isImportant); selected.replaceChildren();
     const image = picture(story);
     if (image) { const visual = make('div', 'editorial-news-card-image'); visual.append(image); selected.append(visual); }
@@ -71,20 +73,19 @@
   };
   const renderPage = items => {
     newsList.replaceChildren(); feature.hidden = !items.length;
-    if (items.length) showStory(items[0]);
     items.forEach(story => {
       const item = make('li'), article = make('article', 'editorial-news-list-story'), copy = make('div', 'editorial-news-item-copy');
       item.classList.toggle('is-breaking', story.isImportant);
       const image = picture(story, 'editorial-news-thumbnail'); if (image) article.append(image); else article.classList.add('news-without-picture');
       const label = make('header'); if (story.isImportant) label.append(make('span', 'editorial-news-breaking-badge', 'خبر مهم'));
-      const heading = make('h3'); heading.append(title(story, 'editorial-news-select'));
+      const heading = make('h3'); heading.append(make('span','editorial-news-select',story.subject));
       const footer = make('footer'); footer.append(newsDate(story));
-      // Preview is separate: clicking a title with an attachment always opens the PDF.
-      const preview = make('button', 'news-preview', 'معاينة'); preview.type = 'button';
-      preview.setAttribute('aria-label', 'معاينة ' + story.subject); preview.setAttribute('aria-controls', selected.id);
-      preview.addEventListener('click', () => { showStory(story); if (matchMedia('(max-width:760px)').matches) feature.scrollIntoView({ block:'start', behavior:'instant' }); });
-      footer.append(preview); copy.append(label, heading, footer); article.append(copy); item.append(article); newsList.append(item);
+      const select = make('button', 'news-story-selector'); select.type = 'button'; select.dataset.newsId=String(story.newsId);
+      select.setAttribute('aria-label', 'عرض الخبر: ' + story.subject); select.setAttribute('aria-controls', selected.id); select.setAttribute('aria-pressed','false');
+      select.addEventListener('click', () => { showStory(story); if (matchMedia('(max-width:760px)').matches) feature.scrollIntoView({ block:'start', behavior:'instant' }); });
+      copy.append(label, heading, footer); article.append(copy); item.append(article,select); newsList.append(item);
     });
+    if(items.length)showStory(items[0]);else{selected.replaceChildren();delete selected.dataset.newsId;}
   };
   const headlinePanel = headlines.closest('.theme-official-news');
   const headlineControls = [...headlinePanel.querySelectorAll('.theme-official-news-controls button')];

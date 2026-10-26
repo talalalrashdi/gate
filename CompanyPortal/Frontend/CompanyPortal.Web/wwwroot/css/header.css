@@ -175,7 +175,18 @@ body.portal-dashboard .portal-attendance-details > div:nth-child(2) { background
 .portal-phone-directory:hover { background: #e4eee8; }
 .portal-header-search[data-search-mode="phone"] .portal-search-hint { display: flex; align-items: center; }
 .portal-header-search[data-search-mode="phone"] .portal-search-dismiss-hint { display: none; }
-.portal-header-search[data-search-mode="phone"] #portal-search-results { max-height: min(330px,40dvh); }
+.portal-header-search[data-search-mode="phone"] #portal-search-results { max-height: min(520px,calc(100dvh - 340px)); }
+/* Desktop: the dialog never scrolls; only the results list scrolls within the remaining height (e.g. when a contact's details are open). */
+@media(min-width:651px) {
+  .portal-header-search[data-search-mode="phone"] { display: flex; flex-direction: column; overflow: hidden; }
+  .portal-header-search[data-search-mode="phone"] :is(.portal-search-title,.portal-search-field,.portal-search-hint) { flex-shrink: 0; }
+  .portal-header-search[data-search-mode="phone"] .portal-search-dropdown { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+  .portal-header-search[data-search-mode="phone"] .portal-phone-search-layout { flex: 1 1 auto; min-height: 0; grid-template-rows: minmax(0,1fr); }
+  .portal-header-search[data-search-mode="phone"] .portal-phone-search-main { display: flex; flex-direction: column; min-height: 0; }
+  .portal-header-search[data-search-mode="phone"] .portal-phone-search-main > :not(#portal-search-results) { flex-shrink: 0; }
+  .portal-header-search[data-search-mode="phone"] #portal-search-results { flex: 0 1 auto; min-height: 0; max-height: 560px; }
+  .portal-header-search[data-search-mode="phone"] .portal-phone-important { min-height: 0; overflow-y: auto; }
+}
 @media(max-width:650px) { .portal-header-search[data-search-mode="phone"] { width: calc(100vw - 24px); }.portal-header-search[data-search-mode="phone"] .portal-phone-search-layout { grid-template-columns: minmax(0,1fr); gap: 16px; }.portal-phone-important dl { grid-template-columns: repeat(2,minmax(0,1fr)); }.portal-phone-important dl > div { flex-direction: column; align-items: start; } }
 .portal-search-hint { display: flex; justify-content: space-between; gap: 8px; padding: 13px 10px 3px; margin-top: 5px; border-top: 1px solid #e4eae6; font-size: 10px; color: #7b8881; }
 .portal-section,[data-portal-search-target] { scroll-margin-top: 160px; }

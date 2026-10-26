@@ -443,30 +443,74 @@ body { overflow-x: clip; }
 /* Connected safety PDFs retain the existing booklet covers and grid. */
 .portal-safety-sheet iframe{display:block;width:100%;height:65dvh;min-height:320px;border:1px solid #dce8df;border-radius:12px;background:#fff}.portal-safety-sheet #safety-pdf-link{display:inline-block;margin-bottom:16px;color:#285c4b;text-decoration:underline}#safety-status{font-size:13px;color:var(--text-secondary)}
 
-/* Live Dalil contacts retain the existing phone-search sheet. */
-#portal-search-panel .phone-directory-contact{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:14px;align-items:start}
-#portal-search-panel .phone-directory-avatar{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:#e5eee8;color:#225e4b;font-size:22px;font-weight:700}
-#portal-search-panel .phone-directory-email{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#e5eee8;color:#225e4b;font-size:23px;text-decoration:none}
-#portal-search-panel .phone-directory-email:focus-visible,#portal-search-panel .phone-directory-contact summary:focus-visible{outline:2px solid #225e4b;outline-offset:3px}
-#portal-search-panel .phone-directory-contact details{margin-top:8px;font-size:13px}
-#portal-search-panel .phone-directory-contact summary{cursor:pointer;color:#225e4b}
-#portal-search-panel .phone-directory-contact details p{margin:6px 0;white-space:normal}
-#portal-search-panel .phone-directory-pages{display:flex;justify-content:center;gap:12px;padding:10px}
-#portal-search-panel .phone-directory-pages[hidden]{display:none}
-#portal-search-panel .phone-directory-pages button{border:1px solid #d7e0da;background:#fff;color:#225e4b;border-radius:8px;padding:7px 20px;font:inherit;cursor:pointer}
-#portal-search-panel .phone-directory-pages button:disabled{opacity:.4;cursor:default}
-
-#portal-search-panel .phone-directory-badges{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0}
-#portal-search-panel .phone-directory-extension{font-size:20px;font-weight:800;letter-spacing:1px;background:#eaf0f5;color:#123b57;border:1px solid #cbd8e1;padding:4px 12px;border-radius:9px}
-#portal-search-panel .phone-directory-attendance{font-size:13px;font-weight:700;padding:4px 10px;border-radius:20px}
-#portal-search-panel .phone-directory-attendance.is-present{background:#e1f2e7;color:#24623b}
-#portal-search-panel .phone-directory-attendance.is-away{background:#f6e6e8;color:#823749}
-#portal-search-panel .phone-directory-assigned{display:block;font:inherit;font-size:13px;color:#225e4b;background:none;border:0;text-decoration:underline;cursor:pointer;padding:5px 0}
-#portal-search-panel .phone-directory-avatar{position:relative;overflow:hidden}
-#portal-search-panel .phone-directory-avatar img{position:absolute;inset:0;width:44px;height:44px;object-fit:cover;border-radius:50%;opacity:0}
+/* Dalil contacts: compact rows, a fixed extension column and in-card details. */
+#portal-search-panel .phone-directory-contact{grid-template-columns:44px minmax(0,1fr) 100px 112px 84px;grid-template-areas:"avatar info status extension actions";position:relative;gap:12px;align-items:center;min-height:64px;margin-bottom:8px;padding:10px 12px 16px;cursor:pointer}
+#portal-search-panel .phone-directory-contact:hover,#portal-search-panel .phone-directory-contact[aria-selected="true"]{background:#f4f7f5}
+#portal-search-panel .phone-directory-contact.is-open{background:#f4f7f5;box-shadow:inset -3px 0 0 #225e4b}
+#portal-search-panel .phone-directory-contact > .phone-directory-avatar{grid-area:avatar}
+#portal-search-panel .phone-directory-avatar{position:relative;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:#e5eee8;color:#225e4b;font-size:20px;font-weight:700}
+#portal-search-panel .phone-directory-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;opacity:0}
 #portal-search-panel .phone-directory-avatar.has-photo img{opacity:1}
-#portal-search-panel .phone-directory-extra-phone{display:flex;gap:10px;flex-wrap:wrap;border-bottom:1px solid #dde5e0;padding:9px 0}
-#portal-search-panel .phone-directory-extra-phone strong{font-size:16px;color:#123b57}
+#portal-search-panel .phone-directory-info{grid-area:info;min-width:0}
+#portal-search-panel .phone-directory-info strong{font-size:14px;line-height:1.6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#portal-search-panel .phone-directory-info small{font-size:12px;line-height:1.6;color:#5f6e66;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#portal-search-panel .phone-directory-assigned{display:inline-flex;align-items:center;gap:8px;max-width:100%;margin-top:6px;padding:5px 10px 5px 8px;border:1px solid #b9cfc4;border-radius:8px;background:#fff;color:#1f4f40;--text-primary:#1f4f40;font:inherit;font-size:13px;line-height:1.4;cursor:pointer;box-shadow:0 1px 0 #d5e2db}
+#portal-search-panel .phone-directory-assigned span{padding:1px 7px;border-radius:5px;background:#e5eee8;font-size:11px;font-weight:700}
+#portal-search-panel .phone-directory-assigned b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:800;color:#1f4f40}
+#portal-search-panel .phone-directory-assigned svg{flex-shrink:0}
+#portal-search-panel .phone-directory-assigned:hover{border-color:#225e4b;background:#eef5f1;box-shadow:none}
+#portal-search-panel .phone-directory-assigned:hover span{background:#d6e5dd}
+#portal-search-panel .phone-directory-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+#portal-search-panel .phone-directory-status{grid-area:status;display:flex;align-items:center;justify-content:flex-end;gap:6px;font-size:12px;font-weight:700;white-space:nowrap}
+#portal-search-panel .phone-directory-status.is-away::before{content:"";flex-shrink:0;width:8px;height:8px;border-radius:50%;background:#c8323c}
+#portal-search-panel .phone-directory-extension{grid-area:extension;display:flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:4px 10px;border:1px solid #cbd8e1;border-radius:10px;background:#eaf0f5;color:#123b57;font:inherit;font-size:19px;font-weight:800;letter-spacing:.5px;font-variant-numeric:tabular-nums}
+#portal-search-panel .phone-directory-extension svg{flex-shrink:0;color:#4f7590}
+#portal-search-panel .phone-directory-extension span{color:inherit !important}
+#portal-search-panel .phone-directory-extension.is-empty{border-style:dashed;background:transparent;color:#9aa6a0 !important;font-size:15px}
+#portal-search-panel :is(.phone-directory-extension,.phone-directory-number) mark{background:#f2dfc0;color:inherit;border-radius:3px}
+#portal-search-panel .phone-directory-actions{grid-area:actions;display:flex;justify-content:flex-end;gap:8px}
+#portal-search-panel :is(.phone-directory-email,.phone-directory-more){display:grid;place-items:center;width:38px;height:38px;border:0;border-radius:11px;background:#e5eee8;color:#225e4b;--text-primary:#225e4b;font:inherit;font-size:20px;line-height:1;text-decoration:none;cursor:pointer}
+#portal-search-panel .phone-directory-more svg{transition:transform .2s}
+#portal-search-panel .phone-directory-more[aria-expanded="true"] svg{transform:rotate(180deg)}
+#portal-search-panel :is(.phone-directory-email,.phone-directory-more):hover{background:#d6e5dd;--text-primary:#1f4f40}
+#portal-search-panel .phone-directory-more[aria-expanded="true"],#portal-search-panel .phone-directory-more[aria-expanded="true"]:hover{background:#225e4b;--text-primary:#fff}
+@media(prefers-reduced-motion:reduce){#portal-search-panel .phone-directory-more svg{transition:none}}
+#portal-search-panel :is(.phone-directory-email,.phone-directory-more,.phone-directory-assigned,.phone-directory-load-more,.phone-directory-retry):focus-visible{outline:2px solid #225e4b;outline-offset:2px}
+#portal-search-panel .phone-directory-load-more{display:block;margin:10px auto 0;padding:8px 26px;border:1px solid #d7e0da;border-radius:10px;background:#fff;color:#225e4b;--text-primary:#225e4b;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+#portal-search-panel .phone-directory-load-more:hover{background:#f4f7f5;border-color:#b9cfc4}
+#portal-search-panel .phone-directory-load-more:disabled{opacity:.6;cursor:progress}
+#portal-search-panel .phone-directory-detail{grid-column:1 / -1;min-width:0;padding:14px 16px;border:1px solid #dce5e1;border-radius:12px;background:#fff;cursor:default}
+#portal-search-panel .phone-directory-detail section + section{margin-top:14px}
+#portal-search-panel .phone-directory-detail h4{margin:0 0 8px;font-size:12px;font-weight:700;color:#5f6e66}
+#portal-search-panel .phone-directory-detail > p{margin:0;font-size:13px;text-align:center}
+#portal-search-panel .phone-directory-numbers{width:100%;border-collapse:collapse;font-size:13px}
+#portal-search-panel .phone-directory-numbers th{padding:7px 10px;border-bottom:1px solid #d8e2dd;background:#f0f5f3;color:#4d5f57;font-size:12px;font-weight:700;text-align:start}
+#portal-search-panel .phone-directory-numbers th:first-child{border-start-start-radius:8px}
+#portal-search-panel .phone-directory-numbers th:last-child{border-start-end-radius:8px}
+#portal-search-panel .phone-directory-numbers td{padding:6px 10px;border-bottom:1px solid #e9eeeb;color:#263a36;vertical-align:middle}
+#portal-search-panel .phone-directory-numbers tr:last-child td{border-bottom:0}
+#portal-search-panel .phone-directory-numbers td.is-empty{color:#a3aeaa}
+#portal-search-panel .phone-directory-number{color:#123b57;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+#portal-search-panel .phone-directory-number span{color:inherit !important}
+#portal-search-panel .phone-directory-detail dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px 20px;margin:0}
+#portal-search-panel .phone-directory-detail dt{font-size:11px;color:#75847c}
+#portal-search-panel .phone-directory-detail dd{margin:2px 0 0;font-size:13px}
+#portal-search-panel .phone-directory-retry{display:block;margin:10px auto 0;padding:6px 14px;border:1px solid #d7e0da;border-radius:8px;background:#fff;color:#225e4b;--text-primary:#225e4b;font:inherit;cursor:pointer}
+@media(max-width:650px){
+  #portal-search-panel .phone-directory-contact{grid-template-columns:40px minmax(0,1fr) 104px;grid-template-areas:"avatar info extension" "avatar status actions";row-gap:6px}
+  #portal-search-panel .phone-directory-avatar{width:40px;height:40px}
+  #portal-search-panel .phone-directory-status{justify-content:flex-start}
+  #portal-search-panel .phone-directory-extension{min-height:36px;font-size:17px}
+  #portal-search-panel :is(.phone-directory-email,.phone-directory-more){width:34px;height:34px}
+  #portal-search-panel .phone-directory-detail{padding:10px 12px}
+  #portal-search-panel .phone-directory-numbers thead{display:none}
+  #portal-search-panel .phone-directory-numbers :is(tbody,tr,td){display:block}
+  #portal-search-panel .phone-directory-numbers tr{padding:8px 0;border-bottom:1px solid #e9eeeb}
+  #portal-search-panel .phone-directory-numbers tr:last-child{border-bottom:0}
+  #portal-search-panel .phone-directory-numbers td{display:flex;justify-content:space-between;gap:12px;padding:3px 0;border:0}
+  #portal-search-panel .phone-directory-numbers td[data-label]::before{content:attr(data-label);color:#75847c;font-size:11px}
+  #portal-search-panel .phone-directory-numbers td.is-empty{display:none}
+}
 
 #portal-search-panel .phone-directory-simulation{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px;background:#fff0cf;color:#61440b;border-radius:9px;margin-bottom:10px;font-size:13px}
 #portal-search-panel .phone-directory-simulation[hidden]{display:none}

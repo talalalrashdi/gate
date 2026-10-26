@@ -1,4 +1,4 @@
-﻿/* CompanyPortal fresh installation, generated from migrations 001-031.
+﻿/* CompanyPortal fresh installation, generated from migrations 001-035.
    Open this entire UTF-8 file in SSMS and Execute (normal mode, no SQLCMD mode).
    Or: sqlcmd -S SQLSERVER -E -b -f 65001 -i CompanyPortal-Setup.sql
    FRESH INSTALL ONLY. Never run on an existing CompanyPortal database.
@@ -2387,6 +2387,176 @@ BEGIN
  IF @Active IS NULL INSERT Portal.UserMagazineReads(UserId,MagazineID) VALUES(@UserId,@MagazineID);
  ELSE IF @Active=0 UPDATE Portal.UserMagazineReads SET Active=1,ReadAt=GETDATE() WHERE UserId=@UserId AND MagazineID=@MagazineID;
  -- Already read: preserve the original timestamp; no UPDATE.
+ COMMIT;
+END;
+GO
+
+GO
+
+
+-- BEGIN 032_SharedUserReads.sql
+USE CompanyPortal;
+GO
+SET XACT_ABORT ON;
+BEGIN TRANSACTION;
+IF OBJECT_ID(N'Mstr.ContentType',N'U') IS NULL
+ CREATE TABLE Mstr.ContentType(
+ ContentTypeID int IDENTITY(1,1) NOT NULL CONSTRAINT PK_ContentType PRIMARY KEY,
+ ContentTypeName nvarchar(200) NOT NULL,
+ Active bit NOT NULL CONSTRAINT DF_ContentType_Active DEFAULT(1));
+IF EXISTS(SELECT 1 FROM Mstr.ContentType WHERE (ContentTypeID=1 AND ContentTypeName<>N'المجلات') OR (ContentTypeID=2 AND ContentTypeName<>N'القرارات'))
+ THROW 50012,'Reserved content type identity conflicts with an existing type.',1;
+SET IDENTITY_INSERT Mstr.ContentType ON;
+IF NOT EXISTS(SELECT 1 FROM Mstr.ContentType WHERE ContentTypeID=1) INSERT Mstr.ContentType(ContentTypeID,ContentTypeName) VALUES(1,N'المجلات');
+IF NOT EXISTS(SELECT 1 FROM Mstr.ContentType WHERE ContentTypeID=2) INSERT Mstr.ContentType(ContentTypeID,ContentTypeName) VALUES(2,N'القرارات');
+SET IDENTITY_INSERT Mstr.ContentType OFF;
+IF OBJECT_ID(N'Portal.UserReads',N'U') IS NULL
+ CREATE TABLE Portal.UserReads(
+ UserReadID bigint IDENTITY(1,1) NOT NULL CONSTRAINT PK_UserReads PRIMARY KEY,
+ UserId int NOT NULL,ContentTypeID int NOT NULL,ContentId nvarchar(200) NOT NULL,
+ ReadAt datetime NOT NULL CONSTRAINT DF_UserReads_ReadAt DEFAULT(GETDATE()),
+ Active bit NOT NULL CONSTRAINT DF_UserReads_Active DEFAULT(1),
+ CONSTRAINT FK_UserReads_ContentType FOREIGN KEY(ContentTypeID) REFERENCES Mstr.ContentType(ContentTypeID),
+ CONSTRAINT UQ_UserReads_User_Type_Content UNIQUE(UserId,ContentTypeID,ContentId),
+ CONSTRAINT CK_UserReads_Identity CHECK(UserId>0 AND LEN(ContentId)>0));
+-- One-time migration: legacy table is retained as an archive, never written by the application again.
+IF NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE major_id=OBJECT_ID(N'Portal.UserReads') AND name=N'MagazineReadsMigrated')
+BEGIN
+ INSERT Portal.UserReads(UserId,ContentTypeID,ContentId,ReadAt,Active)
+ SELECT r.UserId,1,CONVERT(nvarchar(200),r.MagazineID),r.ReadAt,r.Active FROM Portal.UserMagazineReads r
+ WHERE NOT EXISTS(SELECT 1 FROM Portal.UserReads u WHERE u.UserId=r.UserId AND u.ContentTypeID=1 AND u.ContentId=CONVERT(nvarchar(200),r.MagazineID));
+ EXEC sys.sp_addextendedproperty @name=N'MagazineReadsMigrated',@value=1,@level0type=N'SCHEMA',@level0name=N'Portal',@level1type=N'TABLE',@level1name=N'UserReads';
+END;
+COMMIT;
+GO
+CREATE OR ALTER PROCEDURE Portal.UserReads_Get @UserId int,@ContentTypeID int AS
+BEGIN SET NOCOUNT ON;SELECT ContentId FROM Portal.UserReads WHERE UserId=@UserId AND ContentTypeID=@ContentTypeID AND Active=1;END;
+GO
+CREATE OR ALTER PROCEDURE Portal.UserReads_MarkRead @UserId int,@ContentTypeID int,@ContentId nvarchar(200) AS
+BEGIN
+ SET NOCOUNT ON;SET XACT_ABORT ON;
+ IF @UserId<=0 OR NULLIF(LTRIM(RTRIM(@ContentId)),N'') IS NULL OR NOT EXISTS(SELECT 1 FROM Mstr.ContentType WHERE ContentTypeID=@ContentTypeID AND Active=1) THROW 50012,'Invalid read identity.',1;
+ BEGIN TRANSACTION;
+ DECLARE @Active bit;
+ SELECT @Active=Active FROM Portal.UserReads WITH(UPDLOCK,HOLDLOCK) WHERE UserId=@UserId AND ContentTypeID=@ContentTypeID AND ContentId=@ContentId;
+ IF @Active IS NULL INSERT Portal.UserReads(UserId,ContentTypeID,ContentId) VALUES(@UserId,@ContentTypeID,@ContentId);
+ ELSE IF @Active=0 UPDATE Portal.UserReads SET Active=1,ReadAt=GETDATE() WHERE UserId=@UserId AND ContentTypeID=@ContentTypeID AND ContentId=@ContentId;
+ COMMIT;
+END;
+GO
+-- Compatibility for callers of the old contracts; no duplicate storage.
+CREATE OR ALTER PROCEDURE Portal.UserMagazineReads_Get @UserId int AS
+BEGIN SET NOCOUNT ON;SELECT CONVERT(int,ContentId) MagazineID FROM Portal.UserReads WHERE UserId=@UserId AND ContentTypeID=1 AND Active=1;END;
+GO
+CREATE OR ALTER PROCEDURE Portal.UserMagazineReads_MarkRead @UserId int,@MagazineID int AS
+BEGIN SET NOCOUNT ON;DECLARE @Id nvarchar(200)=CONVERT(nvarchar(200),@MagazineID);EXEC Portal.UserReads_MarkRead @UserId,1,@Id;END;
+GO
+
+GO
+
+
+-- BEGIN 033_DecisionNotices.sql
+USE CompanyPortal;
+GO
+IF OBJECT_ID(N'Portal.DecisionNoticeSettings',N'U') IS NULL
+ CREATE TABLE Portal.DecisionNoticeSettings(
+ SettingID int IDENTITY(1,1) NOT NULL CONSTRAINT PK_DecisionNoticeSettings PRIMARY KEY,
+ ChannelID int NOT NULL CONSTRAINT UQ_DecisionNoticeSettings_Channel UNIQUE,
+ DurationDays int NOT NULL,DecisionTypes nvarchar(4000) NOT NULL,
+ LastChangeAt datetime NOT NULL CONSTRAINT DF_DecisionNoticeSettings_Changed DEFAULT(GETDATE()),
+ Active bit NOT NULL CONSTRAINT DF_DecisionNoticeSettings_Active DEFAULT(1),
+ CONSTRAINT CK_DecisionNoticeSettings_Channel CHECK(ChannelID IN(1,2)),
+ CONSTRAINT CK_DecisionNoticeSettings_Days CHECK(DurationDays BETWEEN 1 AND 365),
+ CONSTRAINT CK_DecisionNoticeSettings_Types CHECK(ISJSON(DecisionTypes)=1));
+IF NOT EXISTS(SELECT 1 FROM Portal.DecisionNoticeSettings WHERE ChannelID=1) INSERT Portal.DecisionNoticeSettings(ChannelID,DurationDays,DecisionTypes) VALUES(1,7,N'["تنويه"]');
+IF NOT EXISTS(SELECT 1 FROM Portal.DecisionNoticeSettings WHERE ChannelID=2) INSERT Portal.DecisionNoticeSettings(ChannelID,DurationDays,DecisionTypes) VALUES(2,7,N'["إعلان"]');
+IF OBJECT_ID(N'Portal.DecisionNoticeWindows',N'U') IS NULL
+ CREATE TABLE Portal.DecisionNoticeWindows(
+ WindowID bigint IDENTITY(1,1) NOT NULL CONSTRAINT PK_DecisionNoticeWindows PRIMARY KEY,
+ ChannelID int NOT NULL,DecisionId bigint NOT NULL,FromAt datetime NULL,ToAt datetime NULL,IsHidden bit NOT NULL DEFAULT(0),
+ LastChangeAt datetime NOT NULL CONSTRAINT DF_DecisionNoticeWindows_Changed DEFAULT(GETDATE()),
+ Active bit NOT NULL CONSTRAINT DF_DecisionNoticeWindows_Active DEFAULT(1),
+ CONSTRAINT UQ_DecisionNoticeWindows_Channel_Decision UNIQUE(ChannelID,DecisionId),
+ CONSTRAINT FK_DecisionNoticeWindows_Channel FOREIGN KEY(ChannelID) REFERENCES Portal.DecisionNoticeSettings(ChannelID),
+ CONSTRAINT CK_DecisionNoticeWindows_Dates CHECK((FromAt IS NULL AND ToAt IS NULL) OR (FromAt IS NOT NULL AND ToAt>FromAt)),
+ CONSTRAINT CK_DecisionNoticeWindows_Id CHECK(DecisionId>0));
+GO
+CREATE OR ALTER PROCEDURE Portal.DecisionNotices_Get AS
+BEGIN SET NOCOUNT ON;SELECT ChannelID,DurationDays,DecisionTypes,LastChangeAt,Active FROM Portal.DecisionNoticeSettings ORDER BY ChannelID;
+ SELECT ChannelID,DecisionId,FromAt,ToAt,IsHidden FROM Portal.DecisionNoticeWindows WHERE Active=1;END;
+GO
+CREATE OR ALTER PROCEDURE Portal.DecisionNotices_Save @ChannelID int,@DurationDays int,@DecisionTypes nvarchar(4000),@Active bit AS
+BEGIN
+ SET NOCOUNT ON;SET XACT_ABORT ON;
+ IF @ChannelID NOT IN(1,2) OR @DurationDays NOT BETWEEN 1 AND 365 OR ISJSON(@DecisionTypes)<>1 OR LEFT(@DecisionTypes,1)<>'[' THROW 50012,'Invalid notice settings.',1;
+ IF (SELECT COUNT(*) FROM OPENJSON(@DecisionTypes))>16 OR EXISTS(SELECT 1 FROM OPENJSON(@DecisionTypes) WHERE type<>1 OR LEN(value) NOT BETWEEN 1 AND 200) THROW 50012,'Invalid decision types.',1;
+ UPDATE Portal.DecisionNoticeSettings SET DurationDays=@DurationDays,DecisionTypes=@DecisionTypes,Active=@Active,LastChangeAt=GETDATE()
+ WHERE ChannelID=@ChannelID AND (DurationDays<>@DurationDays OR EXISTS(SELECT value COLLATE Latin1_General_100_BIN2 FROM OPENJSON(DecisionTypes) EXCEPT SELECT value COLLATE Latin1_General_100_BIN2 FROM OPENJSON(@DecisionTypes)) OR EXISTS(SELECT value COLLATE Latin1_General_100_BIN2 FROM OPENJSON(@DecisionTypes) EXCEPT SELECT value COLLATE Latin1_General_100_BIN2 FROM OPENJSON(DecisionTypes)) OR Active<>@Active);
+END;
+GO
+CREATE OR ALTER PROCEDURE Portal.DecisionNoticeWindows_Save @ChannelID int,@DecisionId bigint,@FromAt datetime=NULL,@ToAt datetime=NULL,@IsHidden bit=0 AS
+BEGIN
+ SET NOCOUNT ON;SET XACT_ABORT ON;
+ IF @ChannelID NOT IN(1,2) OR @DecisionId<=0 OR (@FromAt IS NULL AND @ToAt IS NOT NULL) OR (@FromAt IS NOT NULL AND (@ToAt IS NULL OR @ToAt<=@FromAt)) THROW 50012,'Invalid notice window.',1;
+ BEGIN TRANSACTION;
+ IF NOT EXISTS(SELECT 1 FROM Portal.DecisionNoticeWindows WITH(UPDLOCK,HOLDLOCK) WHERE ChannelID=@ChannelID AND DecisionId=@DecisionId)
+ BEGIN
+  IF @FromAt IS NOT NULL OR @IsHidden=1 INSERT Portal.DecisionNoticeWindows(ChannelID,DecisionId,FromAt,ToAt,IsHidden) VALUES(@ChannelID,@DecisionId,@FromAt,@ToAt,@IsHidden);
+ END
+ ELSE UPDATE Portal.DecisionNoticeWindows SET FromAt=@FromAt,ToAt=@ToAt,IsHidden=@IsHidden,Active=1,LastChangeAt=GETDATE()
+ WHERE ChannelID=@ChannelID AND DecisionId=@DecisionId AND (ISNULL(FromAt,'17530101')<>ISNULL(@FromAt,'17530101') OR ISNULL(ToAt,'17530101')<>ISNULL(@ToAt,'17530101') OR IsHidden<>@IsHidden OR Active<>1);
+ COMMIT;
+END;
+GO
+
+GO
+
+
+-- BEGIN 034_AddCircularNoticeType.sql
+USE CompanyPortal;
+GO
+-- Add the requested type once, preserving the administrator's other settings.
+-- The migration marker prevents a later rerun from undoing an intentional admin removal.
+SET XACT_ABORT ON;
+BEGIN TRANSACTION;
+IF NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=1 AND major_id=OBJECT_ID(N'Portal.DecisionNoticeSettings') AND name=N'CircularNoticeTypeAdded')
+BEGIN
+ UPDATE Portal.DecisionNoticeSettings SET DecisionTypes=JSON_MODIFY(DecisionTypes,'append $',N'تعميم'),LastChangeAt=GETDATE()
+ WHERE ChannelID=1 AND NOT EXISTS(SELECT 1 FROM OPENJSON(DecisionTypes) WHERE value=N'تعميم');
+ EXEC sys.sp_addextendedproperty @name=N'CircularNoticeTypeAdded',@value=1,@level0type=N'SCHEMA',@level0name=N'Portal',@level1type=N'TABLE',@level1name=N'DecisionNoticeSettings';
+END;
+COMMIT;
+GO
+
+GO
+
+
+-- BEGIN 035_UserDecisionDismissals.sql
+USE CompanyPortal;
+GO
+IF OBJECT_ID(N'Portal.UserDecisionDismissals',N'U') IS NULL
+ CREATE TABLE Portal.UserDecisionDismissals(
+  UserDecisionDismissalID bigint IDENTITY(1,1) NOT NULL CONSTRAINT PK_UserDecisionDismissals PRIMARY KEY,
+  UserId int NOT NULL,DecisionId bigint NOT NULL,ChannelId int NOT NULL,
+  DismissedAt datetime NOT NULL CONSTRAINT DF_UserDecisionDismissals_At DEFAULT(GETDATE()),
+  Active bit NOT NULL CONSTRAINT DF_UserDecisionDismissals_Active DEFAULT(1),
+  CONSTRAINT UQ_UserDecisionDismissals_User_Decision_Channel UNIQUE(UserId,DecisionId,ChannelId),
+  CONSTRAINT CK_UserDecisionDismissals_IDs CHECK(UserId>0 AND DecisionId>0 AND ChannelId IN(1,2)));
+GO
+CREATE OR ALTER PROCEDURE Portal.UserDecisionDismissals_Get @UserId int,@ChannelId int AS
+BEGIN SET NOCOUNT ON;SELECT DecisionId FROM Portal.UserDecisionDismissals WHERE UserId=@UserId AND ChannelId=@ChannelId AND Active=1;END;
+GO
+CREATE OR ALTER PROCEDURE Portal.UserDecisionDismissals_Dismiss @UserId int,@DecisionId bigint,@ChannelId int AS
+BEGIN
+ SET NOCOUNT ON;SET XACT_ABORT ON;
+ IF @UserId<=0 OR @DecisionId<=0 OR @ChannelId NOT IN(1,2) THROW 50012,'Invalid dismissal identity.',1;
+ BEGIN TRANSACTION;
+ DECLARE @Active bit;
+ SELECT @Active=Active FROM Portal.UserDecisionDismissals WITH(UPDLOCK,HOLDLOCK)
+ WHERE UserId=@UserId AND DecisionId=@DecisionId AND ChannelId=@ChannelId;
+ IF @Active IS NULL INSERT Portal.UserDecisionDismissals(UserId,DecisionId,ChannelId) VALUES(@UserId,@DecisionId,@ChannelId);
+ ELSE IF @Active=0 UPDATE Portal.UserDecisionDismissals SET Active=1,DismissedAt=GETDATE() WHERE UserId=@UserId AND DecisionId=@DecisionId AND ChannelId=@ChannelId;
+ -- Repeated closes are no-ops, preserving the original dismissal time.
  COMMIT;
 END;
 GO

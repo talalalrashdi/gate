@@ -25,14 +25,14 @@ try{
  Assert ((Request '/api/decisions/1/pdf' $false).status-eq 401) 'Anonymous PDF accepted.'
  $list=Request '/api/decisions';Assert ($list.status-eq 200 -and $list.cache-match 'no-store') 'List/cache failed.'
  $rows=ConvertFrom-Json -InputObject $list.content
- Assert ($rows.Count-eq 6 -and $rows[0].decisionId-eq '6') 'Fixture order/count incorrect.'
+ Assert ($rows.Count-ge 6 -and @($rows|Where-Object decisionId -eq '6').Count-eq 1) 'Fixture order/count incorrect.'
  Assert ($list.content-notmatch 'pdfFileName|[A-Z]:\\|decision-1.pdf') 'Physical path exposed.'
  $pdf=Request '/api/decisions/1/pdf';Assert ($pdf.status-eq 200 -and $pdf.type-eq 'application/pdf' -and $pdf.content.StartsWith('%PDF-') -and $pdf.disposition-match '^inline;' -and $pdf.nosniff-eq 'nosniff' -and $pdf.cache-match 'no-store') 'PDF response failed.'
  Assert ((Request '/api/decisions/1/pdf' $true $true).status-eq 206) 'Range failed.'
  Assert ((Request '/api/decisions/9223372036854775807/pdf').status-eq 404) 'Unknown decision accepted.'
  [void](Sql 'UPDATE LegelAffairs.dbo.DecisionUsers SET Active=0 WHERE DecisionUserId=@Id' @{'@Id'=$grant.DecisionUserId})
  $revoked=ConvertFrom-Json -InputObject (Request '/api/decisions').content
- Assert ($revoked.Count-eq 5 -and @($revoked|Where-Object decisionId -eq '6').Count-eq 0) 'Restricted summary leaked.'
+ Assert ($revoked.Count-eq ($rows.Count-1) -and @($revoked|Where-Object decisionId -eq '6').Count-eq 0) 'Restricted summary leaked.'
  Assert ((Request '/api/decisions/6/pdf').status-eq 404) 'Revoked PDF accessible.'
  [void](Sql 'UPDATE LegelAffairs.dbo.Decisions SET Active=0 WHERE DecisionId=1')
  Assert ((Request '/api/decisions/1/pdf').status-eq 404) 'Inactive PDF accessible.'

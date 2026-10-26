@@ -220,7 +220,7 @@ body { overflow-x: clip; }
 .portal-dashboard .portal-workspace-grid > .portal-workspace-add-group { border: 1px dashed var(--brand-line); background: #f8fafb; box-shadow: none; }
 .portal-dashboard .portal-header .portal-nav a { font-size: 15px; font-weight: 600; }
 .portal-dashboard .portal-media-subnav-links :is(a, button) { font-size: 13px; font-weight: 500; }
-.portal-dashboard .portal-work-card :is(button, input):focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 3px; }
+.portal-dashboard .portal-work-card :is(button, input):focus-visible:not(#work-library-search) { outline: 2px solid var(--brand-primary); outline-offset: 3px; }
 .portal-dashboard .portal-workspace-grid:focus-visible { outline-color: var(--brand-primary); }
 @media (max-width: 760px) {
   .portal-dashboard .portal-workspace-grid > .portal-work-card { flex-basis: calc(100% - 28px); padding: 20px; }

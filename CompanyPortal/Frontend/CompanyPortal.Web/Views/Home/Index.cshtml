@@ -12,6 +12,7 @@
 }
 @section Styles {
   @await Html.PartialAsync("_PortalStyles")
+  @if (Configuration.GetValue<bool>("Diagnostics:SimulationEnabled")) { <link rel="stylesheet" href="@Url.Content("~/css/portal-simulation.css")" asp-append-version="true"> }
 }
 
 @await Html.PartialAsync("_PortalHeader")
@@ -28,6 +29,8 @@
 @await Html.PartialAsync("_PortalFooter")
 @await Html.PartialAsync("_Overlays")
 
+
 @section Scripts {
   @await Html.PartialAsync("_PortalScripts")
+  @if (Configuration.GetValue<bool>("Diagnostics:SimulationEnabled")) { <script src="@Url.Content("~/js/portal-simulation.js")" asp-append-version="true"></script> }
 }

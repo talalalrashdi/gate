@@ -1,0 +1,10 @@
+<details id="portal-simulation" class="portal-simulation">
+  <summary aria-label="وضع المحاكاة" title="وضع المحاكاة"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M9 3h6M10 3v7L5 19a1 1 0 0 0 1 2h12a1 1 0 0 0 1-2l-5-9V3M8 15h8"/></svg></summary>
+  <section aria-label="اختبارات البوابة" popover="manual"><header><strong>محاكاة أحداث البوابة</strong><small>بيانات مؤقتة في هذه الصفحة فقط — دون حفظ في قاعدة البيانات.</small></header>
+    <label>نوع القرار للاختبار<select data-simulation-decision-type aria-label="نوع القرار للمحاكاة"><option value="تعميم">تعميم</option></select></label><button type="button" data-simulation-rules>تحديث إعدادات الأنواع</button>
+    <label>عنوان المادة<input data-simulation-title type="text" maxlength="160" placeholder="اختياري — اكتب عنوانًا للاختبار"></label>
+    <div class="simulation-actions"><button type="button" data-simulate="decision">قرار جديد</button><button type="button" data-simulate="notice">قرار تنويه جديد</button><button type="button" data-simulate="alert">قرار إعلان / تنبيه جديد</button><button type="button" data-simulate="news">خبر جديد</button><button type="button" data-simulate="breaking">خبر عاجل</button></div>
+    <button type="button" data-simulate="reset">مسح المحاكاة</button><p data-simulation-status role="status" aria-live="polite">اختر حدثًا لتجربة ظهوره في البوابة.</p>
+  </section>
+</details>
+<dialog id="portal-simulation-dialog" aria-labelledby="simulation-dialog-title"><header><strong>معاينة محاكاة</strong><button type="button" data-simulation-dialog-close aria-label="إغلاق معاينة المحاكاة">×</button></header><h2 id="simulation-dialog-title"></h2><p></p></dialog>

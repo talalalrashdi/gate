@@ -4,10 +4,9 @@
       <div class="portal-workspace-grid" id="workspace-cards" tabindex="0" role="region" aria-label="بطاقات مساحة العمل، استخدم سهمي اليمين واليسار للتصفح">
         <aside class="portal-work-card portal-work-library" data-work-system="library" data-widget-category="documents" aria-labelledby="work-library-title">
           <header class="portal-work-heading"><div class="portal-work-icon"><i class="iconsax" icon-name="document-text-1" aria-hidden="true"></i></div><div><h2 id="work-library-title">القرارات</h2></div></header>
-          <label class="portal-library-search"><i class="iconsax" icon-name="search-normal-1" aria-hidden="true"></i><input id="work-library-search" type="search" placeholder="ابحث عن قرار…" aria-label="البحث داخل القرارات"></label>
-          <div class="portal-doc-categories" role="group" aria-label="تصنيفات القرارات" id="decision-types" hidden></div>
+          <div class="portal-decision-filters"><div class="portal-library-search" role="search" aria-label="البحث في القرارات"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input id="work-library-search" type="search" placeholder="ابحث بعنوان القرار…" aria-label="البحث داخل القرارات" aria-controls="decisions-list" autocomplete="off" maxlength="200"><button type="button" id="decision-search-clear" aria-label="مسح بحث القرارات" hidden>×</button></div>
+          <label class="portal-decision-type-filter" hidden><select id="decision-types" aria-label="نوع القرار" aria-controls="decisions-list"><option value="">جميع الأنواع</option></select></label></div>
           <p id="decisions-status" role="status">تظهر القرارات هنا حسب صلاحيات المستخدم.</p>
-          <button type="button" id="decisions-refresh">تحديث القرارات</button>
           <div class="portal-doc-list portal-work-docs" id="decisions-list" data-widget-preview data-page-size="5"></div>
         </aside>
         <article class="portal-work-card portal-work-inbox" data-work-system="inbox" data-widget-category="communication" aria-labelledby="work-inbox-title">

@@ -18,6 +18,9 @@ const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 const normalize = text => text.replaceAll('\r\n', '\n').replace(/>\s+</g, '><').trim();
 // User-approved changes after initial parity: tab metadata and theme controls.
 const canonicalHtml = text => normalize(text.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, ''))
+  .replace(/<dialog id="decision-notices-dialog"[\s\S]*?<\/dialog>/g, '')
+  .replace(/<section id="portal-floating-alert"[\s\S]*?<\/section>/g, '<!-- decision-backed notices -->')
+  .replace(/<article class="portal-alert portal-alert-(?:warm|cool|violet|blue|gold|rose)"[\s\S]*?<\/article>/g, '')
   .replace('<span class="portal-media-new" data-mag-new hidden>', '<span class="portal-media-new">')
   .replace(/<section\b[^>]*id="editorial-magazine"[^>]*>[\s\S]*?<\/section>/g, '<!-- database-backed monthly magazine -->')
   .replace(/<section\b[^>]*id="editorial-events"[^>]*>[\s\S]*?<\/section>/g, '<!-- database videos and photo albums -->')
@@ -39,7 +42,7 @@ const canonicalHtml = text => normalize(text.replace(/<script\b[^>]*>[\s\S]*?<\/
   .replace('alt="صورة المستخدم"','alt="أحمد سالم"')
   .replace(/<button\b[^>]*id="portal-notices-visibility"[^>]*>/g, '<button id="portal-notices-visibility">')
   .replace(/(<section id="portal-floating-alert"[^>]*?) hidden/g, '$1')
-  .replace(/<link[^>]*href="[^"]*\/css\/(?:theme-appearance|exchange-schedule)\.css[^"]*"[^>]*>/g, '')
+  .replace(/<link[^>]*href="[^"]*\/css\/(?:theme-appearance|exchange-schedule|decision-notices)\.css[^"]*"[^>]*>/g, '')
   .replace(/ data-schedule-source="exchange"/g, '')
   .replace(/<base[^>]*>/, '')
   .replace(/<meta name="companyportal-api-base"[^>]*>/g, '')
@@ -124,6 +127,7 @@ for (let offset = 0; offset < resources.length; offset += 8) {
     // The default/preference behavior was intentionally changed in this script.
     // Exchange calendar notifications replace retained local/demo notifications.
     if (migratedPath(file.path) === 'js/magazine.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/magazine.js'));
+    if (migratedPath(file.path).endsWith('/floating-notices.js')) expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/floating-notices.js'));
     if (file.path === 'design-b.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/site.js'));
     if (file.path === 'design-b-intro.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/personal-workspace.js'));
     // User-requested full-width, flush-top default-theme header.

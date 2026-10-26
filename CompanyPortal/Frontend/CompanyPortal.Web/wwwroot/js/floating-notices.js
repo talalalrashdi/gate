@@ -1,83 +1,98 @@
 (() => {
-  const notice = document.getElementById('portal-floating-notice');
-  const source = document.getElementById('portal-alerts-section');
-  if (!notice || !source) return;
-  const cards = [...source.querySelectorAll('.portal-alert')];
-  const content = notice.querySelector('.portal-floating-notice-content');
-  const previous = notice.querySelector('.portal-floating-notice-prev');
-  const next = notice.querySelector('.portal-floating-notice-next');
-  const tones = { 'قرار جديد': 'decision', 'تنبيه نظام': 'system', 'فرصة تعلّم': 'learning', 'دعوة لقاء': 'meeting', 'تذكير مهم': 'reminder', 'تحديث الموظفين': 'people' };
-  const paging=document.createElement('div');paging.className='portal-floating-notice-paging';paging.setAttribute('role','group');paging.setAttribute('aria-label','التنقّل بين التنبيهات');
-  previous.before(paging);paging.append(previous,notice.querySelector('.portal-floating-notice-position'),next);
-  const timer=document.createElementNS('http://www.w3.org/2000/svg','svg');timer.classList.add('portal-floating-notice-timer');timer.setAttribute('aria-hidden','true');
-  const track=document.createElementNS('http://www.w3.org/2000/svg','rect'),progress=document.createElementNS('http://www.w3.org/2000/svg','rect');
-  track.classList.add('portal-floating-notice-timer-track');progress.classList.add('portal-floating-notice-timer-progress');progress.setAttribute('pathLength','100');timer.append(track,progress);paging.prepend(timer);
-  new ResizeObserver(()=>{const width=paging.clientWidth,height=paging.clientHeight;timer.setAttribute('viewBox','0 0 '+width+' '+height);[track,progress].forEach(rect=>{rect.setAttribute('x','1');rect.setAttribute('y','1');rect.setAttribute('width',Math.max(0,width-2));rect.setAttribute('height',Math.max(0,height-2));rect.setAttribute('rx',Math.max(0,height/2-1));});}).observe(paging);
-  const duration=8000;
-  let index=0,elapsed=0,lastTime=null,frame=0,hovered=false,focused=false,visible=false;
-  function canRun(){return active().length>1&&!notice.hidden&&visible&&!document.hidden&&!hovered&&!focused&&!document.querySelector('dialog[open]');}
-  function paintTimer(){
-    const remaining=Math.max(0,1-elapsed/duration);progress.style.strokeDashoffset=String((1-remaining)*100);
-    const running=canRun();notice.dataset.autoplay=active().length<2?'idle':running?'running':'paused';
-    const title=running?'التنبيه التالي بعد '+Math.ceil(remaining*duration/1000)+' ثوانٍ':'المؤقت متوقف أثناء القراءة أو التفاعل';if(paging.title!==title)paging.title=title;
+  const notice=document.getElementById('portal-floating-alert'),alert=document.getElementById('portal-floating-notice');
+  const toggle=document.getElementById('portal-notices-visibility'),dialog=document.getElementById('decision-notices-dialog');
+  const base=document.querySelector('meta[name="companyportal-api-base"]')?.content;
+  if(!notice||!alert||!toggle||!dialog||!base)return;
+  let initialized=false,seenEligible=new Set();
+  const visibleChannels=new Set(),dismissedNotices=new Set(),pendingDismissals=new Set();
+  const dismissStatus=notice.querySelector('[data-notice-dismiss-status]');
+  let rows=[],noticeIndex=0,index=0,timer,rotation;
+  const endpoint=id=>new URL('api/decisions/'+id+'/pdf',new URL(base.replace(/\/?$/,'/'),location.href)).href;
+  const content=alert.querySelector('.portal-floating-notice-content');
+  const link=document.createElement('a');link.className=content.className;link.target='_blank';link.rel='noopener noreferrer';
+  link.append(...content.childNodes);content.replaceWith(link);
+  const make=(tag,text)=>{const n=document.createElement(tag);n.textContent=text;return n;};
+  function available(channel){const now=Date.now();return rows.filter(r=>(channel!==1||!dismissedNotices.has(r.decisionId))&&r.notices?.some(n=>n.channelId===channel&&Date.parse(n.fromAt)<=now&&now<Date.parse(n.toAt)));}
+  function fill(target,row){
+    target.href=row.isSimulation?'#':endpoint(row.decisionId);if(row.isSimulation){target.removeAttribute('target');target.dataset.simulation='true';}else{target.target='_blank';delete target.dataset.simulation;}target.dataset.decisionId=row.decisionId;target.replaceChildren();
+    if(!row.hasRead){const badge=make('small','جديد');badge.className='portal-decision-unread';target.append(badge);}
+    target.append(make('strong',row.title));
+    target.append(make('small',row.decisionType+' · '+new Intl.DateTimeFormat('ar-OM',{dateStyle:'medium'}).format(new Date(row.publishedAt))));
   }
-  function tick(now){
-    frame=0;if(!canRun()){lastTime=null;paintTimer();return;}
-    if(lastTime!==null)elapsed+=Math.min(now-lastTime,250);lastTime=now;
-    if(elapsed>=duration){index=(index+1)%active().length;render();return;}
-    paintTimer();frame=requestAnimationFrame(tick);
+  function render(){
+    clearTimeout(timer);clearTimeout(rotation);
+    const notices=available(1),alerts=available(2);
+    const eligible=[...notices.map(row=>({row,channel:1})),...alerts.map(row=>({row,channel:2}))];
+    const fresh=eligible.filter(({row,channel})=>initialized&&!row.hasRead&&!seenEligible.has(channel+':'+row.decisionId));
+    eligible.forEach(({row,channel})=>seenEligible.add(channel+':'+row.decisionId));
+    if(fresh.length){
+      fresh.forEach(n=>visibleChannels.add(n.channel));
+      const freshNotice=fresh.find(n=>n.channel===1),freshAlert=fresh.find(n=>n.channel===2);
+      if(freshNotice)noticeIndex=notices.findIndex(r=>r.decisionId===freshNotice.row.decisionId);
+      if(freshAlert)index=alerts.findIndex(r=>r.decisionId===freshAlert.row.decisionId);
+    }
+    const expanded=visibleChannels.size>0;
+    toggle.setAttribute('aria-expanded',String(expanded));toggle.title=expanded?'إخفاء التنويه والتنبيهات':'إظهار التنويه والتنبيهات';toggle.setAttribute('aria-label',toggle.title);
+    index=Math.max(0,Math.min(index,Math.max(0,alerts.length-1)));noticeIndex=Math.max(0,Math.min(noticeIndex,Math.max(0,notices.length-1)));
+    notice.hidden=document.hidden||!visibleChannels.has(1)||!notices.length;alert.hidden=document.hidden||!visibleChannels.has(2)||!alerts.length;
+    if(notices.length){notice.querySelector('[data-notice-type]').textContent=notices[noticeIndex].decisionType;fill(notice.querySelector('[data-notice-link]'),notices[noticeIndex]);notice.querySelector('[data-notice-position]').textContent=(noticeIndex+1)+' / '+notices.length;notice.querySelector('[data-notice-prev]').disabled=noticeIndex===0;notice.querySelector('[data-notice-next]').disabled=noticeIndex===notices.length-1;notice.querySelector('.portal-notice-paging').hidden=notices.length<2;}
+    if(alerts.length){fill(link,alerts[index]);alert.querySelector('.portal-floating-notice-position').textContent=(index+1)+' / '+alerts.length;
+      alert.querySelector('.portal-floating-notice-prev').disabled=index===0;alert.querySelector('.portal-floating-notice-next').disabled=index===alerts.length-1;}
+    if(dialog.open)renderList();
+    // Boundary timers and visible carousel rotation do not make network requests.
+    const next=rows.flatMap(r=>r.notices??[]).flatMap(n=>[Date.parse(n.fromAt),Date.parse(n.toAt)]).filter(t=>t>Date.now()).sort((a,b)=>a-b)[0];
+    if(next&&!document.hidden)timer=setTimeout(render,Math.min(2147483647,Math.max(20,next-Date.now()+20)));
+    if(!alert.hidden&&alerts.length>1&&!dialog.open&&!alert.matches(':hover,:focus-within'))rotation=setTimeout(()=>{index=(index+1)%alerts.length;render();},8000);
   }
-  function syncTimer(){cancelAnimationFrame(frame);frame=0;lastTime=null;paintTimer();if(canRun())frame=requestAnimationFrame(tick);}
-  function resetTimer(){elapsed=0;timer.toggleAttribute('hidden',active().length<2);syncTimer();}
-  notice.addEventListener('mouseenter',()=>{hovered=true;syncTimer();});notice.addEventListener('mouseleave',()=>{hovered=false;syncTimer();});
-  notice.addEventListener('focusin',()=>{focused=true;syncTimer();});notice.addEventListener('focusout',()=>{setTimeout(()=>{focused=notice.contains(document.activeElement);syncTimer();},0);});
-  document.addEventListener('visibilitychange',syncTimer);
-  new IntersectionObserver(([entry])=>{visible=entry.isIntersecting;syncTimer();}).observe(notice);
-  new MutationObserver(syncTimer).observe(document.body,{subtree:true,attributes:true,attributeFilter:['open']});
-  notice.closest('[popover]')?.addEventListener('toggle',syncTimer);
-  window.addEventListener('pagehide',()=>{cancelAnimationFrame(frame);frame=0;lastTime=null;});window.addEventListener('pageshow',syncTimer);
-  const active = () => cards.filter(card => !card.hidden);
-  function render() {
-    const remaining = active();
-    index = Math.max(0,Math.min(index, Math.max(0, remaining.length - 1)));
-    notice.hidden = !remaining.length || document.getElementById('portal-notices-visibility')?.getAttribute('aria-expanded') === 'false';
-    if (!remaining.length) { resetTimer(); return; }
-    const card = remaining[index];
-    const title = card.querySelector('h3').textContent;
-    const type = card.querySelector('.portal-alert-badge')?.textContent.trim() || '';
-    notice.dataset.tone = tones[type] || 'system';
-    content.querySelector('span').textContent = type;
-    content.querySelector('strong').textContent = title;
-    content.querySelector('small').textContent = card.querySelector('p').textContent;
-    content.setAttribute('aria-label', `عرض تفاصيل ${title}`);
-    notice.querySelector('.portal-floating-notice-position').textContent = `${index + 1} / ${remaining.length}`;
-    previous.disabled = index === 0;
-    next.disabled = index >= remaining.length - 1;
-    resetTimer();
+  function renderList(){
+    const list=dialog.querySelector('[data-notices-list]');list.replaceChildren();
+    for(const channel of [1,2]){const items=available(channel);if(!items.length)continue;list.append(make('h3',channel===1?'تنويه':'تنبيه'));
+      for(const row of items){const item=document.createElement('a');item.target='_blank';item.rel='noopener noreferrer';fill(item,row);list.append(item);}}
+    dialog.querySelector('[data-notices-status]').textContent=list.children.length?'تبقى المواد ظاهرة حتى نهاية مدة العرض.':'لا توجد تنويهات أو تنبيهات ضمن فترة العرض.';
   }
-  previous.addEventListener('click', () => { index--; render(); });
-  next.addEventListener('click', () => { index++; render(); });
-  content.addEventListener('click', () => active()[index]?.querySelector('.portal-alert-open')?.click());
-  notice.querySelector('.portal-floating-notice-all').addEventListener('click', () => source.dispatchEvent(new Event('notices:show-all')));
-  notice.querySelector('.portal-floating-notice-close').addEventListener('click', () => {
-    const card = active()[index];
-    if (card) card.hidden = true;
-    render();
-    (notice.hidden ? document.getElementById('portal-calendar-toggle') : notice.querySelector('.portal-floating-notice-close')).focus({ preventScroll: true });
-  });
-  const observer = new MutationObserver(render);
-  cards.forEach(card => observer.observe(card, { attributes: true, attributeFilter: ['hidden'] }));
-  const visibilityToggle = document.getElementById('portal-notices-visibility');
-  visibilityToggle?.addEventListener('click', () => {
-    const visible = visibilityToggle.getAttribute('aria-expanded') !== 'true';
-    visibilityToggle.setAttribute('aria-expanded', String(visible));
-    const label = visible ? 'إخفاء التنويه والتنبيهات التي تهمك' : 'إظهار التنويه والتنبيهات التي تهمك';
-    visibilityToggle.setAttribute('aria-label', label);
-    visibilityToggle.title = label;
-    // The upper cards only supply content to the floating notices.
-    source.hidden = true;
-    document.getElementById('portal-floating-alert')?.toggleAttribute('hidden', !visible);
+  if(document.getElementById('portal-simulation')){
+    document.addEventListener('portal:simulation-reveal',event=>{
+      // The decision's matched admin channels are the only channels this event can open.
+      for(const channel of event.detail.channels){
+        const items=available(channel),position=items.findIndex(r=>r.decisionId===event.detail.decisionId);
+        if(position<0)continue;visibleChannels.add(channel);if(channel===1)noticeIndex=position;else if(channel===2)index=position;
+      }
+      render();
+    });
+    document.addEventListener('portal:simulation-reset',()=>{visibleChannels.clear();for(const id of dismissedNotices)if(id.startsWith('simulation-'))dismissedNotices.delete(id);noticeIndex=0;index=0;render();});
+  }
+  document.addEventListener('portal:decisions',event=>{rows=event.detail.rows;render();if(event.detail.loaded&&event.detail.origin!=='simulation')initialized=true;});
+  document.addEventListener('portal:decision-read',event=>{rows.filter(r=>r.decisionId===event.detail).forEach(r=>r.hasRead=true);render();});
+  document.addEventListener('portal:decision-read-error',()=>{dialog.querySelector('[data-notices-status]').textContent='تعذر حفظ حالة القراءة. يمكنك إعادة فتح المادة بعد تحديث الصفحة.';});
+  toggle.addEventListener('click',()=>{
+    if(visibleChannels.size)visibleChannels.clear();else{visibleChannels.add(1);visibleChannels.add(2);}
     render();
   });
-  render();
+  notice.querySelector('[data-notice-prev]').addEventListener('click',()=>{noticeIndex--;render();});
+  notice.querySelector('[data-notice-next]').addEventListener('click',()=>{noticeIndex++;render();});
+  alert.querySelector('.portal-floating-notice-prev').addEventListener('click',()=>{index--;render();});
+  alert.querySelector('.portal-floating-notice-next').addEventListener('click',()=>{index++;render();});
+  alert.querySelector('.portal-floating-notice-close').addEventListener('click',()=>{visibleChannels.delete(2);render();toggle.focus({preventScroll:true});});
+  async function dismissNotice(){
+    const row=available(1)[noticeIndex];if(!row||pendingDismissals.has(row.decisionId))return;
+    const id=row.decisionId;dismissStatus.hidden=true;dismissedNotices.add(id);
+    if(!available(1).length)visibleChannels.delete(1);render();
+    if(notice.hidden)toggle.focus({preventScroll:true});
+    // Simulated dismissals are local only; real dismissals belong to the current DB user.
+    if(row.isSimulation)return;
+    pendingDismissals.add(id);
+    try{
+      const url=new URL('api/decisions/'+id+'/dismiss-notice',new URL(base.replace(/\/?$/,'/'),location.href));
+      const response=await fetch(url,{method:'POST',credentials:'include',cache:'no-store',headers:{'X-CompanyPortal-Request':'decision-dismiss'},signal:AbortSignal.timeout(15000)});
+      if(!response.ok)throw new Error();
+    }catch{
+      dismissedNotices.delete(id);visibleChannels.add(1);noticeIndex=Math.max(0,available(1).findIndex(r=>r.decisionId===id));render();
+      dismissStatus.textContent='تعذر حفظ الإخفاء. أعد الضغط على × للمحاولة مجددًا.';dismissStatus.hidden=false;
+    }finally{pendingDismissals.delete(id);}
+  }
+  function open(){renderList();dialog.showModal();render();}
+  alert.querySelector('.portal-floating-notice-all').addEventListener('click',open);notice.querySelector('[data-notice-close]').addEventListener('click',()=>void dismissNotice());
+  dialog.querySelector('[data-notices-close]').addEventListener('click',()=>dialog.close());dialog.addEventListener('close',render);
+  alert.addEventListener('mouseenter',()=>clearTimeout(rotation));alert.addEventListener('mouseleave',render);alert.addEventListener('focusin',()=>clearTimeout(rotation));alert.addEventListener('focusout',()=>setTimeout(render,0));
+  document.addEventListener('visibilitychange',render);window.addEventListener('pagehide',()=>{clearTimeout(timer);clearTimeout(rotation);});render();
 })();

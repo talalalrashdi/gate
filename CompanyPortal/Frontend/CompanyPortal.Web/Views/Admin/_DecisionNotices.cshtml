@@ -1,0 +1,27 @@
+@foreach(var channel in new[]{1,2}) {
+  var key=channel==1?"notices":"alerts";
+  var label=channel==1?"التنويهات":"التنبيهات";
+  <section data-admin-panel="@key" data-notice-admin="@channel" hidden>
+    <div class="admin-panel"><header class="admin-panel-header"><div><h2>إعدادات @label</h2><p>تعرض القرارات المصرح بها للموظف ضمن المدة المحددة، وتبقى ظاهرة بعد القراءة حتى نهايتها.</p></div><button type="button" data-notice-reload>تحديث</button></header>
+      <p data-notice-message role="status" aria-live="polite">جارٍ تحميل الإعدادات…</p>
+      <form data-notice-settings class="notice-admin-form">
+        <fieldset disabled><label><input type="checkbox" name="active"> إظهار @label</label>
+          <fieldset><legend>أنواع القرارات</legend><div data-notice-types class="notice-type-options"></div></fieldset>
+          <label>مدة العرض من تاريخ النشر بالأيام<input name="days" type="number" min="1" max="365" required></label>
+          <div class="notice-presets" aria-label="مدد سريعة">@foreach(var days in new[]{4,7,14,30}){<button type="button" data-notice-days="@days">@days أيام</button>}</div>
+          <button class="admin-primary" type="submit">حفظ الإعدادات</button>
+        </fieldset>
+      </form>
+    </div>
+    <div class="admin-panel"><header class="admin-panel-header"><div><h2>فترة قرار محدد</h2><p>اختياري: تجاوز المدة العامة أو إخفاء القرار من هذا القسم فقط. جميع الأوقات بتوقيت عُمان.</p></div></header>
+      <form data-notice-window class="notice-admin-form"><fieldset disabled>
+        <label>القرار<select name="decision" required><option value="">اختر قرارًا</option></select></label>
+        <p data-notice-preview></p>
+        <label>من<input type="datetime-local" name="from" step="1"></label><label>إلى<input type="datetime-local" name="to" step="1"></label>
+        <label><input type="checkbox" name="hidden"> إخفاؤه من هذا القسم</label>
+        <div class="notice-presets">@foreach(var days in new[]{4,7,14,30}){<button type="button" data-window-days="@days">@days أيام</button>}</div>
+        <button type="submit" class="admin-primary">حفظ فترة القرار</button><button type="button" data-notice-reset>استعادة المدة العامة</button>
+      </fieldset></form>
+    </div>
+  </section>
+}

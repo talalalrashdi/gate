@@ -24,6 +24,7 @@ builder.Services.AddScoped<PortalMediaFiles>();
 builder.Services.AddDataProtection();
 builder.Services.AddScoped<FixedOrdersStore>();
 builder.Services.AddScoped<LegalDecisionsStore>();
+builder.Services.AddScoped<DecisionNoticesStore>();
 builder.Services.AddScoped<DocumentsStore>();
 builder.Services.AddScoped<DocumentTabsStore>();
 builder.Services.AddScoped<DocumentFiles>();

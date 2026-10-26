@@ -12,13 +12,13 @@ public sealed class MagazinesStore(IConfiguration configuration)
  public async Task<IReadOnlyList<CatalogRow>?> GetCatalogAsync(string name,CancellationToken token)
  {
   await using var c=Connection();var user=await UserId(c,name,token);if(user is null)return null;
-  var rows=await Rows(c,null,token);var read=(await c.QueryAsync<int>(Command("Portal.UserMagazineReads_Get",new{UserId=user.Value},token))).ToHashSet();
-  return rows.Select(row=>new CatalogRow(row,read.Contains(row.MagazineID))).ToArray();
+  var rows=await Rows(c,null,token);var read=(await c.QueryAsync<string>(Command("Portal.UserReads_Get",new{UserId=user.Value,ContentTypeID=1},token))).ToHashSet();
+  return rows.Select(row=>new CatalogRow(row,read.Contains(row.MagazineID.ToString(System.Globalization.CultureInfo.InvariantCulture)))).ToArray();
  }
  public async Task<bool> MarkReadAsync(string name,int id,CancellationToken token)
  {
   await using var c=Connection();var user=await UserId(c,name,token);if(user is null)return false;
-  await c.ExecuteAsync(Command("Portal.UserMagazineReads_MarkRead",new{UserId=user.Value,MagazineID=id},token));return true;
+  await c.ExecuteAsync(Command("Portal.UserReads_MarkRead",new{UserId=user.Value,ContentTypeID=1,ContentId=id.ToString(System.Globalization.CultureInfo.InvariantCulture)},token));return true;
  }
  public async Task<IReadOnlyList<Row>?> GetAsync(string name,int? id,CancellationToken token)
  {

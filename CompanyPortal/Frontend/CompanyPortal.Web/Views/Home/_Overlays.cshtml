@@ -5,7 +5,7 @@
   </dialog>
   <aside class="portal-section-float portal-floating-calendar" id="portal-floating-calendar" aria-label="تقويم الأعمال" popover="manual">
     <section id="portal-floating-alert" class="portal-floating-alert" aria-label="تنبيه ثابت" hidden>
-      <strong>تنوية</strong><p>تنبيه تجريبي لمتابعة التحديثات والتعليمات المهمة.</p>
+      <button type="button" data-notice-close aria-label="إغلاق التنويه">×</button><strong data-notice-type>تنويه</strong><a data-notice-link target="_blank" rel="noopener noreferrer"></a><small data-notice-dismiss-status role="status" hidden></small><div class="portal-notice-paging"><button type="button" data-notice-prev aria-label="التنويه السابق">→</button><small data-notice-position></small><button type="button" data-notice-next aria-label="التنويه التالي">←</button></div>
     </section>
     <section class="portal-floating-notice" id="portal-floating-notice" aria-label="تنبيهات تهمك" hidden>
       <button type="button" class="portal-floating-notice-close" aria-label="إغلاق التنبيه">×</button>
@@ -62,3 +62,5 @@
     <small>محتوى توضيحي لتجربة الإعلانات.</small>
   </dialog>
 
+
+<dialog id="decision-notices-dialog" class="portal-alert-sheet" aria-labelledby="decision-notices-title"><header class="portal-alert-sheet-top"><h2 id="decision-notices-title">التنويه والتنبيهات</h2><button type="button" data-notices-close aria-label="إغلاق" autofocus>×</button></header><p data-notices-status role="status"></p><div data-notices-list class="decision-notices-list"></div></dialog>

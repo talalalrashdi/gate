@@ -58,6 +58,8 @@
   arrows.append(previous, next); controls.append(pageStatus, arrows); header.append(controls);
   const newsList = make('ol', 'editorial-news-list'); newsList.id = 'editorial-news-paged-list'; stream.append(header, newsList); board.replaceChildren(feature, stream);
   let page = 1, total = 0, loading = false;
+  let firstPageItems=[],currentPageItems=[],simulatedItems=[],carouselRefresh,realStatus='جارٍ تحميل الأخبار…';
+  const simulationEnabled=!!document.getElementById('portal-simulation');
   const pageSize = 8;
   const showStory = story => {
     selected.dataset.newsId=String(story.newsId);
@@ -111,8 +113,8 @@
       if (!response.ok) throw new Error('News unavailable');
       const result = await response.json();
       if (!Array.isArray(result.items) || !Number.isInteger(result.totalCount) || result.totalCount < 0) throw new Error('Invalid news response');
-      page = targetPage; total = result.totalCount; renderPage(result.items);
-      if (page === 1 && !headlines.dataset.loaded) { renderHeadlines(result.items); headlines.dataset.loaded = 'true'; }
+      page = targetPage; total = result.totalCount;currentPageItems=result.items;if(page===1)firstPageItems=result.items;renderPage(page===1?[...simulatedItems,...result.items]:result.items);
+      if (page === 1 && !headlines.dataset.loaded) { renderHeadlines([...simulatedItems,...result.items].slice(0,pageSize)); headlines.dataset.loaded = 'true'; }
       status.textContent = total ? '' : 'لا توجد أخبار منشورة حاليًا.';
       pageStatus.textContent = total ? `${page} / ${Math.ceil(total / pageSize)}` : '0 / 0';
     } catch {
@@ -120,12 +122,19 @@
       const retry = make('button', 'news-preview', 'إعادة المحاولة'); retry.type = 'button'; retry.onclick = () => load(targetPage); status.append(retry);
       if (!headlines.dataset.loaded) headlines.replaceChildren(make('li', 'news-empty', 'الأخبار غير متاحة حاليًا.'));
     } finally {
-      loading = false; board.setAttribute('aria-busy', 'false'); previous.disabled = page <= 1; next.disabled = page * pageSize >= total;
+      realStatus=status.textContent;loading = false; board.setAttribute('aria-busy', 'false'); previous.disabled = page <= 1; next.disabled = page * pageSize >= total;
     }
   }
   previous.onclick = () => load(page - 1); next.onclick = () => load(page + 1);
   load(1);
+  if(simulationEnabled)document.addEventListener('portal:simulate',event=>{
+    const kind=event.detail?.kind;if(!['news','breaking','reset'].includes(kind))return;
+    if(kind==='reset')simulatedItems=[];else{simulatedItems.unshift({newsId:'simulation-'+event.detail.id,subject:event.detail.title,publishedAt:new Date().toISOString(),isImportant:kind==='breaking',hasPdf:false,hasPicture:false,isSimulation:true});simulatedItems=simulatedItems.slice(0,20);}
+    page=1;currentPageItems=firstPageItems;renderPage([...simulatedItems,...currentPageItems]);renderHeadlines([...simulatedItems,...firstPageItems].slice(0,pageSize));
+    previous.disabled=true;next.disabled=pageSize>=total;status.textContent=simulatedItems.length?'محاكاة محلية — الأخبار الحقيقية محفوظة دون تعديل.':realStatus;pageStatus.textContent='1 / '+Math.max(1,Math.ceil(total/pageSize));
+  });
   function startHeadlineCarousel() {
+    if(carouselRefresh){carouselRefresh();return;}
     const list = headlines;
     const panel = list.closest('.theme-official-news');
     const controls = [...panel.querySelectorAll('.theme-official-news-controls button')];
@@ -159,6 +168,7 @@
       }
       syncWindow();
       setTimeout(() => {
+        if(first.parentElement!==list){setRotating(false);syncWindow();schedule();return;}
         if (direction > 0) {
           first.classList.add('is-resetting');
           list.append(first);
@@ -189,5 +199,6 @@
     motion.addEventListener('change', schedule);
     document.addEventListener('visibilitychange', schedule);
     document.addEventListener('companyportal:theme-change', schedule);
+    carouselRefresh=()=>{clearTimeout(timer);setRotating(false);syncWindow();schedule();};
   }
 })();

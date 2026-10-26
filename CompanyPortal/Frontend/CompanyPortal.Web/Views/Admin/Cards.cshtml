@@ -2,6 +2,7 @@
     Layout = "_AdminLayout";
 }
 @section Styles {
+  <link rel="stylesheet" href="@Url.Content("~/css/decision-notices.css")" asp-append-version="true">
   <link rel="stylesheet" href="@Url.Content("~/css/admin-media.css")" asp-append-version="true">
   <link rel="stylesheet" href="@Url.Content("~/css/admin-fixed-orders.css")" asp-append-version="true">
   <link rel="stylesheet" href="@Url.Content("~/css/admin-documents.css")" asp-append-version="true">
@@ -32,7 +33,9 @@
 @await Html.PartialAsync("_SafetyLibrary")
 @await Html.PartialAsync("_FixedOrders")
 @await Html.PartialAsync("_Media")
+@await Html.PartialAsync("_DecisionNotices")
 @section Scripts {
+  <script src="@Url.Content("~/js/admin-decision-notices.js")" asp-append-version="true"></script>
   <script src="@Url.Content("~/js/admin-media.js")" asp-append-version="true"></script>
   <script src="@Url.Content("~/js/fixed-order-text.js")" asp-append-version="true"></script>
   <script src="@Url.Content("~/js/admin-fixed-orders.js")" asp-append-version="true"></script>

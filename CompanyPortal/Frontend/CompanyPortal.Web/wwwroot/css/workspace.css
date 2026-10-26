@@ -302,6 +302,23 @@ body .portal-group-error { color: #a33a29 !important; font-size: 12px; }
 /* Live permission-filtered decisions. */
 .portal-decision-link .portal-doc-copy { overflow-wrap: anywhere; }
 .portal-decision-link:focus-visible { outline: 2px solid #216e4b; outline-offset: 2px; }
-#decisions-refresh { align-self: flex-start; border: 1px solid #d5e3dc; border-radius: 8px; background: #f3f7f4; color: #216e4b; padding: 5px 10px; font: inherit; cursor: pointer; }
 #decisions-status { color: #526170; font-size: 12px; }
 #decision-types[hidden],#decisions-status[hidden] { display: none; }
+
+/* Decision search and read state are independent of the selected theme. */
+.portal-work-library .portal-library-search { min-height:42px; box-sizing:border-box; flex:0 0 auto; padding:8px 12px; gap:9px; border:1px solid #d8e2dc; background:#f8faf8; color:#456356; border-radius:11px; }
+.portal-work-library .portal-library-search:focus-within { border-color:#2c7254; outline:3px solid #2c725418; background:#fff; }
+.portal-work-library .portal-library-search svg { flex:0 0 18px; }
+.portal-work-library .portal-library-search input { flex:1 1 auto; width:0; min-height:24px; font-size:12px; color:#172c22; }
+.portal-work-library .portal-library-search input::-webkit-search-cancel-button { -webkit-appearance:none; }
+.portal-work-library .portal-library-search button { flex:0 0 26px; width:26px; height:26px; padding:0; border:0; border-radius:6px; background:#e8efea; color:#355544; font-size:21px; line-height:1; cursor:pointer; }
+.portal-work-library .portal-library-search button[hidden] { display:none; }
+#decisions-list .portal-decision-link[data-state="unread"] .portal-doc-copy>b { --text-primary:#7d243c; color:#7d243c; font-weight:700; }
+#decisions-list .portal-decision-link[data-state="read"] .portal-doc-copy>b { --text-primary:#000; color:#000; font-weight:500; }
+
+.portal-work-library .portal-decision-type-filter { display:flex;align-items:center;margin:0;flex:0 0 40%;min-width:0;color:#435e50;font-size:14px; }
+.portal-work-library .portal-decision-type-filter[hidden] { display:none; }
+.portal-work-library #decision-types { flex:1;min-width:0;padding:9px 12px;border:1px solid #d8e2dc;border-radius:9px;background:#fff;color:#173d2d;font:inherit; }
+.portal-work-library #decision-types:focus-visible { outline:2px solid #2c7254;outline-offset:2px; }
+
+.portal-decision-filters{display:flex;align-items:center;gap:8px}.portal-decision-filters>.portal-library-search{flex:1;min-width:0}.portal-work-library .portal-decision-filters #decision-types{width:100%;min-height:42px;padding:8px;font-size:14px}

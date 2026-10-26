@@ -16,10 +16,6 @@
   detail.hidden = true;
   detail.innerHTML = '<button type="button" class="portal-org-status-back" aria-label="عودة إلى جميع الحالات"><span aria-hidden="true">→</span> عودة إلى جميع الحالات</button><div class="portal-org-status-detail-head"><span class="portal-org-status-dot" aria-hidden="true"></span><div><small></small><h2></h2></div></div><p></p><h3>ما الذي يجب فعله؟</h3><ul></ul>';
   menu.append(detail);
-  const updated = menu.querySelector('.portal-org-status-updated');
-  if (updated) {
-    detail.querySelector('.portal-org-status-detail-head').append(updated.cloneNode(true));
-  }
   status.querySelectorAll('.portal-org-status-list article').forEach((article, index) => {
     const key = ['yellow', 'orange', 'red'][index];
     const button = document.createElement('button');
@@ -81,7 +77,8 @@
     const time = `${String(hour % 12 || 12).padStart(2, '0')}:${String(minute).padStart(2, '0')} ${hour < 12 ? 'صباحًا' : 'مساءً'}`;
     return { date, time, iso: value };
   }
-  function paint(key, title, badge, text, updated) {
+  function paint(key, title, badge, text, updated, simulated = false) {
+    status.dataset.status = key;
     summary.querySelector('.portal-org-status-dot').className = `portal-org-status-dot is-${key}`;
     summary.querySelector('.portal-org-status-copy strong').textContent = title;
     summary.setAttribute('aria-label', `حالة المؤسسة: ${title}`);
@@ -89,19 +86,30 @@
     const label = head.querySelector('.portal-org-status-badge');
     label.className = `portal-org-status-badge is-${key}`;
     label.textContent = badge;
+    head.querySelector('.portal-org-status-simulated')?.remove();
+    if (simulated) { const tag = document.createElement('span'); tag.className = 'portal-org-status-simulated'; tag.textContent = 'محاكاة'; label.after(tag); }
     const dot = document.createElement('span');
     dot.className = `portal-org-status-dot is-${key}`;
     dot.setAttribute('aria-hidden', 'true');
     head.querySelector('h2').replaceChildren(dot, title);
-    menu.querySelector('.portal-org-status-current').textContent = text;
+    const box = menu.querySelector('.portal-org-status-current');
+    box.className = `portal-org-status-current is-${key}`;
+    box.textContent = text;
+    menu.querySelectorAll('.portal-org-status-option').forEach(option => {
+      const isCurrent = option.dataset.statusKey === key;
+      option.classList.toggle('is-current', isCurrent);
+      option.querySelector('.portal-org-status-tag')?.remove();
+      if (isCurrent) { const tag = document.createElement('span'); tag.className = 'portal-org-status-tag'; tag.textContent = 'الحالة الحالية'; option.querySelector('strong').after(tag); }
+    });
     const when = formatUpdated(updated);
     menu.querySelectorAll('.portal-org-status-updated time').forEach(time => {
-      if (when) { time.dateTime = when.iso; time.replaceChildren(when.date, document.createElement('br'), when.time); }
+      if (when) { time.dateTime = when.iso; time.textContent = `${when.date} · ${when.time}`; }
       else { time.removeAttribute('datetime'); time.textContent = '—'; }
     });
   }
-  let loaded = false;
+  let loaded = false, simulatedColor = null;
   async function load() {
+    if (simulatedColor) return;
     if (!apiBase) { paint('unknown', 'الحالة غير متاحة', 'غير متاح', 'خدمة حالة المؤسسة غير مهيأة.', null); return; }
     try {
       const url = new URL('api/organization-status', new URL(apiBase.replace(/\/?$/, '/'), location.href));
@@ -111,12 +119,25 @@
       const data = await response.json();
       const state = current[data.color];
       if (!state) throw new Error('Unknown status colour.');
+      if (simulatedColor) return;
       paint(data.color, state.title, state.color, state.summary, data.lastUpdated);
       loaded = true;
     } catch {
       if (loaded) return; // keep the last good status on a failed refresh
       paint('unknown', 'الحالة غير متاحة', 'غير متاح', 'تعذر تحميل حالة المؤسسة. تابع القنوات الرسمية للتحديثات.', null);
     }
+  }
+  if (document.getElementById('portal-simulation')) {
+    const pad = n => String(n).padStart(2, '0');
+    const simulate = color => {
+      if (!current[color]) { simulatedColor = null; void load(); return; }
+      simulatedColor = color;
+      const now = new Date(), stamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:00`;
+      showOverview();
+      paint(color, current[color].title, current[color].color, current[color].summary, stamp, true);
+    };
+    document.addEventListener('portal:org-status-simulation', event => simulate(event.detail.color));
+    document.addEventListener('portal:simulate', event => { if (event.detail.kind === 'reset' && simulatedColor) simulate('real'); });
   }
   void load();
   setInterval(() => { if (!document.hidden) void load(); }, 120000);

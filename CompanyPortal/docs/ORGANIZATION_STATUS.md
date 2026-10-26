@@ -30,8 +30,12 @@ Migration `Backend/Database/Scripts/036_CurrentStatus.sql` creates:
 
 ## Frontend
 
-`wwwroot/js/organization-status.js` fills the header button, the current-status panel (badge, title, description) and آخر تحديث للحالة, e.g. «26 أكتوبر 2026 / 02:34 مساءً». The page starts in a grey «جارٍ التحميل…» state. It refreshes every 2 minutes and when the tab becomes visible again. A failed refresh keeps the last good status. If nothing has loaded, it shows «الحالة غير متاحة», or «لم تُسجَّل حالة» when the table is empty. The yellow/orange/red guide list and its detail pages are unchanged.
+`wwwroot/js/organization-status.js` fills the header button, the current-status panel (badge, title, description) and آخر تحديث للحالة, e.g. «26 أكتوبر 2026 / 02:34 مساءً». The page starts in a grey «جارٍ التحميل…» state. It refreshes every 2 minutes and when the tab becomes visible again. A failed refresh keeps the last good status. If nothing has loaded, it shows «الحالة غير متاحة», or «لم تُسجَّل حالة» when the table is empty. Dialog design (26 October 2026): 440px wide; readable sizes (labels 12–13px, descriptions 13–14px, titles 15–23px); last update on one line «التاريخ · الوقت»; the description box is tinted and bordered in the current colour; a «دليل الحالات» heading above the yellow/orange/red guide, with the current one marked «الحالة الحالية»; light outlined back button on detail pages; footer removed. آخر تحديث للحالة appears only on the current-status page, not on the detail pages of other statuses. The header button background, border and text follow the status (`data-status` on `.portal-org-status`, `--org-status-*` variables; green is the default, also in the official theme). Styles in `wwwroot/css/header.css` (`.portal-org-status-…`); text colours go through `--text-primary`/`--text-secondary` because site.css forces colours with `!important`.
 
 ## Verified (26 October 2026, local)
 
 Migration applied twice (rerun-safe); CHECK rejects `ColorValue` 5. End to end through the browser with Windows authentication (`.local/org-status-browser.cjs`): green seed, then yellow/orange/red rows, removal back to green, and the empty table. The table was restored to the single seed row. The offline `Deployment/CompanyPortal-Setup.sql` was regenerated with migration 036.
+
+## Simulation
+
+With `Diagnostics:SimulationEnabled`, the simulation panel has a **حالة المؤسسة** group: أخضر / أصفر / برتقالي / أحمر switch the header and dialog instantly (time = now, «محاكاة» tag), memory-only with no database write. While simulating, API refreshes are ignored. «العودة للحالة الحقيقية» or «مسح المحاكاة» reloads the real status. Desktop check: `.local/org-status-simulation.cjs`.

@@ -17,6 +17,11 @@
  }
  root.addEventListener('toggle',()=>{if(root.open){position();if(!panel.matches(':popover-open'))panel.showPopover();if(!rules.length)void loadRules();}else if(panel.matches(':popover-open'))panel.hidePopover();});window.addEventListener('resize',position,{passive:true});root.querySelector('[data-simulation-rules]').addEventListener('click',()=>void loadRules());lock(true);
  root.addEventListener('click',event=>{
+  if(event.target.closest('[data-simulate="reset"]'))root.querySelectorAll('[data-simulate-status]').forEach(b=>b.setAttribute('aria-pressed','false'));
+  const statusButton=event.target.closest('[data-simulate-status]');
+  if(statusButton){const color=statusButton.dataset.simulateStatus;root.querySelectorAll('[data-simulate-status]').forEach(b=>b.setAttribute('aria-pressed',String(b===statusButton&&color!=='real')));
+   document.dispatchEvent(new CustomEvent('portal:org-status-simulation',{detail:{color}}));
+   status.textContent=color==='real'?'عادت حالة المؤسسة إلى قاعدة البيانات.':'حالة المؤسسة: محاكاة «'+statusButton.textContent+'»، دون حفظ في قاعدة البيانات.';return;}
   const button=event.target.closest('[data-simulate]');if(!button)return;const kind=button.dataset.simulate;if(kind!=='reset'&&kind!=='phone'&&!Object.hasOwn(names,kind))return;
   if(kind==='phone'){
     const contacts=[

@@ -65,7 +65,7 @@ body[data-site-theme="official"] .portal-media-subnav-links :is(a,button) { --te
 body[data-site-theme="official"] .portal-media-subnav-links a:hover,
 body[data-site-theme="official"] .portal-media-subnav-links a[aria-current="location"] { background: #ffffff15; border-bottom-color: #dfc292; }
 body[data-site-theme="official"] .portal-header :is(.portal-alert-visibility,.portal-theme-trigger,.portal-notifications-trigger) { background: #ffffff0f; border: 1px solid #ffffff35; --text-primary: #fff; --text-secondary: #eee9de; box-shadow: none; }
-body[data-site-theme="official"] .portal-header .portal-org-status > summary { background: linear-gradient(135deg, #e9f6ec, #dcefe2); border-color: #cce3d3; --text-primary: #285c3e; --text-secondary: #50725d; box-shadow: none; }
+body[data-site-theme="official"] .portal-header .portal-org-status > summary { background: var(--org-status-bg, linear-gradient(135deg, #e9f6ec, #dcefe2)); border-color: var(--org-status-border, #cce3d3); --text-primary: var(--org-status-ink, #285c3e); --text-secondary: var(--org-status-sub, #50725d); box-shadow: none; }
 body[data-site-theme="official"] .portal-header .portal-avatar { border-color: #ffffff50; box-shadow: none; }
 body[data-site-theme="official"] .portal-header :is(.portal-theme-switch,.portal-org-status-menu,.portal-header-profile,.portal-header-search) { --text-primary: var(--brand-primary); --text-secondary: #526159; }
 body[data-site-theme="official"] .portal-header-profile { padding-inline: 20px; background: rgb(235 244 239 / 76%); }

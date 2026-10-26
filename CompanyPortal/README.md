@@ -135,3 +135,5 @@ See [IIS and offline deployment](docs/IIS_AND_OFFLINE_DEPLOYMENT.md) for prerequ
 3. Retire/archive legacy files outside `CompanyPortal` only after frontend acceptance is confirmed. Continue the authorized API milestone using [the backend plan](docs/API_FOUNDATION.md).
 
 - [Profile attendance and holiday balance](docs/PROFILE_SUMMARY.md): two current-user read-only SP adapters and local development samples.
+
+- [Database-backed monthly magazine](docs/MAGAZINES.md): issue SP, Magazines folder roots, existing sample and page-preview format.

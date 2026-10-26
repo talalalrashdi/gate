@@ -438,3 +438,6 @@ html:has(:is(#editorial-gallery-dialog,#editorial-video-dialog)[open]),body:has(
 #editorial-news-paged-list > li.is-selected.is-breaking { outline-color: #bf9b4b; }
 #editorial-news-paged-list .news-story-selector:focus-visible { outline: 3px solid #285c47; outline-offset: 2px; }
 #editorial-news-paged-list > li.is-breaking .news-story-selector:focus-visible { outline-color: #f5dc9c; }
+
+[data-mag-pdf][aria-disabled="true"] { pointer-events: none; opacity: .4; }
+[data-mag-retry][hidden] { display: none; }

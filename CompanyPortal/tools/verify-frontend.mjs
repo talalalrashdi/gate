@@ -18,6 +18,8 @@ const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 const normalize = text => text.replaceAll('\r\n', '\n').replace(/>\s+</g, '><').trim();
 // User-approved changes after initial parity: tab metadata and theme controls.
 const canonicalHtml = text => normalize(text.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, ''))
+  .replace('<span class="portal-media-new" data-mag-new hidden>', '<span class="portal-media-new">')
+  .replace(/<section\b[^>]*id="editorial-magazine"[^>]*>[\s\S]*?<\/section>/g, '<!-- database-backed monthly magazine -->')
   .replace(/<section\b[^>]*id="editorial-events"[^>]*>[\s\S]*?<\/section>/g, '<!-- database videos and photo albums -->')
   .replace(/<section\b[^>]*id="safety"[^>]*>[\s\S]*?<\/section>/g, '<!-- permission-filtered safety booklets -->')
   .replace(/<section\b[^>]*id="digital-library"[^>]*>[\s\S]*?<\/section>/g, '<!-- permission-filtered PDF library -->')
@@ -121,6 +123,7 @@ for (let offset = 0; offset < resources.length; offset += 8) {
     if (/\.(css|js|svg)$/.test(file.path)) expected = Buffer.from(renameFrontendSource(expected.toString('utf8')));
     // The default/preference behavior was intentionally changed in this script.
     // Exchange calendar notifications replace retained local/demo notifications.
+    if (migratedPath(file.path) === 'js/magazine.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/magazine.js'));
     if (file.path === 'design-b.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/site.js'));
     if (file.path === 'design-b-intro.js') expected = await readFile(path.join(companyRoot, 'Frontend/CompanyPortal.Web/wwwroot/js/personal-workspace.js'));
     // User-requested full-width, flush-top default-theme header.

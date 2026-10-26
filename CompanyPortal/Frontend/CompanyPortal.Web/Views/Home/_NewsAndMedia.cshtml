@@ -19,10 +19,11 @@
 
         <section class="portal-section editorial-magazine" id="editorial-magazine" aria-labelledby="editorial-magazine-title">
           <div class="editorial-monthly-heading">
-            <h3 id="editorial-magazine-title">مجلة الشهر<span>مجلة الفلق</span></h3>
-            <label class="editorial-magazine-issue-select"><select data-mag-issue aria-label="اختيار عدد المجلة"><option value="current">العدد رقم 50/2026 - شهر اكتوبر</option></select></label>
+            <h3 id="editorial-magazine-title">مجلة الشهر<span data-mag-name>—</span></h3>
+            <label class="editorial-magazine-issue-select"><select data-mag-issue aria-label="اختيار عدد المجلة"><option value="">جارٍ تحميل الأعداد…</option></select></label>
           </div>
-          <div class="editorial-local-reader" id="monthly-reader" aria-label="قارئ مجلة الفلق" data-pages="./assets/magazines/39-pages/manifest.json">
+          <div class="editorial-local-reader" id="monthly-reader" aria-label="قارئ مجلة الشهر">
+            <button type="button" data-mag-retry hidden>إعادة تحميل المجلة</button>
             <div class="editorial-local-thumbnails" id="monthly-thumbnails" aria-label="اختيار صفحة" hidden></div>
             <div class="editorial-magazine-book">
               <button class="editorial-magazine-page-arrow" type="button" data-mag-prev aria-label="الصفحات السابقة" disabled>→</button>
@@ -32,7 +33,7 @@
             <div class="editorial-magazine-toolbar" role="group" aria-label="متحكمات عرض المجلة">
               <div class="editorial-magazine-view-controls" role="group" aria-label="أدوات عرض المجلة">
                 <label class="editorial-magazine-page-input">الصفحة <input data-mag-page type="number" min="1" value="1" inputmode="numeric" aria-label="الانتقال إلى صفحة" disabled></label>
-                <a class="editorial-magazine-pdf" data-mag-pdf href="@Url.Content("~/assets/magazines/39.pdf")" target="_blank" rel="noopener" aria-label="فتح المجلة بصيغة PDF" title="فتح PDF"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z"/><path d="M14 3v6h6M8 14h8M8 17h5"/></svg></a>
+                <a class="editorial-magazine-pdf" data-mag-pdf aria-disabled="true" target="_blank" rel="noopener" aria-label="فتح المجلة بصيغة PDF" title="فتح PDF"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z"/><path d="M14 3v6h6M8 14h8M8 17h5"/></svg></a>
                 <button type="button" data-mag-fullscreen aria-label="ملء الشاشة" title="التوسيع"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></svg></button>
                 <button type="button" data-mag-zoom aria-pressed="false" aria-label="تكبير الصفحات" title="التكبير"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5M7.5 10.5h6m-3-3v6"/></svg></button>
                 <button type="button" data-mag-zoom-out aria-label="تصغير الصفحات" title="التصغير" disabled><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5M7.5 10.5h6"/></svg></button>

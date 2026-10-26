@@ -7,34 +7,48 @@
   const pageInput = reader.querySelector('[data-mag-page]');
   const thumbs = reader.querySelector('.editorial-local-thumbnails'), thumbButton = reader.querySelector('[data-mag-thumbnails]');
   const zoomButton = reader.querySelector('[data-mag-zoom]'), fullButton = reader.querySelector('[data-mag-fullscreen]');
-  const zoomOut=reader.querySelector('[data-mag-zoom-out]'),issueSelect=reader.closest('.editorial-magazine').querySelector('[data-mag-issue]'),issueUpload=reader.querySelector('[data-mag-issue-upload]'),pdfLink=reader.querySelector('[data-mag-pdf]');
-  // Retain a previously saved issue number when replacing the edit field.
-  const currentOption = issueSelect?.querySelector('option[value="current"]');
-  try {
-    const savedNumber = localStorage.getItem('clerio-monthly-magazine-issue-number');
-    if (currentOption && savedNumber !== null) currentOption.textContent = currentOption.textContent.replace('50/2026', savedNumber.trim() || '…');
-  } catch {}
-  const uploadedIssues=new Map();let activeIssue=null,pdfPage=1,pdfFrame;
-  const currentPDF=pdfLink?.href;
+  const zoomOut=reader.querySelector('[data-mag-zoom-out]'),issueSelect=reader.closest('.editorial-magazine').querySelector('[data-mag-issue]'),pdfLink=reader.querySelector('[data-mag-pdf]');
+  const base=document.querySelector('meta[name="companyportal-api-base"]')?.content;if(!base)return;
+  const endpoint=path=>new URL('api/magazines'+path,new URL(base.replace(/\/?$/,'/'),location.href)).href;
+  const name=reader.closest('.editorial-magazine').querySelector('[data-mag-name]'),retry=reader.querySelector('[data-mag-retry]');
+  let activeIssue=null,pdfPage=1,pdfFrame,issues=[],selectedIssue=null,controller,generation=0;
+  const newBadge=document.querySelector('[data-mag-new]'),attemptedReads=new Set(),confirmedReads=new Set(),readyIssues=new Set();
+  let readerVisible=false;
+  function updateBadge(){if(newBadge)newBadge.hidden=!issues.length||issues[0].hasRead!==false||confirmedReads.has(issues[0].magazineId);}
+  async function markRead(id){
+    const issue=issues.find(row=>row.magazineId===id);
+    if(!issue||issue.hasRead!==false||confirmedReads.has(id)||attemptedReads.has(id))return;
+    // Set before starting the request: scroll, load, zoom and visibility events cannot duplicate it.
+    attemptedReads.add(id);
+    try{
+      const response=await fetch(endpoint(`/${id}/read`),{method:'POST',credentials:'include',cache:'no-store',headers:{'X-CompanyPortal-Request':'magazine-read'},signal:AbortSignal.timeout(15000)});
+      if(!response.ok)return;confirmedReads.add(id);issue.hasRead=true;updateBadge();
+    }catch{/* Keep the badge on failure; do not retry automatically or poll. A page reload can retry. */}
+  }
+  function maybeMarkRead(){if(!document.hidden&&readerVisible&&selectedIssue&&readyIssues.has(selectedIssue.magazineId))markRead(selectedIssue.magazineId);}
+  const readObserver=new IntersectionObserver(entries=>{readerVisible=entries[0].isIntersecting&&entries[0].intersectionRatio>=.25;maybeMarkRead();},{threshold:[0,.25]});readObserver.observe(stage);
+  pdfLink.addEventListener('click',e=>{if(!e.defaultPrevented&&selectedIssue&&pdfLink.hasAttribute('href'))markRead(selectedIssue.magazineId);});
+  pdfLink.addEventListener('auxclick',e=>{if(e.button===1&&selectedIssue&&pdfLink.hasAttribute('href'))markRead(selectedIssue.magazineId);});
   function renderPDF(){
     if(!activeIssue)return;
-    if(!pdfFrame){pdfFrame=document.createElement('iframe');pdfFrame.className='editorial-local-pdf-frame';pdfFrame.title='قراءة العدد السابق';stage.append(pdfFrame);}
-    pdfFrame.src=activeIssue.url+'#toolbar=0&navpanes=0&page='+pdfPage+'&zoom='+(reader.classList.contains('is-zoomed')?150:100);
-    pageInput.value=String(pdfPage);previous.disabled=pdfPage===1;next.disabled=false;message.hidden=true;
+    if(!pdfFrame){pdfFrame=document.createElement('iframe');pdfFrame.className='editorial-local-pdf-frame';pdfFrame.title='قراءة '+selectedIssue.magazineName;const issueId=selectedIssue.magazineId;pdfFrame.addEventListener('load',()=>{if(selectedIssue?.magazineId===issueId){readyIssues.add(issueId);maybeMarkRead();}});stage.append(pdfFrame);}
+    pdfFrame.src=activeIssue.url+'#toolbar=1&navpanes=0&page='+pdfPage+'&zoom='+(reader.classList.contains('is-zoomed')?150:100);
+    pageInput.value=String(pdfPage);previous.disabled=next.disabled=true;message.hidden=true;
   }
   const mobile = matchMedia('(max-width:760px)'), reduced = matchMedia('(prefers-reduced-motion:reduce)');
   let pages = [], current = 0, turning = false, turnTimer, touch;
-  const manifestURL = new URL(reader.dataset.pages, document.baseURI);
+
   const number = value => value.toLocaleString('ar-EG-u-nu-latn');
   const normalize = index => mobile.matches || index === 0 ? index : (index % 2 ? index : index - 1);
   const indexes = () => mobile.matches || current === 0 || current === pages.length - 1 ? [current] : [current, current + 1];
   function imageFor(index, thumbnail = false) {
     const image = document.createElement('img');
-    image.src = new URL(pages[index].file, manifestURL).href;
-    image.alt = `صفحة ${number(index + 1)} من مجلة الفلق`;
+    image.src = endpoint(`/${selectedIssue.magazineId}/pages/${index+1}`);
+    const issueId=selectedIssue.magazineId;image.alt = `صفحة ${number(index + 1)} من ${selectedIssue.magazineName}`;
     image.width = 1500; image.height = Math.round(1500 * pages[index].height / pages[index].width);
     image.loading = thumbnail ? 'lazy' : 'eager'; image.decoding = 'async'; image.draggable = false;
-    if (!thumbnail) image.addEventListener('error', () => { message.hidden = false; message.textContent = 'تعذّر تحميل الصفحة. يمكنك فتح ملف PDF من المتحكم أسفل المجلة.'; });
+    if(!thumbnail)image.addEventListener('load',()=>{if(image.isConnected&&image.naturalWidth>0&&selectedIssue?.magazineId===issueId){readyIssues.add(issueId);maybeMarkRead();}},{once:true});
+    if (!thumbnail) image.addEventListener('error', () => { if(!image.isConnected||selectedIssue?.magazineId!==issueId)return;message.hidden = false; message.textContent = 'تعذّر تحميل الصفحة. يمكنك فتح ملف PDF من المتحكم أسفل المجلة.'; });
     return image;
   }
   function render() {
@@ -98,30 +112,48 @@
   }
   zoomButton.addEventListener('click',()=>setZoom(zoomOut?true:!reader.classList.contains('is-zoomed')));
   zoomOut?.addEventListener('click',()=>setZoom(false));
-  function selectIssue(){
-    activeIssue=uploadedIssues.get(issueSelect.value)||null;reader.classList.toggle('is-pdf',!!activeIssue);pdfPage=1;
-    pdfFrame?.remove();pdfFrame=null;setZoom(false);thumbs.hidden=true;thumbButton.setAttribute('aria-expanded','false');thumbButton.disabled=!!activeIssue;
-    pageInput.disabled=!activeIssue&&!pages.length;
-    if(activeIssue)pageInput.removeAttribute('max');else pageInput.max=String(pages.length);
-    pdfLink.href=activeIssue?activeIssue.url:currentPDF;
-    if(activeIssue)renderPDF();else{current=0;render();}
+  function clearReader(){
+    clearTimeout(turnTimer);turning=false;stage.querySelector('.editorial-local-turn')?.remove();
+    pages=[];current=0;activeIssue=null;selectedIssue=null;pdfFrame?.remove();pdfFrame=null;spread.replaceChildren();thumbs.replaceChildren();thumbs.hidden=true;
+    reader.classList.remove('is-pdf','is-zoomed');zoomButton.setAttribute('aria-pressed','false');thumbButton.setAttribute('aria-expanded','false');
+    [previous,next,pageInput,thumbButton,zoomButton,fullButton,zoomOut].filter(Boolean).forEach(n=>n.disabled=true);pageInput.value='1';pageInput.removeAttribute('max');
+    pdfLink.removeAttribute('href');pdfLink.setAttribute('aria-disabled','true');name.textContent='—';message.hidden=false;
   }
-  issueSelect?.addEventListener('change',selectIssue);
-  issueUpload?.addEventListener('change',()=>{
-    const file=issueUpload.files?.[0];if(!file)return;
-    if(file.type!=='application/pdf'&&!/\.pdf$/i.test(file.name)){message.hidden=false;message.textContent='اختر ملف PDF لعدد سابق.';issueUpload.value='';return;}
-    const id='uploaded-'+uploadedIssues.size,url=URL.createObjectURL(file),title=file.name.replace(/\.pdf$/i,'');
-    uploadedIssues.set(id,{url,title});issueSelect.add(new Option('عدد سابق · '+title,id));issueSelect.value=id;selectIssue();issueUpload.value='';
-  });
-  window.addEventListener('pagehide',()=>{for(const issue of uploadedIssues.values())URL.revokeObjectURL(issue.url);});
+  async function selectIssue(){
+    controller?.abort();controller=new AbortController();const signal=controller.signal,stamp=++generation;
+    const selected=issues.find(row=>String(row.magazineId)===issueSelect.value);clearReader();retry.hidden=true;
+    if(!selected){message.textContent='لا توجد أعداد منشورة حاليًا.';return;}
+    selectedIssue=selected;name.textContent=selected.magazineName;reader.setAttribute('aria-label','قارئ '+selected.magazineName);message.textContent='جارٍ تجهيز المجلة…';reader.setAttribute('aria-busy','true');
+    try{
+      const response=await fetch(endpoint(`/${selected.magazineId}/pages`),{credentials:'include',cache:'no-store',signal:AbortSignal.any([signal,AbortSignal.timeout(15000)])});
+      if(stamp!==generation||signal.aborted)return;
+      if(response.status===404){activeIssue={url:endpoint(`/${selected.magazineId}/pdf`)};reader.classList.add('is-pdf');renderPDF();}
+      else{
+        if(!response.ok)throw new Error('Pages unavailable');const data=await response.json();if(stamp!==generation||signal.aborted)return;
+        if(!Array.isArray(data.pages)||!data.pages.length)throw new Error('Pages unavailable');pages=data.pages;pageInput.max=String(pages.length);pageInput.disabled=false;thumbButton.disabled=false;render();
+      }
+      pdfLink.href=endpoint(`/${selected.magazineId}/pdf`);pdfLink.removeAttribute('aria-disabled');zoomButton.disabled=false;fullButton.disabled=false;
+    }catch(e){if(stamp!==generation||signal.aborted)return;clearReader();message.textContent='تعذّر تحميل المجلة. تحقق من الاتصال وأعد المحاولة.';retry.hidden=false;}
+    finally{if(stamp===generation)reader.setAttribute('aria-busy','false');}
+  }
+  async function loadCatalog(){
+    controller?.abort();controller=new AbortController();const signal=controller.signal,stamp=++generation;clearReader();issues=[];updateBadge();issueSelect.replaceChildren(new Option('جارٍ تحميل الأعداد…',''));issueSelect.disabled=true;retry.hidden=true;message.textContent='جارٍ تحميل أعداد المجلة…';
+    try{
+      const response=await fetch(endpoint(''),{credentials:'include',cache:'no-store',signal:AbortSignal.any([signal,AbortSignal.timeout(15000)])});if(!response.ok)throw new Error('Magazine catalog unavailable');const data=await response.json();if(stamp!==generation||signal.aborted)return;
+      if(!Array.isArray(data))throw new Error('Invalid magazine catalog');issues=data;issues.forEach(row=>{if(confirmedReads.has(row.magazineId))row.hasRead=true;});updateBadge();
+      issueSelect.replaceChildren(...issues.map(row=>new Option(`${row.magazineName} · العدد ${row.issueNumber} · ${row.issueDate}`,String(row.magazineId))));
+      if(!issues.length){issueSelect.add(new Option('لا توجد أعداد منشورة',''));message.textContent='لا توجد أعداد منشورة حاليًا.';return;}
+      issueSelect.disabled=false;await selectIssue();
+    }catch(e){if(stamp!==generation||signal.aborted)return;issueSelect.replaceChildren(new Option('تعذّر تحميل الأعداد',''));message.textContent='تعذّر تحميل أعداد المجلة. تحقق من الاتصال وأعد المحاولة.';retry.hidden=false;}
+  }
+  issueSelect.addEventListener('change',selectIssue);retry.addEventListener('click',loadCatalog);
+  function suspend(){++generation;controller?.abort();clearReader();issues=[];updateBadge();issueSelect.replaceChildren();issueSelect.disabled=true;}
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)maybeMarkRead();});window.addEventListener('pagehide',suspend);window.addEventListener('pageshow',e=>{if(e.persisted)loadCatalog();});
   fullButton.addEventListener('click', async () => {
     try { if (document.fullscreenElement === reader) await document.exitFullscreen(); else await reader.requestFullscreen(); }
     catch { message.hidden = false; message.textContent = 'تعذّر ملء الشاشة في هذا المتصفح. استخدم التكبير أو افتح ملف PDF.'; }
   });
   document.addEventListener('fullscreenchange', () => fullButton.setAttribute('aria-label', document.fullscreenElement === reader ? 'الخروج من ملء الشاشة' : 'ملء الشاشة'));
   mobile.addEventListener('change', () => { if (pages.length) { current = normalize(current); render(); } });
-  fetch(manifestURL).then(response => { if (!response.ok) throw new Error('Manifest'); return response.json(); }).then(data => {
-    if (!data.pages?.length) throw new Error('Pages'); pages = data.pages;
-    if(!activeIssue){pageInput.max=String(pages.length);pageInput.disabled=false;render();}
-  }).catch(() => { message.textContent = 'تعذّر تحميل المجلة. يمكنك قراءة ملف PDF من المتحكم أسفل القارئ.'; });
+  loadCatalog();
 })();

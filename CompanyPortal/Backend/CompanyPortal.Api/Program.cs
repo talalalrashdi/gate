@@ -16,6 +16,8 @@ builder.Services.AddScoped<AdministrationStore>();
 builder.Services.AddScoped<ThemeAdministrationStore>();
 builder.Services.AddScoped<InterfaceImagesStore>();
 builder.Services.AddScoped<NewsStore>();
+builder.Services.AddScoped<MagazinesStore>();
+builder.Services.AddScoped<MagazineFiles>();
 builder.Services.AddScoped<ProfileSummaryStore>();
 builder.Services.AddScoped<PortalMediaStore>();
 builder.Services.AddScoped<PortalMediaFiles>();

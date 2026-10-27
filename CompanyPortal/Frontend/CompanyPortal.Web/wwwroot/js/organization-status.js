@@ -77,7 +77,9 @@
     const time = `${String(hour % 12 || 12).padStart(2, '0')}:${String(minute).padStart(2, '0')} ${hour < 12 ? 'صباحًا' : 'مساءً'}`;
     return { date, time, iso: value };
   }
+  let lastPaint = null;
   function paint(key, title, badge, text, updated, simulated = false) {
+    lastPaint = [key, updated, simulated];
     status.dataset.status = key;
     summary.querySelector('.portal-org-status-dot').className = `portal-org-status-dot is-${key}`;
     summary.querySelector('.portal-org-status-copy strong').textContent = title;
@@ -139,6 +141,29 @@
     document.addEventListener('portal:org-status-simulation', event => simulate(event.detail.color));
     document.addEventListener('portal:simulate', event => { if (event.detail.kind === 'reset' && simulatedColor) simulate('real'); });
   }
+  // Titles/texts/steps per level from Mng.StatusLevels (admin: /admin/header-content); built-in text stays if this fails.
+  async function loadLevels() {
+    try {
+      const url = new URL('api/header-content/status-levels', new URL(apiBase.replace(/\/?$/, '/'), location.href));
+      const response = await fetch(url, { credentials: 'include', cache: 'no-store', signal: AbortSignal.timeout(15000) });
+      if (!response.ok) return;
+      const levels = await response.json();
+      if (!Array.isArray(levels)) return;
+      for (const level of levels) {
+        const state = current[level.color];
+        if (!state) continue;
+        Object.assign(state, { title: level.title, color: level.colorName, summary: level.summary, actions: Array.isArray(level.actions) ? level.actions : [] });
+        const option = menu.querySelector(`.portal-org-status-option[data-status-key="${level.color}"]`);
+        if (!option) continue;
+        option.querySelector('strong').textContent = level.title;
+        const name = option.querySelector('small'), guide = option.querySelector('p');
+        if (name) name.textContent = level.colorName;
+        if (guide) guide.textContent = level.guideText || '';
+      }
+      if (lastPaint && current[lastPaint[0]]) { const [key, updated, simulated] = lastPaint, state = current[key]; paint(key, state.title, state.color, state.summary, updated, simulated); }
+    } catch { }
+  }
+  if (apiBase) void loadLevels();
   void load();
   setInterval(() => { if (!document.hidden) void load(); }, 120000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) void load(); });

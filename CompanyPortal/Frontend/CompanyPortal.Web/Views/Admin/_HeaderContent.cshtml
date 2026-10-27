@@ -1,0 +1,14 @@
+<section data-admin-panel="header-content" id="admin-header-content" aria-label="أرقام تهمك وحالة المؤسسة" hidden>
+  <p id="header-content-status" role="status"></p><button type="button" id="header-content-retry" hidden>إعادة تحميل</button>
+  <div class="admin-panel">
+    <div class="admin-panel-header"><div><h2>أرقام تهمك</h2><p>تظهر في نافذة دليل الهاتف، مرتبة حسب «الترتيب». الأرقام المخفية لا تظهر للمستخدمين.</p></div><button type="button" id="header-number-add" class="admin-primary" disabled>إضافة رقم +</button></div>
+    <div class="hc-numbers" role="table" aria-label="أرقام تهمك">
+      <div class="hc-numbers-head" role="row"><span role="columnheader">الاسم</span><span role="columnheader">الرقم</span><span role="columnheader">الترتيب</span><span role="columnheader">ظاهر</span><span role="columnheader"><span class="hc-sr">إجراءات</span></span></div>
+      <div id="header-numbers"></div>
+    </div>
+  </div>
+  <div class="admin-panel">
+    <div class="admin-panel-header"><div><h2>نصوص حالة المؤسسة</h2><p>العنوان والوصف لكل لون، والنص المختصر في «دليل الحالات»، وخطوات «ما الذي يجب فعله؟» (خطوة في كل سطر). الحالة الحالية نفسها تُحدد من جدول Mng.CurrentStatus.</p></div></div>
+    <div id="header-levels" class="hc-levels"></div>
+  </div>
+</section>

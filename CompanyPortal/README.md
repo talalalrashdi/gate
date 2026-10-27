@@ -1,5 +1,7 @@
 # CompanyPortal
 
+**أرقام تهمك** and the **حالة المؤسسة texts** are now database content (`Mng.ImportantNumbers`, `Mng.StatusLevels`) managed at `/admin/header-content`. See [header content and migration 039](docs/HEADER_CONTENT.md).
+
 The header **profile photo** now loads the employee's Dalil thumbnail (`PersonalID` from `Security.User_getPersonalId`, `Res=256`) with a generic placeholder fallback. See [profile photo and migration 037](docs/PHONE_DIRECTORY.md#صورة-الموظف-في-الهيدر-profile-photo).
 
 **حالة المؤسسة** now reads the current status from `Mng.CurrentStatus` (ColorValue 1–4 = green/yellow/orange/red, LastUpdated = آخر تحديث للحالة) through `Mng.CurrentStatus_get` and `/api/organization-status`. See [organization status and migration 036](docs/ORGANIZATION_STATUS.md).

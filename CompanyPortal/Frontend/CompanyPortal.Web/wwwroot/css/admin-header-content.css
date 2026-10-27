@@ -1,0 +1,24 @@
+#admin-header-content > [role="status"]:empty{display:none}
+#admin-header-content > [role="status"]{margin:0 0 14px;padding:10px 14px;border-radius:10px;background:#eef5f1;color:#1f4f40;font-size:14px}
+#admin-header-content .admin-panel + .admin-panel{margin-top:20px}
+.hc-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.hc-numbers-head,.hc-number-row{display:grid;grid-template-columns:minmax(160px,1.6fr) minmax(110px,1fr) 90px 60px 170px;gap:10px;align-items:center}
+.hc-numbers-head{padding:0 4px 8px;border-bottom:1px solid #e3e9e5;color:#5f6e66;font-size:13px;font-weight:700}
+.hc-number-row{padding:10px 4px;border-bottom:1px solid #eef2ef}
+.hc-number-row input:not([type="checkbox"]),.hc-field input,.hc-field textarea{width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #cfdad4;border-radius:9px;background:#fff;font:inherit;font-size:14px;color:#1f3b33}
+.hc-number-row input[type="checkbox"]{width:20px;height:20px;accent-color:#225e4b}
+.hc-number-row input:focus,.hc-field input:focus,.hc-field textarea:focus{outline:2px solid #225e4b;outline-offset:1px;border-color:#225e4b}
+.hc-actions{display:flex;gap:8px}
+.hc-danger{padding:8px 14px;border:1px solid #e3b9b9;border-radius:9px;background:#fff;color:#8f2f2f;font:inherit;font-size:13px;cursor:pointer}
+.hc-danger:hover{background:#fbeded}
+.hc-levels{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;align-items:start}
+.hc-level{display:grid;align-content:start;gap:12px;padding:16px;border:1px solid #e3e9e5;border-inline-start:4px solid #b4bdb9;border-radius:14px;background:#fff}
+.hc-level.is-green{border-inline-start-color:#278052}.hc-level.is-yellow{border-inline-start-color:#e0b02c}.hc-level.is-orange{border-inline-start-color:#dc752e}.hc-level.is-red{border-inline-start-color:#bf4a4a}
+.hc-level-head{display:flex;align-items:center;gap:10px;font-size:16px}
+.hc-dot{width:14px;height:14px;border-radius:50%;background:#b4bdb9}
+.is-green .hc-dot{background:#278052}.is-yellow .hc-dot{background:#e7bb37}.is-orange .hc-dot{background:#dc752e}.is-red .hc-dot{background:#bf4a4a}
+.hc-field{display:grid;gap:5px;font-size:13px;color:#44564e}
+.hc-field[hidden]{display:none}
+.hc-field textarea{resize:vertical;line-height:1.7}
+.hc-level-footer{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.hc-note{color:#75847c;font-size:12px}

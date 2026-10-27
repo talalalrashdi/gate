@@ -1,9 +1,23 @@
-@{
-    Layout = null;
-}
+@model CompanyPortal.Web.Models.PortalError
+@{ Layout=null; }
 <!doctype html>
 <html lang="ar" dir="rtl">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>البوابة</title>
-  <link rel="icon" type="image/png" href="@Url.Content("~/assets/oman-khanjar.png")"></head>
-<body><main><h1>تعذّر عرض الصفحة</h1><p>يرجى المحاولة مرة أخرى.</p><a href="@Url.Content("~/")">العودة إلى الرئيسية</a></main></body>
-</html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>@Model.Title — البوابة</title>
+<link rel="icon" type="image/png" href="@Url.Content("~/assets/oman-khanjar.png")"><link rel="stylesheet" href="@Url.Content("~/css/error-pages.css")" asp-append-version="true"></head>
+<body>
+<header class="error-header"><a href="@Url.Content("~/")" aria-label="البوابة — الرئيسية"><img src="@Url.Content("~/assets/oman-khanjar.png")" width="42" height="48" alt=""><span>البوابة<small>بوابة خدمات الموظفين</small></span></a><span class="error-header-note">معك في كل خطوة</span></header>
+<main class="error-card" id="main"><div class="error-art" aria-hidden="true"><div class="error-orbit"></div><div class="error-icon"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+@switch(Model.Icon){
+case "lock": <rect x="16" y="28" width="32" height="26" rx="6"/><path d="M23 28V18a9 9 0 0 1 18 0v10M32 39v5"/> break;
+case "shield": <path d="m32 8 20 8v15c0 14-20 25-20 25S12 45 12 31V16L32 8Z"/><path d="m25 26 14 14m0-14L25 40"/> break;
+case "search": <circle cx="28" cy="27" r="16"/><path d="m40 40 14 14M22 27h12"/> break;
+case "clock": <circle cx="32" cy="32" r="23"/><path d="M32 17v16l11 7"/> break;
+case "document": <path d="M38 8H18a4 4 0 0 0-4 4v40a4 4 0 0 0 4 4h28a4 4 0 0 0 4-4V20L38 8Z M38 8v13h12M24 32h16M24 42h10"/> break;
+default: <rect x="10" y="11" width="44" height="32" rx="5"/><path d="M23 55h18M32 43v12M24 23l16 10m0-10L24 33"/> break;
+}
+</svg></div><span class="error-art-code">@Model.StatusCode</span><div class="error-art-caption">البوابة دائمًا أقرب إليك</div></div>
+<section class="error-copy" aria-labelledby="error-title"><span class="error-eyebrow">البوابة <span aria-hidden="true">/</span> @Model.StatusCode</span><h1 id="error-title">@Model.Title</h1><p class="error-message">@Model.Message</p><p class="error-guidance">@Model.Guidance</p><div class="error-actions"><a class="error-primary" href="@Url.Content("~/")">العودة إلى الرئيسية <span aria-hidden="true">←</span></a>@if(Model.Retry){<button type="button" data-error-retry hidden>إعادة المحاولة</button>}</div>
+@if(Model.Reference is not null){<details class="error-reference"><summary>رقم المرجع للدعم التقني</summary><code dir="ltr">@Model.Reference</code></details>}</section></main>
+<footer>البوابة <span aria-hidden="true">·</span> خدمات المؤسسة في مكان واحد</footer>
+@if(Model.Retry){<script src="@Url.Content("~/js/error-pages.js")" asp-append-version="true"></script>}
+</body></html>

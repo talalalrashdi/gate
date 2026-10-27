@@ -27,6 +27,9 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseStaticFiles();
+// Browser error pages preserve status codes; JSON/fetch responses keep their own contract.
+app.UseWhen(context=>context.Request.Headers.Accept.Any(value=>value?.Contains("text/html",StringComparison.OrdinalIgnoreCase)==true)
+    ||context.Request.Headers.Accept.Count==0,branch=>branch.UseStatusCodePagesWithReExecute("/errors/{0}"));
 app.UseRouting();
 app.MapControllers();
 

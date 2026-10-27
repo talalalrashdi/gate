@@ -1,4 +1,4 @@
-﻿/* CompanyPortal fresh installation, generated from migrations 001-041.
+﻿/* CompanyPortal fresh installation, generated from migrations 001-042.
    Open this entire UTF-8 file in SSMS and Execute (normal mode, no SQLCMD mode).
    Or: sqlcmd -S SQLSERVER -E -b -f 65001 -i CompanyPortal-Setup.sql
    FRESH INSTALL ONLY. Never run on an existing CompanyPortal database.
@@ -2807,6 +2807,27 @@ IF OBJECT_ID(N'Portal.Reports_Create',N'P') IS NULL
 GO
 IF OBJECT_ID(N'Portal.Initiatives_Create',N'P') IS NULL
  EXEC(N'CREATE PROCEDURE Portal.Initiatives_Create @UserId int,@TypeId int,@Title nvarchar(500),@Details nvarchar(4000),@RequestKey uniqueidentifier=NULL AS BEGIN SET NOCOUNT ON; THROW 50030,''Technical services source is not configured.'',1; END');
+GO
+
+GO
+
+
+-- BEGIN 042_CorrespondenceInbox.sql
+USE CompanyPortal;
+GO
+SET ANSI_NULLS ON;SET QUOTED_IDENTIFIER ON;SET ANSI_PADDING ON;SET ANSI_WARNINGS ON;
+SET CONCAT_NULL_YIELDS_NULL ON;SET ARITHABORT ON;SET NUMERIC_ROUNDABORT OFF;
+GO
+UPDATE Master.Cards SET CardName=N'مراسلات',LastChangeAt=GETDATE() WHERE CardKey=N'inbox' AND CardName=N'مرسالات';
+GO
+-- Contracts only: preserve configured real-system adapters on rerun.
+IF OBJECT_ID(N'Portal.Correspondence_Inbox_Get',N'P') IS NULL
+ EXEC(N'CREATE PROCEDURE Portal.Correspondence_Inbox_Get @UserId int,@CorrespondenceId bigint=NULL AS
+ BEGIN SET NOCOUNT ON;THROW 50030,''Correspondence source is not configured.'',1;END');
+GO
+IF OBJECT_ID(N'Portal.Correspondence_UnreadCount_Get',N'P') IS NULL
+ EXEC(N'CREATE PROCEDURE Portal.Correspondence_UnreadCount_Get @UserId int AS
+ BEGIN SET NOCOUNT ON;THROW 50030,''Correspondence source is not configured.'',1;END');
 GO
 
 GO

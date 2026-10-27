@@ -1,0 +1,27 @@
+#workspace #correspondence-inbox-list{display:grid;grid-auto-rows:max-content;align-content:start;gap:6px;flex:1;min-height:0!important;max-height:none;overflow-y:auto}
+#workspace .portal-correspondence-item{display:grid;grid-template-columns:minmax(0,1fr) 65px;grid-template-rows:auto auto auto;align-content:center;align-items:center;gap:2px 7px;width:100%;height:88px;min-height:88px;padding:6px 9px;text-align:right;border:1px solid #e0e5dd;border-radius:12px;background:#fff;font:inherit;text-decoration:none;cursor:pointer;--text-primary:#172d29;color:var(--text-primary)}
+#workspace .portal-correspondence-item[data-state="unopened"]{background:#faf1f3;border-color:#ead6dc;--text-primary:#7d243c;--text-secondary:#7d243c;color:#7d243c}
+#workspace .portal-correspondence-heading{grid-column:1;grid-row:1;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+#workspace .portal-correspondence-number{font-size:11px;font-weight:700;color:#536e61;--text-primary:#536e61}
+#workspace .portal-correspondence-purpose{padding:2px 7px;border-radius:6px;font-size:10px;line-height:1.6;white-space:nowrap}
+#workspace .portal-correspondence-purpose.is-info{background:#e3eff4;--text-primary:#355d72;color:#355d72}
+#workspace .portal-correspondence-purpose.is-action{background:#f5e7d6;--text-primary:#795225;color:#795225}
+#workspace .portal-correspondence-title{grid-column:1;grid-row:2;font-size:13px;line-height:1.4;min-width:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+#workspace .portal-correspondence-item time{grid-column:2;grid-row:1 / span 3;white-space:pre-line;text-align:left;font-size:10px;line-height:1.8;color:#748375}
+#workspace .portal-correspondence-item:focus-visible{outline:2px solid #225e4b;outline-offset:2px}
+#workspace .portal-correspondence-item:disabled{cursor:default}
+#workspace .portal-correspondence-new{display:inline-block;padding:2px 8px;border:1px solid #d8ad4c;border-radius:6px;background:#ffe6a6;--text-primary:#674606;color:#674606!important;font-size:11px;line-height:1.6;font-weight:700;white-space:nowrap}
+#correspondence-inbox-status{font-size:12px;line-height:1.8;color:#738175}
+#correspondence-sample-dialog{border:1px solid #dfe6da;border-radius:18px;padding:25px;max-width:560px;width:90%;color:#193d36;background:#fbfcf8;font:inherit;line-height:1.9}
+#correspondence-sample-dialog::backdrop{background:#102b2466}
+#correspondence-sample-dialog header{display:flex;justify-content:space-between;align-items:center;gap:20px}
+#correspondence-sample-dialog header button{border:0;background:#e9eee5;border-radius:50%;width:32px;height:32px;font:inherit;cursor:pointer}
+#correspondence-sample-dialog h2{font-size:22px}#correspondence-sample-dialog p{font-size:14px}
+body:has(#correspondence-sample-dialog[open]){overflow:hidden}
+
+#workspace .portal-correspondence-sender{grid-column:1;grid-row:3;font-size:10px;line-height:1.4;color:#687a70;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#workspace .portal-correspondence-filter{display:flex;gap:6px;margin-bottom:10px;flex:none;overflow-x:auto;max-width:100%;padding:2px;scrollbar-width:thin}
+#workspace .portal-correspondence-filter-pill{flex:none;min-height:34px;border:1px solid #d9e2d9;border-radius:999px;background:#f7faf7;--text-primary:#254e42;color:#254e42;padding:5px 12px;font:inherit;font-size:12px;white-space:nowrap;cursor:pointer}
+#workspace .portal-correspondence-filter-pill[aria-pressed="true"]{background:#225e4b;border-color:#225e4b;--text-primary:#fff;color:#fff}
+#workspace .portal-correspondence-filter-pill:hover{border-color:#225e4b}
+#workspace .portal-correspondence-filter-pill:focus-visible{outline:2px solid #225e4b;outline-offset:2px}

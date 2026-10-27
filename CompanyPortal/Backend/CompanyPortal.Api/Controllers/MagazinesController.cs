@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Text.Json;
 using CompanyPortal.Api.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -38,24 +37,11 @@ public sealed class MagazinesController(MagazinesStore store,MagazineFiles files
   Response.Headers.XContentTypeOptions="nosniff";Response.Headers.ContentDisposition=$"inline; filename=\"magazine-{id}.pdf\"";
   return File(opened.Value.Stream,opened.Value.ContentType,enableRangeProcessing:true);
  },token);
- [HttpGet("{id:int:min(1)}/pages")]
- public Task<IActionResult> Pages(int id,CancellationToken token)=>Execute(id,async rows=>
- {
-  var row=rows.SingleOrDefault();if(row is null)return NotFound();var manifest=await files.PagesAsync(row.FileName,token);
-  return manifest is null?NotFound():Ok(new{Pages=manifest.Pages.Select(p=>new{p.Width,p.Height})});
- },token);
- [HttpGet("{id:int:min(1)}/pages/{page:int:min(1)}")]
- public Task<IActionResult> Page(int id,int page,CancellationToken token)=>Execute(id,async rows=>
- {
-  var row=rows.SingleOrDefault();if(row is null)return NotFound();var manifest=await files.PagesAsync(row.FileName,token);
-  if(manifest is null||page>manifest.Pages.Length)return NotFound();var opened=await files.PageAsync(manifest,page,token);if(opened is null)return NotFound();
-  Response.Headers.XContentTypeOptions="nosniff";return File(opened.Value.Stream,opened.Value.ContentType,enableRangeProcessing:true);
- },token);
  private async Task<IActionResult> Execute(int? id,Func<IReadOnlyList<MagazinesStore.Row>,Task<IActionResult>> action,CancellationToken token)
  {
   Response.Headers.CacheControl="private, no-store";var name=User.Identity?.Name;if(string.IsNullOrWhiteSpace(name)||name.Length>512)return Unauthorized();
   try{var rows=await store.GetAsync(name,id,token);return rows is null?Problem(statusCode:403,title:"User is not registered or is inactive."):await action(rows);}
-  catch(Exception e) when(e is SqlException or InvalidOperationException or System.Data.DataException or IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException or JsonException)
+  catch(Exception e) when(e is SqlException or InvalidOperationException or System.Data.DataException or IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
   {logger.LogError(e,"Magazine read failed; trace {TraceId}.",HttpContext.TraceIdentifier);return Problem(statusCode:503,title:"Magazines are temporarily unavailable.");}
  }
 }

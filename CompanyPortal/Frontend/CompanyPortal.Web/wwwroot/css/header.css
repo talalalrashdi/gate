@@ -162,7 +162,7 @@ body.portal-dashboard .portal-attendance-details > div:nth-child(2) { background
 .portal-search-contact dl > div { display: grid; gap: 4px; }
 .portal-search-contact dt { color: #75847c; font-size: 10px; }
 .portal-search-contact dd { margin: 0; width: fit-content; font-size: 13px; font-weight: 700; color: #315e53; }
-.portal-search-contact-demo { display: inline-block; margin-top: 8px; padding: 2px 6px; border-radius: 6px; background: #f3efe4; color: #7b6746; font-size: 10px; }
+
 .portal-search-empty { padding: 26px 12px; text-align: center; font-size: 13px; color: #7b887e; }
 .portal-header-search[data-search-mode="phone"] { width: min(980px,calc(100vw - 40px)); overflow-y: auto; }
 .portal-header-search[data-search-mode="phone"] .portal-phone-search-layout { display: grid; grid-template-columns: minmax(0,1fr) 240px; gap: 22px; }
@@ -248,9 +248,9 @@ body .portal-media-new { padding:2px 5px; border-radius:4px; background:#fff0ec;
 @media(max-width:1050px) { .portal-media-subnav { gap:12px; padding-inline:18px; }.portal-media-subnav-label { display:none; } }
 @media(max-width:760px) { .portal-media-subnav { justify-content:flex-start; padding-inline:12px; }.portal-media-subnav-links { width:100%; }.portal-media-subnav-links:has(> .portal-media-subnav-label) { justify-content:flex-start; }.portal-media-subnav-links :is(a,button) { padding-inline:12px; font-size:11px; } }
 
-.portal-profile-source-status { padding: 0 20px 14px; }
-.portal-profile-source-status p { margin: 8px 0; font-size: 12px; line-height: 1.8; color: #526159; }
-.portal-profile-source-status button { padding: 6px 10px; border: 1px solid #c8d8cc; border-radius: 7px; background: #f0f6ee; color: #245e49; font-size: 12px; }
-.portal-profile-source-status [hidden] { display: none; }
+
+
+
+
 
 .portal-media-new[hidden] { display: none !important; }

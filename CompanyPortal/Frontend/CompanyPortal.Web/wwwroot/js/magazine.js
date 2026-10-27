@@ -192,7 +192,7 @@
   function suspend(){++generation;controller?.abort();clearReader();issues=[];updateBadge();issueSelect.replaceChildren();issueSelect.disabled=true;}
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)maybeMarkRead();});window.addEventListener('pagehide',suspend);window.addEventListener('pageshow',e=>{if(e.persisted)loadCatalog();});
   fullButton.addEventListener('click', async () => {
-    try { if (document.fullscreenElement === reader) await document.exitFullscreen(); else await reader.requestFullscreen(); }
+    try { if (document.fullscreenElement === reader) await document.exitFullscreen(); else { await reader.requestFullscreen(); stage.focus({ preventScroll: true }); } }
     catch { message.hidden = false; message.textContent = 'تعذّر ملء الشاشة في هذا المتصفح. استخدم التكبير أو افتح ملف PDF.'; }
   });
   // Entering fullscreen focuses the pages so the arrow keys turn pages immediately.

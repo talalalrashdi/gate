@@ -15,28 +15,25 @@ try{
  Assert ($catalog.Content-notmatch 'fileName|39.pdf|artifacts|magazine-fixture') 'Catalog exposes physical source paths.'
  $id=[int](Scalar "SELECT MIN(MagazineID) FROM Portal.Magazines WHERE FileName=N'39.pdf'")
  Assert ($id-gt 0) 'Existing sample missing.'
- foreach($path in @('/api/magazines',"/api/magazines/$id/pdf","/api/magazines/$id/pages","/api/magazines/$id/pages/1")){
+ foreach($path in @('/api/magazines',"/api/magazines/$id/pdf")){
   try{Invoke-WebRequest ($ApiBase+$path)|Out-Null;throw 'Anonymous success'}catch{Assert ($_.Exception.Response.StatusCode.value__-eq 401) 'Anonymous media read was not denied.'}
  }
- $pages=(Api "/api/magazines/$id/pages").Content|ConvertFrom-Json
- Assert ($pages.pages.Count-eq 258 -and $pages.pages[0].width-gt 0) 'Wrong existing page manifest.'
  $pdf=Api "/api/magazines/$id/pdf" @{Range='bytes=0-4'}
  Assert ($pdf.StatusCode-eq 206 -and $pdf.Headers['Content-Type']-match 'application/pdf' -and $pdf.Headers['X-Content-Type-Options']-match 'nosniff') 'PDF range/MIME/header failed.'
- $image=Api "/api/magazines/$id/pages/1";Assert ($image.Headers['Content-Type']-match 'image/webp') 'Preview MIME failed.'
- Code "/api/magazines/$id/pages/259" 404
+ Code "/api/magazines/$id/pages" 404 # page-image endpoints removed (PDF.js renders from the PDF)
  Code '/api/magazines/2147483000/pdf' 404
  $active=Scalar "SELECT CONVERT(int,Active) FROM Portal.Magazines WHERE MagazineID=$id"
  $originalFile=[string](Scalar "SELECT FileName FROM Portal.Magazines WHERE MagazineID=$id")
  try{
   Run "UPDATE Portal.Magazines SET Active=0 WHERE MagazineID=$id"
   Assert (-not(@((Api '/api/magazines').Content|ConvertFrom-Json).magazineId-contains $id)) 'Hidden issue still listed.'
-  Code "/api/magazines/$id/pdf" 404;Code "/api/magazines/$id/pages" 404;Code "/api/magazines/$id/pages/1" 404
+  Code "/api/magazines/$id/pdf" 404
   Run "UPDATE Portal.Magazines SET Active=$active,FileName=N'..\39.pdf' WHERE MagazineID=$id"
-  Code "/api/magazines/$id/pdf" 404;Code "/api/magazines/$id/pages" 404
+  Code "/api/magazines/$id/pdf" 404
  }finally{
   $cmd=$c.CreateCommand();$cmd.CommandText='UPDATE Portal.Magazines SET Active=@Active,FileName=@File WHERE MagazineID=@ID';[void]$cmd.Parameters.AddWithValue('@Active',$active);[void]$cmd.Parameters.AddWithValue('@File',$originalFile);[void]$cmd.Parameters.AddWithValue('@ID',$id);[void]$cmd.ExecuteNonQuery()
  }
  Assert ($snapshot-ceq (Scalar 'SELECT * FROM Portal.Magazines ORDER BY MagazineID FOR JSON PATH')) 'Original magazine data/timestamps not restored.'
  $swagger=(Api '/swagger/v1/swagger.json').Content|ConvertFrom-Json;Assert ($swagger.paths.'/api/magazines') 'Swagger unavailable.'
- Write-Output 'Magazine checks passed: current catalog, anonymous denial, no paths, PDF ranges, preview pages, inactive direct-file denial, traversal and restoration, Swagger.'
+ Write-Output 'Magazine checks passed: current catalog, anonymous denial, no paths, PDF ranges, page-image endpoints removed, inactive direct-file denial, traversal and restoration, Swagger.'
 }finally{$c.Dispose()}

@@ -27,7 +27,7 @@ Use **CompanyPortal.Mstr.Utls, Key = Magazines**, with `strVal` containing an ab
 
 PDFs are served by ID through `GET /api/magazines/{id}/pdf`, with active-user/publication rechecks, signature validation, root boundaries, reparse/device/alternate-stream rejection, inline disposition, nosniff, private/no-store and range processing. Catalog endpoint: `GET /api/magazines`. Invalid/hidden/missing files return404, source/configuration/access failures return sanitized503. API logs provide a trace reference.
 
-## Retaining page turns and thumbnails
+## Retaining page turns and thumbnails (historical — removed 27 October 2026; see «PDF.js viewer» below)
 
 The existing viewer uses prepared page images. To retain its two-page display, page turns, page navigation and thumbnail grid for an issue, place an optional companion folder beside its PDF:
 
@@ -112,3 +112,7 @@ The PDF is currently downloaded in full (HTTP 200, no range requests) because th
 - Fullscreen focuses the pages, and ← / → turn pages immediately (also when focus is on a control).
 
 Verified: `.local/magazine-publish-browser.cjs` (generated 12-page `40.pdf` + row → auto-selected, «جديد», read saved and badge cleared, 12 thumbnails, fullscreen arrows, link, old issue 258 pages, reload); test file/row/read removed and the ID counter left past the test IDs.
+
+## Clean-up (27 October 2026)
+
+Removed after the PDF.js switch: the `/api/magazines/{id}/pages` and `/pages/{page}` endpoints and manifest code, the `39-pages` image folders (web assets and local fixture), `scripts/render-magazine.py`, and the page-image copy step in `Initialize-MagazineFixture.ps1`. Removed web files are recorded in `docs/frontend-cleanup.json`. Companion `NN-pages/` folders in the magazine root are ignored.

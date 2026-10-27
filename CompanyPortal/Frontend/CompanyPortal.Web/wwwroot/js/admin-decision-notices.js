@@ -40,6 +40,16 @@
   panel.querySelector('[data-notice-reset]').addEventListener('click',async()=>{if(saving||!win.elements.decision.value||trackers.get(win).dirty()&&!await core.discard())return;win.elements.from.value='';win.elements.to.value='';win.elements.hidden.checked=false;void save(panel,'/'+channel+'/window',body(),win);});
   panel.querySelectorAll('[data-notice-days]').forEach(b=>b.addEventListener('click',()=>{form.elements.days.value=b.dataset.noticeDays;core.refresh();}));
   panel.querySelectorAll('[data-window-days]').forEach(b=>b.addEventListener('click',()=>{const row=data?.decisions.find(r=>r.decisionId===win.elements.decision.value);if(!row)return;const start=win.elements.from.value||row.publishedAt.slice(0,19),date=new Date(start+'+04:00');date.setTime(date.getTime()+Number(b.dataset.windowDays)*86400000);win.elements.from.value=start;win.elements.to.value=new Date(date.getTime()+4*3600000).toISOString().slice(0,19);core.refresh();}));
+  const draft=()=>{
+   if(!data)return;const types=[...form.querySelectorAll('[name=type]:checked')].map(n=>n.value),now=Date.now(),days=Number(form.elements.days.value);
+   const rows=form.elements.active.checked?data.decisions.filter(row=>{
+    if(!types.includes(row.decisionType))return false;
+    const w=row.decisionId===win.elements.decision.value?{fromAt:win.elements.from.value,toAt:win.elements.to.value,isHidden:win.elements.hidden.checked}:data.windows.find(w=>w.channelID===channel&&w.decisionId===row.decisionId);
+    const from=new Date((w?.fromAt||row.publishedAt)+'+04:00').getTime(),to=w?.toAt?new Date(w.toAt+'+04:00').getTime():new Date(row.publishedAt+'+04:00').getTime()+days*86400000;
+    return !w?.isHidden&&from<=now&&now<to;
+   }):[];return {rows};
+  };
+  AdminPreview.button(form.querySelector('fieldset'),section(panel),draft);AdminPreview.button(win.querySelector('fieldset'),section(panel),draft);
   core.whenSection(section(panel),()=>{if(!data&&!pending&&!saving)load();});
  }
 })();

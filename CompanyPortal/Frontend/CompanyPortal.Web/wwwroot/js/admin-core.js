@@ -66,6 +66,8 @@
   async function mayLeave(section){if(busyIn(section)){notify('انتظر اكتمال العملية الحالية.','error');return false;}return !dirtyIn(section)||await discard();}
   function applyAccess(){
     sections.clear();if(access?.isAdmin)for(const key of access.sections||[])sections.add(key);
+    if(access?.isSuperAdmin)sections.add('history');
+    document.querySelectorAll('[data-admin-super]').forEach(e=>e.hidden=!access?.isSuperAdmin);
     const allowed=sections.size>0,workspace=document.getElementById('admin-workspace'),message=document.getElementById('admin-access-message');
     workspace.hidden=!allowed;message.hidden=allowed;
     document.querySelectorAll('[data-admin-section]').forEach(button=>{const ok=allowed&&(button.dataset.adminSection==='overview'||sections.has(button.dataset.adminSection));button.hidden=!ok;button.disabled=!ok;});

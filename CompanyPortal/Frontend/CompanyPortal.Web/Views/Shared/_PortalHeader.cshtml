@@ -58,7 +58,6 @@
       <section class="portal-notifications-group" aria-labelledby="portal-calendar-notifications-title"><h3 id="portal-calendar-notifications-title">إشعارات تقويم الأعمال</h3><ul id="portal-calendar-notifications"></ul></section>
     </section>
     <nav class="portal-media-subnav" aria-label="أقسام الأخبار والوسائط">
-    @if (Context.RequestServices.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>().GetValue<bool>("Diagnostics:Enabled")) { <a class="portal-setup-link" href="@Url.Content("~/admin/diagnostics")">فحص الاتصال (مؤقت)</a> }
       <div class="portal-media-subnav-links">
         <a href="#editorial-news">أخبار عامة</a><a href="#editorial-events">أخبارنا</a><a href="#editorial-magazine">مجلة الشهر <span class="portal-media-new" data-mag-new hidden>جديد</span></a><a href="#safety">تعليمات السلامة</a><a href="#digital-library">وثائق تهمك</a>
       </div>

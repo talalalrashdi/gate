@@ -3,14 +3,17 @@ using Microsoft.AspNetCore.Mvc;
 namespace CompanyPortal.Web.Controllers;
 
 [Route("admin")]
-public sealed class AdminController(IConfiguration configuration) : Controller
+public sealed class AdminController : Controller
 {
     // Section keys served by the admin shell (/admin/{section}); matches data-admin-panel in the views.
     private static readonly HashSet<string> Sections = new(StringComparer.OrdinalIgnoreCase)
-        { "cards", "applications", "documents", "safety", "fixed-orders", "header-content", "notices", "alerts", "media", "images", "themes" };
+        { "history", "cards", "applications", "documents", "safety", "fixed-orders", "header-content", "notices", "alerts", "media", "images", "themes" };
 
-    [HttpGet("diagnostics")]
-    public IActionResult Diagnostics() => configuration.GetValue<bool>("Diagnostics:Enabled") ? View() : NotFound();
+    [HttpGet("health")]
+    public IActionResult Health() => View();
+
+    [HttpGet("content-preview")]
+    public IActionResult ContentPreview() { Response.Headers.ContentSecurityPolicy="frame-ancestors 'self'"; Response.Headers.CacheControl="no-store"; return View(); }
 
     // Public shell only. The browser calls the API with the visitor's Windows identity;
     // the API authorizes every read/write. Never use the MVC process identity here.

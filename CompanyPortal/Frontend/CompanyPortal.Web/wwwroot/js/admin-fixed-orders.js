@@ -60,6 +60,7 @@
   });
   byId('fixed-order-cancel').addEventListener('click',async()=>{if(busy||dirty()&&!await core.discard())return;editor.hidden=true;current=null;isNew=false;renderList();});
   add.addEventListener('click',()=>choose(null));search.addEventListener('input',renderList);retry.addEventListener('click',async()=>{if(!busy&&(!dirty()||await core.discard())){editor.hidden=true;current=null;load();}});
+  AdminPreview.button(form.querySelector('.admin-order-actions'),'fixed-orders',()=>values());
   core.watch('fixed-orders',form,dirty,()=>busy);
   core.whenSection('fixed-orders',()=>{if(!loaded&&!busy)load();});
 })();

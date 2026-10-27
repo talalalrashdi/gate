@@ -1,0 +1,12 @@
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const context={window:{}};vm.runInNewContext(readFileSync(new URL('../Frontend/CompanyPortal.Web/wwwroot/js/admin-history-diff.js',import.meta.url),'utf8'),context);
+const compare=context.window.AdminHistoryDiff.compare;
+let rows=compare({Title:'قديم',Active:true,Items:[{ImageId:1,DisplayOrder:1},{ImageId:2,DisplayOrder:2}]},{Title:'جديد',Active:true,Items:[{ImageId:1,DisplayOrder:2},{ImageId:3,DisplayOrder:1}]});
+assert(rows.find(r=>r.key==='Title').changed);assert(!rows.find(r=>r.key==='Active').changed);assert.equal(rows.find(r=>r.key==='Title').label,'العنوان');
+const items=rows.find(r=>r.key==='Items');assert(items.changed);assert.equal(items.added.length,1);assert.equal(items.removed.length,1);assert.match(items.added[0],/3/);assert.match(items.removed[0],/2/);
+rows=compare(null,{Documents:[{DocumentID:'a',DocumentName:'ملف'}]});assert.equal(rows[0].added.length,1);assert.equal(rows[0].before,'—');
+rows=compare({Roles:['A','B']},{Roles:['A','C']});assert.equal(rows[0].added[0],'C');assert.equal(rows[0].removed[0],'B');
+rows=compare({ContentAfter:'<script>literal</script>'},null);assert.equal(rows[0].before,'<script>literal</script>');assert.equal(rows[0].after,'—');
+console.log('PASS: Arabic fields, no-op/create/delete, scalar changes, list additions/removals, stable item identity and literal text.');

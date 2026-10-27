@@ -25,7 +25,7 @@
           target.append(make('p',item.count+' معروض الآن','admin-overview-count'));list(target,item.titles,(li,title)=>li.textContent=title);
         }else if(item.kind==='media')list(target,item.items,(li,row)=>{li.append(make('strong',row.mediaName),make('small',row.mediaType==='video'?'فيديو':'صورة'));});
       }
-      const history=card('changes');history.parentElement.classList.add('admin-overview-history');
+      const history=card('changes',core.can('history')?'history':null);if(core.can('history'))history.parentElement.querySelector('.admin-overview-link').textContent='سجل التعديلات';history.parentElement.classList.add('admin-overview-history');
       list(history,data.changes,(li,row)=>{
         const button=make('button',row.itemTitle||row.itemType);button.type='button';button.dataset.adminSection=row.section;
         li.append(button,make('small',(actions[row.action]||row.action)+' · '+row.displayName+' · '+AdminChanges.date(row.changedAt)));

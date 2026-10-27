@@ -15,7 +15,7 @@
     });
   }
   async function load(section){
-    if(section==='overview'||!core.can(section)||cache.has(section)||pending.has(section))return;
+    if(['overview','history'].includes(section)||!core.can(section)||cache.has(section)||pending.has(section))return;
     const version=versions.get(section)||0;failed.delete(section);
     const task=(async()=>{try{
       const r=await core.request('api/admin/changes/latest?section='+encodeURIComponent(section));

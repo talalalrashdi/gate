@@ -49,7 +49,7 @@
     const [actionsWrap,actions]=field('ما الذي يجب فعله؟ — خطوة في كل سطر',level.actions,{maxlength:1500,rows:4,multiline:true});
     if(level.color==='green'){guideWrap.hidden=true;actionsWrap.hidden=true;}
     const save=make('button',{type:'submit',className:'admin-primary',textContent:'حفظ'}),note=make('small',{className:'hc-note',textContent:'تُحفظ نصوص هذه الحالة مستقلة.'});
-    const footer=make('div',{className:'hc-level-footer'});footer.append(note,save);
+    const footer=make('div',{className:'hc-level-footer'});footer.append(note,save);AdminPreview.button(footer,'header-content',()=>({kind:'status',color:level.color,title:title.value,colorName:name.value,summary:summary.value,guideText:guide.value,actions:actions.value}));
     card.append(head,titleWrap,nameWrap,summaryWrap,guideWrap,actionsWrap,footer);const tracker=core.trackForm('header-content',card,{busy:()=>busy});
     card.addEventListener('submit',async event=>{
       event.preventDefault();if(busy)return;
@@ -74,6 +74,8 @@
   }
   add.addEventListener('click',()=>{const row=numberRow(null);numbers.append(row);row.querySelector('input').focus();});
   retry.addEventListener('click',async()=>{if(!busy&&(!core.dirtyIn('header-content')||await core.discard()))load();});
+  const numberActions=make('div',{className:'hc-actions'});add.replaceWith(numberActions);numberActions.append(add);
+  AdminPreview.button(numberActions,'header-content',()=>({kind:'numbers',rows:[...numbers.querySelectorAll('.hc-number-row')].map(r=>{const a=r.querySelectorAll('input');return{title:a[0].value,number:a[1].value,active:a[3].checked,order:Number(a[2].value)};}).sort((a,b)=>a.order-b.order)}));
   core.watch('header-content',root,()=>false,()=>busy);
   core.whenSection('header-content',()=>{if(!loaded&&!busy)load();});
 })();

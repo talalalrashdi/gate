@@ -3,7 +3,7 @@
  const dialog=document.getElementById('portal-simulation-dialog'),status=root.querySelector('[data-simulation-status]'),select=root.querySelector('[data-simulation-decision-type]');let sequence=0,rules=[],loading;
  const panel=root.querySelector('section');
  function position(){const r=root.getBoundingClientRect();panel.style.setProperty('--simulation-left',Math.max(12,Math.min(r.left,innerWidth-Math.min(350,innerWidth*.85)-12))+'px');panel.style.setProperty('--simulation-top',(r.bottom+12)+'px');}
- const names={decision:'قرار جديد',notice:'تنويه جديد',alert:'إعلان جديد',news:'خبر جديد',breaking:'خبر عاجل'};
+ const names={correspondence:'مراسلة جديدة',decision:'قرار جديد',notice:'تنويه جديد',alert:'إعلان جديد',news:'خبر جديد',breaking:'خبر عاجل'};
  const base=document.querySelector('meta[name="companyportal-api-base"]')?.content;
  function lock(value){root.querySelectorAll('[data-simulate="decision"],[data-simulate="notice"],[data-simulate="alert"]').forEach(b=>b.disabled=value);}
  async function loadRules(){if(loading)return loading;lock(true);status.textContent='جارٍ تحميل إعدادات الأنواع من البوابة…';
@@ -43,7 +43,7 @@
   if(kind==='notice'||kind==='alert'){const channel=kind==='notice'?1:2,rule=rules.find(r=>r.channelId===channel),preferred=channel===1?'تنويه':'إعلان';decisionType=rule?.decisionTypes.includes(preferred)?preferred:rule?.decisionTypes[0]||decisionType;}
   const notices=rules.filter(r=>r.active&&r.decisionTypes.includes(decisionType)).map(r=>({channelId:r.channelId,fromAt:new Date(Date.now()-1000).toISOString(),toAt:new Date(Date.now()+r.durationDays*86400000).toISOString()}));
   const title='[محاكاة] '+(root.querySelector('[data-simulation-title]').value.trim()||names[kind]||'');
-  document.dispatchEvent(new CustomEvent('portal:simulate',{detail:{kind,id:++sequence,title,decisionType,notices}}));
+  document.dispatchEvent(new CustomEvent('portal:simulate',{detail:{kind,id:++sequence,title,decisionType,notices,correspondencePurpose:root.querySelector('[data-simulation-correspondence-purpose]').value.trim()||'للعلم',correspondenceSender:root.querySelector('[data-simulation-correspondence-sender]').value.trim()||'موظف المحاكاة'}}));
   status.textContent=kind==='reset'?'تم مسح المواد المحلية. لم تتغير بيانات قاعدة البيانات.':'تمت محاكاة '+names[kind]+(['decision','notice','alert'].includes(kind)?' من نوع '+decisionType+(notices.length?'؛ ظهر بحسب إعدادات الإدارة.':'؛ غير مشمول حاليًا في قنوات الإدارة.'):'.');
  });
  document.addEventListener('portal:simulation-open',event=>{dialog.querySelector('h2').textContent=event.detail.title;dialog.querySelector('p').textContent=event.detail.text;if(!dialog.open)dialog.showModal();});

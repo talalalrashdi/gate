@@ -3,6 +3,7 @@
   if(!card||!base)return;
   const list=card.querySelector('#correspondence-inbox-list'),status=card.querySelector('#correspondence-inbox-status'),badge=card.querySelector('[data-count-source="correspondence"]'),dialog=card.querySelector('#correspondence-sample-dialog'),filter=card.querySelector('#correspondence-purpose-filter');
   let loading=false,controller,timer,generation=0,failures=0,fingerprint='',rows=[],unreadCount=0,selectedPurpose='';
+  let realData={items:[],unreadCount:0},simulatedRows=[];
   const seen=new Set(),freshUntil=new Map();let baseline=false,freshTimer;
   function updateFresh(){clearTimeout(freshTimer);const now=Date.now();for(const el of list.querySelectorAll('[data-correspondence-id]'))if((freshUntil.get(el.dataset.correspondenceId)||0)<=now){const badge=el.querySelector('.portal-correspondence-new');if(badge?.nextSibling?.nodeType===3&&badge.nextSibling.textContent==='\n')badge.nextSibling.remove();badge?.remove();}const next=[...freshUntil.values()].filter(at=>at>now).sort((a,b)=>a-b)[0];if(next&&!document.hidden)freshTimer=setTimeout(updateFresh,next-now+10);}
   function receivedLabel(value,now=new Date()){
@@ -14,10 +15,10 @@
   }
   const endpoint=path=>new URL(path,new URL(base.replace(/\/?$/,'/'),location.href));
   const make=(tag,cls,text)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el;};
-  function clear(){rows=[];fingerprint='';list.replaceChildren();filter.replaceChildren();selectedPurpose='';badge.hidden=false;badge.textContent='—';badge.setAttribute('aria-label','عدد المراسلات غير المفتوحة غير متاح');if(dialog.open)dialog.close();}
+  function clear(){rows=[];realData={items:[],unreadCount:0};fingerprint='';list.replaceChildren();filter.replaceChildren();selectedPurpose='';badge.hidden=false;badge.textContent='—';badge.setAttribute('aria-label','عدد المراسلات غير المفتوحة غير متاح');if(dialog.open)dialog.close();}
   function schedule(){clearTimeout(timer);if(!document.hidden)timer=setTimeout(()=>void load(),Math.min(300000,60000*2**failures)+Math.random()*5000);}
   function render(data){
-    rows=data.items;unreadCount=data.unreadCount;
+    realData=data;rows=[...simulatedRows,...data.items];unreadCount=data.unreadCount+simulatedRows.filter(row=>!row.isOpened).length;
     const types=[...new Set(rows.map(r=>r.purpose))].sort((a,b)=>a.localeCompare(b,'ar'));
     if(!types.includes(selectedPurpose))selectedPurpose='';
     const focused=filter.contains(document.activeElement)?document.activeElement.dataset.purpose:null;
@@ -32,14 +33,14 @@
     const visible=rows.filter(row=>!selectedPurpose||row.purpose===selectedPurpose);
     for(const row of visible){
       const el=make(row.canOpen?'a':'button','portal-correspondence-item');el.dataset.state=row.isOpened?'opened':'unopened';el.dataset.correspondenceId=row.correspondenceId;
-      el.setAttribute('aria-label',row.title+' — '+(row.isOpened?'مفتوحة':'غير مفتوحة')+(row.isSamplePreview?' — معاينة محلية':''));
+      el.setAttribute('aria-label',row.title+' — '+(row.isOpened?'مفتوحة':'غير مفتوحة')+(row.isSimulation?' — محاكاة محلية':row.isSamplePreview?' — معاينة محلية':''));
       if(row.canOpen){el.href=endpoint('api/correspondence/'+row.correspondenceId+'/open');el.target='_blank';el.rel='noopener noreferrer';}
       else{el.type='button';el.disabled=!row.isSamplePreview;}
       const title=make('strong','portal-correspondence-title',row.title);title.title=row.title;
       const header=make('span','portal-correspondence-heading'),number=make('span','portal-correspondence-number',row.docNo),purpose=make('span','portal-correspondence-purpose '+(row.purpose==='للإجراء'?'is-action':'is-info'),row.purpose);number.dir='ltr';header.append(number,purpose);el.append(header,title);
       const sender=make('span','portal-correspondence-sender','مرسلة من قبل: '+(row.senderName||'غير محدد'));sender.title=sender.textContent;el.append(sender);
       const date=make('time',null,receivedLabel(row.receivedAt));date.dateTime=row.receivedAt;if(!row.isOpened&&(freshUntil.get(row.correspondenceId)||0)>Date.now())date.prepend(make('span','portal-correspondence-new','جديد'),document.createTextNode('\n'));el.append(date);
-      if(!row.canOpen&&row.isSamplePreview)el.addEventListener('click',()=>{dialog.querySelector('h2').textContent=row.title;dialog.querySelector('[data-correspondence-sample-meta]').textContent=row.docNo+' · '+row.purpose+' · مرسلة من قبل: '+(row.senderName||'غير محدد')+' · '+date.textContent;dialog.showModal();});
+      if(!row.canOpen&&row.isSamplePreview)el.addEventListener('click',()=>{dialog.querySelector('h2').textContent=row.title;dialog.querySelector('[data-correspondence-sample-meta]').textContent=row.docNo+' · '+row.purpose+' · مرسلة من قبل: '+(row.senderName||'غير محدد')+' · '+date.textContent;dialog.querySelector('header strong').textContent=row.isSimulation?'معاينة مراسلة — محاكاة محلية':'معاينة مراسلة — بيانات محلية';dialog.querySelector('p:last-child').textContent=row.isSimulation?'هذه مراسلة محاكاة مؤقتة في الصفحة فقط، دون حفظ أو فتح تطبيق خارجي.':'هذه معاينة محلية حتى إعداد رابط تطبيق المراسلات. فتح المعاينة لا يغيّر حالة الفتح أو عدد الإشعارات في OfficeFormsdb.';if(row.isSimulation&&!row.isOpened){row.isOpened=true;freshUntil.delete(row.correspondenceId);render(realData);}dialog.showModal();});
       list.append(el);
     }
     updateFresh();
@@ -61,6 +62,16 @@
     }catch(error){if(mine!==generation)return;failures=Math.min(3,failures+1);status.hidden=false;status.textContent=error.name==='Error'?error.message:'تعذر الاتصال بوارد المراسلات. ستتم إعادة المحاولة تلقائيًا.';}
     finally{if(mine===generation){loading=false;list.setAttribute('aria-busy','false');schedule();}}
   }
+  if(document.getElementById('portal-simulation'))document.addEventListener('portal:simulate',event=>{
+    const detail=event.detail;if(!detail||!['correspondence','reset'].includes(detail.kind))return;
+    if(detail.kind==='reset'){for(const row of simulatedRows){seen.delete(row.correspondenceId);freshUntil.delete(row.correspondenceId);}simulatedRows=[];}
+    else{
+      const id='simulation-correspondence-'+detail.id;
+      simulatedRows.unshift({correspondenceId:id,docNo:'SIM/'+detail.id,title:detail.title,purpose:detail.correspondencePurpose,senderName:detail.correspondenceSender,receivedAt:new Date().toISOString(),isOpened:false,isSamplePreview:true,canOpen:false,isSimulation:true});
+      freshUntil.set(id,Date.now()+60000);seen.add(id);selectedPurpose='';
+    }
+    render(realData);
+  });
   function updateFilter(){for(const button of filter.children)button.setAttribute('aria-pressed',String(button.dataset.purpose===selectedPurpose));}
   filter.addEventListener('click',event=>{const button=event.target.closest('button[data-purpose]');if(!button||!filter.contains(button)||selectedPurpose===button.dataset.purpose)return;selectedPurpose=button.dataset.purpose;updateFilter();renderRows();});
   dialog.querySelector('button').addEventListener('click',()=>dialog.close());

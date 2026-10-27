@@ -5,10 +5,11 @@
   const fields={timestamp:byId('fixed-order-date'),timestamp2:byId('fixed-order-date2'),timestampType:byId('fixed-order-date-type'),contentAfter:byId('fixed-order-after'),contentBefor:byId('fixed-order-before'),contentText:byId('fixed-order-content')};
   const make=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
   let rows=[],current=null,original='',loaded=false,busy=false,isNew=false;
-  const request=(path,method='GET',body)=>fetch(endpoint(path),{method,credentials:'include',cache:'no-store',signal:AbortSignal.timeout(15000),...(method==='GET'?{}:{headers:{'Content-Type':'application/json','X-CompanyPortal-Request':'fixed-orders'},body:JSON.stringify(body)})});
+  const core=window.AdminCore;
+  const request=(path,method='GET',body)=>core.request(endpoint(path),{method,body,header:'fixed-orders'});
   const values=()=>({timestamp:fields.timestamp.value||null,timestamp2:fields.timestamp2.value||null,timestampType:fields.timestampType.value===''?null:Number(fields.timestampType.value),contentAfter:fields.contentAfter.value,contentBefor:fields.contentBefor.value.trim()?fields.contentBefor.value:null,contentText:fields.contentText.value});
   const dirty=()=>!editor.hidden&&(isNew||JSON.stringify(values())!==original);
-  function message(text,canRetry=false){status.textContent=text;retry.hidden=!canRetry;}
+  function message(text,canRetry=false){core.feedback(status,text);retry.hidden=!canRetry;}
   function sync(){
     const row=values(),before=row.contentText.includes('ds{0}de');fields.contentBefor.required=before;
     byId('fixed-order-preview-title').textContent=row.contentAfter.trim()||'توجيه سامٍ';
@@ -23,8 +24,8 @@
       const b=make('button');b.type='button';b.setAttribute('aria-pressed',String(current?.fixedOrderId===row.fixedOrderId));b.append(make('strong',row.contentAfter?.trim()||'توجيه سامٍ'),make('small',row.timestamp||'التاريخ غير محدد'));b.addEventListener('click',()=>choose(row));return b;
     }));if(!list.children.length)list.append(make('p','لا توجد توجيهات مطابقة.'));
   }
-  function choose(row){
-    if(busy||(dirty()&&!confirm('إلغاء التغييرات غير المحفوظة وفتح التوجيه؟')))return;
+  async function choose(row){
+    if(busy||(dirty()&&!await core.discard('إلغاء التغييرات غير المحفوظة وفتح التوجيه؟')))return;
     current=row;isNew=!row;editor.hidden=false;error.hidden=true;
     const data=row||{timestamp:null,timestamp2:null,timestampType:null,contentBefor:null,contentAfter:'',contentText:'بتغيير ds{0}de إلى ss{1}se'};
     for(const [key,input] of Object.entries(fields))input.value=data[key]??'';
@@ -43,7 +44,7 @@
     const input=fields.contentText,text=b.dataset.orderInsert;if(input.value.length-(input.selectionEnd-input.selectionStart)+text.length>1000){error.textContent='بلغت الصياغة الحد الأقصى: 1000 حرف.';error.hidden=false;return;}
     input.setRangeText(text,input.selectionStart,input.selectionEnd,'end');input.focus();sync();
   }));
-  root.querySelectorAll('[data-order-preset]').forEach(b=>b.addEventListener('click',()=>{if(fields.contentText.value&& !confirm('استبدال الصياغة الحالية بالصياغة المختارة؟'))return;fields.contentText.value=b.dataset.orderPreset==='change'?'بتغيير ds{0}de إلى ss{1}se':'ds{0}de';sync();fields.contentText.focus();}));
+  root.querySelectorAll('[data-order-preset]').forEach(b=>b.addEventListener('click',async()=>{if(fields.contentText.value&& !await core.confirm('استبدال الصياغة الحالية بالصياغة المختارة؟',{title:'استبدال الصياغة',accept:'استبدال',danger:true}))return;fields.contentText.value=b.dataset.orderPreset==='change'?'بتغيير ds{0}de إلى ss{1}se':'ds{0}de';sync();fields.contentText.focus();}));
   form.addEventListener('submit',async e=>{
     e.preventDefault();sync();if(busy||!dirty()||!form.reportValidity())return;
     const body=values(),id=current?.fixedOrderId;busy=true;lock();error.hidden=true;message('جارٍ حفظ التوجيه…');
@@ -57,9 +58,8 @@
     }catch{error.textContent='تعذر تأكيد الحفظ. أعد تحميل السجل للتحقق قبل إعادة المحاولة.';error.hidden=false;message('تعذر تأكيد الحفظ.',true);}
     finally{busy=false;lock();}
   });
-  byId('fixed-order-cancel').addEventListener('click',()=>{if(dirty()&&!confirm('إلغاء التغييرات غير المحفوظة؟'))return;editor.hidden=true;current=null;isNew=false;renderList();});
-  add.addEventListener('click',()=>choose(null));search.addEventListener('input',renderList);retry.addEventListener('click',()=>{if(!busy&&(!dirty()||confirm('إعادة التحميل ستلغي التغييرات غير المحفوظة. متابعة؟'))){editor.hidden=true;current=null;load();}});
-  document.querySelectorAll('[data-admin-section="fixed-orders"]').forEach(b=>b.addEventListener('click',()=>{if(!loaded&&!busy)load();}));window.addEventListener('popstate',()=>{if(location.hash==='#fixed-orders'&&!loaded&&!busy)load();});
-  window.addEventListener('beforeunload',e=>{if(dirty()){e.preventDefault();e.returnValue='';}});
-  if(document.body.dataset.adminStart==='fixed-orders'||location.hash==='#fixed-orders')load();
+  byId('fixed-order-cancel').addEventListener('click',async()=>{if(busy||dirty()&&!await core.discard())return;editor.hidden=true;current=null;isNew=false;renderList();});
+  add.addEventListener('click',()=>choose(null));search.addEventListener('input',renderList);retry.addEventListener('click',async()=>{if(!busy&&(!dirty()||await core.discard())){editor.hidden=true;current=null;load();}});
+  core.watch('fixed-orders',form,dirty,()=>busy);
+  core.whenSection('fixed-orders',()=>{if(!loaded&&!busy)load();});
 })();

@@ -1,0 +1,13 @@
+.admin-confirm{width:min(480px,calc(100vw - 40px));border:1px solid #d8e2db;border-radius:20px;padding:26px;background:#fff;color:#234b3f;box-shadow:0 25px 80px #12362c40;font:inherit}
+.admin-confirm::backdrop{background:#132d2866;backdrop-filter:blur(3px)}
+.admin-confirm h2{font-size:22px;margin:0 0 12px}.admin-confirm p{font-size:14px;line-height:1.9;margin:0 0 22px;white-space:pre-line}
+.admin-confirm-actions{display:flex;gap:10px;justify-content:flex-end}.admin-confirm button{padding:9px 20px;border:1px solid #ccdad1;border-radius:10px;background:#f5f8f4;color:#234b3f;font:inherit;cursor:pointer}
+.admin-confirm [data-confirm-yes]{background:#215c47;color:#fff;border-color:#215c47}.admin-confirm [data-confirm-yes].is-danger{background:#a23543;border-color:#a23543}
+.admin-confirm button:focus-visible,.admin-toast button:focus-visible{outline:3px solid #b79545;outline-offset:3px}
+html:has(.admin-confirm[open]),body:has(.admin-confirm[open]){overflow:hidden}
+.admin-toasts{position:fixed;left:24px;bottom:24px;z-index:2000;display:grid;gap:10px;width:min(380px,calc(100vw - 48px));max-height:70vh;overflow-y:auto;pointer-events:none}
+.admin-toast{display:flex;align-items:start;justify-content:space-between;gap:15px;padding:14px 16px;border:1px solid #bcd8c7;border-radius:13px;background:#ecf8f0;color:#20533c;box-shadow:0 6px 28px #14352922;font-size:14px;line-height:1.8;pointer-events:auto;overflow-wrap:anywhere}
+.admin-toast.is-error{background:#fff0f1;border-color:#e7bdc3;color:#8b2937}.admin-toast button{border:0;background:transparent;font:inherit;font-size:22px;color:inherit;cursor:pointer;padding:0 4px}
+[data-admin-dirty="true"]{position:relative}.admin-unsaved-badge{position:absolute;top:0;left:12px;z-index:2;padding:2px 9px;border:1px solid #e4c482;border-radius:99px;background:#fff5d9;color:#785314;font-size:11px;line-height:1.8;pointer-events:none}
+.admin-nav [data-unsaved="true"]::after{content:'';width:7px;height:7px;flex:none;background:#c28a27;border-radius:50%;margin-inline-start:auto}
+.admin-feature[hidden],.admin-nav button[hidden]{display:none!important}

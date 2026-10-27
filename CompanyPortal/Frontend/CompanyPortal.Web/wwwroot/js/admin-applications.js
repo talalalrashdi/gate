@@ -6,8 +6,9 @@
   const status=document.getElementById('admin-applications-status'),retry=document.getElementById('admin-applications-retry'),add=document.getElementById('admin-category-add'),search=document.getElementById('admin-application-search');
   const make=(tag,cls,text)=>{const node=document.createElement(tag);if(cls)node.className=cls;if(text)node.textContent=text;return node;};
   let categories=[],loaded=false,busy=false;
-  const request=(path,method='GET',body)=>fetch(endpoint(path),{method,credentials:'include',cache:'no-store',signal:AbortSignal.timeout(10000),...(method==='GET'?{}:{headers:{'Content-Type':'application/json','X-CompanyPortal-Request':'application-directory'},body:JSON.stringify(body)})});
-  const message=(text,canRetry=false)=>{status.textContent=text;retry.hidden=!canRetry;};
+  const core=window.AdminCore;
+  const request=(path,method='GET',body)=>core.request(endpoint(path),{method,body,header:'application-directory',timeout:10000});
+  const message=(text,canRetry=false)=>{core.feedback(status,text);retry.hidden=!canRetry;};
   const dirty=()=>root.querySelector('.is-dirty')!==null;
   function refresh(){root.querySelectorAll('form').forEach(form=>form.dispatchEvent(new Event('directory:refresh')));add.disabled=busy||!loaded;}
   function options(select,value){
@@ -42,14 +43,14 @@
     const values=()=>({categoryName:name.value.trim(),displayOrder:Number(order.value),active:active.checked});
     function sync(){const value=values(),changed=isNew||value.categoryName!==category.categoryName||value.displayOrder!==category.displayOrder||value.active!==category.active;form.classList.toggle('is-dirty',changed);button.disabled=busy||!changed;note.textContent=changed?'تغييرات غير محفوظة':category.active?'متاح لتصنيف التطبيقات.':'التطبيقات التابعة تظهر تحت غير مصنف.';}
     form.addEventListener('input',sync);form.addEventListener('change',sync);form.addEventListener('directory:refresh',sync);
-    if(isNew){const cancel=make('button',null,'إلغاء');cancel.type='button';cancel.addEventListener('click',()=>{if(!busy)form.remove();});form.append(cancel);}
+    if(isNew){const cancel=make('button',null,'إلغاء');cancel.type='button';cancel.addEventListener('click',async()=>{if(!busy&&await core.discard())form.remove();});form.append(cancel);}
     form.addEventListener('submit',event=>{event.preventDefault();const value=values();if(!value.categoryName){name.focus();return;}
       save(form,'/categories'+(isNew?'':'/'+category.categoryId),isNew?'POST':'PUT',value,result=>{
         Object.assign(category,value);if(isNew){category.categoryId=result.categoryId;categories.push(category);form.replaceWith(categoryForm(category));}
         else form.setAttribute('aria-label','تصنيف '+category.categoryName);
         list.querySelectorAll('select').forEach(select=>{const current=select.value;options(select,current||null);});
       });
-    });sync();return form;
+    });sync();core.watch('applications',form,()=>form.classList.contains('is-dirty'),()=>busy);return form;
   }
   function applicationForm(app){
     const form=make('form','admin-directory-form');form.setAttribute('aria-label','وصف '+app.appName);form.dataset.appName=app.appName;
@@ -61,7 +62,7 @@
     const values=()=>({description:description.value.trim(),categoryId:category.value?Number(category.value):null});
     function sync(){const value=values(),changed=value.description!==app.description||value.categoryId!==app.categoryId;form.classList.toggle('is-dirty',changed);button.disabled=busy||!changed;note.textContent=changed?'تغييرات غير محفوظة':'معلومات عرض؛ لا تغيّر صلاحيات التطبيق أو رابط تشغيله.';}
     form.addEventListener('input',sync);form.addEventListener('change',sync);form.addEventListener('directory:refresh',sync);
-    form.addEventListener('submit',event=>{event.preventDefault();const value=values();save(form,'/applications/'+app.appId,'PUT',value,()=>{Object.assign(app,value);description.value=app.description;});});sync();return form;
+    form.addEventListener('submit',event=>{event.preventDefault();const value=values();save(form,'/applications/'+app.appId,'PUT',value,()=>{Object.assign(app,value);description.value=app.description;});});sync();core.watch('applications',form,()=>form.classList.contains('is-dirty'),()=>busy);return form;
   }
   async function load(){
     if(busy)return;busy=true;add.disabled=true;retry.disabled=true;message('جارٍ تحميل التطبيقات والتصنيفات…');
@@ -79,10 +80,8 @@
   const normalize=value=>value.replace(/[أإآ]/g,'ا').toLowerCase().trim();
   function filter(){const query=normalize(search.value);list.querySelectorAll('form').forEach(form=>{form.hidden=!normalize(form.dataset.appName).includes(query);});}
   add.addEventListener('click',()=>{if(!busy&&!categoryList.querySelector('[data-new-category]')){const form=categoryForm({categoryName:'',displayOrder:categories.length+1,active:true},true);categoryList.prepend(form);form.querySelector('input').focus();}});
-  retry.addEventListener('click',()=>{if(!dirty()||confirm('إعادة التحميل ستلغي تغييرات الدليل غير المحفوظة. متابعة؟'))load();});
+  retry.addEventListener('click',async()=>{if(!busy&&(!dirty()||await core.discard()))load();});
   search.addEventListener('input',filter);
-  document.querySelectorAll('[data-admin-section="applications"]').forEach(button=>button.addEventListener('click',()=>{if(!loaded)load();}));
-  window.addEventListener('popstate',()=>{if(location.hash==='#applications'&&!loaded)load();});
-  window.addEventListener('beforeunload',event=>{if(dirty()){event.preventDefault();event.returnValue='';}});
-  if(document.body.dataset.adminStart==='applications'||location.hash==='#applications')load();
+  core.watch('applications',root,()=>false,()=>busy);
+  core.whenSection('applications',()=>{if(!loaded&&!busy)load();});
 })();

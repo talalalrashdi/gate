@@ -7,8 +7,9 @@ document.querySelectorAll('[data-pdf-library-admin]').forEach(root => {
   const make=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=terms(text);return n;};
   let catalog,loaded=false,busy=false;
   const dirty=()=>!!root.querySelector('.is-dirty');
-  const request=(path,method='GET',body)=>fetch(endpoint(path),{method,credentials:'include',cache:'no-store',signal:AbortSignal.timeout(15000),...(method==='GET'?{}:{headers:{'Content-Type':'application/json','X-CompanyPortal-Request':route},body:JSON.stringify(body)})});
-  function message(text,canRetry=false){status.textContent=terms(text);retry.hidden=!canRetry;}
+  const core=window.AdminCore;
+  const request=(path,method='GET',body)=>core.request(endpoint(path),{method,body,header:route});
+  function message(text,canRetry=false){core.feedback(status,terms(text));retry.hidden=!canRetry;}
   function lock(){root.querySelectorAll('input,select,button').forEach(n=>{n.disabled=busy;});add.disabled=busy||!loaded;root.querySelectorAll('form').forEach(f=>f.dispatchEvent(new Event('library:sync')));}
   function form(tab,isNew=false){
     const f=make('form','admin-document-form');if(isNew)f.dataset.newTab='';f.setAttribute('aria-label',terms(isNew?'تبويب جديد':'تبويب '+tab.tabName));
@@ -23,7 +24,7 @@ document.querySelectorAll('[data-pdf-library-admin]').forEach(root => {
     const files=make('fieldset');f.append(files);let selected=new Set(catalog.items.filter(i=>i.documentTabId===tab.documentTabId).map(i=>i.documentId));
     const activeLabel=make('label','admin-document-active'),active=make('input');active.type='checkbox';active.checked=tab.active;activeLabel.append(active,make('span',null,'إظهار التبويب'));f.append(activeLabel);
     const save=make('button','admin-primary',isNew?'إنشاء التبويب':'حفظ التغييرات');save.type='submit';f.append(save);
-    if(isNew){const cancel=make('button',null,'إلغاء');cancel.type='button';cancel.addEventListener('click',()=>{if(!busy)f.remove();});f.append(cancel);}
+    if(isNew){const cancel=make('button',null,'إلغاء');cancel.type='button';cancel.addEventListener('click',async()=>{if(!busy&&await core.discard())f.remove();});f.append(cancel);}
     const note=make('p','admin-document-note');f.append(note);
     const values=()=>({tabName:name.value.trim(),folderId:Number(folder.value),displayOrder:Number(order.value),active:active.checked,documentIds:[...selected].sort()});
     let original=JSON.stringify(values());
@@ -50,7 +51,7 @@ document.querySelectorAll('[data-pdf-library-admin]').forEach(root => {
         original=JSON.stringify(value);f.classList.remove('is-dirty');f.replaceWith(form(tab));message('تم الحفظ. تظهر التغييرات للموظفين عند إعادة تحميل البوابة.');
       }catch{message('تعذر تأكيد الحفظ. أعد تحميل القائمة للتحقق قبل إعادة المحاولة.',true);}
       finally{busy=false;lock();}
-    });filesList();sync();return f;
+    });filesList();sync();core.watch(section,f,()=>f.classList.contains('is-dirty'),()=>busy);return f;
   }
   async function load(){
     if(busy)return;busy=true;lock();message('جارٍ تحميل تبويبات الوثائق…');
@@ -62,8 +63,7 @@ document.querySelectorAll('[data-pdf-library-admin]').forEach(root => {
     finally{busy=false;lock();}
   }
   add.addEventListener('click',()=>{if(!busy&&!list.querySelector('[data-new-tab]')){const f=form({tabName:'',folderId:0,displayOrder:(catalog.tabs.length+1)*10,active:true},true);list.prepend(f);f.querySelector('input').focus();}});
-  retry.addEventListener('click',()=>{if(!dirty()||confirm('إعادة التحميل ستلغي التغييرات غير المحفوظة. متابعة؟'))load();});
-  document.querySelectorAll('[data-admin-section="'+section+'"]').forEach(b=>b.addEventListener('click',()=>{if(!loaded)load();}));
-  window.addEventListener('popstate',()=>{if(location.hash==='#'+section&&!loaded)load();});window.addEventListener('beforeunload',e=>{if(dirty()){e.preventDefault();e.returnValue='';}});
-  if(document.body.dataset.adminStart===section||location.hash==='#'+section)load();
+  retry.addEventListener('click',async()=>{if(!busy&&(!dirty()||await core.discard()))load();});
+  core.watch(section,root,()=>false,()=>busy);
+  core.whenSection(section,()=>{if(!loaded&&!busy)load();});
 });

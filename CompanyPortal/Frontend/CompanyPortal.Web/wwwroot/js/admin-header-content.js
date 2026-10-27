@@ -4,10 +4,11 @@
   const endpoint=path=>new URL('api/admin/header-content'+path,new URL(base.replace(/\/?$/,'/'),location.href));
   const byId=id=>document.getElementById(id),status=byId('header-content-status'),retry=byId('header-content-retry'),add=byId('header-number-add'),numbers=byId('header-numbers'),levels=byId('header-levels');
   const make=(tag,props={})=>Object.assign(document.createElement(tag),props);
-  const request=(path,method='GET',body)=>fetch(endpoint(path),{method,credentials:'include',cache:'no-store',signal:AbortSignal.timeout(15000),
-    ...(method==='GET'?{}:{headers:{'Content-Type':'application/json','X-CompanyPortal-Request':'header-content'},body:body===undefined?undefined:JSON.stringify(body)})});
+  const core=window.AdminCore;
+  const request=(path,method='GET',body)=>core.request(endpoint(path),{method,body,header:'header-content'});
+  const lock=(element,value)=>element.querySelectorAll('input,textarea,select,button').forEach(e=>e.disabled=value);
   let loaded=false,busy=false;
-  function message(text,canRetry=false){status.textContent=text;retry.hidden=!canRetry;}
+  function message(text,canRetry=false){core.feedback(status,text);retry.hidden=!canRetry;}
   async function failure(response){if(response.status===400)return'تحقق من الحقول المطلوبة.';if(response.status===403)return'حسابك غير مخوّل لإدارة هذا القسم.';if(response.status===404)return'العنصر غير موجود. أعد التحميل.';return'تعذر الحفظ. حاول مجددًا.';}
   function field(label,value,attrs={}){const wrap=make('label',{className:'hc-field'}),input=make(attrs.multiline?'textarea':'input',{value:value??''});
     Object.entries(attrs).forEach(([k,v])=>{if(k!=='multiline')input.setAttribute(k,v);});wrap.append(make('span',{textContent:label}),input);return [wrap,input];}
@@ -20,19 +21,19 @@
     const active=make('input',{type:'checkbox',checked:item?.active??true});active.setAttribute('aria-label','ظاهر للمستخدمين');
     const save=make('button',{type:'button',className:'admin-primary',textContent:item?'حفظ':'إضافة'}),remove=make('button',{type:'button',className:'hc-danger',textContent:item?'حذف':'إلغاء'});
     const cells=[title,number,order,active].map(input=>{const cell=make('span');cell.setAttribute('role','cell');cell.append(input);return cell;});
-    const actions=make('span',{className:'hc-actions'});actions.setAttribute('role','cell');actions.append(save,remove);row.append(...cells,actions);
+    const actions=make('span',{className:'hc-actions'});actions.setAttribute('role','cell');actions.append(save,remove);row.append(...cells,actions);const tracker=core.trackForm('header-content',row,{isNew:!item,busy:()=>busy});
     save.addEventListener('click',async()=>{
       if(busy)return;if(!title.value.trim()||!number.value.trim()){message('أدخل الاسم والرقم.');(title.value.trim()?number:title).focus();return;}
-      busy=true;save.disabled=true;message('جارٍ الحفظ…');
+      busy=true;lock(row,true);message('جارٍ الحفظ…');
       try{const body={title:title.value.trim(),number:number.value.trim(),sortOrder:Number(order.value)||0,active:active.checked};
         const response=await request(item?'/important-numbers/'+item.id:'/important-numbers',item?'PUT':'POST',body);
-        if(!response.ok){message(await failure(response));return;}busy=false;await load(false);message('تم الحفظ. يظهر للمستخدمين عند إعادة تحميل البوابة.');}
-      catch{message('تعذر الحفظ. حاول مجددًا.');}finally{busy=false;save.disabled=false;}
+        if(!response.ok){message(await failure(response));return;}const id=item?.id??(await response.json()).id;row.replaceWith(numberRow({...item,...body,id}));message('تم الحفظ. يظهر للمستخدمين عند إعادة تحميل البوابة.');}
+      catch{message('تعذر الحفظ. حاول مجددًا.');}finally{busy=false;lock(row,false);core.refresh();}
     });
     remove.addEventListener('click',async()=>{
-      if(!item){row.remove();return;}if(busy||!confirm(`حذف «${item.title}»؟`))return;
+      if(busy)return;if(!item){if(await core.discard())row.remove();return;}if(!await core.confirm(`حذف «${item.title}»؟`,{title:'حذف الرقم',accept:'حذف',danger:true}))return;
       busy=true;remove.disabled=true;message('جارٍ الحذف…');
-      try{const response=await request('/important-numbers/'+item.id,'DELETE');if(!response.ok){message(await failure(response));return;}busy=false;await load(false);message('تم الحذف.');}
+      try{const response=await request('/important-numbers/'+item.id,'DELETE');if(!response.ok){message(await failure(response));return;}row.remove();message('تم الحذف.');}
       catch{message('تعذر الحذف. حاول مجددًا.');}finally{busy=false;remove.disabled=false;}
     });
     return row;
@@ -49,14 +50,14 @@
     if(level.color==='green'){guideWrap.hidden=true;actionsWrap.hidden=true;}
     const save=make('button',{type:'submit',className:'admin-primary',textContent:'حفظ'}),note=make('small',{className:'hc-note',textContent:'آخر تعديل: '+String(level.lastChangeAt||'').replace('T',' ').slice(0,16)});
     const footer=make('div',{className:'hc-level-footer'});footer.append(note,save);
-    card.append(head,titleWrap,nameWrap,summaryWrap,guideWrap,actionsWrap,footer);
+    card.append(head,titleWrap,nameWrap,summaryWrap,guideWrap,actionsWrap,footer);const tracker=core.trackForm('header-content',card,{busy:()=>busy});
     card.addEventListener('submit',async event=>{
       event.preventDefault();if(busy)return;
       if(!title.value.trim()||!name.value.trim()||!summary.value.trim()){message('أدخل العنوان واسم اللون والوصف.');return;}
-      busy=true;save.disabled=true;message('جارٍ الحفظ…');
+      busy=true;lock(card,true);message('جارٍ الحفظ…');
       try{const response=await request('/status-levels/'+level.colorValue,'PUT',{title:title.value.trim(),colorName:name.value.trim(),summary:summary.value.trim(),guideText:guide.value.trim()||null,actions:actions.value.trim()||null});
-        if(!response.ok){message(await failure(response));return;}const saved=title.value.trim();busy=false;await load(false);message('تم حفظ نصوص «'+saved+'». تظهر للمستخدمين عند إعادة تحميل البوابة.');}
-      catch{message('تعذر الحفظ. حاول مجددًا.');}finally{busy=false;save.disabled=false;}
+        if(!response.ok){message(await failure(response));return;}tracker.saved();head.querySelector('strong').textContent=title.value.trim();note.textContent='تم حفظ التغييرات.';message('تم حفظ نصوص «'+title.value.trim()+'». تظهر للمستخدمين عند إعادة تحميل البوابة.');}
+      catch{message('تعذر الحفظ. حاول مجددًا.');}finally{busy=false;lock(card,false);core.refresh();}
     });
     return card;
   }
@@ -72,8 +73,7 @@
     }catch{message('تعذر تحميل المحتوى.',true);}finally{busy=false;}
   }
   add.addEventListener('click',()=>{const row=numberRow(null);numbers.append(row);row.querySelector('input').focus();});
-  retry.addEventListener('click',()=>load());
-  document.querySelectorAll('[data-admin-section="header-content"]').forEach(b=>b.addEventListener('click',()=>{if(!loaded)load();}));
-  window.addEventListener('popstate',()=>{if(location.hash==='#header-content'&&!loaded)load();});
-  if(document.body.dataset.adminStart==='header-content'||location.hash==='#header-content')load();
+  retry.addEventListener('click',async()=>{if(!busy&&(!core.dirtyIn('header-content')||await core.discard()))load();});
+  core.watch('header-content',root,()=>false,()=>busy);
+  core.whenSection('header-content',()=>{if(!loaded&&!busy)load();});
 })();

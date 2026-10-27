@@ -8,14 +8,16 @@
   const form = byId('image-group-form'), name = byId('image-group-name'), rotate = byId('image-group-rotate'), seconds = byId('image-group-seconds'), active = byId('image-group-active');
   let data = {images:[],groups:[],items:[],themes:[]}, selection = [], groupId = null, defaultId = null, busy = false, loaded = false, dirty = false;
   const url = path => new URL(path,api);
-  const say = (text,error=false) => { status.textContent=text; status.dataset.error=String(error); };
+  const core=window.AdminCore;
+  const say = (text,error=false) => { core.feedback(status,text,error); };
   const node = (tag,text,className) => { const n=document.createElement(tag); if(text!==undefined)n.textContent=text; if(className)n.className=className; return n; };
   const option = (value,text) => {const n=node('option',text);n.value=String(value ?? '');return n;};
-  const mark = () => {dirty=true;byId('image-group-dirty').textContent='تغييرات غير محفوظة';};
+  let groupSnapshot='';
+  const groupValues=()=>JSON.stringify({name:name.value,rotate:rotate.checked,seconds:seconds.value,active:active.checked,defaultId,selection});
+  const groupDirty=()=>loaded&&groupValues()!==groupSnapshot;
+  const mark = () => {dirty=groupDirty();byId('image-group-dirty').textContent=dirty?'تغييرات غير محفوظة':'';core.refresh();};
   async function request(path,method='GET',body) {
-    const response=await fetch(url(path),{method,credentials:'include',cache:'no-store',signal:AbortSignal.timeout(method==='POST'?60000:15000),
-      headers:method==='GET'?{}:{'X-CompanyPortal-Request':'admin-images',...(body instanceof FormData?{}:{'Content-Type':'application/json'})},
-      ...(body===undefined?{}:{body:body instanceof FormData?body:JSON.stringify(body)})});
+    const response=await core.request(path,{method,body,header:'admin-images',timeout:method==='POST'?60000:15000});
     if(!response.ok){
       if(response.status===401||response.status===403){content.hidden=true;loaded=false;throw new Error('ليس لديك صلاحية إدارة الصور.');}
       if(response.status===409)throw new Error('الصورة مستخدمة في مجموعة محفوظة. أزلها من المجموعات واحفظ التغييرات أولًا، ثم احذفها.');
@@ -44,8 +46,8 @@
       });
       const line=node('label');line.append(check,node('span','اختيار الصورة'));
       const remove=node('button','حذف الصورة','image-delete');remove.type='button';remove.setAttribute('aria-label','حذف '+image.imageName);
-      remove.addEventListener('click',()=>{
-        if(!window.confirm('حذف الصورة «'+image.imageName+'» من المكتبة؟ لا يمكن حذف صورة مستخدمة في مجموعة محفوظة.'))return;
+      remove.addEventListener('click',async()=>{
+        if(busy||!await core.confirm('حذف الصورة «'+image.imageName+'» من المكتبة؟ لا يمكن حذف صورة مستخدمة في مجموعة محفوظة.',{title:'حذف الصورة',accept:'حذف',danger:true}))return;
         run(async()=>{
           await request(`api/admin/images/${image.imageId}`,'DELETE');
           selection=selection.filter(item=>item.imageId!==image.imageId);if(defaultId===image.imageId)defaultId=null;
@@ -86,22 +88,23 @@
     groupId=id;const group=data.groups.find(g=>g.imageGroupId===id);
     name.value=group?.groupName??'';rotate.checked=group?.rotateImages??true;seconds.value=group?.rotationSeconds??8;active.checked=group?.active??true;defaultId=group?.defaultImageId??null;
     selection=data.items.filter(i=>i.imageGroupId===id).sort((a,b)=>a.displayOrder-b.displayOrder).map(i=>({imageId:i.imageId,active:i.active}));
-    dirty=false;byId('image-group-dirty').textContent='';renderPicker();renderLibrary();renderSelection();
+    dirty=false;byId('image-group-dirty').textContent='';renderPicker();renderLibrary();renderSelection();groupSnapshot=groupValues();core.refresh();
   }
   function renderLinks(){
-    const target=byId('image-theme-links');target.replaceChildren();
+    const target=byId('image-theme-links'),drafts=new Map([...target.querySelectorAll('form')].filter(f=>f.querySelector('select').value!==f.dataset.originalGroup).map(f=>[Number(f.dataset.themeId),f.querySelector('select').value]));target.replaceChildren();
     data.themes.forEach(theme=>{
       const row=node('form',undefined,'images-theme-form'),label=node('label','مجموعة الصور'),select=node('select'),save=node('button','حفظ الربط','admin-primary');
-      row.append(node('strong',theme.themeName));select.append(option('','الصور الأصلية للثيم'));
+      row.dataset.themeId=theme.themeId;row.dataset.originalGroup=String(theme.imageGroupId??'');row.append(node('strong',theme.themeName));select.append(option('','الصور الأصلية للثيم'));
       data.groups.filter(g=>g.active||g.imageGroupId===theme.imageGroupId).forEach(g=>select.append(option(g.imageGroupId,g.groupName+(g.active?'':' (غير نشطة)'))));select.value=String(theme.imageGroupId??'');
       select.setAttribute('aria-label','مجموعة صور '+theme.themeName);label.append(select);row.append(label,save);save.type='submit';
-      row.addEventListener('submit',event=>{event.preventDefault();run(async()=>{say('جارٍ حفظ ربط الثيم…');await request(`api/admin/images/themes/${theme.themeId}/group`,'PUT',{imageGroupId:select.value?Number(select.value):null});theme.imageGroupId=select.value?Number(select.value):null;say('تم حفظ صور الثيم. أعد تحميل البوابة لمشاهدتها.');});});target.append(row);
+      const tracker=core.trackForm('images',row,{busy:()=>busy});if(drafts.has(theme.themeId))select.value=drafts.get(theme.themeId);
+      row.addEventListener('submit',event=>{event.preventDefault();run(async()=>{say('جارٍ حفظ ربط الثيم…');await request(`api/admin/images/themes/${theme.themeId}/group`,'PUT',{imageGroupId:select.value?Number(select.value):null});theme.imageGroupId=select.value?Number(select.value):null;row.dataset.originalGroup=select.value;tracker.saved();say('تم حفظ صور الثيم. أعد تحميل البوابة لمشاهدتها.');});});target.append(row);
     });
   }
   async function load(){
     await run(async()=>{say('جارٍ تحميل مكتبة الصور…');data=await request('api/admin/images');loaded=true;content.hidden=false;retry.hidden=true;editGroup(null);renderLinks();say('المكتبة جاهزة. اختر مجموعة أو أنشئ مجموعة جديدة.');});
   }
-  picker.addEventListener('change',()=>{if(dirty&&!window.confirm('توجد تغييرات غير محفوظة. هل تريد الانتقال إلى مجموعة أخرى؟')){picker.value=String(groupId??'');return;}editGroup(picker.value?Number(picker.value):null);});
+  picker.addEventListener('change',async()=>{if(busy||groupDirty()&&!await core.discard('توجد تغييرات غير محفوظة. هل تريد الانتقال إلى مجموعة أخرى؟')){picker.value=String(groupId??'');return;}editGroup(picker.value?Number(picker.value):null);});
   form.addEventListener('input',mark);form.addEventListener('change',mark);rotate.addEventListener('change',refreshConstraints);
   form.addEventListener('submit',event=>{event.preventDefault();if(!name.value.trim()){name.focus();return;}run(async()=>{
     say('جارٍ حفظ المجموعة…');
@@ -121,8 +124,8 @@
     if(failure){say(`تم رفع ${added.length} صورة. ${failure.message}`,true);return;}
     say(`تم رفع ${added.length} صورة. اختر الصور لإضافتها إلى المجموعة.`);
   });});
-  retry.addEventListener('click',load);
-  const observe=new MutationObserver(()=>{if(!loaded&&!busy&&!panel.hidden&&!byId('admin-workspace').hidden)load();});
-  observe.observe(panel,{attributes:true,attributeFilter:['hidden']});observe.observe(byId('admin-workspace'),{attributes:true,attributeFilter:['hidden']});
-  if(!panel.hidden&&!byId('admin-workspace').hidden)load();
+  retry.addEventListener('click',async()=>{if(!busy&&(!core.dirtyIn('images')||await core.discard()))load();});
+  core.watch('images',form,groupDirty,()=>busy);
+  core.trackForm('images',byId('image-upload'),{busy:()=>busy});
+  core.whenSection('images',()=>{if(!loaded&&!busy)load();});
 })();

@@ -9,6 +9,7 @@
   <base href="@Url.Content("~/")">
   <link rel="icon" type="image/png" href="@Url.Content("~/assets/oman-khanjar.png")">
   <link rel="stylesheet" href="@Url.Content("~/css/admin.css")" asp-append-version="true">
+  <link rel="stylesheet" href="@Url.Content("~/css/admin-core.css")" asp-append-version="true">
   @await RenderSectionAsync("Styles", required: false)
 </head>
 <body class="portal-admin" data-admin-start="@(ViewData["AdminSection"] ?? "overview")">
@@ -47,6 +48,9 @@
       </div>
     </main>
   </div>
+  <dialog id="admin-confirm" class="admin-confirm" aria-labelledby="admin-confirm-title" aria-describedby="admin-confirm-message"><h2 id="admin-confirm-title"></h2><p id="admin-confirm-message"></p><div class="admin-confirm-actions"><button type="button" data-confirm-no>إلغاء</button><button type="button" data-confirm-yes>متابعة</button></div></dialog>
+  <div id="admin-toasts" class="admin-toasts" aria-label="رسائل الإدارة"></div>
+  <script src="@Url.Content("~/js/admin-core.js")" asp-append-version="true"></script>
   <script src="@Url.Content("~/js/admin-navigation.js")" asp-append-version="true"></script>
   @await RenderSectionAsync("Scripts", required: false)
 </body>

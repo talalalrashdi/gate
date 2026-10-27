@@ -1,17 +1,14 @@
 (() => {
   const base = document.querySelector('meta[name="companyportal-api-base"]')?.content;
-  const root = document.getElementById('admin-cards'), status = document.getElementById('admin-status');
+  const root = document.getElementById('admin-cards'), status = document.getElementById('admin-cards-status');
   if (!base || !root || !status) return;
-  const workspace = document.getElementById('admin-workspace'), access = document.getElementById('admin-access-message'), retry = document.getElementById('admin-retry');
+  const retry = document.getElementById('admin-cards-retry');
   const create = document.getElementById('admin-card-create');
-  const endpoint = path => new URL(path,new URL(base.replace(/\/?$/, '/'),location.href));
   const make = (tag,cls,text) => { const node = document.createElement(tag); if (cls) node.className = cls; if (text) node.textContent = text; return node; };
   let records = [], apps = [], busy = false, catalogAvailable = false;
-  const setStatus = (text,state='ready',canRetry=false) => { status.textContent=text; status.parentElement.dataset.state=state; retry.hidden=!canRetry; };
-  const request = (path,method='GET',body) => fetch(endpoint(path),{
-    method,credentials:'include',cache:'no-store',signal:AbortSignal.timeout(10000),
-    ...(method==='GET'?{}:{headers:{'Content-Type':'application/json','X-CompanyPortal-Request':'admin-cards'},body:JSON.stringify(body)})
-  });
+  const setStatus = (text,state='ready',canRetry=false) => { core.feedback(status,text,state==='error'); status.parentElement.dataset.state=state; retry.hidden=!canRetry; };
+  const core=window.AdminCore;
+  const request=(path,method='GET',body)=>core.request(path,{method,body,header:'admin-cards',timeout:10000});
   const unavailable = response => response.status===401 || response.status===403 ? 'ليس لديك صلاحية إدارة البوابة.'
     : response.status===400 ? 'تحقق من الاسم والتطبيقات والأدوار والموضع. قد يلزم نقل بطاقة ثابتة قبل إخفاء بطاقة أخرى.'
     : 'تعذر الاتصال بخدمة الإدارة. تحقق من إعداد دليل التطبيقات ثم أعد المحاولة.';
@@ -20,16 +17,12 @@
     for (const [selector,value] of [['[data-admin-total]',active.length],['[data-admin-fixed]',fixed],['[data-admin-movable]',active.length-fixed]])
       document.querySelectorAll(selector).forEach(node=>{node.textContent=String(value);});
   }
-  function authorize(allowed) {
-    workspace.hidden=!allowed; access.hidden=allowed;
-    document.querySelectorAll('.admin-nav [data-admin-section]').forEach(button=>{button.disabled=!allowed;});
-    if (!allowed) {root.replaceChildren();records=[];summaries();access.querySelector('p').textContent='تحقق من صلاحية حسابك واتصال خدمة الإدارة، ثم أعد المحاولة.';}
-  }
   function refresh() {
     root.querySelectorAll('form').forEach(form=>form.dispatchEvent(new Event('admin:refresh')));
     create.disabled=busy || !catalogAvailable;
   }
   const dirty = () => [...root.querySelectorAll('.is-dirty')].length>0;
+  core.watch('cards',root,()=>false,()=>busy);
   function renderCard(card,isNew=false) {
     const form=make('form','admin-card'); form.setAttribute('aria-label',isNew?'بطاقة تطبيقات جديدة':'إعدادات '+card.cardName);
     const badge=make('span','admin-card-number',isNew?'+':String(card.cardId));form.append(badge);
@@ -74,42 +67,42 @@
       note.textContent=changed?'تغييرات غير محفوظة':!card.active?'مخفية — الإعدادات وترتيب الموظفين محفوظة.':card.isFixed?'ثابتة؛ يُضغط موضعها عند اختلاف البطاقات المتاحة حسب الدور.':'متحركة؛ يحتفظ الموظف بترتيبه المحفوظ.';
     }
     form.addEventListener('input',sync);form.addEventListener('change',sync);form.addEventListener('admin:refresh',sync);
-    if(isNew){const cancel=make('button','admin-card-cancel','إلغاء');cancel.type='button';cancel.addEventListener('click',()=>{if(!busy)form.remove();});details.append(cancel);}
+    if(isNew){const cancel=make('button','admin-card-cancel','إلغاء');cancel.type='button';cancel.addEventListener('click',async()=>{if(!busy&&await core.discard())form.remove();});details.append(cancel);}
     form.addEventListener('submit',async event=>{
       event.preventDefault();if(busy)return;
       const selected=values();
       if(!selected.cardName || (card.cardType==='applications'&&!selected.appIds.length) || (selected.audience==='roles'&&!selected.roleNames.length)
         ||selected.roleNames.some(role=>role.length>200)||selected.roleNames.length>50||selected.appIds.length>100){setStatus('أدخل الاسم واختر التطبيقات والأدوار المطلوبة ضمن الحدود.','error');return;}
-      if(card.active&&!selected.active&&!confirm('إخفاء هذه البطاقة من بوابة الموظفين؟ سيبقى ترتيبها المحفوظ.'))return;
+      if(card.active&&!selected.active&&!await core.confirm('إخفاء هذه البطاقة من بوابة الموظفين؟ سيبقى ترتيبها المحفوظ.',{title:'إخفاء البطاقة',accept:'إخفاء',danger:true}))return;
       busy=true;root.querySelectorAll('button,input,select,textarea').forEach(node=>{node.disabled=true;});refresh();setStatus('جارٍ حفظ البطاقة…','loading');
       try{
         const response=await request('api/admin/cards'+(isNew?'':'/'+card.cardId),isNew?'POST':'PUT',selected);
-        if(!response.ok){if(response.status===401||response.status===403)authorize(false);setStatus(unavailable(response),'error',workspace.hidden);return;}
+        if(!response.ok){setStatus(unavailable(response),'error',true);return;}
         if(isNew){card.cardId=(await response.json()).cardId;records.push(card);form.replaceWith(renderCard(Object.assign(card,selected)));}
         else{Object.assign(card,selected);name.value=card.cardName;form.setAttribute('aria-label','إعدادات '+card.cardName);}
         summaries();setStatus('تم الحفظ. تظهر الإعدادات للموظفين عند إعادة تحميل البوابة؛ صلاحيات التطبيقات لا تتغير.');
       }catch{setStatus('تعذر تأكيد الحفظ. أعد تحميل الصفحة للتحقق قبل إعادة الإنشاء أو الحفظ.','error');}
       finally{busy=false;root.querySelectorAll('input,select,textarea,button').forEach(node=>{node.disabled=false;});refresh();}
     });
-    sync();return form;
+    sync();core.watch('cards',form,()=>form.classList.contains('is-dirty'),()=>busy);return form;
   }
   async function load(){
     setStatus('جارٍ تحميل إعدادات البطاقات…','loading');
     try{
-      const response=await request('api/admin/cards');if(!response.ok){authorize(false);setStatus(unavailable(response),'error',true);return;}
+      const response=await request('api/admin/cards');if(!response.ok){setStatus(unavailable(response),'error',true);return;}
       records=await response.json();
       const catalog=await request('api/admin/cards/applications');catalogAvailable=catalog.ok;apps=catalog.ok?await catalog.json():[];
-      if(catalog.status===401||catalog.status===403){authorize(false);setStatus(unavailable(catalog),'error',true);return;}
-      root.replaceChildren(...records.map(card=>renderCard(card)));summaries();authorize(true);refresh();
+      if(catalog.status===401||catalog.status===403){setStatus(unavailable(catalog),'error',true);return;}
+      root.replaceChildren(...records.map(card=>renderCard(card)));summaries();refresh();
       setStatus(catalogAvailable?'تم التحقق من صلاحية الإدارة. الأقسام جاهزة.':'البطاقات متاحة؛ إعداد دليل التطبيقات مطلوب قبل إنشاء أو تعديل بطاقة تطبيقات.',catalogAvailable?'ready':'error',!catalogAvailable);
-    }catch{authorize(false);setStatus('خدمة الإدارة غير متاحة حاليًا.','error',true);}
+    }catch{setStatus('خدمة الإدارة غير متاحة حاليًا.','error',true);}
   }
   create.addEventListener('click',()=>{
     if(busy||root.querySelector('[data-new-card]'))return;
     const card={cardName:'',displayOrder:records.filter(card=>card.active).length+1,isFixed:false,active:false,audience:'everyone',cardType:'applications',appIds:[],roleNames:[]};
     const form=renderCard(card,true);form.dataset.newCard='';root.prepend(form);form.querySelector('input[type=text]').focus();
   });
-  retry.addEventListener('click',()=>{if(!dirty()||confirm('إعادة التحميل ستلغي التغييرات غير المحفوظة. متابعة؟'))load();});
-  window.addEventListener('beforeunload',event=>{if(dirty()){event.preventDefault();event.returnValue='';}});
-  load();
+  retry.addEventListener('click',async()=>{if(!busy&&(!dirty()||await core.discard('إعادة التحميل ستلغي التغييرات غير المحفوظة. متابعة؟')))load();});
+  core.whenSection('cards',()=>{if(!busy&&!records.length)load();});
+  core.whenSection('overview',()=>{if(core.can('cards')&&!busy&&!records.length)load();});
 })();

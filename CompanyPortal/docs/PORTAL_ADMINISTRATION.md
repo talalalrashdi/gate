@@ -1,5 +1,31 @@
 # Portal administration
 
+27 October 2026 — **change history (admin Phase 2).** Migration 044 adds `Portal.AdminChanges` (AdminChangeId, ChangedAt, ChangedBy, Section, Action create/update/delete/apply-to-all, ItemType, ItemId, ItemTitle, OldJson, NewJson). The 19 admin save procedures take a trailing `@ChangedBy nvarchar(512)=NULL` (the API passes the signed-in Windows name; direct SQL calls fall back to `ORIGINAL_LOGIN()`), snapshot the item with `Portal.AdminSnapshot_*` after taking their locks and again just before COMMIT, and call `Portal.AdminChanges_Add` inside the same transaction. No-op saves and failed saves write nothing. Snapshots exclude `LastChangeAt` and image bytes; child lists are included (card apps/roles, image-group items, theme preview roles, tab documents).
+
+| Section | Item types (procedures) |
+| --- | --- |
+| `cards` | card (`Master.Cards_save`) |
+| `applications` | category, application (`ApplicationCategories_save`, `Applications_save`) |
+| `documents` / `safety` | tab (`Portal.DocumentTabs_Save`, section from the tab) |
+| `fixed-orders` | directive (`Portal.FixedOrders_Save`) |
+| `notices` / `alerts` | notice-settings, notice-window (channel 1 / 2) |
+| `media` | media, album (`Media_Save` also records an album whose cover it clears) |
+| `images` | image (`Images_add`, `Images_delete`), image-group, theme (`Themes_setImageGroup`) |
+| `themes` | theme (`Themes_save`, `Themes_delete`, `Themes_applyToAll` = `apply-to-all` with `UsersUpdated`; a replaced default is recorded too) |
+| `header-content` | important-number, status-level |
+
+Not recorded: employee settings (theme choice, card order, personal cards) and rows changed directly in SQL without these procedures (e.g. a magazine row or the current status colour). Read procedures for later phases: `Portal.AdminChanges_GetRecent(@Top, @SectionsJson)`, `Portal.AdminChanges_Search(@SectionsJson, @Section, @ChangedBy, @FromAt, @ToAt, @Page, @PageSize)` (one result set with a repeated `Total`), `Portal.AdminChanges_GetLatestByItem(@Section)`. `@SectionsJson` limits results to the sections an admin may see. **Any later migration that alters one of these save procedures must keep its `-- history` lines.** The API runtime identity needs EXECUTE on the read procedures when the overview/history pages are added (the save procedures call `AdminChanges_Add` under ownership chaining).
+
+Verified: `.local/admin-history-sql-test.sql` (34 checks across every procedure: create/update/delete rows, no-op and failed saves write nothing, image bytes excluded, cover side effect, apply-to-all + previous default, fallback name, read procedures) runs inside a transaction that is rolled back; admin UI and API saves record the real Windows name; both Release builds clean.
+
+27 October 2026 — **section permissions (admin Phase 1).** Every admin endpoint now uses the shared `[AdminSection]` attribute (`Backend/CompanyPortal.Api/Infrastructure/AdminSectionAttribute.cs`) instead of a copied check. It resolves the Windows account through `Portal.AdminAccess_get` (migration 043) in **one** database round trip with **no cache**, so revoking a role applies on the next request. `CompanyPortal.Admin` manages every section. Other roles can be given single sections by adding rows to `Portal.AdminSectionRoles(SectionKey, RoleName)`; the table ships empty (roles not yet agreed). Section keys: `cards`, `applications`, `documents`, `safety`, `fixed-orders`, `header-content`, `notices` (decision-notice channel 1), `alerts` (channel 2), `media`, `images`, `themes`. The image library is also readable by `themes`. Diagnostics stays super-admin only.
+
+Order of checks: account (401) → access lookup (503 on failure, never grants) → section (403) → for writes, `X-CompanyPortal-Request` (400) and Origin (403). The attribute runs before model binding, so a non-admin gets 403 even for an invalid body. Section-specific SQL errors remain in each controller. `GET /api/access` now returns `{isAdmin, isSuperAdmin, sections}`; `isAdmin` is true when at least one section is manageable and drives the portal admin icon.
+
+`Portal.AdminAccess_get` captures the two identity contracts with `INSERT … EXEC`, so the internal versions of `Security.User_getByUsername` (one `UserId` column) and `Security.UserRoles_get` (one `RoleName` column) must keep returning exactly those single columns and must not use `INSERT … EXEC` themselves. Grant the API runtime identity EXECUTE on `Portal.AdminAccess_get`.
+
+Verified: both Release builds clean; 28 API checks (all admin GETs, anonymous 401, header/origin/model validation, 404s, admin page routes); 18 section-role checks using a temporary local sample grant (only granted sections reachable, notices limited to channel 1, alerts PUT 403, employee image endpoints unaffected, revocation on the next request), restored afterwards; desktop browser opened all 12 admin sections without failed calls.
+
 22 October directory update: [application directory administration](APPLICATION_DIRECTORY.md) at `/admin/applications` manages categories/descriptions only. It does not create apps or change grants/launch URLs.
 
 22 October update: [master application-card administration](MASTER_APPLICATION_CARDS.md) now adds creation, app selection, everyone/role audiences and show/hide controls. The historical update-only contracts below are superseded by that document. The five connected cards retain their renderers.
@@ -10,7 +36,7 @@ Implemented 19 October 2026. `/admin/cards` manages existing active master cards
 
 ## Identity and permissions
 
-Windows authentication supplies NTName. `Security.User_getByUsername` resolves the active external UserId. `Security.UserRoles_get(@UserId int)` returns distinct effective `RoleName` strings (`nvarchar(200)`). The API requires the exact stable role key `CompanyPortal.Admin`. Application access alone does not grant administration rights.
+Windows authentication supplies NTName. `Security.User_getByUsername` resolves the active external UserId. `Security.UserRoles_get(@UserId int)` returns distinct effective `RoleName` strings (`nvarchar(200)`). The exact stable role key `CompanyPortal.Admin` manages every section; see the 27 October section-permissions note above for per-section roles. Application access alone does not grant administration rights.
 
 Users and roles remain in the external security database. Replace the role procedure's SELECT with the real source internally, combining active direct and group assignments as appropriate. The local sample implements direct user assignments only. AD group evaluation and the internal group/role schema are not supplied or implemented. Browser-supplied roles and user IDs are never trusted.
 

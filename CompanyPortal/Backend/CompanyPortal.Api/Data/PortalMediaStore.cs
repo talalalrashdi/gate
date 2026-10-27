@@ -22,8 +22,8 @@ public sealed class PortalMediaStore(IConfiguration configuration)
  }
  public async Task<Media?> GetByIdAsync(int id,bool includeHidden,CancellationToken token)
  {await using var c=Connection();return await c.QuerySingleOrDefaultAsync<Media>(Command("Portal.Media_GetById",new{MediaID=id,IncludeHidden=includeHidden},token));}
- public async Task<int> SaveAsync(int? id,SaveMediaRequest r,CancellationToken token)
- {await using var c=Connection();return await c.QuerySingleAsync<int>(Command("Portal.Media_Save",new{MediaID=id,MediaName=r.MediaName.Trim(),MediaPath=r.MediaPath.Trim(),r.MediaType,MediaGroupID=r.MediaGroupId,r.DisplayOrder,r.Active},token));}
- public async Task<int> SaveGroupAsync(int? id,SaveMediaGroupRequest r,CancellationToken token)
- {await using var c=Connection();return await c.QuerySingleAsync<int>(Command("Portal.MediaGroups_Save",new{MediaGroupID=id,GroupName=r.GroupName.Trim(),CoverMediaID=r.CoverMediaId,r.DisplayOrder,r.Active},token));}
+ public async Task<int> SaveAsync(int? id,SaveMediaRequest r,string changedBy,CancellationToken token)
+ {await using var c=Connection();return await c.QuerySingleAsync<int>(Command("Portal.Media_Save",new{MediaID=id,MediaName=r.MediaName.Trim(),MediaPath=r.MediaPath.Trim(),r.MediaType,MediaGroupID=r.MediaGroupId,r.DisplayOrder,r.Active,ChangedBy=changedBy},token));}
+ public async Task<int> SaveGroupAsync(int? id,SaveMediaGroupRequest r,string changedBy,CancellationToken token)
+ {await using var c=Connection();return await c.QuerySingleAsync<int>(Command("Portal.MediaGroups_Save",new{MediaGroupID=id,GroupName=r.GroupName.Trim(),CoverMediaID=r.CoverMediaId,r.DisplayOrder,r.Active,ChangedBy=changedBy},token));}
 }

@@ -40,7 +40,7 @@ public sealed class SetupDiagnosticsController(IConfiguration config, Administra
             {
                 using var authorization = CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token);
                 authorization.CancelAfter(TimeSpan.FromSeconds(8));
-                if (!await admins.IsAdminAsync(account, authorization.Token)) return Forbid();
+                if (!(await admins.GetAccessAsync(account, authorization.Token)).IsSuperAdmin) return Forbid();
             }
             catch (Exception error) when (error is SqlException or InvalidOperationException or ArgumentException or OperationCanceledException)
             {
@@ -102,7 +102,7 @@ public sealed class SetupDiagnosticsController(IConfiguration config, Administra
                 await using var c = new SqlConnection(connectionString);
                 // Runtime identities may execute procedures without seeing underlying
                 // table metadata. Do not misreport those tables as absent.
-                var required = new[] { "Security.User_getByUsername", "Security.UserRoles_get", "Security.Apps_getForUser", "Portal.UserSettings_getTheme", "Master.Themes_getAll", "News.Items_get", "Mstr.Utls_GetFolderPaths" };
+                var required = new[] { "Security.User_getByUsername", "Security.UserRoles_get", "Portal.AdminAccess_get", "Security.Apps_getForUser", "Portal.UserSettings_getTheme", "Master.Themes_getAll", "News.Items_get", "Mstr.Utls_GetFolderPaths" };
                 var missing = new List<string>();
                 foreach (var name in required)
                     if (await c.ExecuteScalarAsync<int?>(new CommandDefinition("SELECT OBJECT_ID(@name)", new { name }, cancellationToken: ct)) is null) missing.Add(name);

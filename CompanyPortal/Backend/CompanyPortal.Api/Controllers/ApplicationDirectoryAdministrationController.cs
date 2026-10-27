@@ -1,45 +1,35 @@
 using CompanyPortal.Api.Contracts;
 using CompanyPortal.Api.Data;
+using CompanyPortal.Api.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 
 namespace CompanyPortal.Api.Controllers;
 
-[ApiController,Authorize,Route("api/admin/application-directory"),RequestSizeLimit(16384)]
-public sealed class ApplicationDirectoryAdministrationController(AdministrationStore store,IConfiguration configuration,
+[ApiController,Authorize,Route("api/admin/application-directory"),RequestSizeLimit(16384),AdminSection("application-directory","applications")]
+public sealed class ApplicationDirectoryAdministrationController(AdministrationStore store,
     ILogger<ApplicationDirectoryAdministrationController> logger) : ControllerBase
 {
     [HttpGet,ProducesResponseType<ApplicationDirectoryAdministration>(StatusCodes.Status200OK)]
-    public Task<IActionResult> Get(CancellationToken token)=>Execute(async()=>Ok(await store.GetApplicationDirectoryAsync(token)),false,token);
+    public Task<IActionResult> Get(CancellationToken token)=>Execute(async()=>Ok(await store.GetApplicationDirectoryAsync(token)));
 
     [HttpPut("applications/{id:int:min(1)}"),Consumes("application/json")]
     public Task<IActionResult> SaveApplication(int id,SaveApplicationDetailsRequest request,CancellationToken token)=>Execute(async()=>
-    {await store.SaveApplicationDetailsAsync(id,request,token);return NoContent();},true,token);
+    {await store.SaveApplicationDetailsAsync(id,request,User.Identity!.Name!,token);return NoContent();});
 
     [HttpPost("categories"),Consumes("application/json"),ProducesResponseType<CategoryIdentity>(StatusCodes.Status201Created)]
     public Task<IActionResult> CreateCategory(SaveApplicationCategoryRequest request,CancellationToken token)=>Execute(async()=>
-    {var id=await store.SaveApplicationCategoryAsync(null,request,token);return StatusCode(201,new CategoryIdentity(id));},true,token);
+    {var id=await store.SaveApplicationCategoryAsync(null,request,User.Identity!.Name!,token);return StatusCode(201,new CategoryIdentity(id));});
 
     [HttpPut("categories/{id:int:min(1)}"),Consumes("application/json")]
     public Task<IActionResult> UpdateCategory(int id,SaveApplicationCategoryRequest request,CancellationToken token)=>Execute(async()=>
-    {await store.SaveApplicationCategoryAsync(id,request,token);return NoContent();},true,token);
+    {await store.SaveApplicationCategoryAsync(id,request,User.Identity!.Name!,token);return NoContent();});
 
-    private async Task<IActionResult> Execute(Func<Task<IActionResult>> action,bool write,CancellationToken token)
+    private async Task<IActionResult> Execute(Func<Task<IActionResult>> action)
     {
-        Response.Headers.CacheControl="no-store";
-        var name=User.Identity?.Name;
-        if(string.IsNullOrWhiteSpace(name)||name.Length>512) return Unauthorized();
         try
         {
-            if(!await store.IsAdminAsync(name,token)) return Forbid();
-            if(write)
-            {
-                if(Request.Headers["X-CompanyPortal-Request"]!="application-directory") return Problem(statusCode:400,title:"Missing application-directory request header.");
-                var origin=Request.Headers.Origin.ToString();
-                var allowed=configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()??[];
-                if(origin.Length>0&&origin!=$"{Request.Scheme}://{Request.Host}"&&!allowed.Contains(origin,StringComparer.Ordinal)) return Problem(statusCode:403,title:"Origin is not permitted.");
-            }
             return await action();
         }
         catch(SqlException e) when(e.Number==50011) {return NotFound();}

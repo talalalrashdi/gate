@@ -29,14 +29,14 @@ public sealed class FixedOrdersStore(IConfiguration configuration)
         return Map(await connection.QueryAsync<Row>(Command("Portal.FixedOrders_getAll",null,token)));
     }
 
-    public async Task<long> SaveAsync(long? id,SaveFixedOrderRequest request,CancellationToken token)
+    public async Task<long> SaveAsync(long? id,SaveFixedOrderRequest request,string changedBy,CancellationToken token)
     {
         await using var connection=new SqlConnection(configuration.GetConnectionString("CompanyPortal")
             ??throw new InvalidOperationException("CompanyPortal connection string is missing."));
         var parameters=new DynamicParameters(new {
             FixedOrderID=id,
             ContentBefor=string.IsNullOrWhiteSpace(request.ContentBefor)?null:request.ContentBefor,
-            request.ContentAfter,request.ContentText,TimestampType=request.TimestampType!.Value});
+            request.ContentAfter,request.ContentText,TimestampType=request.TimestampType!.Value,ChangedBy=changedBy});
         parameters.Add("Timestamp",request.Timestamp?.ToDateTime(TimeOnly.MinValue),DbType.Date);
         parameters.Add("Timestamp2",request.Timestamp2?.ToDateTime(TimeOnly.MinValue),DbType.Date);
         return await connection.QuerySingleAsync<long>(Command("Portal.FixedOrders_Save",parameters,token));

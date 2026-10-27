@@ -27,8 +27,8 @@ public sealed class DecisionNoticesStore(IConfiguration configuration)
   await using var c=Connection();using var sets=await c.QueryMultipleAsync(Command("Portal.DecisionNotices_Get",null,token));
   return new((await sets.ReadAsync<Setting>()).ToArray(),(await sets.ReadAsync<Window>()).ToArray());
  }
- public async Task SaveAsync(int channel,int days,string[] types,bool active,CancellationToken token)
- {await using var c=Connection();await c.ExecuteAsync(Command("Portal.DecisionNotices_Save",new{ChannelID=channel,DurationDays=days,DecisionTypes=JsonSerializer.Serialize(types),Active=active},token));}
- public async Task SaveWindowAsync(int channel,long id,DateTime? from,DateTime? to,bool hidden,CancellationToken token)
- {await using var c=Connection();await c.ExecuteAsync(Command("Portal.DecisionNoticeWindows_Save",new{ChannelID=channel,DecisionId=id,FromAt=from,ToAt=to,IsHidden=hidden},token));}
+ public async Task SaveAsync(int channel,int days,string[] types,bool active,string changedBy,CancellationToken token)
+ {await using var c=Connection();await c.ExecuteAsync(Command("Portal.DecisionNotices_Save",new{ChannelID=channel,DurationDays=days,DecisionTypes=JsonSerializer.Serialize(types),Active=active,ChangedBy=changedBy},token));}
+ public async Task SaveWindowAsync(int channel,long id,DateTime? from,DateTime? to,bool hidden,string changedBy,CancellationToken token)
+ {await using var c=Connection();await c.ExecuteAsync(Command("Portal.DecisionNoticeWindows_Save",new{ChannelID=channel,DecisionId=id,FromAt=from,ToAt=to,IsHidden=hidden,ChangedBy=changedBy},token));}
 }

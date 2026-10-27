@@ -27,24 +27,24 @@ public sealed class HeaderContentStore(IConfiguration configuration)
         return new(numbers,levels);
     }
 
-    public async Task<int> SaveNumberAsync(int? id,SaveImportantNumberRequest request,CancellationToken token)
+    public async Task<int> SaveNumberAsync(int? id,SaveImportantNumberRequest request,string changedBy,CancellationToken token)
     {
         await using var c=Connection();
         return await c.QuerySingleAsync<int>(Command("Mng.ImportantNumbers_Save",
-            new {Id=id,request.Title,request.Number,request.SortOrder,request.Active},token));
+            new {Id=id,request.Title,request.Number,request.SortOrder,request.Active,ChangedBy=changedBy},token));
     }
 
-    public async Task DeleteNumberAsync(int id,CancellationToken token)
+    public async Task DeleteNumberAsync(int id,string changedBy,CancellationToken token)
     {
         await using var c=Connection();
-        await c.ExecuteAsync(Command("Mng.ImportantNumbers_Delete",new {Id=id},token));
+        await c.ExecuteAsync(Command("Mng.ImportantNumbers_Delete",new {Id=id,ChangedBy=changedBy},token));
     }
 
-    public async Task SaveLevelAsync(int colorValue,SaveStatusLevelRequest request,CancellationToken token)
+    public async Task SaveLevelAsync(int colorValue,SaveStatusLevelRequest request,string changedBy,CancellationToken token)
     {
         await using var c=Connection();
         await c.ExecuteAsync(Command("Mng.StatusLevels_Save",
-            new {ColorValue=(byte)colorValue,request.Title,request.ColorName,request.Summary,request.GuideText,Actions=string.Join('\n',Steps(request.Actions))},token));
+            new {ColorValue=(byte)colorValue,request.Title,request.ColorName,request.Summary,request.GuideText,Actions=string.Join('\n',Steps(request.Actions)),ChangedBy=changedBy},token));
     }
 
     private async Task<LevelRow[]> Levels(CancellationToken token)

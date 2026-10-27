@@ -1,19 +1,22 @@
 using CompanyPortal.Api.Contracts;
 using CompanyPortal.Api.Data;
+using CompanyPortal.Api.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 
 namespace CompanyPortal.Api.Controllers;
 
+// Admin actions carry [AdminSection]; the theme editor also reads the library. The two employee
+// endpoints (theme images, image content) authorize portal users in Execute.
 [ApiController, Authorize, Route("api/admin/images"), RequestSizeLimit(12*1024*1024)]
-public sealed class InterfaceImagesController(InterfaceImagesStore images, AdministrationStore administration, NewsStore users,
+public sealed class InterfaceImagesController(InterfaceImagesStore images, NewsStore users,
     IConfiguration configuration, ILogger<InterfaceImagesController> logger) : ControllerBase
 {
-    [HttpGet]
-    public Task<IActionResult> Get(CancellationToken token) => Execute(async _ => Ok(await images.GetAsync(token)), true, false, token);
+    [HttpGet, AdminSection("admin-images", "images", "themes")]
+    public Task<IActionResult> Get(CancellationToken token) => Execute(async _ => Ok(await images.GetAsync(token)), true, token);
 
-    [HttpPost, Consumes("multipart/form-data"), RequestFormLimits(MultipartBodyLengthLimit = 11*1024*1024)]
+    [HttpPost, Consumes("multipart/form-data"), RequestFormLimits(MultipartBodyLengthLimit = 11*1024*1024), AdminSection("admin-images", "images")]
     // IFormFile infers form-file binding; explicit FromForm breaks Swagger generation.
     public Task<IActionResult> Upload(IFormFile file, CancellationToken token) => Execute(async _ =>
     {
@@ -25,33 +28,33 @@ public sealed class InterfaceImagesController(InterfaceImagesStore images, Admin
         using var memory = new MemoryStream();
         await stream.CopyToAsync(memory,token);
         var validated = ImageValidation.Read(memory.ToArray(),Path.GetExtension(name));
-        return Ok(new { imageId = await images.AddAsync(name,validated,token) });
-    },true,true,token);
+        return Ok(new { imageId = await images.AddAsync(name,validated,User.Identity!.Name!,token) });
+    },true,token);
 
-    [HttpDelete("{id:int:min(1)}")]
+    [HttpDelete("{id:int:min(1)}"), AdminSection("admin-images", "images")]
     public Task<IActionResult> Delete(int id, CancellationToken token) => Execute(async _ =>
-        await images.DeleteAsync(id,token) ? NoContent() : NotFound(),true,true,token);
+        await images.DeleteAsync(id,User.Identity!.Name!,token) ? NoContent() : NotFound(),true,token);
 
-    [HttpPost("groups"), Consumes("application/json"), RequestSizeLimit(32768)]
+    [HttpPost("groups"), Consumes("application/json"), RequestSizeLimit(32768), AdminSection("admin-images", "images")]
     public Task<IActionResult> CreateGroup(SaveImageGroup request, CancellationToken token) => Save(null,request,token);
-    [HttpPut("groups/{id:int:min(1)}"), Consumes("application/json"), RequestSizeLimit(32768)]
+    [HttpPut("groups/{id:int:min(1)}"), Consumes("application/json"), RequestSizeLimit(32768), AdminSection("admin-images", "images")]
     public Task<IActionResult> UpdateGroup(int id, SaveImageGroup request, CancellationToken token) => Save(id,request,token);
     private Task<IActionResult> Save(int? id, SaveImageGroup request, CancellationToken token) => Execute(async _ =>
     {
         if (string.IsNullOrWhiteSpace(request.GroupName) || request.Items.Any(i=>i is null) || request.Items.Select(i=>i.ImageId).Distinct().Count()!=request.Items.Length
             || request.Items.Select(i=>i.DisplayOrder).Distinct().Count()!=request.Items.Length)
             return Problem(statusCode:400,title:"Enter a group name and unique image positions.");
-        return Ok(new { imageGroupId = await images.SaveGroupAsync(id,request,token) });
-    },true,true,token);
+        return Ok(new { imageGroupId = await images.SaveGroupAsync(id,request,User.Identity!.Name!,token) });
+    },true,token);
 
-    [HttpPut("themes/{id:int:min(1)}/group"), Consumes("application/json"), RequestSizeLimit(4096)]
+    [HttpPut("themes/{id:int:min(1)}/group"), Consumes("application/json"), RequestSizeLimit(4096), AdminSection("admin-images", "images")]
     public Task<IActionResult> Assign(int id, AssignImageGroup request, CancellationToken token) => Execute(async _ =>
     {
-        await images.AssignAsync(id,request.ImageGroupId,token); return NoContent();
-    },true,true,token);
+        await images.AssignAsync(id,request.ImageGroupId,User.Identity!.Name!,token); return NoContent();
+    },true,token);
 
     [HttpGet("/api/themes/{id:int:min(1)}/images")]
-    public Task<IActionResult> Theme(int id, CancellationToken token) => Execute(async _ => Ok(await images.ThemeAsync(id,User.Identity!.Name!,token)),false,false,token);
+    public Task<IActionResult> Theme(int id, CancellationToken token) => Execute(async _ => Ok(await images.ThemeAsync(id,User.Identity!.Name!,token)),false,token);
 
     [HttpGet("/api/images/{id:int:min(1)}/content")]
     public Task<IActionResult> Content(int id, CancellationToken token) => Execute(async admin =>
@@ -64,24 +67,25 @@ public sealed class InterfaceImagesController(InterfaceImagesStore images, Admin
             : "default-src 'none'; style-src 'none'; sandbox";
         Response.Headers.ContentDisposition=$"inline; filename=\"portal-image-{id}\"";
         return File(content.ImageData,content.ContentType);
-    },false,false,token);
+    },false,token);
 
-    private async Task<IActionResult> Execute(Func<bool,Task<IActionResult>> action, bool requireAdmin, bool write, CancellationToken token)
+    // adminAction: [AdminSection] already authorized. Otherwise portal users; image/theme admins may also read inactive images.
+    private async Task<IActionResult> Execute(Func<bool,Task<IActionResult>> action, bool adminAction, CancellationToken token)
     {
         Response.Headers.CacheControl="private, no-store";
         var account=User.Identity?.Name;
         if (string.IsNullOrWhiteSpace(account) || account.Length>512) return Unauthorized();
         try
         {
-            var admin = requireAdmin || Request.Path.StartsWithSegments("/api/images")
-                ? await administration.IsAdminAsync(account,token) : false;
-            if (requireAdmin ? !admin : !admin && !await users.IsPortalUserAsync(account,token)) return Forbid();
-            if (write)
+            var admin = adminAction;
+            if (!adminAction)
             {
-                if (Request.Headers["X-CompanyPortal-Request"]!="admin-images") return Problem(statusCode:400,title:"Missing admin-images request header.");
-                var origin=Request.Headers.Origin.ToString();
-                var allowed=configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
-                if (origin.Length>0 && origin!=$"{Request.Scheme}://{Request.Host}" && !allowed.Contains(origin,StringComparer.Ordinal)) return Forbid();
+                if (Request.Path.StartsWithSegments("/api/images"))
+                {
+                    var access = await HttpContext.GetAdminAccessAsync();
+                    admin = access.CanManage("images") || access.CanManage("themes");
+                }
+                if (!admin && !await users.IsPortalUserAsync(account,token)) return Forbid();
             }
             return await action(admin);
         }

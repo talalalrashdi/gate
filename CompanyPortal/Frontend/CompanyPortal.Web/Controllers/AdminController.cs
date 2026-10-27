@@ -2,37 +2,27 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CompanyPortal.Web.Controllers;
 
+[Route("admin")]
 public sealed class AdminController(IConfiguration configuration) : Controller
 {
-    [HttpGet("/admin/diagnostics")]
+    // Section keys served by the admin shell (/admin/{section}); matches data-admin-panel in the views.
+    private static readonly HashSet<string> Sections = new(StringComparer.OrdinalIgnoreCase)
+        { "cards", "applications", "documents", "safety", "fixed-orders", "header-content", "notices", "alerts", "media", "images", "themes" };
+
+    [HttpGet("diagnostics")]
     public IActionResult Diagnostics() => configuration.GetValue<bool>("Diagnostics:Enabled") ? View() : NotFound();
+
     // Public shell only. The browser calls the API with the visitor's Windows identity;
     // the API authorizes every read/write. Never use the MVC process identity here.
-    [HttpGet("/admin/cards")]
-    [HttpGet("/admin")]
-    [HttpGet("/admin/images")]
-    [HttpGet("/admin/themes")]
-    [HttpGet("/admin/applications")]
-    [HttpGet("/admin/documents")]
-    [HttpGet("/admin/safety")]
-    [HttpGet("/admin/fixed-orders")]
-    [HttpGet("/admin/media")]
-    [HttpGet("/admin/notices")]
-    [HttpGet("/admin/alerts")]
-    [HttpGet("/admin/header-content")]
-    public IActionResult Cards()
+    [HttpGet("")]
+    [HttpGet("{section}")]
+    public IActionResult Cards(string? section)
     {
-        ViewData["AdminSection"] = Request.Path.Value?.TrimEnd('/').EndsWith("/cards", StringComparison.OrdinalIgnoreCase) == true ? "cards" : "overview";
-        if (Request.Path.Value?.TrimEnd('/').EndsWith("/images", StringComparison.OrdinalIgnoreCase) == true) ViewData["AdminSection"] = "images";
-        if (Request.Path.Value?.TrimEnd('/').EndsWith("/themes", StringComparison.OrdinalIgnoreCase) == true) ViewData["AdminSection"] = "themes";
-        if (Request.Path.Value?.TrimEnd('/').EndsWith("/applications", StringComparison.OrdinalIgnoreCase) == true) ViewData["AdminSection"] = "applications";
-        if (Request.Path.Value?.TrimEnd('/').EndsWith("/documents", StringComparison.OrdinalIgnoreCase) == true) ViewData["AdminSection"] = "documents";
-        if (Request.Path.Value?.TrimEnd('/').EndsWith("/safety", StringComparison.OrdinalIgnoreCase) == true) ViewData["AdminSection"] = "safety";
-        if (Request.Path.Value?.TrimEnd('/').EndsWith("/fixed-orders", StringComparison.OrdinalIgnoreCase) == true) ViewData["AdminSection"] = "fixed-orders";
-        if (Request.Path.Value?.TrimEnd('/').EndsWith("/media", StringComparison.OrdinalIgnoreCase) == true) ViewData["AdminSection"] = "media";
-        foreach(var section in new[]{"notices","alerts","header-content"})if(Request.Path.Value?.TrimEnd('/').EndsWith("/"+section,StringComparison.OrdinalIgnoreCase)==true)ViewData["AdminSection"]=section;
+        if (section is not null && !Sections.Contains(section)) return NotFound();
+        ViewData["AdminSection"] = section?.ToLowerInvariant() ?? "overview";
         return View();
     }
-    [HttpGet("/admin/theme-preview")]
+
+    [HttpGet("theme-preview")]
     public IActionResult ThemePreview() => View();
 }

@@ -25,12 +25,12 @@ public sealed class DocumentTabsStore(IConfiguration configuration)
             new {IncludeHidden=includeHidden,SectionKey=sectionKey},commandType:CommandType.StoredProcedure,commandTimeout:15,cancellationToken:token));
         return new((await results.ReadAsync<Tab>()).ToArray(),(await results.ReadAsync<Item>()).ToArray());
     }
-    public async Task<int> SaveAsync(int? id,SaveRequest request,CancellationToken token,string sectionKey="documents")
+    public async Task<int> SaveAsync(int? id,SaveRequest request,string changedBy,CancellationToken token,string sectionKey="documents")
     {
         await using var connection=Connection();
         return await connection.QuerySingleAsync<int>(new CommandDefinition("Portal.DocumentTabs_Save",
             new {SectionKey=sectionKey,DocumentTabID=id,TabName=request.TabName.Trim(),request.FolderId,request.DisplayOrder,request.Active,
-                DocumentIds=JsonSerializer.Serialize(request.DocumentIds)},commandType:CommandType.StoredProcedure,
+                DocumentIds=JsonSerializer.Serialize(request.DocumentIds),ChangedBy=changedBy},commandType:CommandType.StoredProcedure,
             commandTimeout:15,cancellationToken:token));
     }
     public static bool IsPdf(DocumentsStore.Row row)=>string.Equals(Path.GetExtension(row.DocumentPath),".pdf",StringComparison.OrdinalIgnoreCase);

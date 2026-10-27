@@ -19,28 +19,28 @@ public sealed class InterfaceImagesStore(IConfiguration configuration)
         using var rows = await connection.QueryMultipleAsync(Command("Master.ImageGroups_getAll", null, token));
         return new(images, (await rows.ReadAsync<ImageGroup>()).AsList(), (await rows.ReadAsync<ImageGroupItem>()).AsList(), (await rows.ReadAsync<ImageTheme>()).AsList());
     }
-    public async Task<int> AddAsync(string name, ValidatedImage image, CancellationToken token)
+    public async Task<int> AddAsync(string name, ValidatedImage image, string changedBy, CancellationToken token)
     {
         await using var connection = Connection();
-        return await connection.QuerySingleAsync<int>(Command("Master.Images_add", new { ImageName = name, image.ContentType, ImageData = image.Data, PixelWidth = image.Width, PixelHeight = image.Height }, token));
+        return await connection.QuerySingleAsync<int>(Command("Master.Images_add", new { ImageName = name, image.ContentType, ImageData = image.Data, PixelWidth = image.Width, PixelHeight = image.Height, ChangedBy = changedBy }, token));
     }
-    public async Task<bool> DeleteAsync(int id, CancellationToken token)
+    public async Task<bool> DeleteAsync(int id, string changedBy, CancellationToken token)
     {
         await using var connection = Connection();
-        return await connection.QuerySingleAsync<bool>(Command("Master.Images_delete", new { ImageId = id }, token));
+        return await connection.QuerySingleAsync<bool>(Command("Master.Images_delete", new { ImageId = id, ChangedBy = changedBy }, token));
     }
-    public async Task<int> SaveGroupAsync(int? id, SaveImageGroup request, CancellationToken token)
+    public async Task<int> SaveGroupAsync(int? id, SaveImageGroup request, string changedBy, CancellationToken token)
     {
         var items = new DataTable();
         items.Columns.Add("ImageId", typeof(int)); items.Columns.Add("DisplayOrder", typeof(int)); items.Columns.Add("Active", typeof(bool));
         foreach (var item in request.Items) items.Rows.Add(item.ImageId, item.DisplayOrder, item.Active!.Value);
         await using var connection = Connection();
-        return await connection.QuerySingleAsync<int>(Command("Master.ImageGroups_save", new { ImageGroupId = id, GroupName = request.GroupName.Trim(), request.RotateImages, request.RotationSeconds, request.DefaultImageId, request.Active, Items = items.AsTableValuedParameter("Master.ImageSelection") }, token));
+        return await connection.QuerySingleAsync<int>(Command("Master.ImageGroups_save", new { ImageGroupId = id, GroupName = request.GroupName.Trim(), request.RotateImages, request.RotationSeconds, request.DefaultImageId, request.Active, Items = items.AsTableValuedParameter("Master.ImageSelection"), ChangedBy = changedBy }, token));
     }
-    public async Task AssignAsync(int id, int? groupId, CancellationToken token)
+    public async Task AssignAsync(int id, int? groupId, string changedBy, CancellationToken token)
     {
         await using var connection = Connection();
-        await connection.ExecuteAsync(Command("Master.Themes_setImageGroup", new { ThemeId = id, ImageGroupId = groupId }, token));
+        await connection.ExecuteAsync(Command("Master.Themes_setImageGroup", new { ThemeId = id, ImageGroupId = groupId, ChangedBy = changedBy }, token));
     }
     public async Task<ThemeImages> ThemeAsync(int id, string account, CancellationToken token)
     {

@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace CompanyPortal.Api.Contracts;
 
-public sealed record PortalAccess(bool IsAdmin);
+public sealed record PortalAccess(bool IsAdmin, bool IsSuperAdmin, string[] Sections);
 public sealed record MasterCard(int CardId, string CardKey, string CardName, int DisplayOrder, bool IsFixed, DateTime LastChangeAt,
     string CardType, bool Active, string Audience, int[] AppIds, string[] RoleNames);
 public sealed record MasterCardIdentity(int CardId);

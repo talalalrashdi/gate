@@ -14,7 +14,7 @@
     Object.entries(attrs).forEach(([k,v])=>{if(k!=='multiline')input.setAttribute(k,v);});wrap.append(make('span',{textContent:label}),input);return [wrap,input];}
 
   function numberRow(item){
-    const row=make('div',{className:'hc-number-row'});row.setAttribute('role','row');
+    const row=make('div',{className:'hc-number-row'});row.setAttribute('role','row');AdminChanges.tag(row,'header-content','important-number',item?.id);
     const title=make('input',{value:item?.title??'',maxLength:150,required:true,placeholder:'مثال: طوارئ المؤسسة'});title.setAttribute('aria-label','الاسم');
     const number=make('input',{value:item?.number??'',maxLength:50,required:true,dir:'ltr',placeholder:'1000'});number.setAttribute('aria-label','الرقم');
     const order=make('input',{type:'number',min:0,max:100000,value:item?.sortOrder??(numbers.children.length+1)});order.setAttribute('aria-label','الترتيب');
@@ -40,7 +40,7 @@
   }
 
   function levelCard(level){
-    const card=make('form',{className:'hc-level is-'+level.color});card.noValidate=true;
+    const card=make('form',{className:'hc-level is-'+level.color});card.noValidate=true;AdminChanges.tag(card,'header-content','status-level',level.colorValue);
     const head=make('div',{className:'hc-level-head'});head.append(make('span',{className:'hc-dot'}),make('strong',{textContent:level.title}));
     const [titleWrap,title]=field('العنوان',level.title,{maxlength:100,required:''});
     const [nameWrap,name]=field('اسم اللون',level.colorName,{maxlength:30,required:''});
@@ -48,7 +48,7 @@
     const [guideWrap,guide]=field('نص مختصر في «دليل الحالات»',level.guideText,{maxlength:300,rows:2,multiline:true});
     const [actionsWrap,actions]=field('ما الذي يجب فعله؟ — خطوة في كل سطر',level.actions,{maxlength:1500,rows:4,multiline:true});
     if(level.color==='green'){guideWrap.hidden=true;actionsWrap.hidden=true;}
-    const save=make('button',{type:'submit',className:'admin-primary',textContent:'حفظ'}),note=make('small',{className:'hc-note',textContent:'آخر تعديل: '+String(level.lastChangeAt||'').replace('T',' ').slice(0,16)});
+    const save=make('button',{type:'submit',className:'admin-primary',textContent:'حفظ'}),note=make('small',{className:'hc-note',textContent:'تُحفظ نصوص هذه الحالة مستقلة.'});
     const footer=make('div',{className:'hc-level-footer'});footer.append(note,save);
     card.append(head,titleWrap,nameWrap,summaryWrap,guideWrap,actionsWrap,footer);const tracker=core.trackForm('header-content',card,{busy:()=>busy});
     card.addEventListener('submit',async event=>{

@@ -30,6 +30,7 @@
     try{response=await fetch(url,{method,credentials:'include',cache:'no-store',headers,signal:AbortSignal.timeout(timeout),...(body===undefined?{}:{body:body instanceof FormData?body:JSON.stringify(body)})});}
     catch(error){reportTransport(error.name==='TimeoutError'?'انتهت مهلة الاتصال. تعذر تأكيد العملية؛ تحقق من النتيجة قبل إعادة الحفظ.':'تعذر الاتصال بخدمة البوابة. تحقق من الاتصال وأعد المحاولة.');throw error;}
     if(!response.ok){reportTransport(errorMessage(response.status));if(response.status===401){access=null;applyAccess();}else if(response.status===403)void loadAccess();}
+    if(response.ok&&write&&!url.pathname.endsWith('/preview'))document.dispatchEvent(new CustomEvent('admin:saved',{detail:{header,path:url.pathname}}));
     return response;
   }
   async function confirm(message,{title='تأكيد الإجراء',accept,danger=false}={}){

@@ -20,7 +20,7 @@
     if(key==='overview'||features.querySelector('[data-admin-section="'+key+'"]'))continue;
     const button=document.createElement('button');button.type='button';button.className='admin-feature';button.dataset.adminSection=key;button.hidden=true;button.disabled=true;
     const top=document.createElement('span'),icon=document.createElement('span'),badge=document.createElement('span');top.className='admin-feature-top';icon.className='admin-feature-icon';icon.setAttribute('aria-hidden','true');const source=document.querySelector('.admin-nav [data-admin-section="'+key+'"] > :first-child');if(source){const image=source.cloneNode(true);if(image.tagName.toLowerCase()==='svg'){image.setAttribute('width','24');image.setAttribute('height','24');}icon.append(image);}badge.className='admin-badge is-ready';badge.textContent='متاح الآن';top.append(icon,badge);
-    const name=document.createElement('strong'),copy=document.createElement('span'),action=document.createElement('span');name.textContent=title;copy.textContent=description;action.className='admin-feature-action';action.textContent='استعراض القسم ←';button.append(top,name,copy,action);features.append(button);
+    const name=document.createElement('strong'),copy=document.createElement('span'),action=document.createElement('span');name.textContent=title;copy.textContent=description;action.className='admin-feature-action';action.append(document.createTextNode('استعراض القسم '));const arrow=document.createElement('i');arrow.className='iconsax';arrow.setAttribute('icon-name','arrow-left');arrow.setAttribute('aria-hidden','true');action.append(arrow);button.append(top,name,copy,action);features.append(button);
   }
   buttons=[...document.querySelectorAll('[data-admin-section]')];
   const core=window.AdminCore;let current='overview',url=location.href,position=0,reverting=false,navigating=false;
@@ -30,6 +30,7 @@
     if(!Object.hasOwn(titles,key)||!core.can(key))key='overview';
     current=key;document.body.dataset.adminCurrent=key;
     buttons.forEach(b=>{const allowed=core.can(b.dataset.adminSection);b.hidden=!allowed;b.disabled=!allowed;});
+    document.querySelectorAll('[data-admin-group]').forEach(g=>{g.hidden=![...g.querySelectorAll('[data-admin-section]')].some(b=>core.can(b.dataset.adminSection));});
     panels.forEach(p=>p.hidden=p.dataset.adminPanel!==key||!core.can(key));
     buttons.filter(b=>b.closest('.admin-nav')).forEach(b=>{if(b.dataset.adminSection===key)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
     const heading=document.getElementById('admin-page-title');heading.textContent=titles[key][0];document.getElementById('admin-page-description').textContent=titles[key][1];

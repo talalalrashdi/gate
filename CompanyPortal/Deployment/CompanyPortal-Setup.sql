@@ -1,4 +1,4 @@
-﻿/* CompanyPortal fresh installation, generated from migrations 001-044.
+﻿/* CompanyPortal fresh installation, generated from migrations 001-045.
    Open this entire UTF-8 file in SSMS and Execute (normal mode, no SQLCMD mode).
    Or: sqlcmd -S SQLSERVER -E -b -f 65001 -i CompanyPortal-Setup.sql
    FRESH INSTALL ONLY. Never run on an existing CompanyPortal database.
@@ -3713,6 +3713,37 @@ GO
 
 GO
 
+
+-- BEGIN 045_AdminOverview.sql
+USE CompanyPortal;
+GO
+-- Read-only presentation adapters. Identity and profile mappings stay in their existing SPs.
+CREATE OR ALTER PROCEDURE Portal.AdminAuthors_Get @NamesJson nvarchar(max) AS
+BEGIN
+ SET NOCOUNT ON;
+ DECLARE @Name nvarchar(512),@UserId int;
+ DECLARE @Users TABLE(UserId int);
+ DECLARE @Person TABLE(DisplayName nvarchar(1000),JobTitle nvarchar(1000),Department nvarchar(1000));
+ DECLARE @Result TABLE(ChangedBy nvarchar(512),DisplayName nvarchar(1000));
+ DECLARE authors CURSOR LOCAL FAST_FORWARD FOR
+ SELECT DISTINCT CONVERT(nvarchar(512),value) FROM OPENJSON(@NamesJson) WHERE type=1 AND LEN(value)<=512;
+ OPEN authors; FETCH NEXT FROM authors INTO @Name;
+ WHILE @@FETCH_STATUS=0
+ BEGIN
+  DELETE @Users; DELETE @Person; SET @UserId=NULL;
+  INSERT @Users EXEC Security.User_getByUsername @Username=@Name;
+  SELECT TOP(1) @UserId=UserId FROM @Users;
+  IF @UserId IS NOT NULL INSERT @Person EXEC Portal.UserProfile_Get @UserId=@UserId;
+  INSERT @Result SELECT @Name,COALESCE((SELECT TOP(1) NULLIF(DisplayName,N'') FROM @Person),@Name);
+  FETCH NEXT FROM authors INTO @Name;
+ END;
+ CLOSE authors; DEALLOCATE authors;
+ SELECT ChangedBy,DisplayName FROM @Result;
+END;
+GO
+
+GO
+
 IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'USE [master];
 -- DEVELOPMENT ONLY. Never run this against the real internal security database.
 USE [master];
@@ -3889,7 +3920,7 @@ IF (SELECT TestSources FROM #PortalDeployment)=1
  CREATE TABLE dbo.Public_info_News_Prodc (
   PIP_ID int IDENTITY(1,1) NOT NULL PRIMARY KEY,
   News_ID int NOT NULL REFERENCES dbo.Public_info_News(PIN_ID), Active bit NOT NULL DEFAULT(1));
- INSERT dbo.Public_info_News(PIN_Subject) VALUES(N''Ø®Ø¨Ø± ØªØ¬Ø±ÙŠØ¨ÙŠ Ù„Ø§Ø®ØªØ¨Ø§Ø± Ø§Ù„Ø¨ÙˆØ§Ø¨Ø©'');
+ INSERT dbo.Public_info_News(PIN_Subject) VALUES(N''خبر تجريبي لاختبار البوابة'');
  INSERT dbo.Public_info_News_Prodc(News_ID) VALUES(1);');
 GO
 USE CompanyPortal;

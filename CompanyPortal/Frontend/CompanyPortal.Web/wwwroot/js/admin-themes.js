@@ -77,7 +77,7 @@
   function cover(theme){const data=groupData(theme),first=data.images.find(i=>i.imageId===data.settings?.defaultImageId)||data.images[0];return first?new URL(`api/images/${first.imageId}/content`,api).href:new URL(template(theme.layoutKey).thumbnail,document.baseURI).href;}
   function renderGallery(){
     gallery.replaceChildren();themes.forEach(theme=>{
-      const card=node('article',undefined,'theme-card'),coverBox=node('div',undefined,'theme-card-cover'),image=node('img');image.src=cover(theme);image.alt='';image.loading='lazy';coverBox.append(image);
+      const card=node('article',undefined,'theme-card'),coverBox=node('div',undefined,'theme-card-cover'),image=node('img');AdminChanges.tag(card,'themes','theme',theme.themeId);image.src=cover(theme);image.alt='';image.loading='lazy';coverBox.append(image);
       const body=node('div',undefined,'theme-card-body'),badges=node('div',undefined,'theme-card-badges');
       badges.append(node('span',visibilityName[theme.visibility]||'مخفي','admin-badge'+(theme.active?' is-ready':'')));if(theme.isDefault)badges.append(node('span','افتراضي للجميع','admin-badge is-ready'));
       const swatches=node('div',undefined,'theme-swatches');for(const key of ['primaryColor','accentColor','backgroundColor']){const dot=node('i');dot.style.backgroundColor=theme[key]||template(theme.layoutKey)[key];swatches.append(dot);}
@@ -109,7 +109,7 @@
   async function open(record,copy){
     if(busy)return;
     if(dirty()&&!await core.discard())return;
-    id=record&&!copy?record.themeId:null;
+    id=record&&!copy?record.themeId:null;AdminChanges.tag(form,'themes','theme',id);
     draft={themeName:record?(copy?'نسخة من '+record.themeName:record.themeName):'',layoutKey:record?.layoutKey||'official',displayOrder:record&&!copy?record.displayOrder:Math.min(1000000,Math.max(0,...themes.map(t=>t.displayOrder))+1),visibility:record&&!copy?record.visibility:'hidden',previewRoles:[...(record?.previewRoles||[])],active:record&&!copy?record.active:false,isDefault:record&&!copy?record.isDefault:false,primaryColor:record?.primaryColor??null,accentColor:record?.accentColor??null,backgroundColor:record?.backgroundColor??null,overlayOpacity:record?.overlayOpacity??null,foregroundPreset:record?.foregroundPreset??null,imagePresentation:record?.imagePresentation||'background',imageGroupId:record?.imageGroupId??null};
     draft.themeName=draft.themeName.slice(0,200);snapshot=id?serial():'';
     editor.hidden=false;get('theme-editor-title').textContent=id?'تعديل '+draft.themeName:copy?'نسخ الثيم':'ثيم جديد';
@@ -140,7 +140,7 @@
     if(draft.isDefault&&(!draft.active||draft.visibility!=='public')){say('لا يمكن تعطيل الثيم الافتراضي. اختر افتراضيًا آخر أولًا.',true);return;}
     if(draft.isDefault&&!themes.some(t=>t.themeId===id&&t.isDefault)&&!await confirmAction('تطبيق الافتراضي على الجميع','سيتم نشر هذا الثيم للجميع وتعيينه لجميع المستخدمين عند تحميل البوابة، مع استبدال اختياراتهم الحالية. متابعة؟'))return;
     busy=true;form.querySelectorAll('input,select,textarea,button').forEach(n=>{n.disabled=true;});
-    try{const result=await request('api/admin/themes'+(id?'/'+id:''),id?'PUT':'POST',draft);id=result.themeId;themes=await request('api/admin/themes');snapshot=serial();renderGallery();get('theme-default').disabled=themes.some(t=>t.themeId===id&&t.isDefault);say(draft.isDefault?'تم حفظ الافتراضي. يظهر عند تحميل البوابة.':draft.visibility==='public'?'تم الحفظ والنشر المباشر لجميع المستخدمين.':draft.visibility==='preview'?'تم الحفظ وإتاحة المعاينة للأدوار المحددة فقط.':'تم الحفظ كمخفي للإدارة فقط.');get('theme-editor-title').textContent='تعديل '+draft.themeName;}
+    try{const result=await request('api/admin/themes'+(id?'/'+id:''),id?'PUT':'POST',draft);id=result.themeId;AdminChanges.tag(form,'themes','theme',id);themes=await request('api/admin/themes');snapshot=serial();renderGallery();get('theme-default').disabled=themes.some(t=>t.themeId===id&&t.isDefault);say(draft.isDefault?'تم حفظ الافتراضي. يظهر عند تحميل البوابة.':draft.visibility==='public'?'تم الحفظ والنشر المباشر لجميع المستخدمين.':draft.visibility==='preview'?'تم الحفظ وإتاحة المعاينة للأدوار المحددة فقط.':'تم الحفظ كمخفي للإدارة فقط.');get('theme-editor-title').textContent='تعديل '+draft.themeName;}
     catch(error){say(error.message,true);}finally{busy=false;form.querySelectorAll('input,select,textarea,button').forEach(n=>{n.disabled=false;});get('theme-default').disabled=themes.some(t=>t.themeId===id&&t.isDefault);changed();}
   });
   get('themes-retry').addEventListener('click',async()=>{if(!busy&&(!dirty()||await core.discard()))load();});

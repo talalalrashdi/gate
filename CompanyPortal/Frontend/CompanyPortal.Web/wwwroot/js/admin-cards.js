@@ -25,6 +25,7 @@
   core.watch('cards',root,()=>false,()=>busy);
   function renderCard(card,isNew=false) {
     const form=make('form','admin-card'); form.setAttribute('aria-label',isNew?'بطاقة تطبيقات جديدة':'إعدادات '+card.cardName);
+    AdminChanges.tag(form,'cards','card',isNew?null:card.cardId);
     const badge=make('span','admin-card-number',isNew?'+':String(card.cardId));form.append(badge);
     const field=(caption,type,value,cls)=>{
       const label=make('label',cls),input=make('input');input.type=type;input.value=value;input.required=true;
@@ -104,5 +105,5 @@
   });
   retry.addEventListener('click',async()=>{if(!busy&&(!dirty()||await core.discard('إعادة التحميل ستلغي التغييرات غير المحفوظة. متابعة؟')))load();});
   core.whenSection('cards',()=>{if(!busy&&!records.length)load();});
-  core.whenSection('overview',()=>{if(core.can('cards')&&!busy&&!records.length)load();});
+
 })();

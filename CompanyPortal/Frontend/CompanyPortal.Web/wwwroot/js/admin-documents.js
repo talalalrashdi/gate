@@ -13,6 +13,7 @@ document.querySelectorAll('[data-pdf-library-admin]').forEach(root => {
   function lock(){root.querySelectorAll('input,select,button').forEach(n=>{n.disabled=busy;});add.disabled=busy||!loaded;root.querySelectorAll('form').forEach(f=>f.dispatchEvent(new Event('library:sync')));}
   function form(tab,isNew=false){
     const f=make('form','admin-document-form');if(isNew)f.dataset.newTab='';f.setAttribute('aria-label',terms(isNew?'تبويب جديد':'تبويب '+tab.tabName));
+    AdminChanges.tag(f,section,'tab',isNew?null:tab.documentTabId);
     const field=(text,type='text')=>{const l=make('label',null,text),i=make('input');i.type=type;l.append(i);f.append(l);return i;};
     const name=field('اسم التبويب');name.required=true;name.maxLength=200;name.value=tab.tabName;
     const fl=make('label',null,'المجلد'),folder=make('select');folder.required=true;fl.append(folder);f.append(fl);

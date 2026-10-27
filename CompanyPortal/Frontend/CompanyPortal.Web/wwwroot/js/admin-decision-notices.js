@@ -8,12 +8,14 @@
  function settings(panel){
   const setting=data.settings.find(s=>s.channelID===Number(panel.dataset.noticeAdmin)),form=panel.querySelector('[data-notice-settings]');
   form.elements.days.value=setting.durationDays;form.elements.active.checked=setting.active;const types=panel.querySelector('[data-notice-types]');types.replaceChildren();
+  AdminChanges.tag(form,section(panel),'notice-settings',setting.channelID);
   for(const type of data.types){const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.name='type';input.value=type;input.checked=setting.decisionTypes.includes(type);label.append(input,document.createTextNode(type));types.append(label);}
  }
  function editWindow(panel){
   const form=panel.querySelector('[data-notice-window]'),id=form.elements.decision.value,channel=Number(panel.dataset.noticeAdmin),w=data.windows.find(w=>w.channelID===channel&&w.decisionId===id),row=data.decisions.find(r=>r.decisionId===id),setting=data.settings.find(s=>s.channelID===channel);
   form.elements.from.value=w?.fromAt?.slice(0,19)||'';form.elements.to.value=w?.toAt?.slice(0,19)||'';form.elements.hidden.checked=w?.isHidden||false;
   panel.querySelector('[data-notice-preview]').textContent=row?('نُشر في '+row.publishedAt.replace('T',' ')+' · '+(setting.decisionTypes.includes(row.decisionType)?'نوع مشمول؛ المدة العامة '+setting.durationDays+' أيام':'النوع غير مشمول في إعدادات هذا القسم')):'';
+  AdminChanges.tag(form,section(panel),'notice-window',id?channel+':'+id:null);
   form.dataset.selectedDecision=id;trackers.get(form)?.saved();
  }
  function populate(panel){

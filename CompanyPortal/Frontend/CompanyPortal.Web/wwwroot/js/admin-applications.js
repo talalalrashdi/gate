@@ -34,6 +34,7 @@
   }
   function categoryForm(category,isNew=false){
     const form=make('form','admin-directory-form');form.setAttribute('aria-label',isNew?'تصنيف جديد':'تصنيف '+category.categoryName);
+    AdminChanges.tag(form,'applications','category',isNew?null:category.categoryId);
     if(isNew)form.dataset.newCategory='';
     const name=field(form,'اسم التصنيف');name.value=category.categoryName;name.maxLength=200;name.required=true;
     const order=field(form,'ترتيب التصنيف');order.type='number';order.min=0;order.step=1;order.required=true;order.value=category.displayOrder;
@@ -54,6 +55,7 @@
   }
   function applicationForm(app){
     const form=make('form','admin-directory-form');form.setAttribute('aria-label','وصف '+app.appName);form.dataset.appName=app.appName;
+    AdminChanges.tag(form,'applications','application',app.appId);
     form.append(make('h3',null,app.appName));
     const category=field(form,'التصنيف','select');options(category,app.categoryId);
     const button=make('button',null,'حفظ الوصف والتصنيف');button.type='submit';form.append(button);

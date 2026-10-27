@@ -13,7 +13,7 @@ There are12 navigation entries: overview and11 editable sections. Nine editor sc
 
 ## Navigation and access
 
-`admin-navigation.js` is the single owner of section switching and browser Back/Forward handling. It waits for the live `/api/access` result, shows only authorized navigation/overview entries, and rejects direct unauthorized section selection. Overview includes links to all authorized existing sections; card statistics are shown/fetched only for card admins. A media-only admin no longer depends on access to the cards API to open administration.
+`admin-navigation.js` is the single owner of section switching and browser Back/Forward handling. It waits for the live `/api/access` result, shows only authorized navigation/overview entries, and rejects direct unauthorized section selection. Overview includes links to all authorized existing sections. Phase4 replaces its card statistics with database summaries; card statistics are now shown/fetched only inside the cards section. See ADMIN_OVERVIEW.md. A media-only admin no longer depends on access to the cards API to open administration.
 
 Every admin API request remains protected by the Phase1 AdminSection attribute. The browser is a presentation aid, not authorization.403 rechecks the access result;401 hides the admin workspace. There is no localStorage role or draft store.
 

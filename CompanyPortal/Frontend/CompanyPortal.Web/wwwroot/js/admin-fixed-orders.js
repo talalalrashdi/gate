@@ -21,12 +21,12 @@
   const normalize=v=>(v||'').normalize('NFKD').replace(/[\u064B-\u065F\u0670]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').toLowerCase().trim();
   function renderList(){
     const q=normalize(search.value);list.replaceChildren(...rows.filter(r=>normalize([r.contentAfter,r.contentBefor,r.contentText,r.timestamp].join(' ')).includes(q)).map(row=>{
-      const b=make('button');b.type='button';b.setAttribute('aria-pressed',String(current?.fixedOrderId===row.fixedOrderId));b.append(make('strong',row.contentAfter?.trim()||'توجيه سامٍ'),make('small',row.timestamp||'التاريخ غير محدد'));b.addEventListener('click',()=>choose(row));return b;
+      const b=make('button');b.type='button';AdminChanges.tag(b,'fixed-orders','directive',row.fixedOrderId);b.setAttribute('aria-pressed',String(current?.fixedOrderId===row.fixedOrderId));b.append(make('strong',row.contentAfter?.trim()||'توجيه سامٍ'),make('small',row.timestamp||'التاريخ غير محدد'));b.addEventListener('click',()=>choose(row));return b;
     }));if(!list.children.length)list.append(make('p','لا توجد توجيهات مطابقة.'));
   }
   async function choose(row){
     if(busy||(dirty()&&!await core.discard('إلغاء التغييرات غير المحفوظة وفتح التوجيه؟')))return;
-    current=row;isNew=!row;editor.hidden=false;error.hidden=true;
+    current=row;isNew=!row;AdminChanges.tag(form,'fixed-orders','directive',row?.fixedOrderId);editor.hidden=false;error.hidden=true;
     const data=row||{timestamp:null,timestamp2:null,timestampType:null,contentBefor:null,contentAfter:'',contentText:'بتغيير ds{0}de إلى ss{1}se'};
     for(const [key,input] of Object.entries(fields))input.value=data[key]??'';
     original=JSON.stringify(values());byId('fixed-order-editor-title').textContent=isNew?'توجيه جديد':'تعديل التوجيه';save.textContent=isNew?'حفظ ونشر التوجيه':'حفظ التغييرات';renderList();sync();fields.contentAfter.focus();

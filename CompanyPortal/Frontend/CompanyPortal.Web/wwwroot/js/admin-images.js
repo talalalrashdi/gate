@@ -37,7 +37,7 @@
     byId('images-selected-count').textContent=`${selection.length} صورة مختارة`;
     if(!data.images.length)library.append(node('p','المكتبة فارغة. ارفع الصور للبدء.'));
     data.images.forEach(image=>{
-      const tile=node('article',undefined,'image-tile'),check=node('input');check.type='checkbox';check.checked=selection.some(i=>i.imageId===image.imageId);
+      const tile=node('article',undefined,'image-tile'),check=node('input');AdminChanges.tag(tile,'images','image',image.imageId);check.type='checkbox';check.checked=selection.some(i=>i.imageId===image.imageId);
       check.setAttribute('aria-label','اختيار '+image.imageName);
       check.addEventListener('change',()=>{
         if(check.checked) {if(selection.length>=100){check.checked=false;say('يمكن اختيار 100 صورة كحد أقصى للمجموعة.',true);return;}selection.push({imageId:image.imageId,active:true});}
@@ -85,7 +85,7 @@
     data.groups.forEach(g=>picker.append(option(g.imageGroupId,g.groupName+(g.active?'':' (غير نشطة)'))));picker.value=String(groupId??'');
   }
   function editGroup(id){
-    groupId=id;const group=data.groups.find(g=>g.imageGroupId===id);
+    groupId=id;AdminChanges.tag(form,'images','image-group',id);const group=data.groups.find(g=>g.imageGroupId===id);
     name.value=group?.groupName??'';rotate.checked=group?.rotateImages??true;seconds.value=group?.rotationSeconds??8;active.checked=group?.active??true;defaultId=group?.defaultImageId??null;
     selection=data.items.filter(i=>i.imageGroupId===id).sort((a,b)=>a.displayOrder-b.displayOrder).map(i=>({imageId:i.imageId,active:i.active}));
     dirty=false;byId('image-group-dirty').textContent='';renderPicker();renderLibrary();renderSelection();groupSnapshot=groupValues();core.refresh();
@@ -94,7 +94,7 @@
     const target=byId('image-theme-links'),drafts=new Map([...target.querySelectorAll('form')].filter(f=>f.querySelector('select').value!==f.dataset.originalGroup).map(f=>[Number(f.dataset.themeId),f.querySelector('select').value]));target.replaceChildren();
     data.themes.forEach(theme=>{
       const row=node('form',undefined,'images-theme-form'),label=node('label','مجموعة الصور'),select=node('select'),save=node('button','حفظ الربط','admin-primary');
-      row.dataset.themeId=theme.themeId;row.dataset.originalGroup=String(theme.imageGroupId??'');row.append(node('strong',theme.themeName));select.append(option('','الصور الأصلية للثيم'));
+      AdminChanges.tag(row,'images','theme',theme.themeId);row.dataset.themeId=theme.themeId;row.dataset.originalGroup=String(theme.imageGroupId??'');row.append(node('strong',theme.themeName));select.append(option('','الصور الأصلية للثيم'));
       data.groups.filter(g=>g.active||g.imageGroupId===theme.imageGroupId).forEach(g=>select.append(option(g.imageGroupId,g.groupName+(g.active?'':' (غير نشطة)'))));select.value=String(theme.imageGroupId??'');
       select.setAttribute('aria-label','مجموعة صور '+theme.themeName);label.append(select);row.append(label,save);save.type='submit';
       const tracker=core.trackForm('images',row,{busy:()=>busy});if(drafts.has(theme.themeId))select.value=drafts.get(theme.themeId);

@@ -19,6 +19,7 @@ builder.Services.AddScoped<NewsStore>();
 builder.Services.AddScoped<MagazinesStore>();
 builder.Services.AddScoped<MagazineFiles>();
 builder.Services.AddScoped<ProfileSummaryStore>();
+builder.Services.AddScoped<FormsInboxStore>();
 builder.Services.AddScoped<PortalMediaStore>();
 builder.Services.AddScoped<PortalMediaFiles>();
 builder.Services.AddDataProtection();

@@ -10,7 +10,7 @@ namespace CompanyPortal.Api.Controllers;
 public sealed class LegalDecisionsController(LegalDecisionsStore decisions,NewsFiles files,FolderPathsStore folders,
     ILogger<LegalDecisionsController> logger,DecisionNoticesStore notices,IConfiguration configuration):ControllerBase
 {
-    public sealed record DecisionItem(string DecisionId,string DecisionType,string Title,string PublishedAt,bool HasRead,DecisionNoticesStore.Appearance[] Notices);
+    public sealed record DecisionItem(string DecisionId,string DecisionType,string Title,string PublishedAt,bool HasRead,DecisionNoticesStore.Appearance[] Notices,string? DecisionNumber);
 
     // Read-only rules for the optional frontend simulation tools. Publication matching
     // for real decisions still happens on the server in Get(). No permissions are granted here.
@@ -27,7 +27,7 @@ public sealed class LegalDecisionsController(LegalDecisionsStore decisions,NewsF
     {
         var settings=await notices.GetAsync(token);
         return Ok(rows.Select(row=>new DecisionItem(row.DecisionId.ToString(CultureInfo.InvariantCulture),row.DecisionType,row.Title,
-            DecisionNoticesStore.Oman(row.PublishedAt).ToString("O",CultureInfo.InvariantCulture),row.HasRead,settings.For(row).Where(n=>n.ChannelId!=1||!row.NoticeDismissed).ToArray())).ToArray());
+            DecisionNoticesStore.Oman(row.PublishedAt).ToString("O",CultureInfo.InvariantCulture),row.HasRead,settings.For(row).Where(n=>n.ChannelId!=1||!row.NoticeDismissed).ToArray(),row.DecisionNumber)).ToArray());
     },token);
 
     [HttpPost("{id:long:min(1)}/dismiss-notice"),ProducesResponseType(204)]

@@ -65,6 +65,14 @@ Configure the real adapter, LegalAffairs folders and API account SQL/file read r
 
 ## Verification
 
+### Decision number and date display
+
+`Legal.Decisions_getForUser` can additionally return `DecisionNumber nvarchar(100)` containing the full source reference, e.g. `2026/66`. The API returns it as nullable `decisionNumber` and the card displays `[2026/66]` in left-to-right order. This is a business number, not DecisionId; production must return the actual source number/year. Missing numbers remain hidden, and older adapters without this optional column continue to work. `Development/023_SampleDecisionNumbers.sql` adds and seeds sample numbers once in the marked local LegelAffairs only, and updates its adapter. Run it after Development008 if rebuilding local fixtures; it never overwrites existing numbers. No CompanyPortal migration or historical export changed.
+
+The card shows اليوم, قبل يوم, قبل 2 أيام through قبل 6 أيام using Oman calendar dates; from seven days onward it shows only the actual decision date. Times are omitted from both the text and date tooltip. Source timestamps remain intact for permissions/publication/notice windows. Successful unchanged catalog refreshes update date labels after midnight without replacing the list. Decision numbers sit beneath the type label and titles are centered. Workspace cards use fixed680px frames with list scrolling when needed; decision rows are capped at88px; filtering to a single result never stretches its row, while the containing card retains pagination stability.
+
 Both Release builds passed without warnings. `Backend/tools/Test-LegalDecisions.ps1` checks anonymous rejection, public/restricted list, grant revocation, inactive user/item, unknown IDs, path redaction, relative/absolute files, forbidden paths, invalid PDF signature, missing roots, headers/ranges and Swagger. It runs only against marked local fixtures and restores changed flags, grants, paths and user status. Existing news regression checks passed with the shared file reader using separate folder keys.
 
 `tools/verify-decisions.mjs` executes the real renderer for Arabic search, type filtering, literal HTML, large IDs, PDF links, empty/error/retry and clear-on-hide behaviour. Local browser checks cover connected rendering, search, filtering and pagination. Real source mapping, internal UNC access and destination IIS remain internal acceptance checks.
+
+Development/024_SeedLongDecision.sql retains long-title sample [2026/80] in the marked local source using an existing sample PDF. Its insert is idempotent. Five88px records fit without list scrolling in the680px workspace frame. Titles are vertically centered, with dates separately anchored below and full title tooltips.

@@ -63,7 +63,6 @@ function renderNotifications(){
   const today=new Date(),todayKey=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
   const calendar=exchangePlanner?(window.CompanyPortalSchedule?.notifications||[]):tasks.filter(task=>task&&typeof task.title==='string'&&task.done===false&&task.type!=='note'&&typeof task.date==='string'&&task.date>=todayKey).sort((a,b)=>`${a.date} ${a.time||''}`.localeCompare(`${b.date} ${b.time||''}`)).map(task=>({title:task.title,meta:[task.date,typeof task.time==='string'?task.time:''].filter(Boolean).join(' · ')}));
   systems.push(
-    {title:'تم اعتماد طلبك في نظام الاستمارات',meta:'تجريبي · نظام الاستمارات · منذ 10 دقائق'},
     {title:'مراسلة جديدة بانتظار الاطلاع',meta:'تجريبي · نظام المراسلات · منذ 20 دقيقة'}
   );
   if(!exchangePlanner)calendar.push(

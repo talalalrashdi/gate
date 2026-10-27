@@ -322,3 +322,7 @@ body .portal-group-error { color: #a33a29 !important; font-size: 12px; }
 .portal-work-library #decision-types:focus-visible { outline:2px solid #2c7254;outline-offset:2px; }
 
 .portal-decision-filters{display:flex;align-items:center;gap:8px}.portal-decision-filters>.portal-library-search{flex:1;min-width:0}.portal-work-library .portal-decision-filters #decision-types{width:100%;min-height:42px;padding:8px;font-size:14px}
+
+/* A consistent, slightly shorter workspace frame; only lists scroll when needed. */
+.portal-dashboard #workspace-cards>.portal-work-card{height:680px;min-height:680px;max-height:680px}
+.portal-dashboard #workspace-cards>.portal-work-card>[data-widget-preview]{flex:1;min-height:0!important;overflow-y:auto}

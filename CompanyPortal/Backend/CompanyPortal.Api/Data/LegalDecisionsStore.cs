@@ -7,7 +7,7 @@ namespace CompanyPortal.Api.Data;
 public sealed class LegalDecisionsStore(IConfiguration configuration)
 {
     public sealed record Row(long DecisionId,string DecisionType,string Title,DateTime PublishedAt,string PdfFileName)
-    { public bool HasRead {get;set;} public bool NoticeDismissed {get;set;} }
+    { public Row():this(0,string.Empty,string.Empty,default,string.Empty){} public string? DecisionNumber {get;set;} public bool HasRead {get;set;} public bool NoticeDismissed {get;set;} }
     public async Task<bool> MarkReadAsync(string name,long id,CancellationToken token)
     {
         await using var c=new SqlConnection(configuration.GetConnectionString("CompanyPortal"));

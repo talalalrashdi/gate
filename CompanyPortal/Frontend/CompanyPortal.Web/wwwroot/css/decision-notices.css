@@ -18,3 +18,37 @@
 .portal-notice-paging [data-notice-position] { direction:ltr;unicode-bidi:isolate; }
 
 :is(#portal-floating-alert,#portal-floating-notice,#decision-notices-dialog) a>.portal-decision-unread{display:inline-flex;align-self:flex-start;width:auto;max-width:max-content;flex:0 0 auto;padding:2px 9px;border:1px solid #e7c984;border-radius:6px;background:#fff0cf;--text-primary:#61440b;--text-secondary:#61440b;color:#61440b!important;font-size:10px;line-height:1.6;font-weight:700}
+
+/* Fill the decision-list area with larger rows, retaining the existing type badge shape. */
+.portal-dashboard .portal-work-library #decisions-list{flex:1;max-height:none;align-content:stretch;grid-auto-rows:minmax(84px,1fr)}
+.portal-dashboard .portal-work-library #decisions-list .portal-decision-link{min-height:84px}
+.portal-dashboard .portal-work-library #decisions-list .portal-doc-surface{padding:10px 0}
+.portal-dashboard .portal-work-library #decisions-list .portal-doc-copy{justify-content:center;gap:7px}
+.portal-dashboard .portal-work-library #decisions-list .portal-doc-copy>b{font-size:14px;line-height:1.6}
+#decisions-list .portal-doc-type[data-tone="0"]{background:#e5eee7;--text-primary:#345b43;color:#345b43}
+#decisions-list .portal-doc-type[data-tone="1"]{background:#e4edf5;--text-primary:#355c7b;color:#355c7b}
+#decisions-list .portal-doc-type[data-tone="2"]{background:#f2e4e9;--text-primary:#7c4358;color:#7c4358}
+#decisions-list .portal-doc-type[data-tone="3"]{background:#eee6f5;--text-primary:#684e83;color:#684e83}
+#decisions-list .portal-doc-type[data-tone="4"]{background:#f7eddb;--text-primary:#7c6235;color:#7c6235}
+#decisions-list .portal-doc-type[data-tone="5"]{background:#dfeeee;--text-primary:#366468;color:#366468}
+#decisions-list .portal-doc-type[data-tone="6"]{background:#f7e5da;--text-primary:#84523a;color:#84523a}
+#decisions-list .portal-doc-type[data-tone="7"]{background:#e9ebdf;--text-primary:#59633a;color:#59633a}
+
+#decisions-list .portal-doc-type,#decisions-list .portal-doc-type strong{text-align:center;align-items:center;justify-content:center}
+
+/* A single filtered result must not stretch to fill its parent card. */
+.portal-dashboard .portal-work-library #decisions-list{grid-auto-rows:88px;align-content:start}
+.portal-dashboard .portal-work-library #decisions-list .portal-decision-link{height:88px;min-height:88px;max-height:88px;overflow:hidden}
+.portal-dashboard .portal-work-library #decisions-list .portal-doc-type{max-height:80px;align-self:center;min-height:64px}
+#decisions-list .portal-decision-number{display:inline-block;white-space:nowrap;font-size:11px;font-weight:700;color:#587164;--text-primary:#587164}
+
+#decisions-list .portal-doc-copy>b{text-align:center}
+.portal-dashboard .portal-work-library #decisions-list .portal-doc-type{flex-basis:78px;gap:6px;text-align:center;padding:6px 3px}
+#decisions-list .portal-doc-type .portal-decision-number{font-size:10px;font-weight:500;color:inherit;--text-primary:inherit;line-height:1.5}
+
+/* Center the title within the record; keep its date anchored at the bottom. */
+.portal-dashboard .portal-work-library #decisions-list .portal-doc-copy{position:relative;justify-content:center;gap:0}
+.portal-dashboard .portal-work-library #decisions-list .portal-doc-copy>b{margin:0;line-height:1.5}
+.portal-dashboard .portal-work-library #decisions-list .portal-item-meta{position:absolute;bottom:-3px;inset-inline:0;justify-content:flex-end;text-align:left}
+.portal-dashboard .portal-work-library #decisions-list .portal-item-meta time{margin-inline-start:auto;text-align:left}
+.portal-dashboard .portal-work-library #decisions-list .portal-doc-type .portal-decision-number{font-size:12px;font-weight:700;line-height:1.5}

@@ -27,7 +27,7 @@
     grid.querySelectorAll('.portal-work-card').forEach(card => {
       const heading = card.querySelector('.portal-work-heading');
       const notificationBadge = heading?.querySelector('[data-work-notification-count]');
-      if (notificationBadge && notificationBadge.dataset.countSource !== 'exchange') {
+      if (notificationBadge && !['exchange','forms'].includes(notificationBadge.dataset.countSource)) {
         const forms = card.dataset.workSystem === 'requests';
         const count = forms
           ? Number(card.querySelector('.portal-request-summary > div:first-child b')?.textContent.trim()) || 0
@@ -62,6 +62,16 @@
       const size = Number(list.dataset.pageSize) || 3;
       const count = Math.ceil(items.length / size);
       state.page = Math.min(state.page, Math.max(0, count - 1));
+      // Reserve the tallest page before displaying the selected page. The old340px
+      // cap allowed taller lists to shrink when the last page contained fewer rows.
+      const previousFlex=list.style.flex;
+      list.style.minHeight='0px';list.style.flex='0 0 auto';
+      let reservedHeight=0;
+      for(let candidate=0;candidate<count;candidate++){
+        [...list.children].forEach(item=>{const index=items.indexOf(item);item.toggleAttribute('data-page-hidden',index<0||Math.floor(index/size)!==candidate);});
+        reservedHeight=Math.max(reservedHeight,list.getBoundingClientRect().height);
+      }
+      list.style.flex=previousFlex;list.style.minHeight=Math.ceil(reservedHeight)+'px';
       [...list.children].forEach(item => {
         const index = items.indexOf(item);
         item.toggleAttribute('data-page-hidden', index < 0 || Math.floor(index / size) !== state.page);
@@ -85,7 +95,6 @@
         if (index === state.page) button.setAttribute('aria-current', 'page');
         else button.removeAttribute('aria-current');
       });
-      list.style.minHeight = Math.min(340, Math.max(parseFloat(list.style.minHeight) || 0, list.getBoundingClientRect().height)) + 'px';
     });
   }
   function schedule() { cancelAnimationFrame(frame); frame = requestAnimationFrame(update); }

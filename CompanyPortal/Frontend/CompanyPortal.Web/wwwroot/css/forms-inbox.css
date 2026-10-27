@@ -26,3 +26,11 @@ body:has(#forms-sample-dialog[open]){overflow:hidden}
 #workspace #forms-inbox-list .portal-form-title{display:block;overflow:visible;-webkit-line-clamp:unset}
 
 #workspace #forms-inbox-list{flex:1;min-height:0!important;overflow-y:auto;grid-auto-rows:max-content}
+
+/* Total authorized inbox entries, distinct from the unread icon badge. */
+#workspace .portal-inbox-total{font-size:14px;line-height:1.5;font-weight:500;color:#728277;white-space:nowrap}
+#workspace .portal-inbox-total b{font-size:16px;font-weight:700;color:#254e42}
+#workspace [data-inbox-app]{text-decoration:none}
+#workspace [data-inbox-app][aria-disabled="true"]{cursor:default;filter:grayscale(1)}
+
+#workspace .portal-inbox-title{display:grid;gap:3px;min-width:0}

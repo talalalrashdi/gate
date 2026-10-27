@@ -3,14 +3,16 @@
   if(!card||!base)return;
   const list=card.querySelector('#forms-inbox-list'),status=card.querySelector('#forms-inbox-status'),badge=card.querySelector('[data-count-source="forms"]'),dialog=card.querySelector('#forms-sample-dialog');
   let loading=false,controller,timer,generation=0,failures=0,fingerprint='',rows=[];
+  const total=card.querySelector('[data-inbox-total]'),app=card.querySelector('[data-inbox-app]');
+  function updateApp(value){let url;try{url=new URL(value);}catch{}const valid=typeof value==='string'&&url&&['https:','http:'].includes(url.protocol)&&!url.username&&!url.password;if(valid){app.href=url.href;app.removeAttribute('aria-disabled');app.title='فتح التطبيق في علامة تبويب جديدة';}else{app.removeAttribute('href');app.setAttribute('aria-disabled','true');app.title='رابط التطبيق لم يُضبط بعد';}}
   const seen=new Set(),freshUntil=new Map();let baseline=false,freshTimer;
   function updateFresh(){clearTimeout(freshTimer);const now=Date.now();for(const el of list.querySelectorAll('[data-form-id]'))if((freshUntil.get(el.dataset.formId)||0)<=now){const badge=el.querySelector('.portal-form-new');if(badge?.nextSibling?.nodeType===3&&badge.nextSibling.textContent==='\n')badge.nextSibling.remove();badge?.remove();}const next=[...freshUntil.values()].filter(at=>at>now).sort((a,b)=>a-b)[0];if(next&&!document.hidden)freshTimer=setTimeout(updateFresh,next-now+10);}
   const endpoint=path=>new URL(path,new URL(base.replace(/\/?$/,'/'),location.href));
   const make=(tag,cls,text)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el;};
-  function clear(){rows=[];fingerprint='';list.replaceChildren();badge.hidden=false;badge.textContent='—';badge.setAttribute('aria-label','عدد الاستمارات غير المفتوحة غير متاح');if(dialog.open)dialog.close();}
+  function clear(){total.textContent='—';updateApp(null);rows=[];fingerprint='';list.replaceChildren();badge.hidden=false;badge.textContent='—';badge.setAttribute('aria-label','عدد الاستمارات غير المفتوحة غير متاح');if(dialog.open)dialog.close();}
   function schedule(){clearTimeout(timer);if(!document.hidden)timer=setTimeout(()=>void load(),Math.min(300000,60000*2**failures)+Math.random()*5000);}
   function render(data){
-    rows=data.items;list.replaceChildren();
+    rows=data.items;total.textContent=String(rows.length);updateApp(data.appUrl);list.replaceChildren();
     for(const row of rows){
       const el=make(row.canOpen?'a':'button','portal-form-item');el.dataset.state=row.isOpened?'opened':'unopened';el.dataset.formId=row.formId;
       el.setAttribute('aria-label',row.title+' — '+(row.isOpened?'مفتوحة':'غير مفتوحة')+(row.isSamplePreview?' — معاينة محلية':''));

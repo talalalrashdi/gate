@@ -4,6 +4,8 @@
   const list=card.querySelector('#correspondence-inbox-list'),status=card.querySelector('#correspondence-inbox-status'),badge=card.querySelector('[data-count-source="correspondence"]'),dialog=card.querySelector('#correspondence-sample-dialog'),filter=card.querySelector('#correspondence-purpose-filter');
   let loading=false,controller,timer,generation=0,failures=0,fingerprint='',rows=[],unreadCount=0,selectedPurpose='';
   let realData={items:[],unreadCount:0},simulatedRows=[];
+  const total=card.querySelector('[data-inbox-total]'),app=card.querySelector('[data-inbox-app]');
+  function updateApp(value){let url;try{url=new URL(value);}catch{}const valid=typeof value==='string'&&url&&['https:','http:'].includes(url.protocol)&&!url.username&&!url.password;if(valid){app.href=url.href;app.removeAttribute('aria-disabled');app.title='فتح التطبيق في علامة تبويب جديدة';}else{app.removeAttribute('href');app.setAttribute('aria-disabled','true');app.title='رابط التطبيق لم يُضبط بعد';}}
   const seen=new Set(),freshUntil=new Map();let baseline=false,freshTimer;
   function updateFresh(){clearTimeout(freshTimer);const now=Date.now();for(const el of list.querySelectorAll('[data-correspondence-id]'))if((freshUntil.get(el.dataset.correspondenceId)||0)<=now){const badge=el.querySelector('.portal-correspondence-new');if(badge?.nextSibling?.nodeType===3&&badge.nextSibling.textContent==='\n')badge.nextSibling.remove();badge?.remove();}const next=[...freshUntil.values()].filter(at=>at>now).sort((a,b)=>a-b)[0];if(next&&!document.hidden)freshTimer=setTimeout(updateFresh,next-now+10);}
   function receivedLabel(value,now=new Date()){
@@ -15,10 +17,11 @@
   }
   const endpoint=path=>new URL(path,new URL(base.replace(/\/?$/,'/'),location.href));
   const make=(tag,cls,text)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el;};
-  function clear(){rows=[];realData={items:[],unreadCount:0};fingerprint='';list.replaceChildren();filter.replaceChildren();selectedPurpose='';badge.hidden=false;badge.textContent='—';badge.setAttribute('aria-label','عدد المراسلات غير المفتوحة غير متاح');if(dialog.open)dialog.close();}
+  function clear(){total.textContent='—';updateApp(null);rows=[];realData={items:[],unreadCount:0};fingerprint='';list.replaceChildren();filter.replaceChildren();selectedPurpose='';badge.hidden=false;badge.textContent='—';badge.setAttribute('aria-label','عدد المراسلات غير المفتوحة غير متاح');if(dialog.open)dialog.close();}
   function schedule(){clearTimeout(timer);if(!document.hidden)timer=setTimeout(()=>void load(),Math.min(300000,60000*2**failures)+Math.random()*5000);}
   function render(data){
     realData=data;rows=[...simulatedRows,...data.items];unreadCount=data.unreadCount+simulatedRows.filter(row=>!row.isOpened).length;
+    total.textContent=String(rows.length);updateApp(data.appUrl);
     const types=[...new Set(rows.map(r=>r.purpose))].sort((a,b)=>a.localeCompare(b,'ar'));
     if(!types.includes(selectedPurpose))selectedPurpose='';
     const focused=filter.contains(document.activeElement)?document.activeElement.dataset.purpose:null;

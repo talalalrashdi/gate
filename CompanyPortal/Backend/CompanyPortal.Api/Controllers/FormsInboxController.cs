@@ -13,7 +13,7 @@ public sealed class FormsInboxController(FormsInboxStore store,IConfiguration co
         Ok(new{items=data.Items.Select(r=>new{formId=r.FormId.ToString(CultureInfo.InvariantCulture),r.Title,r.SenderName,
             sentAt=DecisionNoticesStore.Oman(r.SentAt).ToString("O",CultureInfo.InvariantCulture),r.IsOpened,
             isSamplePreview=r.IsSample&&config.GetValue<bool>("Forms:AllowSamplePreview"),
-            canOpen=OpenAddress(r.FormId) is not null}).ToArray(),data.UnreadCount}),token);
+            canOpen=OpenAddress(r.FormId) is not null}).ToArray(),data.UnreadCount,appUrl=AppAddress()}),token);
 
     [HttpGet("{id:long:min(1)}/open")]
     public Task<IActionResult> Open(long id,CancellationToken token)=>Read(id,data=>
@@ -23,6 +23,11 @@ public sealed class FormsInboxController(FormsInboxStore store,IConfiguration co
         return address is null?Problem(statusCode:503,title:"لم يتم إعداد رابط تطبيق الاستمارات بعد."):Redirect(address);
     },token);
 
+    private string? AppAddress()
+    {
+        var value=config["Forms:AppUrl"];
+        return Uri.TryCreate(value,UriKind.Absolute,out var address)&&address.Scheme is "https" or "http"&&address.UserInfo.Length==0?address.AbsoluteUri:null;
+    }
     private string? OpenAddress(long id)
     {
         var template=config["Forms:ItemUrlTemplate"];

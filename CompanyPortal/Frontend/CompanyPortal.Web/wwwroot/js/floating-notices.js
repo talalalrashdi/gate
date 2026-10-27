@@ -12,7 +12,7 @@
   const link=document.createElement('a');link.className=content.className;link.target='_blank';link.rel='noopener noreferrer';
   link.append(...content.childNodes);content.replaceWith(link);
   const make=(tag,text)=>{const n=document.createElement(tag);n.textContent=text;return n;};
-  function available(channel){const now=Date.now();return rows.filter(r=>(channel!==1||!dismissedNotices.has(r.decisionId))&&r.notices?.some(n=>n.channelId===channel&&Date.parse(n.fromAt)<=now&&now<Date.parse(n.toAt)));}
+  function available(channel){const now=Date.now();return rows.filter(r=>(channel!==2||!r.hasRead)&&(channel!==1||!dismissedNotices.has(r.decisionId))&&r.notices?.some(n=>n.channelId===channel&&Date.parse(n.fromAt)<=now&&now<Date.parse(n.toAt)));}
   function fill(target,row){
     target.href=row.isSimulation?'#':endpoint(row.decisionId);if(row.isSimulation){target.removeAttribute('target');target.dataset.simulation='true';}else{target.target='_blank';delete target.dataset.simulation;}target.dataset.decisionId=row.decisionId;target.replaceChildren();
     if(!row.hasRead){const badge=make('small','جديد');badge.className='portal-decision-unread';target.append(badge);}
@@ -48,7 +48,7 @@
     const list=dialog.querySelector('[data-notices-list]');list.replaceChildren();
     for(const channel of [1,2]){const items=available(channel);if(!items.length)continue;list.append(make('h3',channel===1?'تنويه':'تنبيه'));
       for(const row of items){const item=document.createElement('a');item.target='_blank';item.rel='noopener noreferrer';fill(item,row);list.append(item);}}
-    dialog.querySelector('[data-notices-status]').textContent=list.children.length?'تبقى المواد ظاهرة حتى نهاية مدة العرض.':'لا توجد تنويهات أو تنبيهات ضمن فترة العرض.';
+    dialog.querySelector('[data-notices-status]').textContent=list.children.length?'التنبيهات المقروءة تُغلق تلقائيًا؛ بقية المواد ضمن مدة العرض المحددة.':'لا توجد تنويهات أو تنبيهات ضمن فترة العرض.';
   }
   if(document.getElementById('portal-simulation')){
     document.addEventListener('portal:simulation-reveal',event=>{
@@ -62,7 +62,7 @@
     document.addEventListener('portal:simulation-reset',()=>{visibleChannels.clear();for(const id of dismissedNotices)if(id.startsWith('simulation-'))dismissedNotices.delete(id);noticeIndex=0;index=0;render();});
   }
   document.addEventListener('portal:decisions',event=>{rows=event.detail.rows;render();if(event.detail.loaded&&event.detail.origin!=='simulation')initialized=true;});
-  document.addEventListener('portal:decision-read',event=>{rows.filter(r=>r.decisionId===event.detail).forEach(r=>r.hasRead=true);render();});
+  document.addEventListener('portal:decision-read',event=>{if(link.dataset.decisionId===event.detail)visibleChannels.delete(2);rows.filter(r=>r.decisionId===event.detail).forEach(r=>r.hasRead=true);render();});
   document.addEventListener('portal:decision-read-error',()=>{dialog.querySelector('[data-notices-status]').textContent='تعذر حفظ حالة القراءة. يمكنك إعادة فتح المادة بعد تحديث الصفحة.';});
   toggle.addEventListener('click',()=>{
     if(visibleChannels.size)visibleChannels.clear();else{visibleChannels.add(1);visibleChannels.add(2);}

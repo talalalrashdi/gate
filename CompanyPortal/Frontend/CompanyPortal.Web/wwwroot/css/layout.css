@@ -131,7 +131,7 @@ body { overflow-x: clip; }
 .portal-electronic-service-form small { color: var(--text-secondary); }
 .portal-electronic-service-status { margin: 0; font-size: 13px; line-height: 1.6; color: var(--widget-accent); }
 .portal-electronic-service-status:empty { display: none; }
-.portal-dashboard [data-widget-preview] { max-height: 340px; overflow-y: auto; overscroll-behavior-y: contain; scrollbar-width: thin; }
+.portal-dashboard [data-widget-preview] { max-height: 340px; overflow-y: auto; overscroll-behavior-y: auto; scrollbar-width: thin; }
 .portal-dashboard [data-widget-preview] > [data-page-hidden] { display: none !important; }
 .portal-dashboard [data-widget-preview] :is(h3, strong, .portal-doc-copy b, .portal-inbox-copy p, .portal-group-system-list li > span) { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .portal-dashboard .portal-widget-bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 12px; }

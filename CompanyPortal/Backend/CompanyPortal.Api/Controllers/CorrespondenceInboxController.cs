@@ -12,7 +12,7 @@ public sealed class CorrespondenceInboxController(CorrespondenceInboxStore store
     public Task<IActionResult> Inbox(CancellationToken token)=>Read(null,data=>
         Ok(new{items=data.Items.Select(r=>new{correspondenceId=r.CorrespondenceId.ToString(CultureInfo.InvariantCulture),r.DocNo,r.Title,r.Purpose,r.SenderName,
             receivedAt=DecisionNoticesStore.Oman(r.ReceivedAt).ToString("O",CultureInfo.InvariantCulture),r.IsOpened,
-            isSamplePreview=r.IsSample&&config.GetValue<bool>("Correspondence:AllowSamplePreview"),canOpen=OpenAddress(r) is not null}).ToArray(),data.UnreadCount}),token);
+            isSamplePreview=r.IsSample&&config.GetValue<bool>("Correspondence:AllowSamplePreview"),canOpen=OpenAddress(r) is not null}).ToArray(),data.UnreadCount,appUrl=AppAddress()}),token);
 
     [HttpGet("{id:long:min(1)}/open")]
     public Task<IActionResult> Open(long id,CancellationToken token)=>Read(id,data=>
@@ -21,6 +21,11 @@ public sealed class CorrespondenceInboxController(CorrespondenceInboxStore store
         var address=OpenAddress(row);
         return address is null?Problem(statusCode:503,title:"لم يتم إعداد رابط تطبيق المراسلات بعد."):Redirect(address);
     },token);
+    private string? AppAddress()
+    {
+        var value=config["Correspondence:AppUrl"];
+        return Uri.TryCreate(value,UriKind.Absolute,out var address)&&address.Scheme is "https" or "http"&&address.UserInfo.Length==0?address.AbsoluteUri:null;
+    }
     private string? OpenAddress(CorrespondenceInboxStore.Row row)
     {
         var template=config["Correspondence:ItemUrlTemplate"];

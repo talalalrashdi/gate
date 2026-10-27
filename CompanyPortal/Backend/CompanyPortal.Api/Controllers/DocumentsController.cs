@@ -41,6 +41,8 @@ public sealed class DocumentsController(DocumentsStore documents,DocumentFiles f
             var rows=await documents.GetAsync(name,token);
             return rows is null?Forbid():await action(rows);
         }
+        catch(SqlException exception) when(exception.Number==0 && token.IsCancellationRequested && HttpContext.RequestAborted.IsCancellationRequested)
+        {throw new OperationCanceledException("Document request canceled by client.",exception,token);}
         catch(Exception exception) when(exception is SqlException or InvalidOperationException or IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
         {
             logger.LogError(exception,"Documents read failed.");

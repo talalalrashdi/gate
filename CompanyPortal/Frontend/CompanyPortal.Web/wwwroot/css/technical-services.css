@@ -1,0 +1,35 @@
+#workspace .technical-service-tabs{display:flex;gap:5px;margin:0 0 14px;flex-shrink:0}
+#workspace .technical-service-tabs button{flex:1;min-width:0;border:1px solid #d8e2d9;border-radius:9px;background:#f6f8f3;--text-primary:#426353;color:#426353;padding:9px 4px;font:inherit;font-size:12px;cursor:pointer;text-align:center}
+#workspace .technical-service-tabs button[aria-selected="true"]{background:#225e4b;--text-primary:#fff;color:#fff;border-color:#225e4b;font-weight:700}
+#workspace .technical-service-tabs button:focus-visible,#workspace .technical-system-link:focus-visible{outline:2px solid #bb955a;outline-offset:2px}
+#technical-service-panel{flex:1;min-height:0;overflow-y:auto;padding:2px 3px 8px;scrollbar-width:thin}
+#workspace #portal-electronic-service-form{display:block;margin:0}
+#workspace #portal-electronic-service-form fieldset{display:grid;gap:9px;border:0;margin:0;padding:0;min-width:0}
+#workspace #portal-electronic-service-form [data-technical-field]{display:grid;gap:6px}
+#workspace #portal-electronic-service-form [hidden]{display:none}
+#workspace #portal-electronic-service-form label{font-size:12px;color:#466051;margin:0}
+#workspace #portal-electronic-service-form :is(input,select,textarea){width:100%;min-width:0;border:1px solid #dbe3d7;border-radius:8px;padding:9px;background:#fbfcf8;color:#193d36;font:inherit;font-size:12px;box-sizing:border-box}
+#workspace #portal-electronic-service-form textarea{min-height:86px;resize:vertical}
+#workspace #portal-electronic-service-form .technical-service-send{display:block;width:100%;text-align:center;justify-content:center;border:0;border-radius:9px;padding:11px;background:#225e4b;--text-primary:#fff;color:#fff;font:inherit;font-size:13px;cursor:pointer}
+#workspace .technical-system-link{display:block;text-align:center;border:1px solid #cad9ca;border-radius:9px;padding:10px;margin-top:9px;text-decoration:none;font-size:13px;background:#eef3e9;--text-primary:#225e4b;color:#225e4b;cursor:pointer}
+#workspace .technical-system-link[aria-disabled="true"]{opacity:.55;cursor:default}
+#portal-electronic-service-status{font-size:12px;line-height:1.8;flex-shrink:0;margin:8px 0 0}
+#portal-electronic-service-status:empty{display:none}
+#technical-service-retry{font:inherit;font-size:12px;padding:7px;border:1px solid #d6dfd2;border-radius:8px;background:#f2f6ef;color:#225e4b}
+
+/* Compact controls leave room for a larger details field without stretching the card. */
+#workspace #portal-electronic-service-form fieldset{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px}
+#workspace #portal-electronic-service-form fieldset>*,#workspace #portal-electronic-service-form [data-technical-field]{grid-column:1 / -1}
+#workspace #portal-electronic-service-form [data-technical-field="office"],#workspace #portal-electronic-service-form [data-technical-field="document"]{grid-column:auto}
+#workspace #portal-electronic-service-form [data-technical-field]{gap:4px}
+#workspace #portal-electronic-service-form :is(input,select){height:36px;padding:6px 8px}
+#workspace #portal-electronic-service-form textarea{min-height:144px;padding:9px}
+#workspace #technical-service-panel[data-kind="report"] textarea{min-height:100px}
+#workspace #portal-electronic-service-form .technical-service-send{padding:9px}
+#workspace .technical-system-link{padding:8px;margin-top:8px}
+#technical-service-panel{overflow-y:auto}
+
+#workspace #technical-service-panel[data-kind="report"] [data-technical-field="recipient"],#workspace #technical-service-panel[data-kind="report"] [data-technical-field="type"]{grid-column:auto}
+#workspace #technical-service-panel[data-kind="report"]:has([data-technical-field="recipient"][hidden]) [data-technical-field="type"]{grid-column:1 / -1}
+#workspace #technical-service-panel[data-kind="report"] fieldset{gap:6px 10px}
+#workspace #technical-service-panel[data-kind="report"] label{font-size:11px;line-height:1.4}

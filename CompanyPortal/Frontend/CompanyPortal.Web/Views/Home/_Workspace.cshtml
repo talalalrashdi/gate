@@ -31,18 +31,29 @@
           <dialog id="forms-sample-dialog" aria-labelledby="forms-sample-title"><header><strong>معاينة استمارة — بيانات محلية</strong><button type="button" aria-label="إغلاق معاينة الاستمارة">×</button></header><h2 id="forms-sample-title"></h2><p data-forms-sample-sender></p><p>هذه معاينة محلية حتى إعداد رابط تطبيق الاستمارات. فتح المعاينة لا يغيّر حالة الفتح أو عدد الإشعارات في Formsdb.</p></dialog>
         </article>
         <article class="portal-work-card portal-work-electronic-services" data-work-system="electronic-services" data-widget-category="services" aria-labelledby="work-electronic-services-title">
-          <header class="portal-work-heading"><div class="portal-work-icon"><i class="iconsax" icon-name="box" aria-hidden="true"></i></div><div><h2 id="work-electronic-services-title">الخدمات الالكترونية</h2></div></header>
+          <header class="portal-work-heading"><div class="portal-work-icon"><i class="iconsax" icon-name="box" aria-hidden="true"></i></div><div><h2 id="work-electronic-services-title">الخدمات الفنية</h2></div></header>
+          <div class="technical-service-tabs" role="tablist" aria-label="الخدمات الفنية">
+            <button type="button" role="tab" id="technical-tab-assignment" data-technical-tab="assignment" aria-selected="true" aria-controls="technical-service-panel">الإسناد</button>
+            <button type="button" role="tab" id="technical-tab-report" data-technical-tab="report" aria-selected="false" tabindex="-1" aria-controls="technical-service-panel">البلاغات</button>
+            <button type="button" role="tab" id="technical-tab-initiative" data-technical-tab="initiative" aria-selected="false" tabindex="-1" aria-controls="technical-service-panel">المبادرات</button>
+          </div>
+          <div id="technical-service-panel" role="tabpanel" aria-labelledby="technical-tab-assignment">
           <form class="portal-electronic-service-form" id="portal-electronic-service-form">
-            <label for="portal-service-type">نوع الخدمة</label>
-            <select id="portal-service-type" name="type" required><option value="">اختر نوع الخدمة</option><option value="report">بلاغ</option><option value="initiative">مبادرة</option><option value="assignment">الإسناد</option></select>
-            <label for="portal-service-category">التصنيف</label>
-            <select id="portal-service-category" name="category" required disabled><option value="">اختر نوع الخدمة أولًا</option></select>
-            <label for="portal-service-message">تفاصيل الطلب</label>
-            <textarea id="portal-service-message" name="message" rows="4" maxlength="4000" placeholder="اكتب تفاصيل طلبك هنا…" required></textarea>
-            <small>يُحفظ الطلب على هذا الجهاز.</small>
-            <button type="submit">إرسال <span aria-hidden="true">←</span></button>
-            <p class="portal-electronic-service-status" id="portal-electronic-service-status" role="status" aria-live="polite"></p>
+            <fieldset disabled>
+              <div data-technical-field="category"><label for="technical-category">تصنيف البلاغ</label><select id="technical-category" name="categoryId"></select></div>
+              <div data-technical-field="recipient"><label for="technical-recipient" id="technical-recipient-label">جهة استلام البلاغ</label><select id="technical-recipient" name="recipientId"></select></div>
+              <div data-technical-field="type"><label for="technical-type">النوع</label><select id="technical-type" name="typeId"></select></div>
+              <div data-technical-field="title"><label for="technical-title">العنوان</label><input id="technical-title" name="title" maxlength="500" autocomplete="off"></div>
+              <div data-technical-field="office"><label for="technical-office">رقم المكتب</label><input id="technical-office" name="officeNumber" maxlength="100" autocomplete="off"></div>
+              <div data-technical-field="document"><label for="technical-document">رقم المستند</label><input id="technical-document" name="documentNumber" maxlength="200" autocomplete="off"></div>
+              <label for="portal-service-message">تفاصيل الطلب</label><textarea id="portal-service-message" name="details" rows="3" maxlength="4000" required placeholder="اكتب تفاصيل طلبك هنا…"></textarea>
+              <button type="submit" class="technical-service-send">إرسال</button>
+            </fieldset>
           </form>
+          <a class="technical-system-link" id="technical-system-link" target="_blank" rel="noopener noreferrer" aria-disabled="true">نظام الإسناد</a>
+          </div>
+          <p class="portal-electronic-service-status" id="portal-electronic-service-status" role="status" aria-live="polite">جارٍ تحميل قوائم الخدمات…</p><button type="button" id="technical-service-retry" hidden>إعادة تحميل القوائم</button>
+
         </article>
       </div>
       </div>

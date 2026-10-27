@@ -20,6 +20,7 @@ builder.Services.AddScoped<MagazinesStore>();
 builder.Services.AddScoped<MagazineFiles>();
 builder.Services.AddScoped<ProfileSummaryStore>();
 builder.Services.AddScoped<FormsInboxStore>();
+builder.Services.AddScoped<TechnicalServicesStore>();
 builder.Services.AddScoped<PortalMediaStore>();
 builder.Services.AddScoped<PortalMediaFiles>();
 builder.Services.AddDataProtection();
@@ -65,6 +66,8 @@ builder.Services.AddSwaggerGen(options =>
 var app = builder.Build();
 
 app.UseExceptionHandler();
+// Inside exception handling so confirmed client cancellations are handled before it logs an error.
+app.UseMiddleware<CompanyPortal.Api.Infrastructure.RequestCancellationMiddleware>();
 app.UseStatusCodePages();
 
 if (!app.Environment.IsDevelopment())

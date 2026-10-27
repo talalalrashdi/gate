@@ -45,6 +45,8 @@ public sealed class DocumentLibraryController(DocumentTabsStore tabs,DocumentsSt
             var rows=await documents.GetAsync(name,token);
             return rows is null?Forbid():await action(rows.Where(DocumentTabsStore.IsPdf).ToArray());
         }
+        catch(SqlException e) when(e.Number==0 && token.IsCancellationRequested && HttpContext.RequestAborted.IsCancellationRequested)
+        {throw new OperationCanceledException("Document request canceled by client.",e,token);}
         catch(Exception e) when(e is SqlException or InvalidOperationException or IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
         {logger.LogError(e,"Document library read failed.");return Problem(statusCode:503,title:"Document library is temporarily unavailable.");}
     }

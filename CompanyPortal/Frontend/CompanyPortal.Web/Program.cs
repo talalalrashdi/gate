@@ -26,7 +26,12 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseStaticFiles();
+// PDF.js (wwwroot/vendor/pdfjs) needs its ES module, packed character maps and Type1 standard fonts served.
+var contentTypes = new Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider();
+contentTypes.Mappings[".mjs"] = "text/javascript";
+contentTypes.Mappings[".bcmap"] = "application/octet-stream";
+contentTypes.Mappings[".pfb"] = "application/octet-stream";
+app.UseStaticFiles(new StaticFileOptions { ContentTypeProvider = contentTypes });
 // Browser error pages preserve status codes; JSON/fetch responses keep their own contract.
 app.UseWhen(context=>context.Request.Headers.Accept.Any(value=>value?.Contains("text/html",StringComparison.OrdinalIgnoreCase)==true)
     ||context.Request.Headers.Accept.Count==0,branch=>branch.UseStatusCodePagesWithReExecute("/errors/{0}"));

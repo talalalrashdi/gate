@@ -1,6 +1,10 @@
 (() => {
   const reader = document.getElementById('monthly-reader');
   if (!reader) return;
+  // Pages are drawn from the issue PDF with the bundled PDF.js (wwwroot/vendor/pdfjs, offline).
+  const pdfjsBase = new URL('../vendor/pdfjs/', document.currentScript?.src || location.href);
+  let pdfjs, pdfDoc = null, loadingTask = null;
+  const mainTasks = new Set(), thumbTasks = new Set();
   const stage = reader.querySelector('.editorial-local-stage'), spread = reader.querySelector('.editorial-local-spread');
   const message = reader.querySelector('.editorial-local-message');
   const previous = reader.querySelector('[data-mag-prev]'), next = reader.querySelector('[data-mag-next]');
@@ -41,22 +45,52 @@
   const number = value => value.toLocaleString('ar-EG-u-nu-latn');
   const normalize = index => mobile.matches || index === 0 ? index : (index % 2 ? index : index - 1);
   const indexes = () => mobile.matches || current === 0 || current === pages.length - 1 ? [current] : [current, current + 1];
-  function imageFor(index, thumbnail = false) {
-    const image = document.createElement('img');
-    image.src = endpoint(`/${selectedIssue.magazineId}/pages/${index+1}`);
-    const issueId=selectedIssue.magazineId;image.alt = `صفحة ${number(index + 1)} من ${selectedIssue.magazineName}`;
-    image.width = 1500; image.height = Math.round(1500 * pages[index].height / pages[index].width);
-    image.loading = thumbnail ? 'lazy' : 'eager'; image.decoding = 'async'; image.draggable = false;
-    if(!thumbnail)image.addEventListener('load',()=>{if(image.isConnected&&image.naturalWidth>0&&selectedIssue?.magazineId===issueId){readyIssues.add(issueId);maybeMarkRead();}},{once:true});
-    if (!thumbnail) image.addEventListener('error', () => { if(!image.isConnected||selectedIssue?.magazineId!==issueId)return;message.hidden = false; message.textContent = 'تعذّر تحميل الصفحة. يمكنك فتح ملف PDF من المتحكم أسفل المجلة.'; });
-    return image;
+  function loadPdfjs() {
+    pdfjs ??= import(new URL('pdf.min.mjs', pdfjsBase).href).then(lib => { lib.GlobalWorkerOptions.workerSrc = new URL('pdf.worker.min.mjs', pdfjsBase).href; return lib; });
+    return pdfjs;
   }
+  async function paint(canvas, index, width, main) {
+    const doc = pdfDoc, issueId = selectedIssue?.magazineId, tasks = main ? mainTasks : thumbTasks;
+    try {
+      const page = await doc.getPage(index + 1);
+      if (doc !== pdfDoc || !canvas.isConnected) return;
+      const size = page.getViewport({ scale: 1 }); pages[index] = { width: size.width, height: size.height };
+      if (main && index === current) reader.style.setProperty('--magazine-page-ratio', size.width / size.height);
+      const viewport = page.getViewport({ scale: width / size.width });
+      canvas.width = Math.round(viewport.width); canvas.height = Math.round(viewport.height);
+      const task = page.render({ canvasContext: canvas.getContext('2d', { alpha: false }), viewport }); tasks.add(task);
+      try { await task.promise; } finally { tasks.delete(task); }
+      if (main && doc === pdfDoc && selectedIssue?.magazineId === issueId) { readyIssues.add(issueId); maybeMarkRead(); }
+    } catch (error) {
+      if (error?.name === 'RenderingCancelledException' || doc !== pdfDoc || !canvas.isConnected || !main) return;
+      message.hidden = false; message.textContent = 'تعذّر عرض الصفحة. يمكنك فتح ملف PDF من المتحكم أسفل المجلة.';
+    }
+  }
+  function canvasFor(index, thumbnail = false) {
+    const canvas = document.createElement('canvas'), width = thumbnail ? 180 : 1500;
+    canvas.width = width; canvas.height = Math.round(width * pages[index].height / pages[index].width);
+    canvas.setAttribute('role', 'img'); canvas.setAttribute('aria-label', `صفحة ${number(index + 1)} من ${selectedIssue.magazineName}`);
+    canvas.dataset.page = String(index);
+    if (!thumbnail) void paint(canvas, index, width, true);
+    return canvas;
+  }
+  // The turning page is a clone of the outgoing spread; canvas pixels are not cloned, so copy them.
+  function cloneSpreadPage(source) {
+    const clone = source.cloneNode(true), from = source.querySelectorAll('canvas');
+    clone.querySelectorAll('canvas').forEach((canvas, i) => { canvas.width = from[i].width; canvas.height = from[i].height; canvas.getContext('2d').drawImage(from[i], 0, 0); });
+    return clone;
+  }
+  const thumbObserver = new IntersectionObserver(entries => entries.forEach(entry => {
+    if (!entry.isIntersecting || !pdfDoc) return;
+    thumbObserver.unobserve(entry.target); void paint(entry.target, Number(entry.target.dataset.page), 180, false);
+  }), { root: thumbs, rootMargin: '200px' });
   function render() {
     if(activeIssue){renderPDF();return;}
     const visible = indexes();
     reader.style.setProperty('--magazine-page-ratio', pages[current].width / pages[current].height);
+    mainTasks.forEach(task => task.cancel()); mainTasks.clear();
     spread.replaceChildren(...visible.map(index => {
-      const page = document.createElement('div'); page.className = 'editorial-local-page'; page.append(imageFor(index)); return page;
+      const page = document.createElement('div'); page.className = 'editorial-local-page'; page.append(canvasFor(index)); return page;
     }));
     spread.classList.toggle('is-single', visible.length === 1);
     pageInput.value = String(current + 1);
@@ -72,7 +106,7 @@
     index = normalize(Math.max(0, Math.min(pages.length - 1, index)));
     if (index === current) { pageInput.value = String(current + 1); return; }
     const forward = index > current;
-    const clone = animate && !mobile.matches && !reduced.matches && !reader.classList.contains('is-zoomed') ? spread.lastElementChild?.cloneNode(true) : null;
+    const clone = animate && !mobile.matches && !reduced.matches && !reader.classList.contains('is-zoomed') && spread.lastElementChild ? cloneSpreadPage(spread.lastElementChild) : null;
     current = index; render();
     if (clone) {
       turning = true; clone.classList.add('editorial-local-turn', forward ? 'is-forward' : 'is-backward'); clone.setAttribute('aria-hidden', 'true'); stage.append(clone);
@@ -98,7 +132,8 @@
     if (!pages.length) return;
     if (!thumbs.children.length) pages.forEach((page, index) => {
       const button = document.createElement('button'); button.type = 'button'; button.setAttribute('aria-label', `الانتقال إلى الصفحة ${number(index + 1)}`);
-      button.append(imageFor(index, true), document.createTextNode(number(index + 1)));
+      const canvas = canvasFor(index, true); thumbObserver.observe(canvas);
+      button.append(canvas, document.createTextNode(number(index + 1)));
       button.addEventListener('click', () => { goTo(index, false); thumbs.hidden = true; thumbButton.setAttribute('aria-expanded', 'false'); stage.focus({preventScroll: true}); }); thumbs.append(button);
     });
     thumbs.hidden = !thumbs.hidden; thumbButton.setAttribute('aria-expanded', String(!thumbs.hidden));
@@ -114,6 +149,8 @@
   zoomOut?.addEventListener('click',()=>setZoom(false));
   function clearReader(){
     clearTimeout(turnTimer);turning=false;stage.querySelector('.editorial-local-turn')?.remove();
+    mainTasks.forEach(task=>task.cancel());thumbTasks.forEach(task=>task.cancel());mainTasks.clear();thumbTasks.clear();thumbObserver.disconnect();
+    loadingTask?.destroy();loadingTask=null;pdfDoc=null;
     pages=[];current=0;activeIssue=null;selectedIssue=null;pdfFrame?.remove();pdfFrame=null;spread.replaceChildren();thumbs.replaceChildren();thumbs.hidden=true;
     reader.classList.remove('is-pdf','is-zoomed');zoomButton.setAttribute('aria-pressed','false');thumbButton.setAttribute('aria-expanded','false');
     [previous,next,pageInput,thumbButton,zoomButton,fullButton,zoomOut].filter(Boolean).forEach(n=>n.disabled=true);pageInput.value='1';pageInput.removeAttribute('max');
@@ -125,12 +162,17 @@
     if(!selected){message.textContent='لا توجد أعداد منشورة حاليًا.';return;}
     selectedIssue=selected;name.textContent=selected.magazineName;reader.setAttribute('aria-label','قارئ '+selected.magazineName);message.textContent='جارٍ تجهيز المجلة…';reader.setAttribute('aria-busy','true');
     try{
-      const response=await fetch(endpoint(`/${selected.magazineId}/pages`),{credentials:'include',cache:'no-store',signal:AbortSignal.any([signal,AbortSignal.timeout(15000)])});
+      const url=endpoint(`/${selected.magazineId}/pdf`),lib=await loadPdfjs().catch(()=>null);
       if(stamp!==generation||signal.aborted)return;
-      if(response.status===404){activeIssue={url:endpoint(`/${selected.magazineId}/pdf`)};reader.classList.add('is-pdf');renderPDF();}
+      if(!lib){activeIssue={url};reader.classList.add('is-pdf');renderPDF();}
       else{
-        if(!response.ok)throw new Error('Pages unavailable');const data=await response.json();if(stamp!==generation||signal.aborted)return;
-        if(!Array.isArray(data.pages)||!data.pages.length)throw new Error('Pages unavailable');pages=data.pages;pageInput.max=String(pages.length);pageInput.disabled=false;thumbButton.disabled=false;render();
+        const task=loadingTask=lib.getDocument({url,withCredentials:true,isEvalSupported:false,disableFontFace:true,cMapPacked:true,
+          cMapUrl:new URL('cmaps/',pdfjsBase).href,standardFontDataUrl:new URL('standard_fonts/',pdfjsBase).href});
+        signal.addEventListener('abort',()=>task.destroy(),{once:true});
+        const doc=await task.promise;if(stamp!==generation||signal.aborted)return;
+        const size=(await doc.getPage(1)).getViewport({scale:1});if(stamp!==generation||signal.aborted)return;
+        pdfDoc=doc;pages=Array.from({length:doc.numPages},()=>({width:size.width,height:size.height}));
+        pageInput.max=String(pages.length);pageInput.disabled=false;thumbButton.disabled=false;render();
       }
       pdfLink.href=endpoint(`/${selected.magazineId}/pdf`);pdfLink.removeAttribute('aria-disabled');zoomButton.disabled=false;fullButton.disabled=false;
     }catch(e){if(stamp!==generation||signal.aborted)return;clearReader();message.textContent='تعذّر تحميل المجلة. تحقق من الاتصال وأعد المحاولة.';retry.hidden=false;}
@@ -153,7 +195,16 @@
     try { if (document.fullscreenElement === reader) await document.exitFullscreen(); else await reader.requestFullscreen(); }
     catch { message.hidden = false; message.textContent = 'تعذّر ملء الشاشة في هذا المتصفح. استخدم التكبير أو افتح ملف PDF.'; }
   });
-  document.addEventListener('fullscreenchange', () => fullButton.setAttribute('aria-label', document.fullscreenElement === reader ? 'الخروج من ملء الشاشة' : 'ملء الشاشة'));
+  // Entering fullscreen focuses the pages so the arrow keys turn pages immediately.
+  document.addEventListener('fullscreenchange', () => {
+    const full = document.fullscreenElement === reader;
+    fullButton.setAttribute('aria-label', full ? 'الخروج من ملء الشاشة' : 'ملء الشاشة');
+    if (full) stage.focus({ preventScroll: true });
+  });
+  document.addEventListener('keydown', event => {
+    if (document.fullscreenElement !== reader || event.defaultPrevented || stage.contains(event.target) || event.target.closest?.('input,select,textarea')) return;
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); event.key === 'ArrowLeft' ? advance() : retreat(); }
+  });
   mobile.addEventListener('change', () => { if (pages.length) { current = normalize(current); render(); } });
   loadCatalog();
 })();

@@ -89,3 +89,26 @@ Validation: API header/origin/anonymous/current-user/hidden-issue tests and dupl
 ## Shared tracker update (migration032)
 
 The magazine UI and endpoint behaviour above are unchanged. Apply migration032: the physical read store is now `Portal.UserReads` with ContentTypeID=1 and canonical MagazineID text in ContentId. Existing reads and timestamps migrate once; the old table remains an archive and its SPs redirect to the shared store. See [READ_TRACKING_AND_DECISION_NOTICES.md](READ_TRACKING_AND_DECISION_NOTICES.md) for the current schema and tests. Fresh Setup now includes migrations through033.
+
+## PDF.js viewer (27 October 2026)
+
+The reader now draws every issue directly from its PDF (`GET /api/magazines/{id}/pdf`) with **PDF.js 4.10.38** bundled offline in `wwwroot/vendor/pdfjs` (Apache-2.0; see its NOTICE.md). The catalog, read tracking, «جديد» badge, issue selector and all API endpoints are unchanged.
+
+- Each month only the PDF and its `Portal.Magazines` row are needed. The `NN-pages/` image folders and `scripts/render-magazine.py` are **no longer required** (the `/pages` endpoints remain but the reader does not call them).
+- Two-page right-to-left spread, page turn, page jump, keyboard/swipe, zoom and fullscreen work as before. Pages render at 1500px wide; thumbnails render at 180px only when scrolled into view.
+- `disableFontFace: true` is required: with browser font loading, Edge rejected the embedded Arabic font (Sakkal Majalla) and PDF.js fell back to a generic font, breaking letter joining. Drawing glyph outlines matches the original exactly.
+- The frontend serves `.mjs`, `.bcmap` and `.pfb` (Program.cs content types) for the PDF.js module, character maps and standard fonts.
+- If PDF.js cannot load, the reader falls back to the browser PDF frame as before.
+
+Verified (desktop, `.local/magazine-pdfjs-browser.cjs`): cover and spreads drawn from the PDF (258 pages, no page-image requests), page 101 Arabic text identical to the pdfium reference, spread draw ≈0.3 s, 40 of 258 thumbnails drawn lazily, page jump, previous, thumbnail jump, zoom, fallback.
+
+## Publishing a new issue (tested 27 October 2026)
+
+Only two steps per month: copy the PDF into the `Magazines` folder (Mstr.Utls) and insert an active `Portal.Magazines` row (FileName = basename, IssueDate = publication date). On the next page load the newest IssueDate is selected automatically, PDF.js reads the page count from the file, thumbnails are built for it, and «جديد» appears for every employee until they read it. Read tracking is now in **`Portal.UserReads`** (ContentTypeID = 1, ContentId = MagazineID), not Portal.UserMagazineReads. Always publish a new row for a new month; replacing the PDF under the same row does not reset «جديد».
+
+The PDF is currently downloaded in full (HTTP 200, no range requests) because the API CORS policy does not expose range headers; fine for normal sizes, consider exposing them for very large PDFs.
+
+- «الانتقال الى نشرة الفلق» link under the magazine name (`_NewsAndMedia.cshtml`) is a **test URL** (`https://example.com/`, new tab): replace the href with the real نشرة الفلق address.
+- Fullscreen focuses the pages, and ← / → turn pages immediately (also when focus is on a control).
+
+Verified: `.local/magazine-publish-browser.cjs` (generated 12-page `40.pdf` + row → auto-selected, «جديد», read saved and badge cleared, 12 thumbnails, fullscreen arrows, link, old issue 258 pages, reload); test file/row/read removed and the ID counter left past the test IDs.

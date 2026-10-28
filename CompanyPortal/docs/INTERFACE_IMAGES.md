@@ -103,3 +103,10 @@ The library offers **حذف الصورة** with confirmation. Deletion marks an 
 - **Existing images:** «إنشاء نسخ معاينة صغيرة (n)» in the library makes previews in the browser and sends them with `PUT /api/admin/images/{id}/thumbnail`. That can be done once per image (409 afterwards), which keeps the cache safe. It is not recorded in the change history (the snapshot has no bytes).
 - `GET /api/images/{id}/thumbnail` uses the same access rule as `/content` and is cached the same way; 404 when there is no preview. `Images_getAll` returns `HasThumbnail`. The admin library, group list and theme cards use the preview; the portal always uses the full image.
 - Procedures: `Images_add` (optional `@ThumbnailData/@ThumbnailType`, history lines kept), `Images_setThumbnail`, `Images_getThumbnail`.
+
+
+## مساحة تحرير المجموعات — 28 أكتوبر 2026
+
+أصبحت إعدادات المجموعة يمينًا ومكتبة الصور يسارًا في مساحة عمل واحدة لسطح المكتب، بدل وضع المكتبة فوق النموذج. محدد المجموعة وزر الحفظ يبقيان خارج منطقة التمرير الداخلية؛ الإعدادات والترتيب داخل منطقة قابلة للتمرير، وقائمة الصور المختارة لها حد ارتفاع مستقل. المكتبة تتمرر بصورة مستقلة. يظهر اسم المجموعة الجاري تحريرها فوق المكتبة، وتُميّز الصور المختارة بحد أخضر، ويظهر الاختيار فورًا في قائمة المجموعة. أزرار الإزالة مسماة «إزالة من المجموعة» مقابل «حذف من المكتبة».
+
+لا تغيير في طلبات الحفظ/الرفع/الحذف، أو الترتيب والصورة الافتراضية، أو حراسة التعديلات غير المحفوظة. في النوافذ الأضيق يعود التخطيط إلى الترتيب الرأسي. بقيت معلومات الأنواع والحجم والاستخدام والتعديل الأخير ظاهرة.

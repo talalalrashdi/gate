@@ -6,6 +6,7 @@
   const core=window.AdminCore,ready=new Set(),say=(text,error=false)=>{core.feedback(status,text,error);};
   const node=(tag,text,css)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(css)n.className=css;return n;};
   const option=(value,text)=>{const n=node('option',text);n.value=String(value??'');return n;};
+  function showEditor(visible){editor.hidden=!visible;gallery.hidden=visible;panel.querySelector('.admin-section-heading').hidden=visible;}
   const template=key=>templates.find(t=>t.layoutKey===key)||templates[0];
   const serial=()=>JSON.stringify(draft);
   const dirty=()=>draft&&serial()!==snapshot;
@@ -25,7 +26,7 @@
   async function request(path,method='GET',body){
     const response=await core.request(path,{method,body,header:'admin-themes',handled:[400,404,409]});
     if(!response.ok){
-      if(response.status===401||response.status===403){editor.hidden=true;gallery.replaceChildren();loaded=false;get('theme-add').disabled=true;throw new Error('ليس لديك صلاحية إدارة الثيمات.');}
+      if(response.status===401||response.status===403){showEditor(false);gallery.replaceChildren();loaded=false;get('theme-add').disabled=true;throw new Error('ليس لديك صلاحية إدارة الثيمات.');}
       throw new Error(errorText(response.status,await response.json().catch(()=>null)));
     }
     return response.status===204?null:response.json();
@@ -84,6 +85,12 @@
     get('theme-overlay-value').textContent=draft.overlayOpacity===null?'إعداد القالب':draft.overlayOpacity+'%';
     const group=library.groups.find(g=>g.imageGroupId===draft.imageGroupId),members=groupData(draft).images.length;
     get('theme-group-summary').textContent=group?`${group.groupName} · ${members} صورة نشطة · ${group.rotateImages?'تدوير كل '+group.rotationSeconds+' ثوانٍ':'صورة ثابتة'}${group.active?'':' · المجموعة غير نشطة؛ اختر مجموعة نشطة للحفظ.'}`:'ستظهر الصور الأصلية لقالب التصميم.';
+    const thumbnails=get('theme-group-thumbnails'),images=groupData(draft).images;
+    const imageSignature=JSON.stringify(images.map(i=>{const source=library.images.find(row=>row.imageId===i.imageId);return [i.imageId,source?.hasThumbnail];}));
+    if(thumbnails.dataset.images!==imageSignature){
+      thumbnails.replaceChildren(...images.map(i=>{const source=library.images.find(row=>row.imageId===i.imageId),image=node('img');image.src=new URL(`api/images/${i.imageId}/${source?.hasThumbnail?'thumbnail':'content'}`,api);image.alt=source?.imageName||'صورة المجموعة';image.title=image.alt;image.loading='lazy';return image;}));thumbnails.dataset.images=imageSignature;
+    }
+    thumbnails.hidden=!images.length;
     const bg=draft.backgroundColor||template(draft.layoutKey).backgroundColor,primary=draft.primaryColor||template(draft.layoutKey).primaryColor;
     get('theme-colour-advice').textContent=bg.toLowerCase()===primary.toLowerCase()?'اللون الرئيسي والخلفية متطابقان. راجع تباين العناوين في المعاينة.':'راجع وضوح النصوص والأزرار في المعاينة.';
     get('theme-roles-field').hidden=draft.visibility!=='preview';rolesHelp();
@@ -105,7 +112,7 @@
       else if(action==='apply')await request(`api/admin/themes/${theme.themeId}/apply-to-all`,'POST');
       else await request(`api/admin/themes/${theme.themeId}`,'PUT',{...savedPayload(theme),active:action==='publish',visibility:action==='publish'?'public':'hidden'});
       themes=await request('api/admin/themes');
-      if(id===theme.themeId){draft=null;id=null;snapshot='';editor.hidden=true;frame.src='about:blank';ready.delete(frame);}
+      if(id===theme.themeId){draft=null;id=null;snapshot='';showEditor(false);frame.src='about:blank';ready.delete(frame);}
       renderGallery();say(action==='apply'?'تم تعيين الافتراضي وتطبيقه على الجميع. يظهر عند تحميل البوابة.':action==='publish'?'الثيم مباشر ومتاح الآن لجميع المستخدمين.':action==='delete'?'تم حذف الثيم.':'تم إخفاء الثيم عن المستخدمين.');
     }catch(error){say(error.message,true);}finally{busy=false;renderGallery();}
   }
@@ -168,12 +175,12 @@
     draft={themeName:record?(copy?'نسخة من '+record.themeName:record.themeName):'',layoutKey:record?.layoutKey||'official',displayOrder:record&&!copy?record.displayOrder:Math.min(1000000,Math.max(0,...themes.map(t=>t.displayOrder))+1),visibility:record&&!copy?record.visibility:'hidden',previewRoles:[...(record?.previewRoles||[])],active:record&&!copy?record.active:false,isDefault:record&&!copy?record.isDefault:false,primaryColor:record?.primaryColor??null,accentColor:record?.accentColor??null,backgroundColor:record?.backgroundColor??null,overlayOpacity:record?.overlayOpacity??null,foregroundPreset:record?.foregroundPreset??null,imagePresentation:record?.imagePresentation||'background',imageGroupId:record?.imageGroupId??null};
     draft.imagePositions=(record?.imagePositions||[]).map(p=>({...p}));focusImageId=null;
     draft.themeName=draft.themeName.slice(0,200);snapshot=id?serial():'';
-    editor.hidden=false;get('theme-editor-title').textContent=id?'تعديل '+draft.themeName:copy?'نسخ الثيم':'ثيم جديد';
+    showEditor(true);get('theme-editor-title').textContent=id?'تعديل '+draft.themeName:copy?'نسخ الثيم':'ثيم جديد';
     get('theme-name').value=draft.themeName;get('theme-order').value=draft.displayOrder;get('theme-visibility').value=draft.visibility;get('theme-preview-roles').value=draft.previewRoles.join('\n');get('theme-default').checked=draft.isDefault;get('theme-default').disabled=!!record?.isDefault&&!copy;
     const choices=get('theme-templates');choices.replaceChildren();templates.forEach(t=>{const label=node('label',undefined,'theme-template-option'),image=node('img'),line=node('span'),radio=node('input');image.src=new URL(t.thumbnail,document.baseURI);image.alt='';radio.type='radio';radio.name='theme-layout';radio.value=t.layoutKey;radio.checked=draft.layoutKey===t.layoutKey;radio.addEventListener('change',()=>{draft.layoutKey=t.layoutKey;colourFields();get('theme-overlay').value=draft.overlayOpacity??t.overlayOpacity;changed();});line.append(radio,node('span',t.templateName));label.append(image,line);choices.append(label);});
     groupOptions();
     document.querySelectorAll('[name="theme-presentation"]').forEach(radio=>{radio.checked=radio.value===draft.imagePresentation;});get('theme-foreground').value=draft.foregroundPreset||'';get('theme-overlay').value=draft.overlayOpacity??template(draft.layoutKey).overlayOpacity;colourFields();showTab('details');changed();
-    if(frame.src==='about:blank'){ready.delete(frame);frame.src=frame.dataset.previewUrl;}requestAnimationFrame(fit);editor.scrollIntoView({behavior:'smooth',block:'start'});get('theme-name').focus({preventScroll:true});
+    if(frame.src==='about:blank'){ready.delete(frame);frame.src=frame.dataset.previewUrl;}requestAnimationFrame(fit);editor.scrollIntoView({behavior:'instant',block:'start'});get('theme-name').focus({preventScroll:true});
   }
   get('theme-add').addEventListener('click',()=>open(null,false));
   get('theme-name').addEventListener('input',()=>{draft.themeName=get('theme-name').value;changed();});get('theme-order').addEventListener('input',()=>{draft.displayOrder=Number(get('theme-order').value);changed();});
@@ -186,7 +193,7 @@
   for(const axis of ['x','y'])get('theme-focus-'+axis).addEventListener('input',()=>{const p=focusPosition();setFocus(axis==='x'?Number(get('theme-focus-x').value):p.focalX,axis==='y'?Number(get('theme-focus-y').value):p.focalY);});
   get('theme-focus-reset').addEventListener('click',()=>setFocus(50,50));
   form.addEventListener('invalid',event=>{const pane=event.target.closest('[role=tabpanel]');if(pane)showTab(pane.id.replace('theme-',''));if(event.target.id.startsWith('theme-colour-'))say(colourMessage,true);},true);
-  get('theme-cancel').addEventListener('click',async()=>{if(busy)return;if(dirty()&&!await core.discard())return;draft=null;id=null;snapshot='';editor.hidden=true;frame.src='about:blank';ready.delete(frame);get('theme-add').focus();});
+  get('theme-cancel').addEventListener('click',async()=>{if(busy)return;if(dirty()&&!await core.discard())return;draft=null;id=null;snapshot='';showEditor(false);frame.src='about:blank';ready.delete(frame);get('theme-add').focus();});
   async function load(){
     if(busy)return;busy=true;get('themes-retry').hidden=true;
     try{[themes,templates,library,knownRoles]=await Promise.all([request('api/admin/themes'),request('api/admin/themes/templates'),request('api/admin/images'),request('api/admin/themes/roles').catch(()=>[])]);loaded=true;renderGallery();get('theme-add').disabled=false;say('الثيمات جاهزة. أضف ثيمًا أو عدّل أحد الثيمات الحالية.');}

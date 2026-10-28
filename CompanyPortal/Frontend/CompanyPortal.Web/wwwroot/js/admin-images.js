@@ -15,7 +15,8 @@
   let groupSnapshot='';
   const groupValues=()=>JSON.stringify({name:name.value,rotate:rotate.checked,seconds:seconds.value,active:active.checked,defaultId,selection});
   const groupDirty=()=>loaded&&groupValues()!==groupSnapshot;
-  const mark = () => {dirty=groupDirty();byId('image-group-dirty').textContent=dirty?'تغييرات غير محفوظة':'';core.refresh();};
+  function updateContext(){byId('image-selection-title').textContent='اختيار صور '+(name.value.trim()?'مجموعة: '+name.value.trim():'مجموعة جديدة');}
+  const mark = () => {updateContext();dirty=groupDirty();byId('image-group-dirty').textContent=dirty?'تغييرات غير محفوظة':'';core.refresh();};
   async function request(path,method='GET',body) {
     const response=await core.request(path,{method,body,header:'admin-images',timeout:method==='POST'?60000:15000,handled:[400,409,413]});
     if(!response.ok){
@@ -75,7 +76,7 @@
         mark();renderSelection();
       });
       const line=node('label');line.append(check,node('span','اختيار الصورة'));
-      const remove=node('button','حذف الصورة','image-delete');remove.type='button';remove.setAttribute('aria-label','حذف '+image.imageName);
+      const remove=node('button','حذف من المكتبة','image-delete');remove.type='button';remove.setAttribute('aria-label','حذف '+image.imageName);
       remove.addEventListener('click',async()=>{
         if(busy||!await core.confirm('حذف الصورة «'+image.imageName+'» من المكتبة؟ لا يمكن حذف صورة مستخدمة في مجموعة محفوظة.',{title:'حذف الصورة',accept:'حذف',danger:true}))return;
         run(async()=>{
@@ -88,9 +89,10 @@
     });
   }
   function renderSelection(){
+    updateContext();library.querySelectorAll('.image-tile').forEach(tile=>tile.classList.toggle('is-selected',tile.querySelector('input[type=checkbox]').checked));
     itemsRoot.replaceChildren();byId('images-selected-count').textContent=`${selection.length} صورة مختارة`;
     if(defaultId===null||!selection.some(i=>i.imageId===defaultId&&i.active))defaultId=selection.find(i=>i.active)?.imageId??null;
-    if(!selection.length)itemsRoot.append(node('p','اختر الصور من المكتبة أعلاه. يمكنك حفظ مجموعة فارغة وتجهيزها لاحقًا.'));
+    if(!selection.length)itemsRoot.append(node('p','اختر الصور من المكتبة المقابلة. يمكنك حفظ مجموعة فارغة وتجهيزها لاحقًا.'));
     selection.forEach((item,index)=>{
       const image=data.images.find(i=>i.imageId===item.imageId);if(!image)return;
       const row=node('div',undefined,'image-item'),heading=node('div',undefined,'image-item-heading'),tools=node('div',undefined,'image-item-tools');
@@ -100,7 +102,7 @@
       toggle.addEventListener('change',()=>{item.active=toggle.checked;mark();renderSelection();});
       const radio=node('input');radio.type='radio';radio.name='default-image';radio.checked=defaultId===item.imageId;radio.disabled=!item.active;
       const radioLabel=node('label');radioLabel.append(radio,node('span','افتراضية'));radio.addEventListener('change',()=>{defaultId=item.imageId;mark();});
-      const up=node('button','↑'),down=node('button','↓'),remove=node('button','إزالة');
+      const up=node('button','↑'),down=node('button','↓'),remove=node('button','إزالة من المجموعة');
       [up,down,remove].forEach(n=>{n.type='button';});up.dataset.up='';down.dataset.down='';
       up.setAttribute('aria-label','تقديم '+image.imageName);down.setAttribute('aria-label','تأخير '+image.imageName);
       const move=delta=>{[selection[index],selection[index+delta]]=[selection[index+delta],selection[index]];mark();renderSelection();};

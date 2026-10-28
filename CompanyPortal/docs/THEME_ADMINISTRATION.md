@@ -70,3 +70,10 @@ Earlier verification used contained complete artwork and fallback-only defaults.
 # Per-image crop positions
 
 Migration047 adds **موضع الصورة** in the images tab: drag in the live preview, keyboard-accessible sliders and centre reset, saved separately for each photo/theme. See [theme image framing](THEME_IMAGE_POSITIONS.md) for persistence, deployment and verification. Existing themes retain their framing until an override is saved.
+
+
+## مساحة محرر مستقلة — 28 أكتوبر 2026
+
+عند إضافة/نسخ/تعديل ثيم تُخفى المعرض وعنوانه أثناء التحرير. إعدادات الثيم يمينًا والمعاينة الحقيقية يسارًا، مع ترويسة المحرر والتبويبات والحفظ/الإلغاء خارج منطقة تمرير الحقول. تبويب الصور يعرض مصغرات المجموعة النشطة وملخص التدوير الموجود أصلًا. الصور المصغرة تستخدم نسخة thumbnail إن وجدت مع تحميل كسول، ولا تُعاد بناؤها عند تحريك أشرطة الموضع أو تغيير حقل لا يتعلق بالصور. الإلغاء يعيد المعرض، مع حراسة التعديلات الحالية؛ الحفظ يبقي المحرر مفتوحًا كما كان. بقيت صلاحيات النشر والافتراضي والحفظ بلا تغيير.
+
+تحقق سطح المكتب: إخفاء/إظهار المعرض، مصغرات المجموعة، ثبات موضع المعاينة والحفظ عند تمرير الحقول، حراسة الإلغاء والاحتفاظ بالمسودة، واستعادة المسودة دون أي حفظ. ملفا الإثبات .local/admin-workspace-layout/images.png وthemes.png. لا ترحيل SQL أو تعديل API لهذه الواجهة.

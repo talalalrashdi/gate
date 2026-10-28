@@ -8,3 +8,15 @@
 
 .theme-settings textarea{width:100%;box-sizing:border-box;min-height:100px;border:1px solid #dce5d3;border-radius:7px;padding:10px;font:inherit;font-size:12px;direction:ltr;text-align:left;background:#f9faf7}.theme-publication-note{padding:12px;border:1px solid #cddfcf;border-radius:8px;background:#eef5ed;color:#285c3e;font-size:12px;line-height:1.8}.theme-card-actions{flex-wrap:wrap}.theme-card-actions button:disabled{opacity:.45;cursor:default}
 .theme-roles-help{display:grid;gap:8px;margin:-6px 0 16px}.theme-roles-warning{margin:0;color:#8c533c}.theme-roles-warning:empty{display:none}.theme-roles-known{display:flex;flex-wrap:wrap;gap:6px}.theme-roles-known:empty{display:none}.theme-roles-known button{padding:4px 10px;border:1px solid #d5e2ce;border-radius:999px;background:#f4f7f1;color:#245943;font-size:11px;cursor:pointer;direction:ltr}.theme-roles-known button:disabled{opacity:.5}
+
+/* Dedicated editor: fixed controls and preview, with scrolling only in the fields. */
+.theme-gallery[hidden],.theme-editor[hidden]{display:none}
+.theme-editor{grid-template-columns:350px minmax(0,1fr);align-items:stretch;height:calc(100dvh - 130px);min-height:560px;max-height:900px;scroll-margin-top:90px}
+.theme-settings{height:100%;min-height:0;display:flex;flex-direction:column}.theme-settings .admin-panel-header{flex:none;padding:16px 18px}.theme-settings .admin-panel-header h2{font-size:18px}.theme-settings .admin-panel-header p{margin:4px 0 0}
+.theme-editor-tabs{flex:none;padding:10px 14px}.theme-editor-fields{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:16px 18px;scrollbar-width:thin}.theme-save-bar{flex:none;position:static;padding:13px 16px;margin-top:auto}
+.theme-editor .theme-preview-panel{position:static;min-height:0;display:flex;flex-direction:column;align-self:stretch;gap:12px}.theme-preview-heading{flex:none;margin:0}.theme-preview-heading h3{margin:0}.theme-preview-heading p{margin:5px 0 0}.theme-preview-window{flex:none;max-height:calc(100% - 65px)}
+.theme-group-thumbnails{display:flex;gap:8px;overflow-x:auto;margin:10px 0 12px;padding:2px 0 6px;scrollbar-width:thin}.theme-group-thumbnails img{flex:none;width:78px;height:58px;object-fit:cover;border:1px solid #d5dfd1;border-radius:7px;background:#f1f4ed}.theme-group-thumbnails[hidden]{display:none}
+@media(max-width:1100px){.theme-editor{grid-template-columns:320px minmax(0,1fr);gap:14px}}
+@media(max-width:850px){.theme-editor{grid-template-columns:1fr;height:auto;max-height:none}.theme-settings{height:650px}.theme-editor .theme-preview-panel{max-height:750px}.theme-preview-window{max-height:none}}
+
+#theme-form>.admin-last-change{flex:0 0 auto;margin:0 16px 10px}

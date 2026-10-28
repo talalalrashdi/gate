@@ -4,3 +4,23 @@
 
 .image-tile .image-delete{margin-top:auto;padding:7px 10px;border:1px solid #dfc7bf;border-radius:6px;background:#fff;color:#8c4338;font:inherit;font-size:11px;cursor:pointer}.image-tile .image-delete:hover{background:#fbf1ee}.image-tile .image-delete:focus-visible{outline:2px solid #8c4338;outline-offset:2px}
 .images-previews{margin-inline-start:auto;padding:6px 12px;border:1px solid #d5e2ce;border-radius:8px;background:#f4f7f1;color:#245943;font-size:11px;cursor:pointer}.images-previews:disabled{opacity:.5}
+
+/* Keep selection and group editing together in a desktop workspace. */
+.images-editor-grid{display:grid;grid-template-columns:350px minmax(0,1fr);align-items:stretch;gap:20px;margin-top:18px;height:calc(100dvh - 130px);min-height:560px;max-height:900px;scroll-margin-top:90px}
+.images-editor-grid>.admin-panel{min-width:0;min-height:0;display:flex;flex-direction:column;margin:0}
+.images-editor-grid .admin-panel-header{padding:16px 18px;flex:none}.images-editor-grid .admin-panel-header h2{font-size:17px}
+.images-group-panel .images-form{display:flex;flex-direction:column;flex:1;min-height:0;padding:14px 16px 0}.images-group-panel .images-form>label{flex:none;margin-bottom:12px}
+#image-group-form{display:flex;flex-direction:column;flex:1;min-height:0}.images-group-fields{flex:none}.images-group-fields>label{margin-bottom:10px!important}.images-group-fields .images-settings{gap:10px;margin-bottom:10px}.images-group-fields .images-hint{margin:6px 0;line-height:1.6}.images-group-fields .images-usage:empty{display:none}
+.images-group-panel .images-library-heading{flex:none;margin:10px 0 8px}.images-group-panel .images-library-heading h3{font-size:12px;margin:0}
+#image-group-items{flex:1;min-height:90px;overflow-y:auto;overscroll-behavior:contain;align-content:start;padding:2px 2px 10px;scrollbar-width:thin}.images-group-panel .image-item{padding:8px}.images-group-panel .image-item-heading img{width:46px;height:36px}.images-group-panel .image-item-tools{gap:6px;margin-top:7px}.images-group-panel .image-item-tools button{padding:5px 7px}
+.images-save-bar{flex:none;display:grid;gap:6px;padding:12px 0;background:#fff;border-top:1px solid #e2e8da}.images-save-bar>span{font-size:11px;color:#8c633b}.images-save-bar>span:empty{display:none}.images-save-bar .images-save{margin:0}
+.images-editor-grid .images-upload{flex:none;margin:12px 16px;padding:12px;gap:10px}.images-editor-grid .images-upload label{min-width:0}.images-editor-grid .images-upload label>span{display:none}.images-editor-grid .images-upload input{max-width:100%;font-size:11px}.images-editor-grid .images-upload strong{font-size:12px}
+.images-library>.images-library-heading{flex:none;flex-wrap:wrap;gap:8px;margin:4px 16px 12px}.images-library>.images-library-heading h3{font-size:13px;margin:0;overflow-wrap:anywhere}
+.images-editor-grid .image-library{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));align-content:start;gap:12px;padding:2px 16px 16px;scrollbar-width:thin}
+.images-editor-grid .image-tile{min-width:0;transition:border-color .15s,background .15s}.image-tile.is-selected{border-color:#438267;background:#edf6ee;box-shadow:inset 0 0 0 1px #438267}.images-editor-grid .image-tile img{height:105px}.images-editor-grid .image-tile strong{font-size:11px}.images-editor-grid .image-delete{font-size:10px}
+@media(max-width:1100px){.images-editor-grid{grid-template-columns:320px minmax(0,1fr);gap:14px}.images-editor-grid .image-library{grid-template-columns:repeat(auto-fill,minmax(125px,1fr))}.images-editor-grid .images-upload{align-items:stretch;flex-direction:column}}
+@media(max-width:850px){.images-editor-grid{height:auto;max-height:none;grid-template-columns:1fr}.images-group-panel{max-height:800px}.images-editor-grid .images-library{height:650px}.images-editor-grid .image-library{grid-template-columns:repeat(auto-fill,minmax(145px,1fr))}}
+
+.images-group-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-inline:2px;scrollbar-width:thin}.images-group-body #image-group-items{max-height:260px;min-height:90px}.images-group-panel .images-form select,.images-group-panel .images-form input:not([type=checkbox]):not([type=radio]){padding:8px 10px}
+
+#image-group-form>.admin-last-change{flex:0 0 auto;margin:0 0 10px}

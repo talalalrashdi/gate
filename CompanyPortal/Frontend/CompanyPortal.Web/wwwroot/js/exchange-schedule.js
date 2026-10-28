@@ -4,7 +4,8 @@
   const root=new URL(base.replace(/\/?$/,'/'),location.href),endpoint=path=>new URL(path,root).href;
   const node=(tag,text,css)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(css)n.className=css;return n;};
   const button=(text,label)=>{const b=node('button',text);b.type='button';if(label)b.setAttribute('aria-label',label);return b;};
-  let zone='Asia/Muscat',catalog=[],data=null,stream,retry,delay=5000,generation=0,leaving=false,first=true,lastNotice=0,initialized=false;
+  let zone='Asia/Muscat',catalog=[],data=null,stream,retry,delay=5000,generation=0,leaving=false,first=true,lastNotice=0,initialized=false,simulation=null,simulationSequence=0;
+  const simulationEnabled=!!document.getElementById('portal-simulation');
   const dateFormat=()=>new Intl.DateTimeFormat('en-CA',{timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit'});
   const key=value=>{const parts=dateFormat().formatToParts(new Date(value));return ['year','month','day'].map(t=>parts.find(p=>p.type===t).value).join('-');};
   const day=value=>new Date(value+'T12:00:00Z');
@@ -76,6 +77,7 @@
       ||value.tasks.items.some(t=>typeof t.itemId!=='string'||!t.itemId||typeof t.subject!=='string'||!validDay(t.dueDate)||!validDay(t.startDate)||!Number.isFinite(t.percentComplete)))throw new Error('Invalid schedule snapshot');
   }
   function connect(){
+    if(simulation){renderSimulation();return;}
     if(leaving||!catalog.length)return;stop();first=true;clear('جارٍ الاتصال بتقويم Outlook والمهام…');const serial=generation,dates=range();
     const params=new URLSearchParams({...dates,calendar:picker.value});const source=new EventSource(endpoint('api/schedule/stream?'+params),{withCredentials:true});stream=source;
     source.addEventListener('schedule',event=>{if(serial!==generation)return;try{const value=JSON.parse(event.data);validate(value,dates);const previous=data;data=value;zone=value.timeZone;render();status.textContent=value.calendarLive?'متصل بـ Outlook · تحديث مباشر':'المهام مباشرة · التقويم المشترك يحتاج تحديثًا يدويًا';delay=5000;
@@ -84,6 +86,7 @@
     source.addEventListener('unavailable',()=>reconnect(serial));source.onerror=()=>reconnect(serial);
   }
   async function load(){
+    if(simulation){renderSimulation();return;}
     stop();clear('جارٍ التحقق من اتصال Outlook…');const serial=generation,previousKey=picker.value,previousZone=zone;picker.disabled=true;
     try{const response=await fetch(endpoint('api/schedule/calendars'),{credentials:'include',cache:'no-store',signal:AbortSignal.timeout(15000)});if(!response.ok)throw new Error();const value=await response.json();if(serial!==generation)return;
       if(typeof value.timeZone!=='string'||!Array.isArray(value.calendars)||value.calendars.length>11||value.calendars.some(c=>typeof c.name!=='string'||!/^[a-zA-Z0-9_-]{1,40}$/.test(c.key))||new Set(value.calendars.map(c=>c.key)).size!==value.calendars.length)throw new Error();
@@ -91,9 +94,58 @@
       if(!catalog.length){clear('لا توجد تقاويم متاحة لصلاحيات حسابك.');return;}connect();
     }catch{if(serial===generation){catalog=[];picker.replaceChildren(node('option','التقويم غير متاح حاليًا'));clear('تقويم Outlook والمهام غير مهيأين أو غير متاحين حاليًا.');}}
   }
-  picker.addEventListener('change',connect);refresh.addEventListener('click',load);
+  picker.addEventListener('change',()=>{if(simulation)simulation.selectedCalendar=picker.value;connect();});refresh.addEventListener('click',load);
+  const relativeDay=offset=>{const d=day(key(Date.now()));d.setUTCDate(d.getUTCDate()+offset);return iso(d);};
+  const at=(date,hour)=>new Date(date+'T'+String(hour).padStart(2,'0')+':00:00+04:00').toISOString();
+  function sampleAppointment(title,date=relativeDay(0),hour=10,extra={}){
+    return {itemId:'simulation-event-'+(++simulationSequence),subject:'[محاكاة] '+title,start:at(date,hour),end:at(date,hour+1),isAllDay:false,isCancelled:false,location:'قاعة الاجتماعات',organizer:'فريق العمل',responseStatus:'Accept',...extra};
+  }
+  function sampleTask(title,offset,status='NotStarted',importance='Normal',percentComplete=0){return {itemId:'simulation-task-'+(++simulationSequence),subject:'[محاكاة] '+title,dueDate:offset===null?null:relativeDay(offset),startDate:null,status,importance,percentComplete};}
+  function sampleTasks(){return [sampleTask('مراجعة التقرير المتأخر',-2,'InProgress','High',40),sampleTask('اعتماد خطة العمل',0,'NotStarted','High'),sampleTask('تجهيز عرض الفريق',3,'WaitingOnOthers','Normal',20),sampleTask('متابعة طلب الدعم',null,'Deferred'),sampleTask('تحديث دليل الإجراءات وتوثيق خطوات العمل للوحدات المعنية',7,'InProgress','Normal',65)];}
+  function beginSimulation(){
+    zone='Asia/Muscat';today=key(Date.now());selected=today;month=day(today.slice(0,7)+'-01');taskFilter='all';
+    const own=[sampleAppointment('اجتماع فريق العمل',today,9),sampleAppointment('مراجعة خطة تطوير الخدمات الإلكترونية ومتابعة التنسيق بين الوحدات',today,13,{responseStatus:'Tentative'}),sampleAppointment('ورشة تدريب طوال اليوم',relativeDay(1),0,{isAllDay:true,end:at(relativeDay(2),0)})];
+    for(const date of [3,8,15,22,27])own.push(sampleAppointment('متابعة أعمال الشهر',today.slice(0,7)+'-'+String(date).padStart(2,'0'),11));
+    simulation={selectedCalendar:'own',connected:true,sharedAccess:true,sharedLive:true,own,manager:[sampleAppointment('اجتماع مكتب المدير',today,10,{organizer:'مكتب المدير'}),sampleAppointment('موعد خاص',today,12,{subject:'موعد خاص',location:'',organizer:''}),sampleAppointment('تنسيق جدول الزيارات',relativeDay(2),9)],tasks:sampleTasks()};
+    picker.value='own';
+  }
+  function renderSimulation(){
+    if(!simulation)return;
+    const chosen=simulation.selectedCalendar;catalog=[{key:'own',name:'[محاكاة] تقويمي',isOwn:true},...(simulation.sharedAccess?[{key:'simulation-manager',name:'[محاكاة] تقويم المدير',isOwn:false}]:[])];
+    picker.replaceChildren();catalog.forEach(c=>{const o=node('option',c.name+(c.isOwn?'':' · مشترك'));o.value=c.key;picker.append(o);});picker.value=catalog.some(c=>c.key===chosen)?chosen:'own';simulation.selectedCalendar=picker.value;picker.disabled=!simulation.connected;
+    if(!simulation.connected){clear('[محاكاة] اتصال Outlook منقطع. اختر إعادة الاتصال من المحاكاة.');return;}
+    const dates=range(),shared=picker.value==='simulation-manager';
+    data={...dates,timeZone:zone,calendarKey:picker.value,calendarName:shared?'تقويم المدير':'تقويمي',calendarLive:!shared||simulation.sharedLive,calendar:{truncated:false,items:(shared?simulation.manager:simulation.own).filter(i=>key(i.start)<dates.to&&key(new Date(Date.parse(i.end)-1))>=dates.from).sort((a,b)=>Date.parse(a.start)-Date.parse(b.start))},tasks:{truncated:false,items:simulation.tasks}};
+    validate(data,dates);render();status.textContent='[محاكاة] '+(data.calendarLive?'متصل · تحديث محلي مباشر':'المهام مباشرة · التقويم المشترك يحتاج تحديثًا يدويًا');
+  }
+  if(simulationEnabled)document.addEventListener('portal:outlook-simulate',event=>{
+    const action=event.detail?.action;
+    if(!['outlook-start','calendar-new','calendar-update','calendar-cancel','calendar-all-day','calendar-empty','calendar-shared','calendar-shared-manual','calendar-revoke','task-new','task-complete','task-examples','outlook-disconnect','outlook-reconnect','outlook-exit'].includes(action))return;
+    stop();delay=5000;
+    if(action==='outlook-exit'){simulation=null;catalog=[];picker.replaceChildren();void load();return;}
+    if(!simulation||action==='outlook-start')beginSimulation();
+    const shared=simulation.selectedCalendar==='simulation-manager',events=shared?simulation.manager:simulation.own;
+    if(action==='calendar-new'){
+      selected=today;month=day(today.slice(0,7)+'-01');events.unshift(sampleAppointment('موعد جديد — لقاء تنسيق العمل',today,15));
+    }
+    if(action==='calendar-update'){
+      const item=events.find(i=>key(i.start)===today&&!i.isCancelled)||events[0];if(item){item.subject='[محاكاة] تم تعديل الموعد — مراجعة الخطة';item.start=at(today,14);item.end=at(today,15);item.location='قاعة التنسيق';item.isAllDay=false;selected=today;month=day(today.slice(0,7)+'-01');}
+    }
+    if(action==='calendar-cancel'){const item=events.find(i=>key(i.start)===today&&!i.isCancelled)||events.find(i=>!i.isCancelled);if(item){item.isCancelled=true;selected=key(item.start);month=day(selected.slice(0,7)+'-01');}}
+    if(action==='calendar-all-day'){events.unshift(sampleAppointment('ورشة تدريب طوال اليوم',today,0,{isAllDay:true,end:at(relativeDay(1),0)}));selected=today;month=day(today.slice(0,7)+'-01');}
+    if(action==='calendar-empty'){if(shared)simulation.manager=[];else simulation.own=[];}
+    if(action==='calendar-shared'||action==='calendar-shared-manual'){simulation.sharedAccess=true;simulation.sharedLive=action==='calendar-shared';simulation.selectedCalendar='simulation-manager';selected=today;month=day(today.slice(0,7)+'-01');}
+    if(action==='calendar-revoke'){simulation.sharedAccess=false;simulation.selectedCalendar='own';}
+    if(action==='task-new'){simulation.tasks.unshift(sampleTask('مهمة جديدة — متابعة الطلب الوارد',0,'NotStarted','High'));simulation.tasks=simulation.tasks.slice(0,50);taskFilter='all';}
+    if(action==='task-complete')simulation.tasks.shift();
+    if(action==='task-examples'){simulation.tasks=sampleTasks();taskFilter='all';}
+    if(action==='outlook-disconnect')simulation.connected=false;
+    if(action==='outlook-reconnect')simulation.connected=true;
+    renderSimulation();setExpanded(true);
+    if(simulation.connected&&['calendar-new','calendar-update','calendar-cancel','calendar-all-day','task-new','task-complete'].includes(action))window.showToast?.('[محاكاة] '+(action==='task-new'?'وردت مهمة جديدة في Outlook.':action==='calendar-new'?'ورد موعد جديد في Outlook.':'تم تحديث تقويم Outlook أو المهام.'));
+  });
   previous.addEventListener('click',()=>{month.setUTCMonth(month.getUTCMonth()-1);selected=iso(month);connect();render();});next.addEventListener('click',()=>{month.setUTCMonth(month.getUTCMonth()+1);selected=iso(month);connect();render();});goToday.addEventListener('click',()=>{today=key(Date.now());selected=today;month=day(today.slice(0,7)+'-01');connect();render();});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)return;const current=key(Date.now());if(current!==today){const followingToday=selected===today;today=current;if(followingToday){selected=today;month=day(today.slice(0,7)+'-01');connect();}render();}});
-  window.addEventListener('pagehide',()=>{leaving=true;stop();clear('اتصال Outlook متوقف.');});window.addEventListener('pageshow',event=>{if(event.persisted){leaving=false;load();}});
+  window.addEventListener('pagehide',()=>{leaving=true;simulation=null;stop();clear('اتصال Outlook متوقف.');});window.addEventListener('pageshow',event=>{if(event.persisted){leaving=false;load();}});
   render();load();
 })();

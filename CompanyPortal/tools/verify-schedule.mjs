@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 const all=[],events={},timers=new Map(),streams=[],requests=[],notices=[];
-let document;
+let document;const simulationEvents={};
 class Node {
  children=[];dataset={};attributes={};listeners={};disabled=false;hidden=false;value='';_text='';classes=new Set();
  constructor(tag){this.tagName=tag;all.push(this);this.classList={add:(...names)=>names.forEach(n=>this.classes.add(n)),toggle:(name,on)=>{if(on)this.classes.add(name);else this.classes.delete(name);}};}
@@ -19,7 +19,7 @@ class Node {
  focus(){document.activeElement=this;}
 }
 const planner=new Node('div'),summary=new Node('div'),float=new Node('aside'),body=new Node('div'),toggle=new Node('button'),oldAdd=new Node('button');
-const ids={'portal-calendar-summary':summary,'portal-floating-calendar':float,'portal-floating-calendar-body':body,'portal-calendar-toggle':toggle,'planner-task-add-toggle':oldAdd};
+const ids={'portal-simulation':new Node('details'),'portal-calendar-summary':summary,'portal-floating-calendar':float,'portal-floating-calendar-body':body,'portal-calendar-toggle':toggle,'planner-task-add-toggle':oldAdd};
 class Source{
  listeners={};closed=false;
  constructor(url,options){this.url=url;this.options=options;streams.push(this);}
@@ -28,7 +28,7 @@ class Source{
 }
 const RealDate=Date;
 class Clock extends RealDate{constructor(...args){super(...(args.length?args:['2026-10-20T06:00:00Z']));}static now(){return RealDate.parse('2026-10-20T06:00:00Z');}}
-document={querySelector:s=>s==='[data-schedule-source="exchange"]'?planner:{content:'https://api.test/portal/'},getElementById:id=>ids[id]||null,createElement:tag=>new Node(tag),activeElement:null,dispatchEvent(){},addEventListener(){}};
+document={querySelector:s=>s==='[data-schedule-source="exchange"]'?planner:{content:'https://api.test/portal/'},getElementById:id=>ids[id]||null,createElement:tag=>new Node(tag),activeElement:null,dispatchEvent(){},addEventListener:(name,fn)=>simulationEvents[name]=fn};
 const context=vm.createContext({document,window:{addEventListener:(name,fn)=>events[name]=fn,showToast:text=>notices.push(text)},location:{href:'https://portal.test/'},Intl,Date:Clock,URL,URLSearchParams,AbortSignal,EventSource:Source,CustomEvent:class{},
  fetch:async(url,options)=>{requests.push({url,options});return {ok:true,json:async()=>({timeZone:'Asia/Muscat',calendars:[{key:'own',name:'My calendar',isOwn:true},{key:'manager',name:'Manager',isOwn:false}]})};},
  setTimeout:(callback,delay)=>{const id=timers.size+1;timers.set(id,{callback,delay});return id;},clearTimeout:id=>timers.delete(id),localStorage:new Proxy({},{get(){throw new Error('Do not read or store Exchange/local task data in browser storage');}})});
@@ -51,4 +51,20 @@ streams[2].emit({...snapshot(streams[2]),calendarLive:false});assert.ok(planner.
 byLabel('إعادة الاتصال بتقويم Outlook').listeners.click();await new Promise(setImmediate);assert.equal(picker.value,'manager','Manual refresh changed selected shared calendar');assert.equal(params(streams.at(-1)).get('from'),params(streams[2]).get('from'),'Manual refresh changed viewed month');
 const active=streams.at(-1);active.emit({...snapshot(active),timeZone:'invalid-zone'});assert.equal(active.closed,true,'Invalid timezone must fail closed');assert.ok(!planner.textContent.includes('<img onerror=bad()>'));assert.equal(timers.size,1);assert.equal([...timers.values()][0].delay,5000,'Retry must reconnect SSE, not poll folders');
 events.pagehide();assert.equal(timers.size,0);assert.ok(!summary.textContent.includes('All day'));events.pageshow({persisted:true});await new Promise(setImmediate);assert.equal(requests.length,3);assert.equal(streams.at(-1).closed,false);events.pagehide();
+events.pageshow({persisted:true});await new Promise(setImmediate);
+const simulate=action=>simulationEvents['portal:outlook-simulate']({detail:{action}});
+simulate('outlook-start');assert.equal(picker.value,'own');assert.equal(byClass('exchange-task-items').children.length,5);assert.ok(planner.textContent.includes('[محاكاة]'));
+const counts=[requests.length,streams.length];simulate('calendar-new');assert.ok(byClass('exchange-agenda-items').textContent.includes('موعد جديد'));assert.ok(notices.at(-1).includes('موعد جديد'));
+simulate('calendar-update');assert.ok(byClass('exchange-agenda-items').textContent.includes('تم تعديل الموعد'));simulate('calendar-cancel');assert.ok(byClass('exchange-agenda-items').children.some(n=>n.classes.has('is-cancelled')));
+simulate('calendar-all-day');assert.ok(byClass('exchange-agenda-items').textContent.includes('طوال اليوم'));
+simulate('calendar-shared');assert.equal(picker.value,'simulation-manager');assert.ok(byClass('exchange-agenda-items').textContent.includes('موعد خاص'));assert.ok(!byClass('exchange-agenda-items').children.find(n=>n.textContent.includes('موعد خاص')).textContent.includes('مكتب المدير'),'Private appointment details leaked');
+simulate('calendar-shared-manual');assert.ok(planner.textContent.includes('يدويًا'));byLabel('إعادة الاتصال بتقويم Outlook').listeners.click();assert.equal(picker.value,'simulation-manager');
+byLabel('الشهر التالي').listeners.click();byLabel('العودة إلى اليوم').listeners.click();assert.equal(picker.value,'simulation-manager');
+picker.value='own';picker.listeners.change();assert.ok(byClass('exchange-agenda-items').textContent.includes('تم تعديل الموعد'));
+simulate('calendar-revoke');assert.equal(picker.children.length,1);assert.equal(picker.value,'own');
+simulate('task-new');assert.equal(byClass('exchange-task-items').children.length,6);simulate('task-complete');assert.equal(byClass('exchange-task-items').children.length,5);
+all.find(n=>n.dataset.filter==='overdue').listeners.click();assert.equal(byClass('exchange-task-items').children.length,1);simulate('task-examples');assert.equal(byClass('exchange-task-items').children.length,5);
+simulate('outlook-disconnect');assert.ok(!planner.textContent.includes('مراجعة التقرير'));assert.equal(context.window.CompanyPortalSchedule.notifications.length,0);simulate('outlook-reconnect');assert.equal(byClass('exchange-task-items').children.length,5);
+simulate('calendar-empty');assert.ok(byClass('exchange-agenda-items').textContent.includes('لا توجد مواعيد'));assert.deepEqual([requests.length,streams.length],counts,'Simulation navigation must make no requests/streams');
+simulate('outlook-exit');await new Promise(setImmediate);assert.equal(requests.length,counts[0]+1);assert.equal(streams.length,counts[1]+1);events.pagehide();
 console.log('PASS: calendar month/day/all-day rendering, task filters, literal text, new-item notifications, credentialed SSE, stale-range rejection, manual shared refresh, invalid-data/disconnect clearing, reconnect and no polling/storage.');

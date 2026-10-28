@@ -17,6 +17,9 @@
  }
  root.addEventListener('toggle',()=>{if(root.open){position();if(!panel.matches(':popover-open'))panel.showPopover();if(!rules.length)void loadRules();}else if(panel.matches(':popover-open'))panel.hidePopover();});window.addEventListener('resize',position,{passive:true});root.querySelector('[data-simulation-rules]').addEventListener('click',()=>void loadRules());lock(true);
  root.addEventListener('click',event=>{
+  const outlook=event.target.closest('[data-outlook-simulate]');
+  if(outlook){document.dispatchEvent(new CustomEvent('portal:outlook-simulate',{detail:{action:outlook.dataset.outlookSimulate}}));status.textContent=outlook.dataset.outlookSimulate==='outlook-exit'?'انتهت محاكاة Outlook؛ عاد الاتصال الحقيقي.':'محاكاة Outlook محلية — دون تغيير البريد أو قاعدة البيانات.';root.open=false;return;}
+  if(event.target.closest('[data-simulate="reset"]'))document.dispatchEvent(new CustomEvent('portal:outlook-simulate',{detail:{action:'outlook-exit'}}));
   if(event.target.closest('[data-simulate="reset"]'))root.querySelectorAll('[data-simulate-status]').forEach(b=>b.setAttribute('aria-pressed','false'));
   const statusButton=event.target.closest('[data-simulate-status]');
   if(statusButton){const color=statusButton.dataset.simulateStatus;root.querySelectorAll('[data-simulate-status]').forEach(b=>b.setAttribute('aria-pressed',String(b===statusButton&&color!=='real')));

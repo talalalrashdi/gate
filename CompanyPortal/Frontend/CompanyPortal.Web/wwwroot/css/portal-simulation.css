@@ -8,3 +8,5 @@
 .portal-simulation>section::backdrop{background:transparent;pointer-events:none}
 
 .portal-simulation select{font-size:14px}
+
+.simulation-outlook{border-bottom:1px solid #c4d4c6;margin-bottom:16px;padding-bottom:12px}.simulation-outlook h3{margin:0 0 8px;font-size:16px}.simulation-outlook p{font-size:12px;line-height:1.8}.simulation-outlook>button{width:100%;margin-bottom:12px;font-weight:700}.simulation-outlook fieldset{border:1px solid #c4d4c6;border-radius:10px;margin:0 0 10px;padding:10px}.simulation-outlook legend{font-weight:700;padding:0 6px}.simulation-outlook .simulation-actions{margin-bottom:0}#portal-simulation-dialog p{white-space:pre-line}

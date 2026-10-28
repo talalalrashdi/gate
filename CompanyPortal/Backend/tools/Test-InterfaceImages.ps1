@@ -5,18 +5,25 @@ Add-Type -AssemblyName System.Net.Http
 function Assert($value,[string]$message) { if(-not $value){throw $message} }
 $handler=[Net.Http.HttpClientHandler]::new(); $handler.UseDefaultCredentials=$true
 $client=[Net.Http.HttpClient]::new($handler); $client.Timeout=[timespan]::FromSeconds(30)
-$client.DefaultRequestHeaders.Add('X-CompanyPortal-Request','admin-images')
-function Send([string]$method,[string]$path,$body=$null,[bool]$header=$true,[string]$origin='') {
+function Send([string]$method,[string]$path,$body=$null,[bool]$header=$true,[string]$origin='',[string]$requestHeader='admin-images') {
     $req=[Net.Http.HttpRequestMessage]::new([Net.Http.HttpMethod]::new($method),$BaseUrl.TrimEnd('/')+$path)
     if($null -ne $body){$req.Content=[Net.Http.StringContent]::new(($body|ConvertTo-Json -Depth 8 -Compress),[Text.Encoding]::UTF8,'application/json')}
     if($origin){$req.Headers.Add('Origin',$origin)}
-    if(-not $header){$req.Headers.Add('X-CompanyPortal-Request','wrong-header')}
+    $req.Headers.Add('X-CompanyPortal-Request',$(if($header){$requestHeader}else{'wrong-header'}))
     try{$res=$client.SendAsync($req).GetAwaiter().GetResult();try{return @{Status=[int]$res.StatusCode;Body=$res.Content.ReadAsStringAsync().GetAwaiter().GetResult()}}finally{$res.Dispose()}}finally{$req.Dispose()}
 }
 function Upload([string]$name,[byte[]]$bytes,[string]$mime='image/svg+xml') {
+    $req=[Net.Http.HttpRequestMessage]::new([Net.Http.HttpMethod]::Post,$BaseUrl.TrimEnd('/')+'/api/admin/images');$req.Headers.Add('X-CompanyPortal-Request','admin-images')
     $body=[Net.Http.MultipartFormDataContent]::new();$file=[Net.Http.ByteArrayContent]::new($bytes)
-    $file.Headers.ContentType=[Net.Http.Headers.MediaTypeHeaderValue]::new($mime);$body.Add($file,'file',$name)
-    try{$res=$client.PostAsync($BaseUrl.TrimEnd('/')+'/api/admin/images',$body).GetAwaiter().GetResult();try{return @{Status=[int]$res.StatusCode;Body=$res.Content.ReadAsStringAsync().GetAwaiter().GetResult()}}finally{$res.Dispose()}}finally{$body.Dispose()}
+    $file.Headers.ContentType=[Net.Http.Headers.MediaTypeHeaderValue]::new($mime);$body.Add($file,'file',$name);$req.Content=$body
+    try{$res=$client.SendAsync($req).GetAwaiter().GetResult();try{return @{Status=[int]$res.StatusCode;Body=$res.Content.ReadAsStringAsync().GetAwaiter().GetResult()}}finally{$res.Dispose()}}finally{$req.Dispose()}
+}
+# Themes choose their image group only through the theme editor save (PUT /api/admin/themes/{id}).
+function SetThemeGroup([int]$id,$groupId) {
+    $theme=((Send GET '/api/admin/themes').Body|ConvertFrom-Json)|Where-Object themeId -eq $id
+    $body=[ordered]@{};foreach($key in 'themeName','layoutKey','displayOrder','active','isDefault','primaryColor','accentColor','backgroundColor','overlayOpacity','foregroundPreset','imagePresentation','visibility'){$body[$key]=$theme.$key}
+    $body.previewRoles=@($theme.previewRoles);$body.imageGroupId=$groupId
+    return (Send PUT "/api/admin/themes/$id" $body $true '' 'admin-themes').Status
 }
 $imageIds=[Collections.Generic.List[int]]::new();$groupIds=[Collections.Generic.List[int]]::new();$original=$null;$themeId=0
 try {
@@ -77,17 +84,25 @@ try {
     Assert ((Send PUT "/api/admin/images/groups/$id" $group).Status -eq 200) 'No-op group save failed.'
     $same=((Send GET '/api/admin/images').Body|ConvertFrom-Json).groups|Where-Object imageGroupId -eq $id
     Assert ($same.lastChangeAt -eq $snapshot.lastChangeAt) 'No-op changed group timestamp.'
-    Assert ((Send PUT "/api/admin/images/themes/$themeId/group" @{imageGroupId=$id}).Status -eq 204) 'Theme assignment failed.'
+    Assert ((Send PUT "/api/admin/images/themes/$themeId/group" @{imageGroupId=$id}).Status -in 404,405) 'Removed images-page theme assignment still answers.'
+    Assert ((SetThemeGroup $themeId $id) -eq 200) 'Theme assignment failed.'
     $settings=(Send GET "/api/themes/$themeId/images").Body|ConvertFrom-Json
     Assert ($settings.images.Count -eq 2 -and $settings.settings.defaultImageId -eq $imageIds[1] -and $settings.settings.rotateImages) 'Published group differs.'
     $content=Send GET "/api/images/$($imageIds[0])/content";Assert ($content.Status -eq 200 -and $content.Body.Contains('<svg')) 'SVG content failed.'
+    $cached=$client.GetAsync($BaseUrl+"/api/images/$($imageIds[0])/content").GetAwaiter().GetResult()
+    try{Assert ($cached.Headers.CacheControl.Private -and $cached.Headers.CacheControl.MaxAge.TotalDays -ge 365 -and -not $cached.Headers.CacheControl.NoStore -and "$($cached.Headers.CacheControl)".Contains('immutable')) "Image content is not cacheable: $($cached.Headers.CacheControl)"}finally{$cached.Dispose()}
+    $metadata=$client.GetAsync($BaseUrl+'/api/admin/images').GetAwaiter().GetResult()
+    try{Assert ($metadata.Headers.CacheControl.NoStore) 'Admin image metadata must stay no-store.'}finally{$metadata.Dispose()}
     $group.defaultImageId=$imageIds[2];Assert ((Send PUT "/api/admin/images/groups/$id" $group).Status -eq 400) 'Nonmember default accepted.';$group.defaultImageId=$imageIds[1]
     $group.rotateImages=$false;Assert ((Send PUT "/api/admin/images/groups/$id" $group).Status -eq 200) 'Static setting failed.'
     Assert (-not (((Send GET "/api/themes/$themeId/images").Body|ConvertFrom-Json).settings.rotateImages)) 'Static setting not persisted.'
     $group.items=@(@{imageId=$imageIds[1];displayOrder=1;active=$true});Assert ((Send PUT "/api/admin/images/groups/$id" $group).Status -eq 200) 'Remove/reorder failed.'
     $settings=(Send GET "/api/themes/$themeId/images").Body|ConvertFrom-Json;Assert ($settings.images.Count -eq 1 -and $settings.images[0].imageId -eq $imageIds[1]) 'Removed member is still published.'
-    $group.active=$false;Assert ((Send PUT "/api/admin/images/groups/$id" $group).Status -eq 200) 'Group deactivation failed.'
-    Assert ($null -eq (((Send GET "/api/themes/$themeId/images").Body|ConvertFrom-Json).settings)) 'Inactive group published.'
+    $group.active=$false;Assert ((Send PUT "/api/admin/images/groups/$id" $group).Status -eq 409) 'A group used by a theme was deactivated.'
+    Assert ((SetThemeGroup $themeId $null) -eq 200) 'Theme could not return to its original images.'
+    Assert ($null -eq (((Send GET "/api/themes/$themeId/images").Body|ConvertFrom-Json).settings)) 'Unassigned group still published.'
+    Assert ((Send PUT "/api/admin/images/groups/$id" $group).Status -eq 200) 'Unused group deactivation failed.'
+    Assert ((SetThemeGroup $themeId $id) -eq 400) 'An inactive group was assigned to a theme.'
     $group.active=$true;$group.rotateImages=$true;$group.items=$members
     Assert ((Send PUT "/api/admin/images/groups/$id" $group).Status -eq 200) 'Restore fixture group failed.'
     $anonymous=[Net.Http.HttpClient]::new()
@@ -96,7 +111,7 @@ try {
     if($KeepFixtures){Write-Output ("Fixtures kept for browser verification: group {0}; image IDs {1}; original theme group {2}." -f $id,($imageIds -join ','),$original)}
 }
 finally {
-    if($themeId -gt 0){$restore=Send PUT "/api/admin/images/themes/$themeId/group" @{imageGroupId=$original};Assert ($restore.Status -eq 204) 'Original theme image group could not be restored.'}
+    if($themeId -gt 0){Assert ((SetThemeGroup $themeId $original) -eq 200) 'Original theme image group could not be restored.'}
     if(-not $KeepFixtures -and $imageIds.Count -gt 0){
         $groups=(@(0)+@($groupIds)) -join ',';$images=(@($imageIds)+@($deleteId)) -join ','
         $sql="SET XACT_ABORT ON; BEGIN TRAN; DELETE FROM Master.ImageGroupItems WHERE ImageGroupId IN ($groups); DELETE FROM Master.ImageGroups WHERE ImageGroupId IN ($groups) AND NOT EXISTS(SELECT 1 FROM Master.Themes t WHERE t.ImageGroupId=Master.ImageGroups.ImageGroupId); DELETE FROM Master.Images WHERE ImageId IN ($images) AND NOT EXISTS(SELECT 1 FROM Master.ImageGroupItems m WHERE m.ImageId=Master.Images.ImageId) AND NOT EXISTS(SELECT 1 FROM Master.ImageGroups g WHERE g.DefaultImageId=Master.Images.ImageId); COMMIT;"

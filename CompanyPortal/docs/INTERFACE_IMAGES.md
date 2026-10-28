@@ -29,21 +29,20 @@ Apply `Backend/Database/Scripts/015_InterfaceImages.sql` after 014. It is safe t
 
 All three new tables have Active bit default 1 and LastChangeAt datetime default GETDATE(). Actual group-property/membership changes advance the group timestamp; no-op saves preserve it. Existing item IDs remain stable when updating a membership. Removing a membership deletes only that relationship. Images are stored once in CompanyPortal, so normal database backup/restore includes their binary content.
 
-Procedures: `Master.Images_getAll`, `Images_add`, `Images_getContent`, `ImageGroups_getAll`, `ImageGroups_save`, `Themes_setImageGroup`, `Themes_getImages`. Group save uses the `Master.ImageSelection` table type in one transaction. Default images must be active selected members. Duplicate images/positions and inactive/missing images are rejected. Theme assignment accepts only an active group. Inactive/empty groups fall back to the original theme images at runtime.
+Procedures: `Master.Images_getAll`, `Images_add`, `Images_getContent`, `ImageGroups_getAll`, `ImageGroups_save`, `Themes_getImages`. A theme chooses its group only in the theme editor (`Master.Themes_save`); migration 048 dropped `Themes_setImageGroup` and the images-page assignment box, which duplicated it. The images page shows which non-deleted themes use the selected group. A group used by a non-deleted theme cannot be deactivated (SQL error 50013, API 409). Group save uses the `Master.ImageSelection` table type in one transaction. Default images must be active selected members. Duplicate images/positions and inactive/missing images are rejected. Theme assignment accepts only an active group. Empty groups fall back to the original theme images at runtime.
 
 ## API and access
 
 | Method/path | Purpose |
 | --- | --- |
-| GET `/api/admin/images` | Admin metadata library, groups, memberships and active theme assignments; no BLOBs in JSON |
+| GET `/api/admin/images` | Admin metadata library, groups, memberships and the group used by each non-deleted theme; no BLOBs in JSON |
 | POST `/api/admin/images` | One multipart `file`; browser uploads multi-selection sequentially |
 | POST `/api/admin/images/groups` | Create a group |
 | PUT `/api/admin/images/groups/{id}` | Save group properties and full membership/order |
-| PUT `/api/admin/images/themes/{id}/group` | `{imageGroupId: id}` or explicit null for original images |
 | GET `/api/themes/{id}/images` | Registered active portal user's current published image settings |
 | GET `/api/images/{id}/content` | Binary image; admin preview, or registered portal-user access only when actively assigned through an active group to an active theme |
 
-All writes and admin reads recheck external `CompanyPortal.Admin` through the existing NTName → UserId/role source. Writes require `X-CompanyPortal-Request: admin-images`; JSON writes reject unknown fields. Credentialed CORS and exact-origin checks apply to uploads as well as JSON. Images/groups/roles are never selected by a browser-supplied user ID. Responses are private/no-store. Image responses include nosniff and sandboxed restrictive Content-Security-Policy, and are used as images, never inline SVG markup.
+All writes and admin reads recheck external `CompanyPortal.Admin` through the existing NTName → UserId/role source. Writes require `X-CompanyPortal-Request: admin-images`; JSON writes reject unknown fields. Credentialed CORS and exact-origin checks apply to uploads as well as JSON. Images/groups/roles are never selected by a browser-supplied user ID. JSON responses are private/no-store. Image content (`/api/images/{id}/content`) is `private, max-age=31536000, immutable`: an ImageId's bytes never change (there is no update path; a new upload gets a new ID), so the portal downloads each rotating image once instead of on every turn. Access is still checked on each request that reaches the API; a browser that already has an image keeps it after the theme is hidden. Image responses include nosniff and sandboxed restrictive Content-Security-Policy, and are used as images, never inline SVG markup.
 
 Default upload limit is 10 MB per raster image, configurable through `InterfaceImages:MaximumUploadMb` (1–10). SVG has an additional fixed 1 MB limit. Dimensions are limited to 12000 per side and 40 megapixels. Raster extensions/signatures/container structure/dimensions are checked without adding an imaging library; this is not a full pixel decode or malware scanner. Unrenderable images fall back to original theme images in the portal.
 

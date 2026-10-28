@@ -20,7 +20,7 @@
     const response=await core.request(path,{method,body,header:'admin-images',timeout:method==='POST'?60000:15000});
     if(!response.ok){
       if(response.status===401||response.status===403){content.hidden=true;loaded=false;throw new Error('ليس لديك صلاحية إدارة الصور.');}
-      if(response.status===409)throw new Error('الصورة مستخدمة في مجموعة محفوظة. أزلها من المجموعات واحفظ التغييرات أولًا، ثم احذفها.');
+      if(response.status===409)throw new Error(path.includes('/groups')?'لا يمكن إيقاف مجموعة يستخدمها ثيم. اختر لها صورًا أخرى من محرر الثيم أولًا.':'الصورة مستخدمة في مجموعة محفوظة. أزلها من المجموعات واحفظ التغييرات أولًا، ثم احذفها.');
       throw new Error(response.status===400||response.status===413?'تعذر الحفظ. تحقق من الاسم والصور والأحجام والصيغة. SVG يجب أن يكون ثابتًا بدون سكربتات أو أنماط أو روابط خارجية.':'تعذر الاتصال بخدمة الصور. أعد المحاولة.');
     }
     return response.status===204?null:response.json();
@@ -84,33 +84,29 @@
     picker.replaceChildren(option('','مجموعة جديدة'));
     data.groups.forEach(g=>picker.append(option(g.imageGroupId,g.groupName+(g.active?'':' (غير نشطة)'))));picker.value=String(groupId??'');
   }
+  // Themes pick their group in the theme editor; this page only shows the usage.
+  const usedBy=()=>groupId?data.themes.filter(t=>t.imageGroupId===groupId):[];
+  function renderUsage(){
+    const themes=usedBy();
+    byId('image-group-usage').textContent=themes.length?'يستخدمها: '+themes.map(t=>t.themeName).join('، '):groupId?'لا يستخدمها أي ثيم. اختر المجموعة من محرر الثيم.':'بعد الحفظ، اختر المجموعة من محرر الثيم.';
+  }
   function editGroup(id){
     groupId=id;AdminChanges.tag(form,'images','image-group',id);const group=data.groups.find(g=>g.imageGroupId===id);
     name.value=group?.groupName??'';rotate.checked=group?.rotateImages??true;seconds.value=group?.rotationSeconds??8;active.checked=group?.active??true;defaultId=group?.defaultImageId??null;
     selection=data.items.filter(i=>i.imageGroupId===id).sort((a,b)=>a.displayOrder-b.displayOrder).map(i=>({imageId:i.imageId,active:i.active}));
-    dirty=false;byId('image-group-dirty').textContent='';renderPicker();renderLibrary();renderSelection();groupSnapshot=groupValues();core.refresh();
-  }
-  function renderLinks(){
-    const target=byId('image-theme-links'),drafts=new Map([...target.querySelectorAll('form')].filter(f=>f.querySelector('select').value!==f.dataset.originalGroup).map(f=>[Number(f.dataset.themeId),f.querySelector('select').value]));target.replaceChildren();
-    data.themes.forEach(theme=>{
-      const row=node('form',undefined,'images-theme-form'),label=node('label','مجموعة الصور'),select=node('select'),save=node('button','حفظ الربط','admin-primary');
-      AdminChanges.tag(row,'images','theme',theme.themeId);row.dataset.themeId=theme.themeId;row.dataset.originalGroup=String(theme.imageGroupId??'');row.append(node('strong',theme.themeName));select.append(option('','الصور الأصلية للثيم'));
-      data.groups.filter(g=>g.active||g.imageGroupId===theme.imageGroupId).forEach(g=>select.append(option(g.imageGroupId,g.groupName+(g.active?'':' (غير نشطة)'))));select.value=String(theme.imageGroupId??'');
-      select.setAttribute('aria-label','مجموعة صور '+theme.themeName);label.append(select);row.append(label,save);save.type='submit';
-      const tracker=core.trackForm('images',row,{busy:()=>busy});if(drafts.has(theme.themeId))select.value=drafts.get(theme.themeId);
-      row.addEventListener('submit',event=>{event.preventDefault();run(async()=>{say('جارٍ حفظ ربط الثيم…');await request(`api/admin/images/themes/${theme.themeId}/group`,'PUT',{imageGroupId:select.value?Number(select.value):null});theme.imageGroupId=select.value?Number(select.value):null;row.dataset.originalGroup=select.value;tracker.saved();say('تم حفظ صور الثيم. أعد تحميل البوابة لمشاهدتها.');});});target.append(row);
-    });
+    dirty=false;byId('image-group-dirty').textContent='';renderPicker();renderLibrary();renderSelection();renderUsage();groupSnapshot=groupValues();core.refresh();
   }
   async function load(){
-    await run(async()=>{say('جارٍ تحميل مكتبة الصور…');data=await request('api/admin/images');loaded=true;content.hidden=false;retry.hidden=true;editGroup(null);renderLinks();say('المكتبة جاهزة. اختر مجموعة أو أنشئ مجموعة جديدة.');});
+    await run(async()=>{say('جارٍ تحميل مكتبة الصور…');data=await request('api/admin/images');loaded=true;content.hidden=false;retry.hidden=true;editGroup(null);say('المكتبة جاهزة. اختر مجموعة أو أنشئ مجموعة جديدة.');});
   }
   picker.addEventListener('change',async()=>{if(busy||groupDirty()&&!await core.discard('توجد تغييرات غير محفوظة. هل تريد الانتقال إلى مجموعة أخرى؟')){picker.value=String(groupId??'');return;}editGroup(picker.value?Number(picker.value):null);});
+  active.addEventListener('change',()=>{if(active.checked||!usedBy().length)return;active.checked=true;say('لا يمكن إيقاف مجموعة يستخدمها ثيم ('+usedBy().map(t=>t.themeName).join('، ')+'). اختر لها صورًا أخرى من محرر الثيم أولًا.',true);});
   form.addEventListener('input',mark);form.addEventListener('change',mark);rotate.addEventListener('change',refreshConstraints);
   form.addEventListener('submit',event=>{event.preventDefault();if(!name.value.trim()){name.focus();return;}run(async()=>{
     say('جارٍ حفظ المجموعة…');
     const result=await request('api/admin/images/groups'+(groupId?'/'+groupId:''),groupId?'PUT':'POST',{groupName:name.value.trim(),rotateImages:rotate.checked,rotationSeconds:Number(seconds.value),defaultImageId:defaultId,active:active.checked,items:selection.map((i,index)=>({...i,displayOrder:index+1}))});
     groupId=result.imageGroupId;
-    data=await request('api/admin/images');editGroup(groupId);renderLinks();say('تم حفظ المجموعة وترتيب الصور وإعدادات العرض.');
+    data=await request('api/admin/images');editGroup(groupId);say('تم حفظ المجموعة وترتيب الصور وإعدادات العرض.');
   });});
   byId('image-upload').addEventListener('submit',event=>{event.preventDefault();const files=[...byId('image-files').files];if(!files.length)return;run(async()=>{
     const added=[];let failure;

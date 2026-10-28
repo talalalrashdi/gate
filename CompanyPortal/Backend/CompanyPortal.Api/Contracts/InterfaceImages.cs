@@ -33,9 +33,3 @@ public sealed class ImageSelection
     [Range(1, 100)] public int DisplayOrder { get; init; }
     [Required] public bool? Active { get; init; }
 }
-[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
-public sealed class AssignImageGroup
-{
-    // An explicit null restores the layout's original images.
-    [JsonRequired, Range(1, int.MaxValue)] public int? ImageGroupId { get; init; }
-}

@@ -37,11 +37,6 @@ public sealed class InterfaceImagesStore(IConfiguration configuration)
         await using var connection = Connection();
         return await connection.QuerySingleAsync<int>(Command("Master.ImageGroups_save", new { ImageGroupId = id, GroupName = request.GroupName.Trim(), request.RotateImages, request.RotationSeconds, request.DefaultImageId, request.Active, Items = items.AsTableValuedParameter("Master.ImageSelection"), ChangedBy = changedBy }, token));
     }
-    public async Task AssignAsync(int id, int? groupId, string changedBy, CancellationToken token)
-    {
-        await using var connection = Connection();
-        await connection.ExecuteAsync(Command("Master.Themes_setImageGroup", new { ThemeId = id, ImageGroupId = groupId, ChangedBy = changedBy }, token));
-    }
     public async Task<ThemeImages> ThemeAsync(int id, string account, CancellationToken token)
     {
         await using var connection = Connection();

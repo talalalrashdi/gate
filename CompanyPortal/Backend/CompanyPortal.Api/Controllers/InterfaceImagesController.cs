@@ -47,12 +47,6 @@ public sealed class InterfaceImagesController(InterfaceImagesStore images, NewsS
         return Ok(new { imageGroupId = await images.SaveGroupAsync(id,request,User.Identity!.Name!,token) });
     },true,token);
 
-    [HttpPut("themes/{id:int:min(1)}/group"), Consumes("application/json"), RequestSizeLimit(4096), AdminSection("admin-images", "images")]
-    public Task<IActionResult> Assign(int id, AssignImageGroup request, CancellationToken token) => Execute(async _ =>
-    {
-        await images.AssignAsync(id,request.ImageGroupId,User.Identity!.Name!,token); return NoContent();
-    },true,token);
-
     [HttpGet("/api/themes/{id:int:min(1)}/images")]
     public Task<IActionResult> Theme(int id, CancellationToken token) => Execute(async _ => Ok(await images.ThemeAsync(id,User.Identity!.Name!,token)),false,token);
 
@@ -61,6 +55,9 @@ public sealed class InterfaceImagesController(InterfaceImagesStore images, NewsS
     {
         var content = await images.ContentAsync(id,admin,User.Identity!.Name!,token);
         if (content is null) return NotFound();
+        // Image bytes never change for an ImageId (no update path), so the browser may keep them.
+        // Without this, the portal re-downloads each image on every rotation.
+        Response.Headers.CacheControl="private, max-age=31536000, immutable";
         Response.Headers.XContentTypeOptions="nosniff";
         Response.Headers.ContentSecurityPolicy=content.ContentType=="image/svg+xml" && BundledArtwork.IsNationalDay(content.ImageData)
             ? "default-src 'none'; img-src data:; style-src 'unsafe-inline'; sandbox"
@@ -90,6 +87,7 @@ public sealed class InterfaceImagesController(InterfaceImagesStore images, NewsS
             return await action(admin);
         }
         catch (SqlException exception) when (exception.Number==50009) { return Problem(statusCode:409,title:"Remove the image from saved groups before deleting it."); }
+        catch (SqlException exception) when (exception.Number==50013) { return Problem(statusCode:409,title:"Choose other images for the themes that use this group before deactivating it."); }
         catch (ArgumentException exception) { return Problem(statusCode:400,title:exception.Message); }
         catch (SqlException exception) when (exception.Number==50007) { return Problem(statusCode:400,title:"Check the group, images, default image and theme selection."); }
         catch (Exception exception) when (exception is SqlException or InvalidOperationException)

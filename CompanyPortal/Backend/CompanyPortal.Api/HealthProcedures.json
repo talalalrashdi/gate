@@ -20,7 +20,6 @@
   "Master.Themes_getForAdministration",
   "Master.Themes_getImages",
   "Master.Themes_save",
-  "Master.Themes_setImageGroup",
   "Mng.CurrentStatus_get",
   "Mng.ImportantNumbers_Delete",
   "Mng.ImportantNumbers_GetActive",

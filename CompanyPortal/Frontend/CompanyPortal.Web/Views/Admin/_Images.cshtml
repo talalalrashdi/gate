@@ -14,14 +14,14 @@
           <form id="image-group-form"><label>اسم المجموعة<input id="image-group-name" maxlength="200" required placeholder="مثال: صور المؤسسة"></label>
             <div class="images-settings"><label class="images-check"><input id="image-group-active" type="checkbox" checked> المجموعة نشطة</label><label class="images-check"><input id="image-group-rotate" type="checkbox" checked> تدوير الصور تلقائيًا</label></div>
             <label>مدة عرض الصورة (بالثواني)<input id="image-group-seconds" type="number" min="3" max="3600" step="1" value="8" required></label>
-            <p class="images-hint">عند إيقاف التدوير تظهر الصورة الافتراضية. الصور غير النشطة لا تظهر للمستخدمين. إيقاف المجموعة يعيد الصور الأصلية للثيم.</p>
+            <p class="images-hint">عند إيقاف التدوير تظهر الصورة الافتراضية. الصور غير النشطة لا تظهر للمستخدمين.</p>
+            <p id="image-group-usage" class="images-hint images-usage"></p>
             <div class="images-library-heading"><h3>الترتيب والصورة الافتراضية</h3><span id="image-group-dirty"></span></div>
             <div id="image-group-items" class="image-group-items"></div>
             <button type="submit" class="admin-primary images-save">حفظ المجموعة</button>
           </form>
         </div>
       </section>
-      <section class="admin-panel"><div class="admin-panel-header"><div><h2>صور الثيمات</h2><p>اختر مجموعة لكل ثيم. يمكن مشاركة المجموعة بين عدة ثيمات.</p></div></div><div id="image-theme-links" class="images-form"></div><p class="images-hint images-link-note">بدون مجموعة: يحتفظ الثيم بصوره الأصلية. تظهر التغييرات عند إعادة تحميل البوابة. لإنشاء الثيمات وتخصيص ألوانها، انتقل إلى الثيمات والمظهر.</p></section>
     </div>
   </div>
 </section>

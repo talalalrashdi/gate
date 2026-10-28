@@ -1,5 +1,7 @@
 # Portal administration
 
+28 October 2026 — **themes/images fixes:** image content is now browser-cacheable (`private, max-age=31536000, immutable`; was `no-store`, which re-downloaded each rotating image). Migration 048: a theme's image group is chosen only in the theme editor (the images-page «صور الثيمات» box, `PUT /api/admin/images/themes/{id}/group` and `Master.Themes_setImageGroup` were removed); the images page shows «يستخدمها: …» instead; a group used by a non-deleted theme cannot be deactivated (50013 → 409). See [INTERFACE_IMAGES.md](INTERFACE_IMAGES.md).
+
 28 October 2026 — **Phase5:** super-admin full change history, option-A unsaved portal previews, and permanent English System health with numbered fixes. See [ADMIN_PHASE5.md](ADMIN_PHASE5.md). Migration046 adds read-only history readers.
 
 27 October 2026 — **Phase4 overview/navigation:** grouped permission-filtered sidebar, local Iconsax icons, live database overview, and batched per-item author/time labels. See [ADMIN_OVERVIEW.md](ADMIN_OVERVIEW.md) for API contracts, deployment and checks.
@@ -14,7 +16,7 @@
 | `fixed-orders` | directive (`Portal.FixedOrders_Save`) |
 | `notices` / `alerts` | notice-settings, notice-window (channel 1 / 2) |
 | `media` | media, album (`Media_Save` also records an album whose cover it clears) |
-| `images` | image (`Images_add`, `Images_delete`), image-group, theme (`Themes_setImageGroup`) |
+| `images` | image (`Images_add`, `Images_delete`), image-group; older rows may also show theme (the dropped `Themes_setImageGroup`) |
 | `themes` | theme (`Themes_save`, `Themes_delete`, `Themes_applyToAll` = `apply-to-all` with `UsersUpdated`; a replaced default is recorded too) |
 | `header-content` | important-number, status-level |
 

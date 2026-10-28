@@ -30,7 +30,7 @@
     }catch{status.textContent='تعذر تحميل السجل. تحقق من الاتصال وصلاحية المدير العام ثم اضغط بحث.';}finally{busy=false;form.querySelectorAll('button').forEach(b=>b.disabled=false);}
   }
   by('details-close').onclick=()=>dialog.close();dialog.addEventListener('close',()=>generation++);
-  form.onsubmit=e=>{e.preventDefault();if(!form.reportValidity())return;page=1;void load();};form.onreset=()=>queueMicrotask(()=>{page=1;void load();});
+  form.onsubmit=e=>{e.preventDefault();if(!form.reportValidity())return;page=1;void load();};form.onreset=e=>{e.preventDefault();if(busy)return;for(const name of ['section','person','from','to'])form.elements[name].value='';page=1;void load();};
   by('prev').onclick=()=>{if(!busy&&page>1){page--;void load();}};by('next').onclick=()=>{if(!busy&&page*25<total){page++;void load();}};
   document.addEventListener('admin:access',()=>{if(!core.can('history')){list.replaceChildren();dialog.close();}});core.whenSection('history',()=>void load());
 })();

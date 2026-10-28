@@ -1,0 +1,15 @@
+.admin-draft-banner{position:sticky;top:0;background:#edf4e8;color:#215c49;padding:12px 22px;z-index:9999;font-size:13px}
+.admin-draft-preview a,.admin-draft-preview button,.admin-draft-preview input{pointer-events:none}
+body.admin-draft-preview{padding-top:0}
+.admin-draft-preview .portal-header{top:44px}
+.admin-draft-preview .portal-floating-alert,.admin-draft-preview .portal-floating-notice{position:relative;inset:auto;margin:15px;width:280px}
+.admin-draft-preview .portal-header-search{position:relative;inset:auto;margin:20px;max-width:1000px}
+.admin-draft-preview .portal-org-status-menu{position:relative;inset:auto;width:min(600px,85vw)}
+.admin-draft-preview .portal-org-status{position:relative}
+.admin-draft-preview .portal-org-status-menu>section{padding:18px}
+.admin-draft-notices{position:fixed;left:18px;top:180px;z-index:9998;display:grid;gap:12px}
+.admin-draft-preview .editorial-events-grid{display:block}
+.admin-draft-preview :is(.editorial-video-card,.editorial-photo-slide){width:min(100%,1000px);min-height:350px;margin:auto}
+.admin-draft-preview .editorial-photo-slide{height:450px}
+.admin-draft-preview .portal-policies-sheet{max-height:85vh}
+

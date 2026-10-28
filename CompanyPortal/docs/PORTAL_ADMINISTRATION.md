@@ -1,5 +1,7 @@
 # Portal administration
 
+28 October 2026 — **Phase5:** super-admin full change history, option-A unsaved portal previews, and permanent English System health with numbered fixes. See [ADMIN_PHASE5.md](ADMIN_PHASE5.md). Migration046 adds read-only history readers.
+
 27 October 2026 — **Phase4 overview/navigation:** grouped permission-filtered sidebar, local Iconsax icons, live database overview, and batched per-item author/time labels. See [ADMIN_OVERVIEW.md](ADMIN_OVERVIEW.md) for API contracts, deployment and checks.
 
 27 October 2026 — **change history (admin Phase 2).** Migration 044 adds `Portal.AdminChanges` (AdminChangeId, ChangedAt, ChangedBy, Section, Action create/update/delete/apply-to-all, ItemType, ItemId, ItemTitle, OldJson, NewJson). The 19 admin save procedures take a trailing `@ChangedBy nvarchar(512)=NULL` (the API passes the signed-in Windows name; direct SQL calls fall back to `ORIGINAL_LOGIN()`), snapshot the item with `Portal.AdminSnapshot_*` after taking their locks and again just before COMMIT, and call `Portal.AdminChanges_Add` inside the same transaction. No-op saves and failed saves write nothing. Snapshots exclude `LastChangeAt` and image bytes; child lists are included (card apps/roles, image-group items, theme preview roles, tab documents).

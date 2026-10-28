@@ -256,5 +256,3 @@ body .portal-media-new { padding:2px 5px; border-radius:4px; background:#fff0ec;
 .portal-media-new[hidden] { display: none !important; }
 
 /* Temporary diagnostics shortcut floats below the secondary navigation. */
-.portal-media-subnav>.portal-setup-link{position:absolute;top:calc(100% + 8px);left:12px;z-index:1;display:inline-flex;align-items:center;padding:8px 12px;border-radius:8px;background:#215c47;--text-primary:#fff;--text-secondary:#fff;color:#fff!important;font-size:12px;line-height:1.5;text-decoration:none;box-shadow:0 3px 12px #142d2726;white-space:nowrap}
-.portal-media-subnav>.portal-setup-link:focus-visible{outline:2px solid #bc8843;outline-offset:3px}

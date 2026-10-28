@@ -28,10 +28,10 @@ public sealed class AdminHealthController(IConfiguration config,AdministrationSt
         // Explicit bootstrap accounts can diagnose a missing/unreachable security adapter only.
         // They never override a successful authorization result denying super-admin access.
         try{using var authorization=CancellationTokenSource.CreateLinkedTokenSource(token);authorization.CancelAfter(TimeSpan.FromSeconds(8));if(!(await admins.GetAccessAsync(account,authorization.Token)).IsSuperAdmin)return Forbid();}
-        catch(Exception e)when(!token.IsCancellationRequested&&e is SqlException or InvalidOperationException or ArgumentException or OperationCanceledException)
+        catch(Exception e)when(!token.IsCancellationRequested&&(e is SqlException or InvalidOperationException or ArgumentException or OperationCanceledException))
         {
             if(!(config.GetSection("Diagnostics:BootstrapAccounts").Get<string[]>()??[]).Contains(account,StringComparer.OrdinalIgnoreCase))
-                return Problem(statusCode:503,title:"Cannot verify super-admin access.",detail:"Use an explicitly approved Diagnostics:BootstrapAccounts entry during first-time setup, then remove it after database access is configured.",extensions:new Dictionary<string,object?>{{"reference",HttpContext.TraceIdentifier}});
+                return Problem(statusCode:503,title:"Cannot verify super-admin access.",detail:"The database/security adapter could not be reached. No health checks were run.",extensions:new Dictionary<string,object?>{{"reference",HttpContext.TraceIdentifier},{"steps",new[]{"Check the API database connection and Security.UserRoles_get/Portal.AdminAccess_get permissions.","During first-time setup only, add the approved Windows account to Diagnostics:BootstrapAccounts on the API host and restart the API.","Remove that bootstrap entry after the database and super-admin role are configured."}}});
             logger.LogWarning("Health bootstrap access for {Account}. Reference {Reference}",account,HttpContext.TraceIdentifier);
         }
         using var lifetime=CancellationTokenSource.CreateLinkedTokenSource(token);lifetime.CancelAfter(TimeSpan.FromSeconds(55));
@@ -56,7 +56,7 @@ public sealed class AdminHealthController(IConfiguration config,AdministrationSt
             }
         }
         Add("API_IDENTITY","ok","Windows identity",$"Browser account: {account}. API process account: {process}. SQL and EWS use the API process identity unless their integration explicitly impersonates a caller.");
-        Add("VERSIONS","ok","Versions and server time",$"API {typeof(AdminHealthController).Assembly.GetName().Version}; .NET {Environment.Version}; environment {environment.EnvironmentName}; UTC {DateTimeOffset.UtcNow:O}.");
+        Add("VERSIONS","ok","Versions and server time",$"API {typeof(AdminHealthController).Assembly.GetName().Version}; build UTC {System.IO.File.GetLastWriteTimeUtc(typeof(AdminHealthController).Assembly.Location):O}; .NET {Environment.Version}; environment {environment.EnvironmentName}; UTC {DateTimeOffset.UtcNow:O}.");
         string? connectionString=null;Database? database=null;
         var dbOk=await Probe("SQL_CONNECTION","Database connection",async ct=>
         {
@@ -79,7 +79,7 @@ public sealed class AdminHealthController(IConfiguration config,AdministrationSt
                 var found=(await c.QueryAsync<string>(new CommandDefinition("SELECT SCHEMA_NAME(schema_id)+'.'+name FROM sys.procedures",cancellationToken:ct))).ToHashSet(StringComparer.OrdinalIgnoreCase);
                 var missing=names.Where(n=>!found.Contains(n)).ToArray();
                 if(missing.Length>0){Add("MIGRATIONS","failed","Migration coverage","Missing or invisible procedures: "+string.Join(", ",missing),schemaSteps);throw new HealthCheckException("Required procedures are missing or invisible to the API identity.");}
-                Add("MIGRATIONS","ok","Migration coverage","Required procedure signatures for migrations 001–046 are present. There is no migration ledger; this verifies current objects, not historical execution order.");
+                Add("MIGRATIONS","ok","Migration coverage","Required procedure names through migration 046 are present. There is no migration ledger; this verifies current objects, not historical execution order.");
                 return $"All {names.Length} required procedures are visible. Execution permissions are checked for the identity/source probes below; visibility alone does not prove every feature works.";
             },schemaSteps);
             await Probe("USER_LOOKUP","Windows account to user",async ct=>
@@ -115,8 +115,9 @@ public sealed class AdminHealthController(IConfiguration config,AdministrationSt
         {mail.Validate();_=mail.ScheduleZone();_=mail.CalendarsFor(account);mailbox=mail.MailboxFor(account);if(mailbox is null)throw new HealthCheckException("The current Windows account has no valid mailbox mapping.");return Task.FromResult("EWS/OWA addresses, access mode, time zone, shared-calendar settings and the current account's mailbox mapping are valid. This is not an OWA sign-in or shared-mailbox permission test.");},["Set Exchange:EwsUrl and OutlookWebUrl to the verified internal HTTPS addresses.","Set AccessMode to ScopedServiceAccountImpersonation and configure MailboxAddresses for the current Windows account.","Check OpenMode, inbox-link templates, ScheduleTimeZone and SharedCalendars against the approved configuration.","Use an approved, scoped Exchange service identity; do not grant impersonation to every employee."]);
         foreach(var code in new[]{"EWS_INBOX","EWS_CALENDAR","EWS_TASKS"})
         {
-            if(!mailReady||userId is null||code!="EWS_INBOX"&&!mail.ScheduleEnabled){Add(code,"warning",code.Replace('_',' '),"Live access was not checked: Exchange is disabled/unconfigured, the user is unresolved, or ScheduleEnabled is false.","Fix the Exchange/user checks above.","Set Exchange:ScheduleEnabled=true to test calendars and tasks.");continue;}
-            await Probe(code,code.Replace('_',' '),async ct=>
+            var title=code=="EWS_INBOX"?"Exchange inbox":code=="EWS_CALENDAR"?"Exchange calendar":"Exchange tasks";
+            if(!mailReady||userId is null||code!="EWS_INBOX"&&!mail.ScheduleEnabled){Add(code,"warning",title,"Live access was not checked: Exchange is disabled/unconfigured, the user is unresolved, or scheduling is disabled.","Fix the Exchange/user checks above.",code=="EWS_INBOX"?"Enable Exchange:Enabled after access is approved, then run checks again.":"Set Exchange:ScheduleEnabled=true to test calendars and tasks.");continue;}
+            await Probe(code,title,async ct=>
             {await using var session=sessions.Create(mailbox!);if(code=="EWS_INBOX")await session.ProbeInboxAsync(ct);else if(code=="EWS_TASKS")await session.ProbeTasksAsync(ct);else if(!(await session.CalendarAccessAsync(mailbox!,ct)).Read)throw new EwsResponseException("ErrorAccessDenied");return "The live EWS folder access check succeeded. No item contents were included and nothing was changed.";},["Check the EWS HTTPS address and network access from the API host.","Ask the Exchange administrator to check EWS authentication and the API identity's scoped ApplicationImpersonation assignment.","Use the reference ID and check time to match API and Exchange logs."]);
         }
         var photoSetting=config["PhoneDirectory:Enabled"]??"false";

@@ -57,9 +57,10 @@
  root.querySelectorAll('[data-media-add]').forEach(b=>b.addEventListener('click',()=>choose(b.dataset.mediaAdd,null)));root.querySelectorAll('[data-media-mode]').forEach(b=>b.addEventListener('click',async()=>{if(busy||!await confirmDiscard())return;clearPreview();editor.hidden=true;current=null;mode=b.dataset.mediaMode;renderList();}));
  search.addEventListener('input',renderList);id('cancel').addEventListener('click',async()=>{if(busy||!await confirmDiscard())return;clearPreview();editor.hidden=true;current=null;renderList();});retry.addEventListener('click',async()=>{if(!busy&&await confirmDiscard()){editor.hidden=true;current=null;load();}});
  AdminPreview.button(root.querySelector('.admin-media-actions'),'media',async()=>{
+  const draftKind=kind,draftName=fields.name.value,draftActive=fields.active.checked;
   const row=kind==='group'?catalog.items.find(m=>m.mediaId===Number(fields.cover.value))||catalog.items.filter(m=>m.mediaGroupId===current?.key&&m.active).sort((a,b)=>a.displayOrder-b.displayOrder)[0]:{mediaPath:fields.path.value.trim(),mediaType:kind};
   let url=null;if(row?.mediaPath){const r=await request('/preview','POST',{mediaPath:row.mediaPath,mediaType:row.mediaType});if(!r.ok)throw new Error();url=endpoint('/preview/'+encodeURIComponent((await r.json()).token));}
-  return {kind,name:fields.name.value,url,active:fields.active.checked};
+  return {kind:draftKind,name:draftName,url,active:draftActive};
  });
  core.watch('media',form,dirty,()=>busy);
  core.whenSection('media',()=>{if(!loaded&&!busy)load();});

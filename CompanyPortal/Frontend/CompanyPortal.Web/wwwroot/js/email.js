@@ -29,7 +29,7 @@
           document.dispatchEvent(new CustomEvent('portal:simulation-open',{detail:{title:item.subject||'[محاكاة] رسالة بدون موضوع',text:'من: '+item.sender+'\n\n'+(item.body||'هذه معاينة بريد محلي. لم تُفتح رسالة حقيقية ولم تتغير حالة القراءة في Exchange.')}}));
         });
       }else{link.href = endpoint('api/mail/open?itemId=' + encodeURIComponent(item.itemId)); link.target = '_blank'; link.rel = 'noopener noreferrer';}
-      link.setAttribute('aria-label', `${item.subject || '(بدون موضوع)'} — ${item.sender}${item.isRead ? '' : ' — غير مقروءة'} — فتح في Outlook Web`);
+      link.setAttribute('aria-label', `${item.subject || '(بدون موضوع)'} — ${item.sender}${item.isRead ? '' : ' — غير مقروءة'} — ${simulation ? 'معاينة محلية' : 'فتح في Outlook Web'}`);
       const icon = make('span', '✉'); icon.className = 'portal-email-row-icon'; icon.setAttribute('aria-hidden', 'true');
       const text = make('span'); text.append(make('strong', item.subject || '(بدون موضوع)'), make('small', item.sender));
       const time = make('time'); time.dateTime = item.receivedAt;

@@ -60,4 +60,5 @@ simulate('outlook-disconnect');assert.equal(badge.textContent,'—');assert.equa
 simulate('mail-empty');assert.equal(badge.textContent,'0');assert.equal(list.children.length,0);assert.equal(streams.length,streamCount,'Simulation must not connect to EWS');
 simulate('outlook-exit');assert.equal(streams.length,streamCount+1);assert.equal(badge.textContent,'—');
 events.pagehide();
+context.document.getElementById=()=>null;delete simulationEvents['portal:outlook-simulate'];vm.runInContext(await readFile(new URL('../Frontend/CompanyPortal.Web/wwwroot/js/email.js',import.meta.url),'utf8'),context);assert.equal(simulationEvents['portal:outlook-simulate'],undefined,'Disabled simulation must not register handlers');events.pagehide();
 console.log('PASS: live email rendering, authoritative unread badge, safe text/links, credentialed event stream, no inbox polling/storage, disconnect clearing reconnect lifecycle, one-click mail simulation, read/delete/empty states, local preview, disconnect/reconnect and zero simulation streams/storage.');

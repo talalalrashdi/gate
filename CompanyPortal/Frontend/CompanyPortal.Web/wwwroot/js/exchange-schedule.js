@@ -120,7 +120,7 @@
   }
   if(simulationEnabled)document.addEventListener('portal:outlook-simulate',event=>{
     const action=event.detail?.action;
-    if(!['outlook-start','calendar-new','calendar-update','calendar-cancel','calendar-all-day','calendar-empty','calendar-shared','calendar-shared-manual','calendar-revoke','task-new','task-complete','task-examples','outlook-disconnect','outlook-reconnect','outlook-exit'].includes(action))return;
+    if(!['outlook-start','calendar-new','calendar-update','calendar-cancel','calendar-all-day','calendar-empty','calendar-shared','calendar-shared-manual','calendar-revoke','task-new','task-complete','task-examples','task-empty','outlook-disconnect','outlook-reconnect','outlook-exit'].includes(action))return;
     stop();delay=5000;
     if(action==='outlook-exit'){simulation=null;catalog=[];picker.replaceChildren();void load();return;}
     if(!simulation||action==='outlook-start')beginSimulation();
@@ -137,10 +137,12 @@
     if(action==='calendar-shared'||action==='calendar-shared-manual'){simulation.sharedAccess=true;simulation.sharedLive=action==='calendar-shared';simulation.selectedCalendar='simulation-manager';selected=today;month=day(today.slice(0,7)+'-01');}
     if(action==='calendar-revoke'){simulation.sharedAccess=false;simulation.selectedCalendar='own';}
     if(action==='task-new'){simulation.tasks.unshift(sampleTask('مهمة جديدة — متابعة الطلب الوارد',0,'NotStarted','High'));simulation.tasks=simulation.tasks.slice(0,50);taskFilter='all';}
+    if(action==='task-empty')simulation.tasks=[];
     if(action==='task-complete')simulation.tasks.shift();
     if(action==='task-examples'){simulation.tasks=sampleTasks();taskFilter='all';}
     if(action==='outlook-disconnect')simulation.connected=false;
     if(action==='outlook-reconnect')simulation.connected=true;
+    simulation.own=simulation.own.slice(0,200);simulation.manager=simulation.manager.slice(0,200);
     renderSimulation();setExpanded(true);
     if(simulation.connected&&['calendar-new','calendar-update','calendar-cancel','calendar-all-day','task-new','task-complete'].includes(action))window.showToast?.('[محاكاة] '+(action==='task-new'?'وردت مهمة جديدة في Outlook.':action==='calendar-new'?'ورد موعد جديد في Outlook.':'تم تحديث تقويم Outlook أو المهام.'));
   });

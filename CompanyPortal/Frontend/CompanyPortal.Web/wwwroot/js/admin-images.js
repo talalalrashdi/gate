@@ -129,7 +129,7 @@
     dirty=false;byId('image-group-dirty').textContent='';renderPicker();renderLibrary();renderSelection();renderUsage();groupSnapshot=groupValues();core.refresh();
   }
   async function load(){
-    await run(async()=>{say('جارٍ تحميل مكتبة الصور…');data=await request('api/admin/images');loaded=true;content.hidden=false;retry.hidden=true;editGroup(null);say('المكتبة جاهزة. اختر مجموعة أو أنشئ مجموعة جديدة.');});
+    await run(async()=>{say('جارٍ تحميل مكتبة الصور…');data=await request('api/admin/images');loaded=true;content.hidden=false;retry.hidden=true;editGroup(null);say('');});
   }
   picker.addEventListener('change',async()=>{if(busy||groupDirty()&&!await core.discard('توجد تغييرات غير محفوظة. هل تريد الانتقال إلى مجموعة أخرى؟')){picker.value=String(groupId??'');return;}editGroup(picker.value?Number(picker.value):null);});
   active.addEventListener('change',()=>{if(active.checked||!usedBy().length)return;active.checked=true;say('لا يمكن إيقاف مجموعة يستخدمها ثيم ('+usedBy().map(t=>t.themeName).join('، ')+'). اختر لها صورًا أخرى من محرر الثيم أولًا.',true);});

@@ -13,8 +13,8 @@
     notices:['إدارة التنويهات','اختر أنواع القرارات وفترة العرض وحدّد الاستثناءات.'],
     alerts:['إدارة التنبيهات','اختر أنواع القرارات وفترة العرض وحدّد الاستثناءات.'],
     media:['أخبارنا','أدر الفيديوهات والصور وألبوماتها، وتحقق من الملفات قبل نشرها للجميع.'],
-    images:['صور الواجهة','ارفع الصور ونظّم مجموعاتها وحدّد طريقة عرضها في الثيمات.'],
-    themes:['الثيمات والمظهر','أنشئ ثيمات من القوالب المتاحة وخصّص الألوان والصور مع معاينة مباشرة.']
+    images:['صور الواجهة',''],
+    themes:['الثيمات والمظهر','']
   };
   const features=document.querySelector('.admin-feature-grid');
   for(const [key,[title,description]] of Object.entries(titles)){
@@ -34,7 +34,7 @@
     document.querySelectorAll('[data-admin-group]').forEach(g=>{g.hidden=![...g.querySelectorAll('[data-admin-section]')].some(b=>core.can(b.dataset.adminSection));});
     panels.forEach(p=>p.hidden=p.dataset.adminPanel!==key||!core.can(key));
     buttons.filter(b=>b.closest('.admin-nav')).forEach(b=>{if(b.dataset.adminSection===key)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
-    const heading=document.getElementById('admin-page-title');heading.textContent=titles[key][0];document.getElementById('admin-page-description').textContent=titles[key][1];
+    const heading=document.getElementById('admin-page-title');heading.textContent=titles[key][0];const description=document.getElementById('admin-page-description');description.textContent=titles[key][1];description.hidden=!titles[key][1];
     if(focus){heading.tabIndex=-1;heading.focus({preventScroll:true});window.scrollTo({top:0,behavior:'instant'});}
     document.dispatchEvent(new CustomEvent('admin:section',{detail:{section:key}}));core.refresh();
   }

@@ -196,7 +196,7 @@
   get('theme-cancel').addEventListener('click',async()=>{if(busy)return;if(dirty()&&!await core.discard())return;draft=null;id=null;snapshot='';showEditor(false);frame.src='about:blank';ready.delete(frame);get('theme-add').focus();});
   async function load(){
     if(busy)return;busy=true;get('themes-retry').hidden=true;
-    try{[themes,templates,library,knownRoles]=await Promise.all([request('api/admin/themes'),request('api/admin/themes/templates'),request('api/admin/images'),request('api/admin/themes/roles').catch(()=>[])]);loaded=true;renderGallery();get('theme-add').disabled=false;say('الثيمات جاهزة. أضف ثيمًا أو عدّل أحد الثيمات الحالية.');}
+    try{[themes,templates,library,knownRoles]=await Promise.all([request('api/admin/themes'),request('api/admin/themes/templates'),request('api/admin/images'),request('api/admin/themes/roles').catch(()=>[])]);loaded=true;renderGallery();get('theme-add').disabled=false;say('');}
     catch(error){say(error.message,true);get('themes-retry').hidden=false;}finally{busy=false;}
   }
   form.addEventListener('submit',async event=>{

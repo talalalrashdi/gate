@@ -31,3 +31,8 @@
 @media(max-width:1100px){.admin-overview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:800px){.admin-nav-group{display:flex;gap:7px}.admin-nav-group h2{display:none}.admin-overview-grid{grid-template-columns:1fr}.admin-overview-history ul{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+/* Images/themes open directly into their workspace, with feedback retained for loading/errors. */
+body:is([data-admin-current="images"],[data-admin-current="themes"]) .admin-context,body:is([data-admin-current="images"],[data-admin-current="themes"]) .admin-status-bar:has(#admin-status[data-state="ready"]){display:none}
+#images-status:empty,#themes-status:empty{display:none}
+[data-admin-panel="themes"]>.admin-section-heading{justify-content:flex-end}

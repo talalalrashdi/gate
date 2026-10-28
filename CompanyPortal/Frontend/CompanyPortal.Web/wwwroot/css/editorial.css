@@ -445,3 +445,10 @@ html:has(:is(#editorial-gallery-dialog,#editorial-video-dialog)[open]),body:has(
 
 [data-mag-pdf][aria-disabled="true"] { pointer-events: none; opacity: .4; }
 [data-mag-retry][hidden] { display: none; }
+/* Page-turn mode (StPageFlip). The library lays pages out left-to-right; magazine.js gives them in reverse order. */
+.editorial-local-reader.is-flip .editorial-local-spread { display: none; }
+.editorial-local-reader.is-flip .editorial-local-stage { overflow: hidden; display: flex; align-items: center; }
+.editorial-local-flip { direction: ltr; width: 100%; margin: auto; }
+.editorial-local-flip-page { background: #fff; overflow: hidden; }
+.editorial-local-flip-page canvas { display: block; width: 100%; height: 100%; object-fit: contain; }
+.editorial-local-flip-page.is-blank { background: #f6f4ee; }

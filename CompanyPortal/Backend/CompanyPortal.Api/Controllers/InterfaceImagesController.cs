@@ -18,7 +18,8 @@ public sealed class InterfaceImagesController(InterfaceImagesStore images, NewsS
 
     [HttpPost, Consumes("multipart/form-data"), RequestFormLimits(MultipartBodyLengthLimit = 11*1024*1024), AdminSection("admin-images", "images")]
     // IFormFile infers form-file binding; explicit FromForm breaks Swagger generation.
-    public Task<IActionResult> Upload(IFormFile file, CancellationToken token) => Execute(async _ =>
+    // thumbnail: optional small preview copy made by the admin browser (see ImageValidation.ReadThumbnail).
+    public Task<IActionResult> Upload(IFormFile file, IFormFile? thumbnail, CancellationToken token) => Execute(async _ =>
     {
         var limit = Math.Clamp(configuration.GetValue("InterfaceImages:MaximumUploadMb",10),1,10)*1024*1024;
         if (file.Length < 12 || file.Length > limit) return Problem(statusCode:400,title:$"Upload an image up to {limit/1024/1024} MB.");
@@ -28,8 +29,22 @@ public sealed class InterfaceImagesController(InterfaceImagesStore images, NewsS
         using var memory = new MemoryStream();
         await stream.CopyToAsync(memory,token);
         var validated = ImageValidation.Read(memory.ToArray(),Path.GetExtension(name));
-        return Ok(new { imageId = await images.AddAsync(name,validated,User.Identity!.Name!,token) });
+        var preview = thumbnail is null ? null : await ReadThumbnail(thumbnail,token);
+        return Ok(new { imageId = await images.AddAsync(name,validated,preview,User.Identity!.Name!,token) });
     },true,token);
+
+    [HttpPut("{id:int:min(1)}/thumbnail"), Consumes("multipart/form-data"), RequestSizeLimit(600*1024), AdminSection("admin-images", "images")]
+    public Task<IActionResult> SetThumbnail(int id, IFormFile thumbnail, CancellationToken token) => Execute(async _ =>
+        await images.SetThumbnailAsync(id,await ReadThumbnail(thumbnail,token),token) ? NoContent() : Problem(statusCode:409,title:"The image is missing or already has a preview copy."),true,token);
+
+    private static async Task<ValidatedImage> ReadThumbnail(IFormFile file, CancellationToken token)
+    {
+        if (file.Length > ImageValidation.MaximumThumbnailBytes) throw new ArgumentException("The preview copy must be up to 512 KB.");
+        await using var stream = file.OpenReadStream();
+        using var memory = new MemoryStream();
+        await stream.CopyToAsync(memory,token);
+        return ImageValidation.ReadThumbnail(memory.ToArray(),Path.GetExtension(Path.GetFileName(file.FileName.Replace('\\','/'))));
+    }
 
     [HttpDelete("{id:int:min(1)}"), AdminSection("admin-images", "images")]
     public Task<IActionResult> Delete(int id, CancellationToken token) => Execute(async _ =>
@@ -51,9 +66,13 @@ public sealed class InterfaceImagesController(InterfaceImagesStore images, NewsS
     public Task<IActionResult> Theme(int id, CancellationToken token) => Execute(async _ => Ok(await images.ThemeAsync(id,User.Identity!.Name!,token)),false,token);
 
     [HttpGet("/api/images/{id:int:min(1)}/content")]
-    public Task<IActionResult> Content(int id, CancellationToken token) => Execute(async admin =>
+    public Task<IActionResult> Content(int id, CancellationToken token) => Image(id,false,token);
+    // Preview copy; same access rule. Set once only, so it is cached like the full image.
+    [HttpGet("/api/images/{id:int:min(1)}/thumbnail")]
+    public Task<IActionResult> Thumbnail(int id, CancellationToken token) => Image(id,true,token);
+    private Task<IActionResult> Image(int id, bool thumbnail, CancellationToken token) => Execute(async admin =>
     {
-        var content = await images.ContentAsync(id,admin,User.Identity!.Name!,token);
+        var content = await images.ContentAsync(id,admin,User.Identity!.Name!,token,thumbnail);
         if (content is null) return NotFound();
         // Image bytes never change for an ImageId (no update path), so the browser may keep them.
         // Without this, the portal re-downloads each image on every rotation.

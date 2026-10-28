@@ -95,3 +95,11 @@ Verified: Release API build with zero warnings/errors; Swagger/upload/group regr
 Apply migration `017_ImageDeletion.sql` after 016. `DELETE /api/admin/images/{id}` requires the current admin role and the existing admin-images request header/origin checks. Grant the runtime account EXECUTE on `Master.Images_delete`.
 
 The library offers **حذف الصورة** with confirmation. Deletion marks an unused image inactive and updates LastChangeAt; binary content is retained for controlled recovery, but is no longer listed or served. Missing/deleted images return 404. Images referenced by any saved group (including inactive memberships or a group default) return 409. Remove the image from those groups and save first, so deletion never silently changes published artwork. Unsaved group edits are preserved during library deletion.
+
+## Smaller copies (migration 050, 28 October 2026)
+
+- **Upload:** the admin browser shrinks large photos before sending them: long side over 2560 px or file over 1.5 MB → JPEG stays JPEG, other formats become WebP, quality 0.86, kept only when smaller. Re-encoding also drops camera metadata (for example GPS). SVG is sent unchanged.
+- **Preview copy:** every upload also sends a 480 px WebP preview (`thumbnail` form field, at most 512 KB / 640 px, raster only, checked by `ImageValidation.ReadThumbnail`). It is stored in `Master.Images.ThumbnailData/ThumbnailType`.
+- **Existing images:** «إنشاء نسخ معاينة صغيرة (n)» in the library makes previews in the browser and sends them with `PUT /api/admin/images/{id}/thumbnail`. That can be done once per image (409 afterwards), which keeps the cache safe. It is not recorded in the change history (the snapshot has no bytes).
+- `GET /api/images/{id}/thumbnail` uses the same access rule as `/content` and is cached the same way; 404 when there is no preview. `Images_getAll` returns `HasThumbnail`. The admin library, group list and theme cards use the preview; the portal always uses the full image.
+- Procedures: `Images_add` (optional `@ThumbnailData/@ThumbnailType`, history lines kept), `Images_setThumbnail`, `Images_getThumbnail`.

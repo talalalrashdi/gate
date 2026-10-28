@@ -128,7 +128,7 @@
     if(draft){groupOptions();changed();}renderGallery();
   }
   window.addEventListener('focus',()=>{if(document.body.dataset.adminCurrent==='themes')refreshLibrary();});
-  function cover(theme){const data=groupData(theme),first=data.images.find(i=>i.imageId===data.settings?.defaultImageId)||data.images[0];return first?new URL(`api/images/${first.imageId}/content`,api).href:new URL(template(theme.layoutKey).thumbnail,document.baseURI).href;}
+  function cover(theme){const data=groupData(theme),first=data.images.find(i=>i.imageId===data.settings?.defaultImageId)||data.images[0];return first?new URL(`api/images/${first.imageId}/${library.images.find(image=>image.imageId===first.imageId)?.hasThumbnail?'thumbnail':'content'}`,api).href:new URL(template(theme.layoutKey).thumbnail,document.baseURI).href;}
   function renderGallery(){
     gallery.replaceChildren();themes.forEach(theme=>{
       const card=node('article',undefined,'theme-card'),coverBox=node('div',undefined,'theme-card-cover'),image=node('img');AdminChanges.tag(card,'themes','theme',theme.themeId);image.src=cover(theme);image.alt='';image.loading='lazy';coverBox.append(image);

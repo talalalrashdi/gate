@@ -12,12 +12,20 @@ function Send([string]$method,[string]$path,$body=$null,[bool]$header=$true,[str
     $req.Headers.Add('X-CompanyPortal-Request',$(if($header){$requestHeader}else{'wrong-header'}))
     try{$res=$client.SendAsync($req).GetAwaiter().GetResult();try{return @{Status=[int]$res.StatusCode;Body=$res.Content.ReadAsStringAsync().GetAwaiter().GetResult()}}finally{$res.Dispose()}}finally{$req.Dispose()}
 }
-function Upload([string]$name,[byte[]]$bytes,[string]$mime='image/svg+xml') {
+function Upload([string]$name,[byte[]]$bytes,[string]$mime='image/svg+xml',[byte[]]$thumbnail=$null) {
     $req=[Net.Http.HttpRequestMessage]::new([Net.Http.HttpMethod]::Post,$BaseUrl.TrimEnd('/')+'/api/admin/images');$req.Headers.Add('X-CompanyPortal-Request','admin-images')
     $body=[Net.Http.MultipartFormDataContent]::new();$file=[Net.Http.ByteArrayContent]::new($bytes)
     $file.Headers.ContentType=[Net.Http.Headers.MediaTypeHeaderValue]::new($mime);$body.Add($file,'file',$name);$req.Content=$body
+    if($null -ne $thumbnail){$part=[Net.Http.ByteArrayContent]::new($thumbnail);$part.Headers.ContentType=[Net.Http.Headers.MediaTypeHeaderValue]::new('image/webp');$body.Add($part,'thumbnail','preview.webp')}
     try{$res=$client.SendAsync($req).GetAwaiter().GetResult();try{return @{Status=[int]$res.StatusCode;Body=$res.Content.ReadAsStringAsync().GetAwaiter().GetResult()}}finally{$res.Dispose()}}finally{$req.Dispose()}
 }
+# Adds a preview copy to an existing image (set once only).
+function PutThumbnail([int]$id,[byte[]]$bytes,[string]$name='preview.webp',[string]$mime='image/webp') {
+    $req=[Net.Http.HttpRequestMessage]::new([Net.Http.HttpMethod]::Put,$BaseUrl.TrimEnd('/')+"/api/admin/images/$id/thumbnail");$req.Headers.Add('X-CompanyPortal-Request','admin-images')
+    $body=[Net.Http.MultipartFormDataContent]::new();$part=[Net.Http.ByteArrayContent]::new($bytes);$part.Headers.ContentType=[Net.Http.Headers.MediaTypeHeaderValue]::new($mime);$body.Add($part,'thumbnail',$name);$req.Content=$body
+    try{$res=$client.SendAsync($req).GetAwaiter().GetResult();try{return [int]$res.StatusCode}finally{$res.Dispose()}}finally{$req.Dispose()}
+}
+function GetStatus([string]$path){$r=$client.GetAsync($BaseUrl.TrimEnd('/')+$path).GetAwaiter().GetResult();try{return @{Status=[int]$r.StatusCode;Type="$($r.Content.Headers.ContentType)";Cache="$($r.Headers.CacheControl)"}}finally{$r.Dispose()}}
 # Themes choose their image group only through the theme editor save (PUT /api/admin/themes/{id}).
 function SetThemeGroup([int]$id,$groupId) {
     $theme=((Send GET '/api/admin/themes').Body|ConvertFrom-Json)|Where-Object themeId -eq $id
@@ -54,6 +62,19 @@ try {
         @{name='interface-test-alpha.webp';data='UklGRlIAAABXRUJQVlA4WAoAAAAQAAAAAQAAAQAAQUxQSAUAAAAAeHh4eABWUDggJgAAAHABAJ0BKgIAAgABQCYlmAJ0AXUAAP71t/vd/+Fa/la/lat8AAAA'}
     )
     foreach($format in $formats){$r=Upload $format.name ([Convert]::FromBase64String($format.data));Assert ($r.Status -eq 200) "Raster upload failed: $($format.name) $($r.Body)";$imageIds.Add([int](($r.Body|ConvertFrom-Json).imageId))}
+    # Preview copies (migration 050): sent with an upload or added once later; raster only.
+    $thumb=[Convert]::FromBase64String('UklGRjAAAABXRUJQVlA4ICQAAABwAQCdASoCAAIAAUAmJZgCdAF1AAD+9bf6v/+Fa/la/lat8AA=')
+    $withThumb=Upload 'interface-test-thumb.svg' ([Text.Encoding]::UTF8.GetBytes($svg)) 'image/svg+xml' $thumb
+    Assert ($withThumb.Status -eq 200) "Upload with preview copy failed: $($withThumb.Body)"
+    $thumbId=[int](($withThumb.Body|ConvertFrom-Json).imageId);$imageIds.Add($thumbId)
+    $t=GetStatus "/api/images/$thumbId/thumbnail";Assert ($t.Status -eq 200 -and $t.Type -eq 'image/webp' -and $t.Cache.Contains('immutable')) "Preview copy not served: $($t.Status) $($t.Type) $($t.Cache)"
+    Assert ((PutThumbnail $thumbId $thumb) -eq 409) 'A second preview copy was accepted.'
+    Assert ((GetStatus "/api/images/$($imageIds[0])/thumbnail").Status -eq 404) 'Missing preview copy did not return 404.'
+    Assert ((PutThumbnail $imageIds[0] ([Text.Encoding]::UTF8.GetBytes($svg)) 'preview.svg' 'image/svg+xml') -eq 400) 'SVG preview copy accepted.'
+    Assert ((PutThumbnail $imageIds[0] $thumb) -eq 204) 'Adding a preview copy failed.'
+    Assert ((GetStatus "/api/images/$($imageIds[0])/thumbnail").Status -eq 200) 'Added preview copy not served.'
+    $flags=((Send GET '/api/admin/images').Body|ConvertFrom-Json).images|Where-Object { $_.imageId -in $thumbId,$imageIds[0] }
+    Assert (@($flags|Where-Object hasThumbnail).Count -eq 2) 'hasThumbnail not reported.'
     $artworkPath=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../Frontend/CompanyPortal.Web/wwwroot/assets/national-day-complete.svg'))
     $artwork=[IO.File]::ReadAllBytes($artworkPath)
     $animated=Upload 'interface-test-animated.svg' $artwork
@@ -107,7 +128,7 @@ try {
     Assert ((Send PUT "/api/admin/images/groups/$id" $group).Status -eq 200) 'Restore fixture group failed.'
     $anonymous=[Net.Http.HttpClient]::new()
     try{foreach($route in '/api/admin/images',"/api/themes/$themeId/images","/api/images/$($imageIds[0])/content"){$r=$anonymous.GetAsync($BaseUrl+$route).GetAwaiter().GetResult();try{Assert ([int]$r.StatusCode -eq 401) 'Anonymous image access accepted.'}finally{$r.Dispose()}}}finally{$anonymous.Dispose()}
-    Write-Output "PASS: protected image deletion, linked-image conflict, uploads, passive SVG checks, signature checks, group save/order/removal/default/rotation/active state, theme assignment, content and anonymous denial."
+    Write-Output "PASS: protected image deletion, linked-image conflict, uploads, preview copies (upload/add once/404/SVG rejected/cached), passive SVG checks, signature checks, group save/order/removal/default/rotation/active state, theme assignment, content and anonymous denial."
     if($KeepFixtures){Write-Output ("Fixtures kept for browser verification: group {0}; image IDs {1}; original theme group {2}." -f $id,($imageIds -join ','),$original)}
 }
 finally {

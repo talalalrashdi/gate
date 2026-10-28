@@ -65,6 +65,17 @@ public static partial class ImageValidation
         Dimensions(width,height);
         return new(data,type,width,height);
     }
+    // Preview copy made by the admin browser: raster only, small. Same signature/structure checks as Read.
+    public const int MaximumThumbnailBytes = 512 * 1024, MaximumThumbnailSide = 640;
+    public static ValidatedImage ReadThumbnail(byte[] data, string extension)
+    {
+        if (data.Length > MaximumThumbnailBytes || extension.Equals(".svg", StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException("The preview copy must be a JPEG, PNG or WebP image up to 512 KB.");
+        var image = Read(data, extension);
+        if (image.Width > MaximumThumbnailSide || image.Height > MaximumThumbnailSide)
+            throw new ArgumentException("The preview copy must be at most 640 pixels per side.");
+        return image;
+    }
     private static void Dimensions(int width, int height)
     {
         if (width is < 1 or > 12000 || height is < 1 or > 12000 || (long)width*height > 40_000_000)

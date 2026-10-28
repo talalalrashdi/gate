@@ -8,7 +8,8 @@
   let records = [], apps = [], busy = false, catalogAvailable = false;
   const setStatus = (text,state='ready',canRetry=false) => { core.feedback(status,text,state==='error'); status.parentElement.dataset.state=state; retry.hidden=!canRetry; };
   const core=window.AdminCore;
-  const request=(path,method='GET',body)=>core.request(path,{method,body,header:'admin-cards',timeout:10000});
+  // Saves explain 400 themselves (unavailable below), so the generic message is not shown over it.
+  const request=(path,method='GET',body)=>core.request(path,{method,body,header:'admin-cards',timeout:10000,handled:method==='GET'?[]:[400]});
   const unavailable = response => response.status===401 || response.status===403 ? 'ليس لديك صلاحية إدارة البوابة.'
     : response.status===400 ? 'تحقق من الاسم والتطبيقات والأدوار والموضع. قد يلزم نقل بطاقة ثابتة قبل إخفاء بطاقة أخرى.'
     : 'تعذر الاتصال بخدمة الإدارة. تحقق من إعداد دليل التطبيقات ثم أعد المحاولة.';

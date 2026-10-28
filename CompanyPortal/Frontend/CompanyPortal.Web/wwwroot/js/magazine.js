@@ -4,6 +4,11 @@
   // Pages are drawn from the issue PDF with the bundled PDF.js (wwwroot/vendor/pdfjs, offline).
   const pdfjsBase = new URL('../vendor/pdfjs/', document.currentScript?.src || location.href);
   let pdfjs, pdfDoc = null, loadingTask = null;
+  // Page-turn effect: StPageFlip (wwwroot/vendor/page-flip, offline), loaded when an issue opens. It has no
+  // right-to-left mode, so it gets the pages in reverse order. The static spread stays for phones, zoom,
+  // reduced motion, or when the script cannot load.
+  const flipSrc = new URL('../vendor/page-flip/page-flip.browser.js', document.currentScript?.src || location.href).href;
+  let flipLib, FlipBook = null, flip = null, flipBox = null, flipCount = 0, resizeTimer;
   const mainTasks = new Set(), thumbTasks = new Set();
   const stage = reader.querySelector('.editorial-local-stage'), spread = reader.querySelector('.editorial-local-spread');
   const message = reader.querySelector('.editorial-local-message');
@@ -84,8 +89,61 @@
     if (!entry.isIntersecting || !pdfDoc) return;
     thumbObserver.unobserve(entry.target); void paint(entry.target, Number(entry.target.dataset.page), 180, false);
   }), { root: thumbs, rootMargin: '200px' });
+  function loadFlip() {
+    flipLib ??= new Promise(resolve => {
+      if (window.St?.PageFlip) { resolve(window.St.PageFlip); return; }
+      const script = document.createElement('script'); script.src = flipSrc;
+      script.onload = () => resolve(window.St?.PageFlip || null); script.onerror = () => resolve(null); document.head.append(script);
+    });
+    return flipLib;
+  }
+  const flipMode = () => !!FlipBook && !activeIssue && pages.length > 1 && !mobile.matches && !reduced.matches && !reader.classList.contains('is-zoomed');
+  // Magazine page m sits at flip index flipCount-1-m. An odd issue gets one blank page after its last page,
+  // so the cover stands alone and the pairs match the static spread (1-2, 3-4, ...).
+  const toFlip = m => flipCount - 1 - m;
+  const flipSpread = f => f === 0 || f === flipCount - 1 ? [f] : f % 2 ? [f, f + 1] : [f - 1, f];
+  const flipStart = m => flipSpread(toFlip(Math.max(0, Math.min(pages.length - 1, m))))[0];
+  // Draw only the pages near the open spread; release far ones (a full issue at 1500 px would use hundreds of MB).
+  function paintAround() {
+    flipBox.querySelectorAll('.editorial-local-flip-page[data-page]').forEach(page => {
+      const m = Number(page.dataset.page), canvas = page.querySelector('canvas');
+      if (m >= current - 3 && m <= current + 4) { if (!canvas) page.append(canvasFor(m)); }
+      else if ((m < current - 8 || m > current + 9) && canvas) canvas.remove();
+    });
+  }
+  function syncFlip() {
+    const visible = flipSpread(flip.getCurrentPageIndex()).map(toFlip).filter(m => m < pages.length).sort((a, b) => a - b);
+    if (!visible.length) return;
+    current = visible[0]; paintAround();
+    pageInput.value = String(current + 1); previous.disabled = current === 0; next.disabled = visible.at(-1) >= pages.length - 1;
+    [...thumbs.children].forEach((button, index) => button.setAttribute('aria-pressed', String(visible.includes(index))));
+    message.hidden = true;
+  }
+  function renderFlip() {
+    if (flip) { syncFlip(); return; }
+    reader.classList.add('is-flip'); mainTasks.forEach(task => task.cancel()); mainTasks.clear(); spread.replaceChildren();
+    flipCount = pages.length + pages.length % 2;
+    flipBox = document.createElement('div'); flipBox.className = 'editorial-local-flip'; stage.append(flipBox);
+    const items = Array.from({ length: flipCount }, (_, f) => {
+      const m = toFlip(f), page = document.createElement('div'); page.className = 'editorial-local-flip-page';
+      if (m < pages.length) page.dataset.page = String(m); else { page.classList.add('is-blank'); page.setAttribute('aria-hidden', 'true'); }
+      return page;
+    });
+    const first = pages[0];
+    flip = new FlipBook(flipBox, { width: Math.round(first.width), height: Math.round(first.height), size: 'stretch', minWidth: 120, maxWidth: 2400,
+      minHeight: 200, maxHeight: Math.max(240, stage.clientHeight - 24), showCover: true, usePortrait: false, drawShadow: true, maxShadowOpacity: .35,
+      flippingTime: 700, mobileScrollSupport: false, showPageCorners: true, startPage: flipStart(current) });
+    flip.loadFromHTML(items); flip.on('flip', syncFlip); syncFlip();
+  }
+  function destroyFlip() {
+    if (!flip) return;
+    try { flip.destroy(); } catch { /* the container is removed below either way */ }
+    flip = null; flipBox?.remove(); flipBox = null; reader.classList.remove('is-flip');
+  }
   function render() {
     if(activeIssue){renderPDF();return;}
+    if (flipMode()) { renderFlip(); return; }
+    destroyFlip();
     const visible = indexes();
     reader.style.setProperty('--magazine-page-ratio', pages[current].width / pages[current].height);
     mainTasks.forEach(task => task.cancel()); mainTasks.clear();
@@ -102,6 +160,12 @@
   function goTo(index, animate = true) {
     if(activeIssue){pdfPage=Math.max(1,index+1);renderPDF();return;}
     if (!pages.length) return;
+    if (flip) {
+      const target = flipStart(index);
+      if (flipSpread(flip.getCurrentPageIndex())[0] === target) { pageInput.value = String(current + 1); return; }
+      if (animate) flip.flip(target, 'top'); else { flip.turnToPage(target); syncFlip(); }
+      return;
+    }
     if (turning) { clearTimeout(turnTimer); stage.querySelector('.editorial-local-turn')?.remove(); turning = false; }
     index = normalize(Math.max(0, Math.min(pages.length - 1, index)));
     if (index === current) { pageInput.value = String(current + 1); return; }
@@ -114,8 +178,9 @@
       clone.addEventListener('animationend', finish, {once: true}); turnTimer = setTimeout(finish, 600);
     }
   }
-  const advance = () => activeIssue?goTo(pdfPage):goTo(indexes().at(-1) + 1);
-  const retreat = () => activeIssue?goTo(pdfPage-2):goTo(current - (mobile.matches || current <= 1 ? 1 : 2));
+  // In the reversed flip book, the next magazine pages are at lower flip indexes (flipPrev).
+  const advance = () => activeIssue?goTo(pdfPage):flip?(next.disabled||flip.flipPrev('top')):goTo(indexes().at(-1) + 1);
+  const retreat = () => activeIssue?goTo(pdfPage-2):flip?(previous.disabled||flip.flipNext('top')):goTo(current - (mobile.matches || current <= 1 ? 1 : 2));
   previous.addEventListener('click', retreat); next.addEventListener('click', advance);
   pageInput.addEventListener('change', () => goTo((Number(pageInput.value) || 1) - 1, false));
   pageInput.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); goTo((Number(pageInput.value) || 1) - 1, false); } });
@@ -124,7 +189,7 @@
   });
   stage.addEventListener('touchstart', event => { touch = {x: event.touches[0].clientX, y: event.touches[0].clientY}; }, {passive: true});
   stage.addEventListener('touchend', event => {
-    if (!touch || reader.classList.contains('is-zoomed')) return;
+    if (!touch || flip || reader.classList.contains('is-zoomed')) return;
     const dx = event.changedTouches[0].clientX - touch.x, dy = event.changedTouches[0].clientY - touch.y; touch = null;
     if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.5) dx > 0 ? advance() : retreat();
   }, {passive: true});
@@ -143,12 +208,12 @@
     reader.classList.toggle('is-zoomed',zoomed);zoomButton.setAttribute('aria-pressed',String(zoomed));
     if(zoomOut){zoomButton.disabled=zoomed;zoomOut.disabled=!zoomed;}
     else {zoomButton.setAttribute('aria-label',zoomed?'تصغير الصفحات':'تكبير الصفحات');zoomButton.textContent=zoomed?'−':'＋';}
-    if(activeIssue)renderPDF();
+    if(activeIssue)renderPDF();else if(pages.length)render();
   }
   zoomButton.addEventListener('click',()=>setZoom(zoomOut?true:!reader.classList.contains('is-zoomed')));
   zoomOut?.addEventListener('click',()=>setZoom(false));
   function clearReader(){
-    clearTimeout(turnTimer);turning=false;stage.querySelector('.editorial-local-turn')?.remove();
+    destroyFlip();clearTimeout(turnTimer);turning=false;stage.querySelector('.editorial-local-turn')?.remove();
     mainTasks.forEach(task=>task.cancel());thumbTasks.forEach(task=>task.cancel());mainTasks.clear();thumbTasks.clear();thumbObserver.disconnect();
     loadingTask?.destroy();loadingTask=null;pdfDoc=null;
     pages=[];current=0;activeIssue=null;selectedIssue=null;pdfFrame?.remove();pdfFrame=null;spread.replaceChildren();thumbs.replaceChildren();thumbs.hidden=true;
@@ -162,6 +227,7 @@
     if(!selected){message.textContent='لا توجد أعداد منشورة حاليًا.';return;}
     selectedIssue=selected;name.textContent=selected.magazineName;reader.setAttribute('aria-label','قارئ '+selected.magazineName);message.textContent='جارٍ تجهيز المجلة…';reader.setAttribute('aria-busy','true');
     try{
+      const flipReady=loadFlip();
       const url=endpoint(`/${selected.magazineId}/pdf`),lib=await loadPdfjs().catch(()=>null);
       if(stamp!==generation||signal.aborted)return;
       if(!lib){activeIssue={url};reader.classList.add('is-pdf');renderPDF();}
@@ -171,6 +237,7 @@
         signal.addEventListener('abort',()=>task.destroy(),{once:true});
         const doc=await task.promise;if(stamp!==generation||signal.aborted)return;
         const size=(await doc.getPage(1)).getViewport({scale:1});if(stamp!==generation||signal.aborted)return;
+        FlipBook=await flipReady;if(stamp!==generation||signal.aborted)return;
         pdfDoc=doc;pages=Array.from({length:doc.numPages},()=>({width:size.width,height:size.height}));
         pageInput.max=String(pages.length);pageInput.disabled=false;thumbButton.disabled=false;render();
       }
@@ -196,7 +263,11 @@
     catch { message.hidden = false; message.textContent = 'تعذّر ملء الشاشة في هذا المتصفح. استخدم التكبير أو افتح ملف PDF.'; }
   });
   // Entering fullscreen focuses the pages so the arrow keys turn pages immediately.
+  // The flip book is sized once; rebuild it when the reader size changes.
+  const resizeFlip = () => { if (!flip) return; clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { if (flip) { destroyFlip(); render(); } }, 200); };
+  window.addEventListener('resize', resizeFlip);
   document.addEventListener('fullscreenchange', () => {
+    resizeFlip();
     const full = document.fullscreenElement === reader;
     fullButton.setAttribute('aria-label', full ? 'الخروج من ملء الشاشة' : 'ملء الشاشة');
     if (full) stage.focus({ preventScroll: true });
@@ -206,5 +277,6 @@
     if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); event.key === 'ArrowLeft' ? advance() : retreat(); }
   });
   mobile.addEventListener('change', () => { if (pages.length) { current = normalize(current); render(); } });
+  reduced.addEventListener('change', () => { if (pages.length && !activeIssue) render(); });
   loadCatalog();
 })();

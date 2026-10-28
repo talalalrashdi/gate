@@ -8,7 +8,7 @@ document.querySelectorAll('[data-pdf-library-admin]').forEach(root => {
   let catalog,loaded=false,busy=false;
   const dirty=()=>!!root.querySelector('.is-dirty');
   const core=window.AdminCore;
-  const request=(path,method='GET',body)=>core.request(endpoint(path),{method,body,header:route});
+  const request=(path,method='GET',body)=>core.request(endpoint(path),{method,body,header:route,handled:method==='GET'?[]:[400,404]});
   function message(text,canRetry=false){core.feedback(status,terms(text));retry.hidden=!canRetry;}
   function lock(){root.querySelectorAll('input,select,button').forEach(n=>{n.disabled=busy;});add.disabled=busy||!loaded;root.querySelectorAll('form').forEach(f=>f.dispatchEvent(new Event('library:sync')));}
   function form(tab,isNew=false){

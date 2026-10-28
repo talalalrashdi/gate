@@ -19,10 +19,17 @@ public sealed class InterfaceImagesStore(IConfiguration configuration)
         using var rows = await connection.QueryMultipleAsync(Command("Master.ImageGroups_getAll", null, token));
         return new(images, (await rows.ReadAsync<ImageGroup>()).AsList(), (await rows.ReadAsync<ImageGroupItem>()).AsList(), (await rows.ReadAsync<ImageTheme>()).AsList());
     }
-    public async Task<int> AddAsync(string name, ValidatedImage image, string changedBy, CancellationToken token)
+    public async Task<int> AddAsync(string name, ValidatedImage image, ValidatedImage? thumbnail, string changedBy, CancellationToken token)
     {
         await using var connection = Connection();
-        return await connection.QuerySingleAsync<int>(Command("Master.Images_add", new { ImageName = name, image.ContentType, ImageData = image.Data, PixelWidth = image.Width, PixelHeight = image.Height, ChangedBy = changedBy }, token));
+        return await connection.QuerySingleAsync<int>(Command("Master.Images_add", new { ImageName = name, image.ContentType, ImageData = image.Data, PixelWidth = image.Width, PixelHeight = image.Height, ChangedBy = changedBy,
+            ThumbnailData = thumbnail?.Data, ThumbnailType = thumbnail?.ContentType }, token));
+    }
+    // False when the image is missing/deleted or already has a preview copy (set once only).
+    public async Task<bool> SetThumbnailAsync(int id, ValidatedImage thumbnail, CancellationToken token)
+    {
+        await using var connection = Connection();
+        return await connection.QuerySingleAsync<bool>(Command("Master.Images_setThumbnail", new { ImageId = id, ThumbnailData = thumbnail.Data, ThumbnailType = thumbnail.ContentType }, token));
     }
     public async Task<bool> DeleteAsync(int id, string changedBy, CancellationToken token)
     {
@@ -50,10 +57,10 @@ public sealed class InterfaceImagesStore(IConfiguration configuration)
     }
     private sealed record PositionRow(int ThemeId,int ImageId,decimal FocalX,decimal FocalY);
     public sealed record Content(byte[] ImageData, string ContentType);
-    public async Task<Content?> ContentAsync(int id, bool admin, string account, CancellationToken token)
+    public async Task<Content?> ContentAsync(int id, bool admin, string account, CancellationToken token, bool thumbnail = false)
     {
         await using var connection = Connection();
         var userId=await connection.QuerySingleOrDefaultAsync<int?>(Command("Security.User_getByUsername",new {Username=account},token));
-        return await connection.QuerySingleOrDefaultAsync<Content>(Command("Master.Images_getContent", new { ImageId = id, IsAdmin = admin,UserId=userId }, token));
+        return await connection.QuerySingleOrDefaultAsync<Content>(Command(thumbnail ? "Master.Images_getThumbnail" : "Master.Images_getContent", new { ImageId = id, IsAdmin = admin,UserId=userId }, token));
     }
 }

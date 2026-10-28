@@ -13,6 +13,8 @@
   "Master.Images_delete",
   "Master.Images_getAll",
   "Master.Images_getContent",
+  "Master.Images_getThumbnail",
+  "Master.Images_setThumbnail",
   "Master.ThemeImagePositions_Get",
   "Master.Themes_applyToAll",
   "Master.Themes_delete",

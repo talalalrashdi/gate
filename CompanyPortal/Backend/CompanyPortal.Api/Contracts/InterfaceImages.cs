@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace CompanyPortal.Api.Contracts;
 
-public sealed record PortalImage(int ImageId, string ImageName, string ContentType, int PixelWidth, int PixelHeight, long ByteLength, DateTime LastChangeAt);
+public sealed record PortalImage(int ImageId, string ImageName, string ContentType, int PixelWidth, int PixelHeight, long ByteLength, DateTime LastChangeAt, bool HasThumbnail);
 public sealed record ImageGroup(int ImageGroupId, string GroupName, bool RotateImages, int RotationSeconds, int? DefaultImageId, bool Active, DateTime LastChangeAt);
 public sealed record ImageGroupItem(int ImageGroupId, int ImageId, int DisplayOrder, bool Active);
 public sealed record ImageTheme(int ThemeId, string ThemeName, string LayoutKey, int? ImageGroupId);

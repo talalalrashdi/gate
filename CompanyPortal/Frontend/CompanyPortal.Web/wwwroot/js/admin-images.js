@@ -32,9 +32,38 @@
     finally{busy=false;locked.forEach(n=>{n.disabled=false;});refreshConstraints();}
   }
   function refreshConstraints(){seconds.disabled=!rotate.checked;itemsRoot.querySelectorAll('input[type=radio]').forEach((n,i)=>{n.disabled=!selection[i]?.active;});itemsRoot.querySelectorAll('[data-up]').forEach((n,i)=>{n.disabled=i===0;});itemsRoot.querySelectorAll('[data-down]').forEach((n,i)=>{n.disabled=i===selection.length-1;});}
-  const preview = image => { const img=node('img');img.src=url(`api/images/${image.imageId}/content`);img.alt='';img.loading='lazy';return img; };
+  // Admin previews use the small copy when there is one; the portal always uses the full image.
+  const preview = image => { const img=node('img');img.src=url(`api/images/${image.imageId}/${image.hasThumbnail?'thumbnail':'content'}`);img.alt='';img.loading='lazy';return img; };
+  // Sizes for the browser-side copies. Display copy: long side 2560 px (theme backgrounds); preview: 480 px WebP.
+  const displaySide=2560, previewSide=480, shrinkFrom=1536*1024, previewLimit=512*1024;
+  function loadImage(src,credentials=false){return new Promise((resolve,reject)=>{const img=new Image();if(credentials)img.crossOrigin='use-credentials';img.decoding='async';img.onload=()=>resolve(img);img.onerror=()=>reject(new Error('image'));img.src=src;});}
+  function drawCopy(source,width,height,side,type,quality){
+    const scale=Math.min(1,side/Math.max(width,height)),canvas=document.createElement('canvas');
+    canvas.width=Math.max(1,Math.round(width*scale));canvas.height=Math.max(1,Math.round(height*scale));
+    canvas.getContext('2d').drawImage(source,0,0,canvas.width,canvas.height);
+    return new Promise(resolve=>canvas.toBlob(resolve,type,quality));
+  }
+  // Large photos are shrunk before upload (only when that makes the file smaller); SVG is sent unchanged.
+  // Re-encoding also drops camera metadata such as GPS location.
+  async function prepare(file){
+    const svg=/\.svg$/i.test(file.name);let source,objectUrl;
+    try{if(svg){objectUrl=URL.createObjectURL(file);source=await loadImage(objectUrl);}else source=await createImageBitmap(file,{imageOrientation:'from-image'});}
+    catch{if(objectUrl)URL.revokeObjectURL(objectUrl);return {file,preview:null};}
+    try{
+      const width=source.naturalWidth||source.width,height=source.naturalHeight||source.height;if(!width||!height)return {file,preview:null};
+      let upload=file;
+      if(!svg&&(Math.max(width,height)>displaySide||file.size>shrinkFrom)){
+        const jpeg=file.type==='image/jpeg'||/\.jpe?g$/i.test(file.name),blob=await drawCopy(source,width,height,displaySide,jpeg?'image/jpeg':'image/webp',.86);
+        if(blob&&blob.size<file.size)upload=new File([blob],file.name.replace(/\.[^.]+$/,'')+(jpeg?'.jpg':'.webp'),{type:blob.type});
+      }
+      const small=await drawCopy(source,width,height,previewSide,'image/webp',.8);
+      return {file:upload,preview:small&&small.size<=previewLimit?new File([small],'preview.webp',{type:'image/webp'}):null};
+    }finally{source.close?.();if(objectUrl)URL.revokeObjectURL(objectUrl);}
+  }
+  const megabytes=bytes=>(bytes/1048576).toFixed(1)+' MB';
   function renderLibrary(){
     library.replaceChildren();byId('images-count').textContent=`(${data.images.length})`;
+    const missing=data.images.filter(i=>!i.hasThumbnail).length,previews=byId('image-previews');previews.hidden=!missing;previews.textContent=`إنشاء نسخ معاينة صغيرة (${missing})`;
     byId('images-selected-count').textContent=`${selection.length} صورة مختارة`;
     if(!data.images.length)library.append(node('p','المكتبة فارغة. ارفع الصور للبدء.'));
     data.images.forEach(image=>{
@@ -110,17 +139,37 @@
     data=await request('api/admin/images');editGroup(groupId);say('تم حفظ المجموعة وترتيب الصور وإعدادات العرض.');
   });});
   byId('image-upload').addEventListener('submit',event=>{event.preventDefault();const files=[...byId('image-files').files];if(!files.length)return;run(async()=>{
-    const added=[];let failure;
+    const added=[];let failure,before=0,after=0;
     for(const file of files){
-      if(file.size>(file.name.toLowerCase().endsWith('.svg')?1024*1024:10*1024*1024)){failure=new Error('تجاوزت إحدى الصور الحجم المسموح.');break;}
-      say(`جارٍ رفع ${file.name}…`);const body=new FormData();body.append('file',file);
+      say(`جارٍ تجهيز ${file.name}…`);const prepared=await prepare(file);
+      if(prepared.file.size>(file.name.toLowerCase().endsWith('.svg')?1024*1024:10*1024*1024)){failure=new Error('تجاوزت إحدى الصور الحجم المسموح.');break;}
+      if(prepared.file!==file){before+=file.size;after+=prepared.file.size;}
+      say(`جارٍ رفع ${file.name}…`);const body=new FormData();body.append('file',prepared.file);if(prepared.preview)body.append('thumbnail',prepared.preview);
       try{const result=await request('api/admin/images','POST',body);added.push(result.imageId);}catch(error){failure=error;break;}
     }
-    if(added.length){data=await request('api/admin/images');renderLibrary();}
+    if(added.length){data=await request('api/admin/images');renderLibrary();renderSelection();}
     byId('image-files').value='';
-    if(failure){say(`تم رفع ${added.length} صورة. ${failure.message}`,true);return;}
-    say(`تم رفع ${added.length} صورة. اختر الصور لإضافتها إلى المجموعة.`);
+    const shrunk=before?`صُغّرت الصور الكبيرة قبل الرفع من ${megabytes(before)} إلى ${megabytes(after)}.`:'';
+    if(failure){say(`تم رفع ${added.length} صورة. ${shrunk} ${failure.message}`,true);return;}
+    // A success message shows only as a short toast; the size note stays on the status line.
+    say(`تم رفع ${added.length} صورة. اختر الصور لإضافتها إلى المجموعة.`);if(shrunk)say(shrunk);
   });});
+  // Older images have no preview copy; make one in the browser from the full image and store it once.
+  byId('image-previews').addEventListener('click',()=>run(async()=>{
+    let made=0,failed=0;
+    for(const image of data.images.filter(i=>!i.hasThumbnail)){
+      say(`جارٍ تجهيز نسخة معاينة: ${image.imageName}…`);
+      try{
+        const source=await loadImage(url(`api/images/${image.imageId}/content`).href,true);
+        const small=await drawCopy(source,source.naturalWidth||image.pixelWidth,source.naturalHeight||image.pixelHeight,previewSide,'image/webp',.8);
+        if(!small||small.size>previewLimit)throw new Error('size');
+        const body=new FormData();body.append('thumbnail',new File([small],'preview.webp',{type:'image/webp'}));
+        await request(`api/admin/images/${image.imageId}/thumbnail`,'PUT',body);made++;
+      }catch{failed++;}
+    }
+    data=await request('api/admin/images');renderLibrary();renderSelection();
+    say(failed?`أُنشئت نسخ معاينة لـ ${made} صورة، وتعذر إنشاؤها لـ ${failed}. أعد المحاولة لاحقًا.`:`تم إنشاء نسخ معاينة صغيرة لـ ${made} صورة.`,failed>0);
+  }));
   retry.addEventListener('click',async()=>{if(!busy&&(!core.dirtyIn('images')||await core.discard()))load();});
   core.watch('images',form,groupDirty,()=>busy);
   core.trackForm('images',byId('image-upload'),{busy:()=>busy});

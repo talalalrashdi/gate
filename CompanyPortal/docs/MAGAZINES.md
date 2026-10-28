@@ -116,3 +116,13 @@ Verified: `.local/magazine-publish-browser.cjs` (generated 12-page `40.pdf` + ro
 ## Clean-up (27 October 2026)
 
 Removed after the PDF.js switch: the `/api/magazines/{id}/pages` and `/pages/{page}` endpoints and manifest code, the `39-pages` image folders (web assets and local fixture), `scripts/render-magazine.py`, and the page-image copy step in `Initialize-MagazineFixture.ps1`. Removed web files are recorded in `docs/frontend-cleanup.json`. Companion `NN-pages/` folders in the magazine root are ignored.
+
+## Page-turn effect (28 October 2026)
+
+On desktop the reader turns pages with **StPageFlip** (`page-flip` 2.0.7, MIT), bundled offline in `wwwroot/vendor/page-flip` (see its NOTICE.md) and loaded only when an issue opens. PDF.js still draws every page.
+
+- StPageFlip has no right-to-left mode, so `magazine.js` gives it the pages in reverse order and opens at the cover end. An odd page count gets one blank page after the last page, so the cover stands alone and the pairs match the static spread (1–2, 3–4, …). Page 2 is on the right.
+- Buttons, the page box, thumbnails and arrow keys drive the book (ArrowLeft and «التالي» go forward). Dragging a page corner also turns pages.
+- Only the open spread and nearby pages are drawn (about ±4 pages). Pages further than about ±9 are released, so a 258-page issue keeps under 20 canvases.
+- Zoom, phones (≤760 px), reduced motion, or a script that fails to load use the previous static spread. The read mark, «جديد» badge and PDF fallback are unchanged.
+- Check: `.local/magazine-flip-check.cjs` (cover, RTL sides, keys, page box, thumbnails, drag, zoom switch, last page, reduced motion).

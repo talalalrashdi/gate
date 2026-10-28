@@ -6,7 +6,8 @@
  const make=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
  let catalog={groups:[],items:[]},loaded=false,busy=false,mode='video',kind='video',current=null,isNew=false,original='';
  const core=window.AdminCore;
- const request=(path,method='GET',body)=>core.request(endpoint(path),{method,body,header:'media'});
+ // Saves and previews explain these statuses (and the file codes) in failure() below.
+ const request=(path,method='GET',body)=>core.request(endpoint(path),{method,body,header:'media',handled:method==='GET'?[]:[400,404,503]});
  function clearPreview(){preview.querySelectorAll('video').forEach(v=>{v.pause();v.removeAttribute('src');v.load();});preview.replaceChildren();}
  function values(){return kind==='group'?{groupName:fields.name.value.trim(),coverMediaId:fields.cover.value?Number(fields.cover.value):null,displayOrder:Number(fields.order.value),active:fields.active.checked}:{mediaName:fields.name.value.trim(),mediaPath:fields.path.value.trim(),mediaType:kind,mediaGroupId:kind==='image'&&fields.album.value?Number(fields.album.value):null,displayOrder:Number(fields.order.value),active:fields.active.checked};}
  const dirty=()=>!editor.hidden&&(isNew||JSON.stringify(values())!==original);

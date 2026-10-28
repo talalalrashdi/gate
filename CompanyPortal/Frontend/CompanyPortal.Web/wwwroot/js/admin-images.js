@@ -17,7 +17,7 @@
   const groupDirty=()=>loaded&&groupValues()!==groupSnapshot;
   const mark = () => {dirty=groupDirty();byId('image-group-dirty').textContent=dirty?'تغييرات غير محفوظة':'';core.refresh();};
   async function request(path,method='GET',body) {
-    const response=await core.request(path,{method,body,header:'admin-images',timeout:method==='POST'?60000:15000});
+    const response=await core.request(path,{method,body,header:'admin-images',timeout:method==='POST'?60000:15000,handled:[400,409,413]});
     if(!response.ok){
       if(response.status===401||response.status===403){content.hidden=true;loaded=false;throw new Error('ليس لديك صلاحية إدارة الصور.');}
       if(response.status===409)throw new Error(path.includes('/groups')?'لا يمكن إيقاف مجموعة يستخدمها ثيم. اختر لها صورًا أخرى من محرر الثيم أولًا.':'الصورة مستخدمة في مجموعة محفوظة. أزلها من المجموعات واحفظ التغييرات أولًا، ثم احذفها.');
@@ -26,9 +26,10 @@
     return response.status===204?null:response.json();
   }
   async function run(action) {
-    if(busy)return;busy=true;panel.querySelectorAll('button,input,select').forEach(n=>{n.disabled=true;});
+    // Re-enable only what this call disabled; controls that were already disabled stay disabled.
+    if(busy)return;busy=true;const locked=[...panel.querySelectorAll('button,input,select')].filter(n=>!n.disabled);locked.forEach(n=>{n.disabled=true;});
     try{await action();}catch(error){say(error.message,true);retry.hidden=loaded;}
-    finally{busy=false;panel.querySelectorAll('button,input,select').forEach(n=>{n.disabled=false;});refreshConstraints();}
+    finally{busy=false;locked.forEach(n=>{n.disabled=false;});refreshConstraints();}
   }
   function refreshConstraints(){seconds.disabled=!rotate.checked;itemsRoot.querySelectorAll('input[type=radio]').forEach((n,i)=>{n.disabled=!selection[i]?.active;});itemsRoot.querySelectorAll('[data-up]').forEach((n,i)=>{n.disabled=i===0;});itemsRoot.querySelectorAll('[data-down]').forEach((n,i)=>{n.disabled=i===selection.length-1;});}
   const preview = image => { const img=node('img');img.src=url(`api/images/${image.imageId}/content`);img.alt='';img.loading='lazy';return img; };

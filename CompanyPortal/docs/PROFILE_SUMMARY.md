@@ -1,6 +1,6 @@
 # Profile picture: employee details, attendance and leave
 
-Click the profile picture to load the current employee’s details from SQL. No illustrative attendance times or balance values remain in the header. Existing profile-picture artwork and the separate /profile page are unchanged.
+Click the profile picture to load the current employee’s details from SQL. No illustrative attendance times or balance values remain in the header. The separate /profile design page was retired on28 October2026. Its legacy routes return404; the header’s صفحة المستخدم link is a # placeholder in Views/Shared/_PortalHeader.cshtml, ready to replace with the external employee-profile URL. The DB-backed header details and profile-photo service remain.
 
 ## The two SP contracts
 

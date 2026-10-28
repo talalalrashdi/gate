@@ -285,3 +285,9 @@ updateWorkspaceNavigation();
   document.addEventListener('visibilitychange',()=>{cancel();if(!document.hidden&&!profilePanel.hidden)void load();});
   window.addEventListener('pagehide',cancel);window.addEventListener('pageshow',e=>{if(e.persisted&&!profilePanel.hidden){cancel();void load();}});
 })();
+
+// Keep the future profile link inert until its real URL replaces # in _PortalHeader.
+(() => {
+  const link=document.getElementById('portal-profile-external-link');
+  link?.addEventListener('click',event=>{if(link.getAttribute('href')==='#')event.preventDefault();});
+})();

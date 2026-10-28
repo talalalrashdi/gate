@@ -27,6 +27,11 @@ public sealed class ThemeAdministrationStore(IConfiguration configuration)
         },commandType:CommandType.StoredProcedure,commandTimeout:15,cancellationToken:token));
     }
     private sealed record PositionRow(int ThemeId,int ImageId,decimal FocalX,decimal FocalY);
+    public async Task<IReadOnlyList<string>> GetKnownRolesAsync(string username,CancellationToken token)
+    {
+        await using var connection=Connection();
+        return (await connection.QueryAsync<string>(new CommandDefinition("Portal.KnownRoles_get",new {Username=username},commandType:CommandType.StoredProcedure,commandTimeout:15,cancellationToken:token))).AsList();
+    }
     public async Task<bool> DeleteAsync(int id,string changedBy,CancellationToken token)
     {
         await using var connection=Connection();

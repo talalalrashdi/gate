@@ -53,6 +53,7 @@
   "Portal.Initiatives_Types_Get",
   "Portal.Isnad_Create",
   "Portal.Isnad_Recipients_Get",
+  "Portal.KnownRoles_get",
   "Portal.Magazines_GetAll",
   "Portal.MediaGroups_Save",
   "Portal.Media_GetAll",

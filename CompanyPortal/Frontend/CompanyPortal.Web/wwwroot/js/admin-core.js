@@ -22,14 +22,15 @@
   function errorMessage(status){return ({401:'انتهت صلاحية الجلسة. أعد تسجيل الدخول أو تحميل الصفحة.',403:'لا تملك صلاحية هذا القسم.',400:'تحقق من القيم المطلوبة وصحتها.',404:'العنصر غير موجود. أعد تحميل القائمة.',409:'تعذر الحفظ لوجود تعارض. راجع البيانات وأعد المحاولة.',413:'حجم الملف يتجاوز الحد المسموح.',429:'طلبات كثيرة. انتظر قليلًا ثم أعد المحاولة.'})[status]||'تعذر إتمام العملية. تحقق من الاتصال وأعد المحاولة.';}
   function reportTransport(text){feedbackText=text;feedbackUntil=Date.now()+2000;notify(text,'error');}
   async function request(path,options={}){
-    const {method='GET',body,header,timeout=15000}=options,url=new URL(path,base);
+    // handled: statuses the caller explains with its own specific message, so the generic one is not shown.
+    const {method='GET',body,header,timeout=15000,handled=[]}=options,url=new URL(path,base);
     if(url.origin!==base.origin)throw new Error('عنوان خدمة الإدارة غير صالح.');
     const write=!['GET','HEAD'].includes(method),headers={};
     if(write){if(!header)throw new Error('ترويسة طلب الإدارة مطلوبة.');headers['X-CompanyPortal-Request']=header;if(body!==undefined&&!(body instanceof FormData))headers['Content-Type']='application/json';}
     let response;
     try{response=await fetch(url,{method,credentials:'include',cache:'no-store',headers,signal:AbortSignal.timeout(timeout),...(body===undefined?{}:{body:body instanceof FormData?body:JSON.stringify(body)})});}
     catch(error){reportTransport(error.name==='TimeoutError'?'انتهت مهلة الاتصال. تعذر تأكيد العملية؛ تحقق من النتيجة قبل إعادة الحفظ.':'تعذر الاتصال بخدمة البوابة. تحقق من الاتصال وأعد المحاولة.');throw error;}
-    if(!response.ok){reportTransport(errorMessage(response.status));if(response.status===401){access=null;applyAccess();}else if(response.status===403)void loadAccess();}
+    if(!response.ok){if(!handled.includes(response.status))reportTransport(errorMessage(response.status));if(response.status===401){access=null;applyAccess();}else if(response.status===403)void loadAccess();}
     if(response.ok&&write&&!url.pathname.endsWith('/preview'))document.dispatchEvent(new CustomEvent('admin:saved',{detail:{header,path:url.pathname}}));
     return response;
   }

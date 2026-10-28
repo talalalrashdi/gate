@@ -1,4 +1,4 @@
-﻿/* CompanyPortal fresh installation, generated from migrations 001-048.
+﻿/* CompanyPortal fresh installation, generated from migrations 001-049.
    Open this entire UTF-8 file in SSMS and Execute (normal mode, no SQLCMD mode).
    Or: sqlcmd -S SQLSERVER -E -b -f 65001 -i CompanyPortal-Setup.sql
    FRESH INSTALL ONLY. Never run on an existing CompanyPortal database.
@@ -4022,6 +4022,42 @@ GO
 
 GO
 
+
+-- BEGIN 049_KnownRoles.sql
+USE CompanyPortal;
+GO
+SET XACT_ABORT ON;
+SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON; SET ANSI_PADDING ON; SET ANSI_WARNINGS ON;
+SET CONCAT_NULL_YIELDS_NULL ON; SET ARITHABORT ON; SET NUMERIC_ROUNDABORT OFF;
+BEGIN TRANSACTION;
+GO
+-- Read-only. There is no catalog of every role in the security source (Security.UserRoles_get only
+-- answers per user), so the admin editors suggest the role names the portal already knows: the
+-- signed-in admin's own roles plus active card, theme-preview and admin-section role names.
+-- A name outside this list may still be valid; the editors only warn.
+CREATE OR ALTER PROCEDURE Portal.KnownRoles_get
+ @Username nvarchar(512)
+AS
+BEGIN
+ SET NOCOUNT ON;
+ DECLARE @Users TABLE(UserId int);
+ DECLARE @Roles TABLE(RoleName nvarchar(200));
+ INSERT @Users EXEC Security.User_getByUsername @Username=@Username;
+ DECLARE @UserId int=(SELECT TOP(1) UserId FROM @Users WHERE UserId IS NOT NULL);
+ IF @UserId IS NOT NULL INSERT @Roles EXEC Security.UserRoles_get @UserId=@UserId;
+ SELECT RoleName FROM (
+  SELECT LTRIM(RTRIM(RoleName)) COLLATE Latin1_General_100_BIN2 RoleName FROM @Roles
+  UNION SELECT RoleName COLLATE Latin1_General_100_BIN2 FROM [Master].CardRoles WHERE Active=1
+  UNION SELECT RoleName COLLATE Latin1_General_100_BIN2 FROM [Master].ThemePreviewRoles WHERE Active=1
+  UNION SELECT RoleName COLLATE Latin1_General_100_BIN2 FROM Portal.AdminSectionRoles
+ ) r WHERE LEN(RoleName)>0 ORDER BY RoleName;
+END;
+GO
+COMMIT;
+GO
+
+GO
+
 IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'USE [master];
 -- DEVELOPMENT ONLY. Never run this against the real internal security database.
 USE [master];
@@ -4198,7 +4234,7 @@ IF (SELECT TestSources FROM #PortalDeployment)=1
  CREATE TABLE dbo.Public_info_News_Prodc (
   PIP_ID int IDENTITY(1,1) NOT NULL PRIMARY KEY,
   News_ID int NOT NULL REFERENCES dbo.Public_info_News(PIN_ID), Active bit NOT NULL DEFAULT(1));
- INSERT dbo.Public_info_News(PIN_Subject) VALUES(N''خبر تجريبي لاختبار البوابة'');
+ INSERT dbo.Public_info_News(PIN_Subject) VALUES(N''Ø®Ø¨Ø± ØªØ¬Ø±ÙŠØ¨ÙŠ Ù„Ø§Ø®ØªØ¨Ø§Ø± Ø§Ù„Ø¨ÙˆØ§Ø¨Ø©'');
  INSERT dbo.Public_info_News_Prodc(News_ID) VALUES(1);');
 GO
 USE CompanyPortal;

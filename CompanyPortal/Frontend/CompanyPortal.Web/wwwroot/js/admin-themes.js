@@ -2,18 +2,31 @@
   const panel=document.querySelector('[data-admin-panel="themes"]'),base=document.querySelector('meta[name="companyportal-api-base"]')?.content;
   if(!panel||!base)return;
   const api=new URL(base.replace(/\/?$/,'/'),location.href),get=id=>document.getElementById(id),status=get('themes-status'),gallery=get('theme-gallery'),editor=get('theme-editor'),form=get('theme-form'),frame=get('theme-preview-frame'),dialog=get('theme-preview-dialog'),galleryFrame=get('theme-gallery-preview');
-  let themes=[],templates=[],library={groups:[],items:[],images:[]},draft=null,id=null,snapshot='',busy=false,loaded=false,previewRecord=null,focusImageId=null;
+  let themes=[],templates=[],library={groups:[],items:[],images:[]},knownRoles=[],draft=null,id=null,snapshot='',busy=false,loaded=false,libraryLoading=false,previewRecord=null,focusImageId=null;
   const core=window.AdminCore,ready=new Set(),say=(text,error=false)=>{core.feedback(status,text,error);};
   const node=(tag,text,css)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(css)n.className=css;return n;};
   const option=(value,text)=>{const n=node('option',text);n.value=String(value??'');return n;};
   const template=key=>templates.find(t=>t.layoutKey===key)||templates[0];
   const serial=()=>JSON.stringify(draft);
   const dirty=()=>draft&&serial()!==snapshot;
+  // The API sends a code for each theme rule (see ThemeAdministrationController.Classify); field errors come from model validation.
+  const errorMessages={busy:'يجري حفظ تعديل آخر على الثيمات. أعد المحاولة بعد لحظات.','not-found':'الثيم غير موجود؛ ربما حُذف. أعد تحميل القائمة.','default-not-public':'الثيم الافتراضي يجب أن يكون منشورًا للجميع. انشره أولًا ثم عيّنه افتراضيًا.','default-required':'عيّن ثيمًا افتراضيًا آخر أولًا، ثم أخفِ هذا الثيم أو احذفه.',roles:'أدخل حتى 50 دورًا مختلفًا، بطول لا يزيد عن 200 حرف. حالة المعاينة تحتاج دورًا واحدًا على الأقل.','inactive-group':'مجموعة الصور المختارة غير نشطة. اختر مجموعة نشطة أو الصور الأصلية للقالب.',positions:'مواضع الصور لا تطابق صور المجموعة المختارة. اضبطها من جديد.',details:'تحقق من اسم الثيم والقالب وترتيب الظهور.'};
+  const colourMessage='أدخل الألوان بصيغة #RRGGBB، أو اتركها فارغة لاستخدام ألوان القالب.';
+  function errorText(status,problem){
+    if(errorMessages[problem?.code])return errorMessages[problem.code];
+    const fields=Object.keys(problem?.errors||{}).join(' ').toLowerCase();
+    if(/colou?r/.test(fields))return colourMessage;
+    if(/overlay/.test(fields))return 'قوة طبقة التباين يجب أن تكون بين 0 و85.';
+    if(/name/.test(fields))return 'اسم الثيم مطلوب، حتى 200 حرف.';
+    if(/order/.test(fields))return 'ترتيب الظهور رقم من 0 إلى 1000000.';
+    if(/role/.test(fields))return errorMessages.roles;
+    return status===404?errorMessages['not-found']:status===409?errorMessages.busy:status===400?'تعذر الحفظ. راجع قيم الثيم وأعد المحاولة.':'تعذر تحميل أو حفظ الثيمات. أعد المحاولة.';
+  }
   async function request(path,method='GET',body){
-    const response=await core.request(path,{method,body,header:'admin-themes'});
+    const response=await core.request(path,{method,body,header:'admin-themes',handled:[400,404,409]});
     if(!response.ok){
       if(response.status===401||response.status===403){editor.hidden=true;gallery.replaceChildren();loaded=false;get('theme-add').disabled=true;throw new Error('ليس لديك صلاحية إدارة الثيمات.');}
-      throw new Error(response.status===400?'تحقق من حالة النشر والأدوار والمجموعة النشطة. اختر ثيمًا افتراضيًا مباشرًا آخر قبل إخفاء أو حذف الافتراضي الحالي.':'تعذر تحميل أو حفظ الثيمات. أعد المحاولة.');
+      throw new Error(errorText(response.status,await response.json().catch(()=>null)));
     }
     return response.status===204?null:response.json();
   }
@@ -73,7 +86,7 @@
     get('theme-group-summary').textContent=group?`${group.groupName} · ${members} صورة نشطة · ${group.rotateImages?'تدوير كل '+group.rotationSeconds+' ثوانٍ':'صورة ثابتة'}${group.active?'':' · المجموعة غير نشطة؛ اختر مجموعة نشطة للحفظ.'}`:'ستظهر الصور الأصلية لقالب التصميم.';
     const bg=draft.backgroundColor||template(draft.layoutKey).backgroundColor,primary=draft.primaryColor||template(draft.layoutKey).primaryColor;
     get('theme-colour-advice').textContent=bg.toLowerCase()===primary.toLowerCase()?'اللون الرئيسي والخلفية متطابقان. راجع تباين العناوين في المعاينة.':'راجع وضوح النصوص والأزرار في المعاينة.';
-    get('theme-roles-field').hidden=draft.visibility!=='preview';
+    get('theme-roles-field').hidden=draft.visibility!=='preview';rolesHelp();
     get('theme-publication-note').textContent=visibilityName[draft.visibility]+(draft.visibility==='public'?' — بعد الحفظ يظهر في قائمة الثيمات لدى الجميع.':draft.visibility==='preview'?' — يظهر فقط لمن يحمل أحد الأدوار المحددة.':' — لا يظهر في قائمة الثيمات لدى الموظفين.');
     get('theme-save').textContent=draft.visibility==='public'?'حفظ ونشر للجميع':draft.visibility==='preview'?'حفظ وإتاحة للأدوار المحددة':'حفظ كمخفي';
     send(frame,draft);
@@ -96,6 +109,25 @@
       renderGallery();say(action==='apply'?'تم تعيين الافتراضي وتطبيقه على الجميع. يظهر عند تحميل البوابة.':action==='publish'?'الثيم مباشر ومتاح الآن لجميع المستخدمين.':action==='delete'?'تم حذف الثيم.':'تم إخفاء الثيم عن المستخدمين.');
     }catch(error){say(error.message,true);}finally{busy=false;renderGallery();}
   }
+  // Known roles are suggestions only; a name outside the list may still be valid, so it only warns.
+  function rolesHelp(){
+    const help=get('theme-roles-help');help.hidden=draft.visibility!=='preview';if(help.hidden)return;
+    const unknown=draft.previewRoles.filter(r=>!knownRoles.includes(r));
+    get('theme-roles-warning').textContent=unknown.length?'غير معروف للبوابة: '+unknown.join('، ')+'. تأكد أنه مكتوب كما يعيده مصدر الصلاحيات تمامًا، وإلا فلن يرى أحد هذا الثيم.':'';
+    const box=get('theme-roles-known'),suggest=knownRoles.filter(r=>!draft.previewRoles.includes(r));
+    if(box.dataset.list===JSON.stringify(suggest))return;box.dataset.list=JSON.stringify(suggest);
+    box.replaceChildren(...suggest.map(role=>{const button=node('button','+ '+role);button.type='button';button.setAttribute('aria-label','إضافة الدور '+role);button.addEventListener('click',()=>{const field=get('theme-preview-roles');field.value=(field.value.trim()?field.value.replace(/\s*$/,'')+'\n':'')+role;field.dispatchEvent(new Event('input',{bubbles:true}));});return button;}));
+  }
+  function groupOptions(){
+    const groups=get('theme-image-group');groups.replaceChildren(option('','الصور الأصلية للقالب'));library.groups.filter(g=>g.active||g.imageGroupId===draft.imageGroupId).forEach(g=>groups.append(option(g.imageGroupId,g.groupName+(g.active?'':' (غير نشطة)'))));groups.value=String(draft.imageGroupId??'');
+  }
+  // Groups created on the images page (often in another tab) appear without reloading; the draft is kept.
+  async function refreshLibrary(){
+    if(!loaded||busy||libraryLoading)return;libraryLoading=true;
+    try{library=await request('api/admin/images');}catch{return;}finally{libraryLoading=false;}
+    if(draft){groupOptions();changed();}renderGallery();
+  }
+  window.addEventListener('focus',()=>{if(document.body.dataset.adminCurrent==='themes')refreshLibrary();});
   function cover(theme){const data=groupData(theme),first=data.images.find(i=>i.imageId===data.settings?.defaultImageId)||data.images[0];return first?new URL(`api/images/${first.imageId}/content`,api).href:new URL(template(theme.layoutKey).thumbnail,document.baseURI).href;}
   function renderGallery(){
     gallery.replaceChildren();themes.forEach(theme=>{
@@ -139,7 +171,7 @@
     editor.hidden=false;get('theme-editor-title').textContent=id?'تعديل '+draft.themeName:copy?'نسخ الثيم':'ثيم جديد';
     get('theme-name').value=draft.themeName;get('theme-order').value=draft.displayOrder;get('theme-visibility').value=draft.visibility;get('theme-preview-roles').value=draft.previewRoles.join('\n');get('theme-default').checked=draft.isDefault;get('theme-default').disabled=!!record?.isDefault&&!copy;
     const choices=get('theme-templates');choices.replaceChildren();templates.forEach(t=>{const label=node('label',undefined,'theme-template-option'),image=node('img'),line=node('span'),radio=node('input');image.src=new URL(t.thumbnail,document.baseURI);image.alt='';radio.type='radio';radio.name='theme-layout';radio.value=t.layoutKey;radio.checked=draft.layoutKey===t.layoutKey;radio.addEventListener('change',()=>{draft.layoutKey=t.layoutKey;colourFields();get('theme-overlay').value=draft.overlayOpacity??t.overlayOpacity;changed();});line.append(radio,node('span',t.templateName));label.append(image,line);choices.append(label);});
-    const groups=get('theme-image-group');groups.replaceChildren(option('','الصور الأصلية للقالب'));library.groups.filter(g=>g.active||g.imageGroupId===draft.imageGroupId).forEach(g=>groups.append(option(g.imageGroupId,g.groupName+(g.active?'':' (غير نشطة)'))));groups.value=String(draft.imageGroupId??'');
+    groupOptions();
     document.querySelectorAll('[name="theme-presentation"]').forEach(radio=>{radio.checked=radio.value===draft.imagePresentation;});get('theme-foreground').value=draft.foregroundPreset||'';get('theme-overlay').value=draft.overlayOpacity??template(draft.layoutKey).overlayOpacity;colourFields();showTab('details');changed();
     if(frame.src==='about:blank'){ready.delete(frame);frame.src=frame.dataset.previewUrl;}requestAnimationFrame(fit);editor.scrollIntoView({behavior:'smooth',block:'start'});get('theme-name').focus({preventScroll:true});
   }
@@ -153,24 +185,26 @@
   get('theme-focus-image').addEventListener('change',()=>{focusImageId=Number(get('theme-focus-image').value);syncFocus();send(frame,draft);});
   for(const axis of ['x','y'])get('theme-focus-'+axis).addEventListener('input',()=>{const p=focusPosition();setFocus(axis==='x'?Number(get('theme-focus-x').value):p.focalX,axis==='y'?Number(get('theme-focus-y').value):p.focalY);});
   get('theme-focus-reset').addEventListener('click',()=>setFocus(50,50));
-  form.addEventListener('invalid',event=>{const pane=event.target.closest('[role=tabpanel]');if(pane)showTab(pane.id.replace('theme-',''));},true);
+  form.addEventListener('invalid',event=>{const pane=event.target.closest('[role=tabpanel]');if(pane)showTab(pane.id.replace('theme-',''));if(event.target.id.startsWith('theme-colour-'))say(colourMessage,true);},true);
   get('theme-cancel').addEventListener('click',async()=>{if(busy)return;if(dirty()&&!await core.discard())return;draft=null;id=null;snapshot='';editor.hidden=true;frame.src='about:blank';ready.delete(frame);get('theme-add').focus();});
   async function load(){
     if(busy)return;busy=true;get('themes-retry').hidden=true;
-    try{[themes,templates,library]=await Promise.all([request('api/admin/themes'),request('api/admin/themes/templates'),request('api/admin/images')]);loaded=true;renderGallery();get('theme-add').disabled=false;say('الثيمات جاهزة. أضف ثيمًا أو عدّل أحد الثيمات الحالية.');}
+    try{[themes,templates,library,knownRoles]=await Promise.all([request('api/admin/themes'),request('api/admin/themes/templates'),request('api/admin/images'),request('api/admin/themes/roles').catch(()=>[])]);loaded=true;renderGallery();get('theme-add').disabled=false;say('الثيمات جاهزة. أضف ثيمًا أو عدّل أحد الثيمات الحالية.');}
     catch(error){say(error.message,true);get('themes-retry').hidden=false;}finally{busy=false;}
   }
   form.addEventListener('submit',async event=>{
     event.preventDefault();if(busy||!draft)return;
     if(!draft.themeName.trim()){get('theme-name').focus();return;}
+    const badColour=['primaryColor','accentColor','backgroundColor'].find(key=>draft[key]!==null&&!/^#[\da-f]{6}$/i.test(draft[key]));
+    if(badColour){showTab('colours');say(colourMessage,true);get('theme-colour-'+badColour)?.focus();return;}
     if(draft.visibility==='preview'&&(!draft.previewRoles.length||draft.previewRoles.length>50||draft.previewRoles.some(r=>r.length>200)||new Set(draft.previewRoles).size!==draft.previewRoles.length)){showTab('details');say('أدخل حتى 50 دورًا مختلفًا، بطول لا يزيد عن 200 حرف لكل دور.',true);return;}
     if(draft.isDefault&&(!draft.active||draft.visibility!=='public')){say('لا يمكن تعطيل الثيم الافتراضي. اختر افتراضيًا آخر أولًا.',true);return;}
     if(draft.isDefault&&!themes.some(t=>t.themeId===id&&t.isDefault)&&!await confirmAction('تطبيق الافتراضي على الجميع','سيتم نشر هذا الثيم للجميع وتعيينه لجميع المستخدمين عند تحميل البوابة، مع استبدال اختياراتهم الحالية. متابعة؟'))return;
     busy=true;form.querySelectorAll('input,select,textarea,button').forEach(n=>{n.disabled=true;});
-    try{const result=await request('api/admin/themes'+(id?'/'+id:''),id?'PUT':'POST',draft);id=result.themeId;AdminChanges.tag(form,'themes','theme',id);themes=await request('api/admin/themes');snapshot=serial();renderGallery();get('theme-default').disabled=themes.some(t=>t.themeId===id&&t.isDefault);say(draft.isDefault?'تم حفظ الافتراضي. يظهر عند تحميل البوابة.':draft.visibility==='public'?'تم الحفظ والنشر المباشر لجميع المستخدمين.':draft.visibility==='preview'?'تم الحفظ وإتاحة المعاينة للأدوار المحددة فقط.':'تم الحفظ كمخفي للإدارة فقط.');get('theme-editor-title').textContent='تعديل '+draft.themeName;}
+    try{const result=await request('api/admin/themes'+(id?'/'+id:''),id?'PUT':'POST',draft);id=result.themeId;AdminChanges.tag(form,'themes','theme',id);themes=await request('api/admin/themes');knownRoles=await request('api/admin/themes/roles').catch(()=>knownRoles);snapshot=serial();renderGallery();get('theme-default').disabled=themes.some(t=>t.themeId===id&&t.isDefault);say(draft.isDefault?'تم حفظ الافتراضي. يظهر عند تحميل البوابة.':draft.visibility==='public'?'تم الحفظ والنشر المباشر لجميع المستخدمين.':draft.visibility==='preview'?'تم الحفظ وإتاحة المعاينة للأدوار المحددة فقط.':'تم الحفظ كمخفي للإدارة فقط.');get('theme-editor-title').textContent='تعديل '+draft.themeName;}
     catch(error){say(error.message,true);}finally{busy=false;form.querySelectorAll('input,select,textarea,button').forEach(n=>{n.disabled=false;});get('theme-default').disabled=themes.some(t=>t.themeId===id&&t.isDefault);changed();}
   });
   get('themes-retry').addEventListener('click',async()=>{if(!busy&&(!dirty()||await core.discard()))load();});
   core.watch('themes',form,()=>!editor.hidden&&dirty(),()=>busy);
-  core.whenSection('themes',()=>{if(!busy&&!dirty())load();});
+  core.whenSection('themes',()=>{if(!busy&&!dirty())load();else refreshLibrary();});
 })();

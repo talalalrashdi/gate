@@ -13,6 +13,7 @@
           <label>ترتيب الظهور<input id="theme-order" type="number" min="0" max="1000000" step="1" value="1" required></label>
           <label>حالة النشر<select id="theme-visibility"><option value="hidden">مخفي — للإدارة فقط</option><option value="preview">معاينة — لأدوار محددة</option><option value="public">مباشر — متاح لجميع المستخدمين</option></select></label>
           <label id="theme-roles-field" hidden>أدوار المعاينة<textarea id="theme-preview-roles" rows="4" maxlength="10049" placeholder="CompanyPortal.ThemeReviewers"></textarea><span class="theme-note">اسم الدور كما يعيده مصدر الصلاحيات، دور واحد في كل سطر. أصحاب هذه الأدوار فقط يستطيعون اختيار الثيم قبل نشره للجميع.</span></label>
+          <div id="theme-roles-help" class="theme-roles-help" hidden><p id="theme-roles-warning" class="theme-note theme-roles-warning" role="status"></p><div id="theme-roles-known" class="theme-roles-known" aria-label="أدوار معروفة للبوابة"></div></div>
           <p id="theme-publication-note" class="theme-publication-note" role="status"></p>
           <label class="theme-check"><input id="theme-default" type="checkbox"> تعيين افتراضي وتطبيقه على جميع المستخدمين</label>
           <p class="theme-note" id="theme-default-note">عند تعيين افتراضي جديد، يُطبّق على الجميع عند فتح البوابة أو إعادة تحميلها، ويستبدل اختياراتهم الحالية. يمكنهم اختيار ثيم آخر لاحقًا.</p>

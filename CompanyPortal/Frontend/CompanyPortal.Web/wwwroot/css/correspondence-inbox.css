@@ -25,3 +25,6 @@ body:has(#correspondence-sample-dialog[open]){overflow:hidden}
 #workspace .portal-correspondence-filter-pill[aria-pressed="true"]{background:#225e4b;border-color:#225e4b;--text-primary:#fff;color:#fff}
 #workspace .portal-correspondence-filter-pill:hover{border-color:#225e4b}
 #workspace .portal-correspondence-filter-pill:focus-visible{outline:2px solid #225e4b;outline-offset:2px}
+
+#workspace .portal-correspondence-item[data-state="opened"]{border-color:#cbd9d0;background:#fff}
+#workspace .portal-correspondence-item[data-state="unopened"]{border-color:#d9b8c2}

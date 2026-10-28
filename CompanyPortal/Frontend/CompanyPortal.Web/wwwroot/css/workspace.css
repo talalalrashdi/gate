@@ -326,3 +326,13 @@ body .portal-group-error { color: #a33a29 !important; font-size: 12px; }
 /* A consistent, slightly shorter workspace frame; only lists scroll when needed. */
 .portal-dashboard #workspace-cards>.portal-work-card{height:680px;min-height:680px;max-height:680px}
 .portal-dashboard #workspace-cards>.portal-work-card>[data-widget-preview]{flex:1;min-height:0!important;overflow-y:auto}
+
+/* Email uses the same five-row rhythm; never stretch two messages to fill the card. */
+.portal-dashboard #workspace-cards .portal-email-list{max-height:none;grid-auto-rows:80px;align-content:start;gap:4px;overflow-y:hidden}
+.portal-dashboard #workspace-cards .portal-email-item{box-sizing:border-box;height:80px;min-height:80px;max-height:80px;padding:8px 10px;grid-template-columns:30px minmax(0,1fr) 65px;grid-template-rows:1fr;align-content:center;gap:8px}
+.portal-dashboard #workspace-cards .portal-email-item strong{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;line-height:1.4}
+.portal-dashboard #workspace-cards .portal-email-item small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.portal-dashboard #workspace-cards .portal-email-item time{grid-column:3;grid-row:1;justify-self:end}
+
+/* Read email remains a distinct bordered row, like the other inbox cards. */
+.portal-dashboard #workspace-cards .portal-email-item[data-state="read"]{border-color:#cbd9d0;background:#fff}

@@ -2757,7 +2757,7 @@ IF OBJECT_ID(N'Portal.Forms_Inbox_Get',N'P') IS NULL
  EXEC(N'CREATE PROCEDURE Portal.Forms_Inbox_Get @UserId int,@FormId bigint=NULL AS
  BEGIN SET NOCOUNT ON;
  SELECT CAST(NULL AS bigint) FormId,CAST(NULL AS nvarchar(1000)) Title,
- CAST(NULL AS nvarchar(500)) SenderName,CAST(NULL AS datetime) SentAt,
+ CAST(NULL AS nvarchar(500)) SenderName,CAST(NULL AS nvarchar(100)) Purpose,CAST(NULL AS datetime) SentAt,
  CAST(NULL AS bit) IsOpened,CAST(0 AS bit) IsSample WHERE 1=0; END');
 GO
 IF OBJECT_ID(N'Portal.Forms_UnreadCount_Get',N'P') IS NULL
@@ -4198,7 +4198,7 @@ IF (SELECT TestSources FROM #PortalDeployment)=1
  CREATE TABLE dbo.Public_info_News_Prodc (
   PIP_ID int IDENTITY(1,1) NOT NULL PRIMARY KEY,
   News_ID int NOT NULL REFERENCES dbo.Public_info_News(PIN_ID), Active bit NOT NULL DEFAULT(1));
- INSERT dbo.Public_info_News(PIN_Subject) VALUES(N''Ø®Ø¨Ø± ØªØ¬Ø±ÙŠØ¨ÙŠ Ù„Ø§Ø®ØªØ¨Ø§Ø± Ø§Ù„Ø¨ÙˆØ§Ø¨Ø©'');
+ INSERT dbo.Public_info_News(PIN_Subject) VALUES(N''خبر تجريبي لاختبار البوابة'');
  INSERT dbo.Public_info_News_Prodc(News_ID) VALUES(1);');
 GO
 USE CompanyPortal;

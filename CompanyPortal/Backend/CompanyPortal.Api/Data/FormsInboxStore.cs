@@ -5,7 +5,17 @@ namespace CompanyPortal.Api.Data;
 
 public sealed class FormsInboxStore(IConfiguration configuration)
 {
-    public sealed record Row(long FormId,string Title,string SenderName,DateTime SentAt,bool IsOpened,bool IsSample);
+    public sealed class Row
+    {
+        public long FormId { get; init; }
+        public string Title { get; init; } = "";
+        public string SenderName { get; init; } = "";
+        public DateTime SentAt { get; init; }
+        public bool IsOpened { get; init; }
+        public bool IsSample { get; init; }
+        // Older source adapters may omit Purpose until they are mapped internally.
+        public string Purpose { get; init; } = "للعلم";
+    }
     public sealed record Inbox(Row[] Items,int UnreadCount);
     public async Task<Inbox?> GetAsync(string name,long? id,CancellationToken token)
     {

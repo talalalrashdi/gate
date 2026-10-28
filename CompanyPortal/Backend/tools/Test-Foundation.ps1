@@ -6,27 +6,16 @@ param(
 $ErrorActionPreference = 'Stop'
 
 function Request([string]$Path, [int]$ExpectedStatus, [bool]$Authenticated = $false, [string]$Method = 'GET') {
-    $parameters = @{
-        Uri = $BaseUrl.TrimEnd('/') + $Path
-        Method = $Method
-        UseBasicParsing = $true
-        UseDefaultCredentials = $Authenticated
-        ErrorAction = 'Stop'
-    }
+    $request = [Net.HttpWebRequest]::Create($BaseUrl.TrimEnd('/') + $Path)
+    $request.Method = $Method; $request.UseDefaultCredentials = $Authenticated
+    $request.AllowAutoRedirect = $false; $request.Timeout = 15000
+    try { $response = $request.GetResponse() }
+    catch { $response = $_.Exception.GetBaseException().Response; if (-not $response) { throw } }
     try {
-        $response = Invoke-WebRequest @parameters
-        $status = [int]$response.StatusCode
-        $content = $response.Content
-        $headers = $response.Headers
-    }
-    catch {
-        $response = $_.Exception.Response
-        if (-not $response) { throw }
-        $status = [int]$response.StatusCode
-        $headers = $response.Headers
-        $reader = New-Object System.IO.StreamReader($response.GetResponseStream())
+        $status = [int]$response.StatusCode; $headers = $response.Headers
+        $reader = [IO.StreamReader]::new($response.GetResponseStream())
         try { $content = $reader.ReadToEnd() } finally { $reader.Dispose() }
-    }
+    } finally { $response.Close() }
     if ($status -ne $ExpectedStatus) { throw "$Method $Path expected $ExpectedStatus, received $status." }
     return @{ Content = $content; Headers = $headers }
 }

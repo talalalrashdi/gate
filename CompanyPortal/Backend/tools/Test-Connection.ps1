@@ -9,17 +9,15 @@ param(
 $ErrorActionPreference = 'Stop'
 
 function Read-Response([string]$Url, [bool]$WindowsCredentials) {
+    $request = [Net.HttpWebRequest]::Create($Url)
+    $request.UseDefaultCredentials = $WindowsCredentials; $request.AllowAutoRedirect = $false; $request.Timeout = 15000
+    try { $result = $request.GetResponse() }
+    catch { $result = $_.Exception.GetBaseException().Response; if (-not $result) { throw } }
     try {
-        $result = Invoke-WebRequest -Uri $Url -UseBasicParsing -UseDefaultCredentials:$WindowsCredentials -ErrorAction Stop
-        return @{ Status = [int]$result.StatusCode; Content = $result.Content; Headers = $result.Headers }
-    }
-    catch {
-        $result = $_.Exception.Response
-        if (-not $result) { throw }
-        $reader = New-Object System.IO.StreamReader($result.GetResponseStream())
+        $reader = [IO.StreamReader]::new($result.GetResponseStream())
         try { $content = $reader.ReadToEnd() } finally { $reader.Dispose() }
         return @{ Status = [int]$result.StatusCode; Content = $content; Headers = $result.Headers }
-    }
+    } finally { $result.Close() }
 }
 
 if ($Production) {

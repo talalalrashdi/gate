@@ -57,6 +57,16 @@ The generated `Deployment/CompanyPortal-Setup.sql` includes migration 025 for fr
 
 ## Verification
 
+### Multiple PDFs and more tabs — 28 October 2026
+
+Tabs already use a one-to-many `Portal.DocumentTabItems` selection, not a single PDF column. Each document tab accepts 1–500 distinct authorized PDFs from its selected folder. There is no three-tab restriction. Safety booklets deliberately retain their separate one-PDF rule. No schema migration is required.
+
+The admin now shows the selected-file count and prevents selecting more than500. Lists with over50 available PDFs start collapsed and build their checkboxes only when expanded; closing/reopening retains selections. This avoids building every large file list for every tab at startup. Small lists remain expanded. Employees continue receiving a `documents` array per tab and a reader button for every file; tab buttons wrap onto additional rows.
+
+An approved disposable database, using copies of the current library read/save procedures and isolated synthetic metadata, verified20 tabs,500 PDFs in one tab, save/reload, no-op timestamps/history, remove/hide/reactivate/order and invalid selections. Identity/admin/root lookups were read-only wrappers to the local source; this is capacity/persistence coverage, not a replacement for real permission-source tests. Browser checks confirmed20 tabs,499 remaining rows after removal, lazy admin lists with501 available choices, the500 selection cap and preserved selections after collapse/reopen. The fixture reuses an existing valid PDF file; it does not contain500 different PDF contents. The disposable database was removed after testing.
+
+Repeatable checks: `node tools/verify-document-library.mjs`, `node tools/verify-admin-documents.mjs`; `Backend/tools/Test-DocumentLibraryCapacity.ps1` requires the explicitly marked disposable fixture and refuses the real CompanyPortal database. See [the regression report](PORTAL_REGRESSION_2026-10-28.md) for the wider scope and limits.
+
 Release builds, Swagger, authenticated HTTP create/edit/hide/order/reload, no-op timestamp, non-PDF/cross-folder/empty-selection rejection, origin/header enforcement, folder74 access and revocation/direct-link checks, admin revocation, and existing document/search regressions were checked locally. Tests restore sample grants and remove their own temporary tabs. Browser checks cover tab switching, reader dialog/link wiring, creating an inactive tab and reloading saved settings. The automation browser did not paint the native PDF pages; native rendering remains a destination browser check, although the PDF bytes, MIME, signatures and range handling were verified.
 
 Run `Backend/tools/Test-DocumentLibrary.ps1` against a temporary local API (default port 5091) with the explicit local fixture admin. Never run mutation tests against internal production data.

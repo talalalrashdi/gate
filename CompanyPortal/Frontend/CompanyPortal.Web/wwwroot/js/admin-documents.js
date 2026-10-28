@@ -22,21 +22,25 @@ document.querySelectorAll('[data-pdf-library-admin]').forEach(root => {
     if(tab.folderId&&!folders.some(v=>v.id===tab.folderId))folders.push({id:tab.folderId,name:'مجلد غير متاح لحسابك'});
     folders.forEach(v=>{const o=make('option',null,v.name);o.value=v.id;folder.append(o);});folder.value=tab.folderId||'';
     const order=field('ترتيب التبويب','number');order.required=true;order.min=0;order.max=2147483647;order.step=1;order.value=tab.displayOrder;
-    const files=make('fieldset');f.append(files);let selected=new Set(catalog.items.filter(i=>i.documentTabId===tab.documentTabId).map(i=>i.documentId));
+    const picker=make('details','admin-document-picker'),pickerTitle=make('summary'),files=make('fieldset'),selectionCount=make('p','admin-document-note');
+    picker.open=catalog.documents.filter(d=>d.folderId===Number(folder.value)).length<=50;picker.append(pickerTitle,files);selectionCount.setAttribute('aria-live','polite');f.append(picker,selectionCount);let selected=new Set(catalog.items.filter(i=>i.documentTabId===tab.documentTabId).map(i=>i.documentId));
     const activeLabel=make('label','admin-document-active'),active=make('input');active.type='checkbox';active.checked=tab.active;activeLabel.append(active,make('span',null,'إظهار التبويب'));f.append(activeLabel);
     const save=make('button','admin-primary',isNew?'إنشاء التبويب':'حفظ التغييرات');save.type='submit';f.append(save);
     if(isNew){const cancel=make('button',null,'إلغاء');cancel.type='button';cancel.addEventListener('click',async()=>{if(!busy&&await core.discard())f.remove();});f.append(cancel);}
     const note=make('p','admin-document-note');f.append(note);
     const values=()=>({tabName:name.value.trim(),folderId:Number(folder.value),displayOrder:Number(order.value),active:active.checked,documentIds:[...selected].sort()});
     let original=JSON.stringify(values());
-    function sync(){const changed=isNew||JSON.stringify(values())!==original;f.classList.toggle('is-dirty',changed);save.disabled=busy||!changed||!selected.size||!folder.value;note.textContent=changed?'تغييرات غير محفوظة':terms('تم حفظ إعدادات التبويب.');}
+    function sync(){const changed=isNew||JSON.stringify(values())!==original;f.classList.toggle('is-dirty',changed);save.disabled=busy||!changed||!selected.size||selected.size>500||!folder.value;note.textContent=changed?'تغييرات غير محفوظة':terms('تم حفظ إعدادات التبويب.');selectionCount.textContent=isSafety?'اختر ملف PDF واحدًا للكتيب.':'الملفات المحددة: '+selected.size+' / 500 — يمكن عرض عدة ملفات PDF في التبويب نفسه.';if(!isSafety)files.querySelectorAll('input[type="checkbox"]').forEach(c=>{c.disabled=busy||(!c.checked&&selected.size>=500);});}
     function filesList(){
       files.replaceChildren(make('legend',null,isSafety?'ملف PDF للكتيب — اختر ملفًا واحدًا':'ملفات PDF — اختر ما يظهر في التبويب'));
       const docs=catalog.documents.filter(d=>d.folderId===Number(folder.value));
       for(const id of selected)if(!docs.some(d=>d.documentId===id))docs.push({documentId:id,documentName:'ملف محفوظ غير متاح في المجلد لحسابك — أزِل اختياره أو راجع الصلاحية'});
+      pickerTitle.textContent=(isSafety?'اختيار ملف الكتيب':'اختيار ملفات PDF')+' ('+docs.length+')';
+      if(!picker.open)return;
       docs.forEach(doc=>{const l=make('label'),c=make('input');c.type=isSafety?'radio':'checkbox';if(isSafety)c.name='booklet-pdf';c.value=doc.documentId;c.checked=selected.has(doc.documentId);l.append(c,make('span',null,doc.documentName));files.append(l);c.addEventListener('change',()=>{if(c.checked){if(isSafety)selected.clear();selected.add(c.value);}else selected.delete(c.value);sync();});});
       if(!docs.length)files.append(make('p',null,'لا توجد ملفات PDF مسجلة ومتاحة في هذا المجلد.'));
     }
+    picker.addEventListener('toggle',()=>{filesList();sync();});
     folder.addEventListener('change',()=>{selected.clear();filesList();sync();});f.addEventListener('input',sync);f.addEventListener('change',sync);f.addEventListener('library:sync',sync);
     f.addEventListener('submit',async e=>{
       e.preventDefault();if(busy||!f.reportValidity())return;const value=values();if(!value.tabName||!selected.size)return;

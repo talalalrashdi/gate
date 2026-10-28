@@ -8,16 +8,15 @@
 
 ## التشغيل والإيقاف
 
-في `Frontend/CompanyPortal.Web/appsettings.json`، ضمن Diagnostics الموجود أصلًا:
+في `Frontend/CompanyPortal.Web/appsettings.Development.json`، ضمن Diagnostics:
 
 ```json
 "Diagnostics": {
-  "Enabled": true,
   "SimulationEnabled": true
 }
 ```
 
-`Enabled` يخص أدوات فحص الاتصال الموجودة. `SimulationEnabled` مفتاح مستقل، قيمته الافتراضية **false**. لتشغيل المحاكاة ضع true، ثم أعد تحميل الصفحة. إذا لم يلتقط التشغيل التغيير فأعد تشغيل التطبيق/مجمع IIS. يمكن استخدام `appsettings.Production.json` أو متغير البيئة `Diagnostics__SimulationEnabled` لنفس القيمة. لا يمكن تشغيلها من رابط أو query string.
+`Diagnostics:Enabled` إعداد قديم غير مستخدم وأُزيل من أمثلة النشر. `SimulationEnabled` قيمته **false** في الملف الأساسي و**true** في Development؛ لذلك لا تظهر الأداة في Production إلا عند تفعيلها صراحة. لتشغيل المحاكاة ضع true، ثم أعد تحميل الصفحة. إذا لم يلتقط التشغيل التغيير فأعد تشغيل التطبيق/مجمع IIS. يمكن استخدام `appsettings.Production.json` أو متغير البيئة `Diagnostics__SimulationEnabled` لنفس القيمة. لا يمكن تشغيلها من رابط أو query string.
 
 عند false لا ترسل صفحة MVC لوحة المحاكاة أو ملف JavaScript/CSS الخاصين بها. المستخدم الذي لديه صفحة مفتوحة من قبل التغيير يحتاج إعادة تحميلها لإزالة أدواتها.
 

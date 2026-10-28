@@ -21,7 +21,7 @@ public sealed class PhoneDirectoryController(IConfiguration configuration, UserS
 
     [HttpGet("photo/{personalId:long:min(1)}")]
     public Task<IActionResult> Photo(long personalId,CancellationToken token) =>
-        ReadAsset("ThumbnailPath","api/Assest/GetEmplyeeThumb",$"PersonalID={personalId}&Res=128",true,token);
+        ReadAsset("EmployeeImageUrl","",$"PersonalID={personalId}&Res=128",true,token);
 
     // Signed-in employee's own photo (header avatar). 404 when no PersonalID is mapped; the page then shows a placeholder.
     [HttpGet("photo/me")]
@@ -32,7 +32,7 @@ public sealed class PhoneDirectoryController(IConfiguration configuration, UserS
         try{personalId=await users.GetPersonalIdAsync(User.Identity.Name,token);}
         catch(SqlException ex){logger.LogError(ex,"PersonalID lookup failed");Response.Headers.CacheControl="private, no-store";return Problem(statusCode:503,title:"تعذر تحديد رقم الموظف.");}
         if(personalId is not > 0){Response.Headers.CacheControl="private, no-store";return NotFound();}
-        return await ReadAsset("ThumbnailPath","api/Assest/GetEmplyeeThumb",$"PersonalID={personalId}&Res=256",true,token);
+        return await ReadAsset("EmployeeImageUrl","",$"PersonalID={personalId}&Res=256",true,token);
     }
 
     private async Task<IActionResult> ReadAsset(string setting,string fallback,string query,bool photo,CancellationToken token)
@@ -43,14 +43,26 @@ public sealed class PhoneDirectoryController(IConfiguration configuration, UserS
         {
             if(string.IsNullOrWhiteSpace(User.Identity?.Name))return Unauthorized();
             if(await users.GetThemeAsync(User.Identity.Name,token) is null)return Forbid();
-            var config=configuration.GetSection("PhoneDirectory");
-            if(!config.GetValue<bool>("Enabled")||!Uri.TryCreate(config["BaseUrl"],UriKind.Absolute,out var root)
-                ||root.Scheme is not ("http" or "https")||root.UserInfo.Length>0)
-                return Problem(statusCode:503,title:"لم يتم إعداد اتصال دليل الهاتف بعد.");
-            var path=config[setting]??fallback;
-            var address=new Uri(new Uri(root.AbsoluteUri.TrimEnd('/')+"/"),path);
-            if(address.Scheme!=root.Scheme||address.Authority!=root.Authority||address.UserInfo.Length>0)
-                return Problem(statusCode:503,title:"مسار خدمة دليل الهاتف غير صالح.");
+            Uri address;
+            if(photo)
+            {
+                if(!Uri.TryCreate(configuration["EmployeeImageUrl"],UriKind.Absolute,out var imageUrl)
+                    ||imageUrl.Scheme is not ("http" or "https")||imageUrl.UserInfo.Length>0
+                    ||imageUrl.Query.Length>0||imageUrl.Fragment.Length>0)
+                    return Problem(statusCode:503,title:"لم يتم إعداد رابط صور الموظفين EmployeeImageUrl بشكل صحيح.");
+                address=imageUrl;
+            }
+            else
+            {
+                var config=configuration.GetSection("PhoneDirectory");
+                if(!config.GetValue<bool>("Enabled")||!Uri.TryCreate(config["BaseUrl"],UriKind.Absolute,out var root)
+                    ||root.Scheme is not ("http" or "https")||root.UserInfo.Length>0)
+                    return Problem(statusCode:503,title:"لم يتم إعداد اتصال دليل الهاتف بعد.");
+                var path=config[setting]??fallback;
+                address=new Uri(new Uri(root.AbsoluteUri.TrimEnd('/')+"/"),path);
+                if(address.Scheme!=root.Scheme||address.Authority!=root.Authority||address.UserInfo.Length>0)
+                    return Problem(statusCode:503,title:"مسار خدمة دليل الهاتف غير صالح.");
+            }
             var url=new UriBuilder(address){Query=query,Fragment=""}.Uri;
             async Task<byte[]> Fetch()
             {
@@ -60,7 +72,7 @@ public sealed class PhoneDirectoryController(IConfiguration configuration, UserS
                 return await response.Content.ReadAsByteArrayAsync(token);
             }
             if(!OperatingSystem.IsWindows()||User.Identity is not WindowsIdentity caller)
-                return Problem(statusCode:503,title:"يتطلب دليل الهاتف هوية Windows للموظف.");
+                return Problem(statusCode:503,title:photo?"تتطلب صور الموظفين هوية Windows للموظف.":"يتطلب دليل الهاتف هوية Windows للموظف.");
             using var process=WindowsIdentity.GetCurrent();
             var bytes=caller.User==process.User?await Fetch():await WindowsIdentity.RunImpersonatedAsync(caller.AccessToken,Fetch);
             if(photo)
@@ -86,9 +98,9 @@ public sealed class PhoneDirectoryController(IConfiguration configuration, UserS
             logger.LogWarning(ex,"Dalil {Endpoint} request failed",setting);
             return Problem(statusCode:ex.StatusCode==System.Net.HttpStatusCode.NotFound?404:502,title:
                 ex.StatusCode is System.Net.HttpStatusCode.Unauthorized or System.Net.HttpStatusCode.Forbidden?
-                "رفض دليل الهاتف مصادقة Windows. تحقق من التفويض والصلاحيات.":"تعذر تحميل بيانات جهة الاتصال.");
+                (photo?"رفضت خدمة صور الموظفين مصادقة Windows. تحقق من التفويض والصلاحيات.":"رفض دليل الهاتف مصادقة Windows. تحقق من التفويض والصلاحيات."):(photo?"تعذر تحميل صورة الموظف.":"تعذر تحميل بيانات جهة الاتصال."));
         }
-        catch(OperationCanceledException) when(!token.IsCancellationRequested){return Problem(statusCode:504,title:"انتهت مهلة الاتصال بدليل الهاتف.");}
+        catch(OperationCanceledException) when(!token.IsCancellationRequested){return Problem(statusCode:504,title:photo?"انتهت مهلة الاتصال بخدمة صور الموظفين.":"انتهت مهلة الاتصال بدليل الهاتف.");}
         catch(Exception ex) when(ex is JsonException or InvalidOperationException or SqlException or System.Security.SecurityException or UriFormatException)
         {logger.LogError(ex,"Dalil {Endpoint} unavailable",setting);return Problem(statusCode:503,title:"تعذر تحميل بيانات جهة الاتصال. تحقق من إعدادات الخدمة.");}
     }
@@ -130,8 +142,7 @@ public sealed class PhoneDirectoryController(IConfiguration configuration, UserS
             string? Field(JsonElement row, string key) => row.TryGetProperty(key, out var value)
                 && value.ValueKind is JsonValueKind.String or JsonValueKind.Number ? value.ToString() : null;
             var domain = settings["EmailDomain"] ?? "email.com";
-            var owa = settings["OutlookWebUrl"];
-            if (string.IsNullOrWhiteSpace(owa)) owa = configuration["Exchange:OutlookWebUrl"];
+            var owa = configuration["Exchange:OutlookWebUrl"];
             string? Compose(string? ntUser)
             {
                 if (string.IsNullOrWhiteSpace(ntUser) || !Regex.IsMatch(ntUser, @"\A[A-Za-z0-9._-]+\z")

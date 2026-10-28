@@ -15,14 +15,11 @@
   "Enabled": true,
   "BaseUrl": "https://DIRECTORY-SERVER/dalil/",
   "EmailDomain": "email.com",
-  "OutlookWebUrl": "https://MAIL-SERVER/owa/",
-  "MoreInfoPath": "api/contacts/GetMoreInfo",
-  "ThumbnailPath": "api/Assest/GetEmplyeeThumb",
   "ComposeQueryTemplate": "?ae=Item&a=New&t=IPM.Note&to={email}"
 }
 ```
 
-BaseUrl هو عنوان تطبيق Dalil، شاملاً `/dalil/` إذا كان موجودًا؛ لا تضف `api/contacts/search`. الإعداد الافتراضي معطل وعنوانه فارغ لعدم توفر العنوان الحقيقي محليًا. إعداد OutlookWebUrl الفارغ يستخدم Exchange:OutlookWebUrl. لا يتطلب فتح رابط OWA تفعيل اتصال EWS. قالب compose مبدئي وقابل للتغيير من الإعدادات، ويجب التحقق من فتح رسالة جديدة وحقل To في نسخة OWA الداخلية قبل اعتمادها. لا يرسل أي رسالة تلقائيًا.
+BaseUrl هو عنوان تطبيق Dalil، شاملاً `/dalil/` إذا كان موجودًا؛ لا تضف `api/contacts/search`. الإعداد الافتراضي معطل وعنوانه فارغ لعدم توفر العنوان الحقيقي محليًا. رابط OWA يؤخذ فقط من Exchange:OutlookWebUrl، وهو مشترك مع البريد. أُزيل PhoneDirectory:OutlookWebUrl. لا يتطلب فتح رابط OWA تفعيل اتصال EWS. قالب compose مبدئي وقابل للتغيير من الإعدادات، ويجب التحقق من فتح رسالة جديدة وحقل To في نسخة OWA الداخلية قبل اعتمادها. لا يرسل أي رسالة تلقائيًا.
 
 يتكون البريد من ntUser + @ + EmailDomain، ويظهر زر البريد فقط عند توفر اسم حساب صالح وعنوان OWA صالح. لا نستخرج رقم هاتف من `t`؛ نعرض officePhoneNumber كما هو. تفاصيل الجهة تشمل الوظيفة والقسم والحضور ومكان العمل والوحدات والملاحظات والموظف المكلف إن وجدت. لا تُعرض المعرفات الشخصية الداخلية ولا تُحفظ النتائج في المتصفح. الشريط الجانبي الموجود «أرقام تهمك» ما زال بيانات توضيحية منفصلة، وليس مستخرجًا من Dalil.
 
@@ -37,7 +34,7 @@ BaseUrl هو عنوان تطبيق Dalil، شاملاً `/dalil/` إذا كان 
 - سهم التفاصيل (للأسفل مغلق، للأعلى مفتوح) أو النقر على الصف أو Enter على الصف المحدد يفتح التفاصيل داخل بطاقة الشخص بعرض البطاقة كاملًا: جدول أرقام التواصل (الرقم، النوع، المكان، المدينة، ملاحظات) ثم العناوين. على الجوال يتحول الجدول إلى صفوف مكدسة. Esc أو السهم يغلق التفاصيل فقط. المدينة = phoneStateName.
 - يظهر رابط المكلف فقط إذا توفر personalIDAssignedTo (أو personalIdAssignedTo) وassignedToFullName. يمسح النتائج ويبحث بالاسم الكامل في نفس الورقة، ويطابق personalID للنتيجة مع معرف المكلف لمنع عرض شخص آخر له اسم مشابه. إذا كان المعرف في صفحة لاحقة تبقى أزرار الصفحات متاحة. الكتابة في حقل البحث تعود للبحث العادي.
 - التفاصيل تُحمّل عند أول فتح فقط لكل جهة اتصال معروضة، وتتيح إعادة المحاولة عند الفشل. إغلاقها وإعادة فتحها لا يكرران طلبًا ناجحًا.
-- الافتراض الحالي: `persID` هو Id للمزيد، وemployeeTypeID من نفس صف البحث. مسار المزيد الافتراضي `api/contacts/GetMoreInfo` يحتاج تأكيدًا داخليًا لأن المسار الكامل لم يُوفر بعد. الصورة تستخدم **personalID** وليس persID: `{BaseUrl}/{ThumbnailPath}?PersonalID=...&Res=128`. نحتفظ بتهجئة Dalil `Assest/GetEmplyeeThumb` كما وُفرت.
+- الافتراض الحالي: `persID` هو Id للمزيد، وemployeeTypeID من نفس صف البحث. مسار المزيد الافتراضي `api/contacts/GetMoreInfo` يحتاج تأكيدًا داخليًا لأن المسار الكامل لم يُوفر بعد. الصورة تستخدم **personalID** وليس persID: `{EmployeeImageUrl}?PersonalID=...&Res=128`. المسار الصحيح للخدمة هو `Assests/GetEmployeeThumb` ويُضبط ضمن EmployeeImageUrl المستقل.
 - الصور تمر عبر API بهوية الموظف؛ لا ترسل credentials أو مسارات Dalil للمتصفح. يقبل proxy ملفات PNG/JPEG/WebP بحد2MB، دون HTML أو SVG، مع initials كبديل للفشل. لا يتم تجاوز شهادات HTTPS.
 - نقرأ فقط phoneNumbers (number, phoneTypeName, phoneStateName, phonePlace, note, priority) وcontactAddress (currentAddress, permanentAddress). يمكن لـ Dalil إرجاع حقول أخرى؛ تُتجاهل ولا يلزم إضافتها للعقد الآن.
 
@@ -60,7 +57,20 @@ BaseUrl هو عنوان تطبيق Dalil، شاملاً `/dalil/` إذا كان 
 
 ## صورة الموظف في الهيدر (Profile photo)
 
-- الصورة في أعلى الصفحة تُحمّل من `GET /api/phone-directory/photo/me`: يحدد الـ API رقم الموظف (PersonalID) من NTName عبر `Security.User_getPersonalId`، ثم يجلب `{BaseUrl}/{ThumbnailPath}?PersonalID=...&Res=256` بنفس حماية صور الدليل (هوية Windows للموظف، PNG/JPEG/WebP فقط، حد 2MB، no-store).
+- الصورة في أعلى الصفحة تُحمّل من `GET /api/phone-directory/photo/me`: يحدد الـ API رقم الموظف (PersonalID) من NTName عبر `Security.User_getPersonalId`، ثم يجلب `{EmployeeImageUrl}?PersonalID=...&Res=256` بنفس حماية صور الدليل (هوية Windows للموظف، PNG/JPEG/WebP فقط، حد 2MB، no-store).
 - عند عدم وجود PersonalID أو عدم وجود صورة أو تعطل الخدمة تبقى الصورة الافتراضية `assets/avatar-placeholder.svg` (تظهر من البداية، دون صورة مكسورة).
 - Migration `037_UserPersonalId.sql` ينشئ إجراءً افتراضيًا لا يعيد صفوفًا (لا يستبدل إجراءً مهيأ عند إعادة التشغيل). اربطه بالمصدر الحقيقي بتعديل `Integration/ConfigureUserPersonalId.sample.sql`. محليًا فقط: `Development/019_AddSamplePersonalId.sql` يضيف عمود PersonalID إلى SecurityDB التجريبية ويعيّن 1244 للحساب الحالي.
-- يتطلب `PhoneDirectory:Enabled=true` و`BaseUrl`؛ بدونها تظهر الصورة الافتراضية. اختُبر محليًا بخدمة بديلة: الصورة، عدم وجود صورة، وعدم وجود PersonalID (`.local/profile-photo-browser.cjs`).
+- يتطلب ضبط `EmployeeImageUrl` كعنوان كامل مستقل؛ لا يعتمد على PhoneDirectory:Enabled أو BaseUrl. بدونه تظهر الصورة الافتراضية. اختُبر محليًا بخدمة بديلة: الصورة، عدم وجود صورة، وعدم وجود PersonalID (`.local/profile-photo-browser.cjs`).
+
+
+## رابط صور موحّد مستقل
+
+يُضبط في جذر إعدادات API، خارج PhoneDirectory:
+
+```json
+"EmployeeImageUrl": "https://dalil.company.local/api/Assests/GetEmployeeThumb"
+```
+
+لا تضف PersonalID أو Res إلى الإعداد: البروفايل يضيف `?PersonalID=1234&Res=256`، ونتائج دليل الهاتف تضيف `?PersonalID=1234&Res=128`. الإعداد الفارغ يعني أن خدمة الصور غير مهيأة؛ لا يوجد رجوع إلى ThumbnailPath أو BaseUrl. فحص Health يستخدم نفس العنوان. المصادقة وقيود أنواع الصور وحجمها بقيت كما هي، ولا تُقبل بيانات اعتماد أو query/fragment ضمن العنوان. استُبدل PhoneDirectory:ThumbnailPath بهذا الإعداد؛ حدّث أي Production override قديم.
+
+`MoreInfoPath` اختياري: عند حذفه يُستخدم `api/contacts/GetMoreInfo`. أضفه فقط إذا اختلف مسار الخدمة الداخلية. `ComposeQueryTemplate` بقي قابلًا للضبط.

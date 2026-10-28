@@ -67,3 +67,6 @@ The employee portal uses the same validated appearance variables and managed ima
 See [INTERFACE_IMAGES.md](INTERFACE_IMAGES.md) for groups/uploads and [IMAGE_SPECIFICATIONS.md](IMAGE_SPECIFICATIONS.md) for artwork preparation.
 
 Earlier verification used contained complete artwork and fallback-only defaults. Those behaviours are superseded by the current full-width hero and publication/global-default controls in [THEME_PUBLICATION.md](THEME_PUBLICATION.md). The newer integration suite rolls back global/default tests; the legacy appearance suite now snapshots/restores all saved settings during its deliberate default tests. Existing user-created themes, image assignments and current default are preserved.
+# Per-image crop positions
+
+Migration047 adds **موضع الصورة** in the images tab: drag in the live preview, keyboard-accessible sliders and centre reset, saved separately for each photo/theme. See [theme image framing](THEME_IMAGE_POSITIONS.md) for persistence, deployment and verification. Existing themes retain their framing until an override is saved.

@@ -7,7 +7,7 @@ using Microsoft.Data.SqlClient;
 
 namespace CompanyPortal.Api.Controllers;
 
-[ApiController,Authorize,Route("api/admin/themes"),RequestSizeLimit(8192),AdminSection("admin-themes","themes")]
+[ApiController,Authorize,Route("api/admin/themes"),RequestSizeLimit(32768),AdminSection("admin-themes","themes")]
 public sealed class ThemeAdministrationController(ThemeAdministrationStore themes,ILogger<ThemeAdministrationController> logger):ControllerBase
 {
     [HttpGet] public Task<IActionResult> Get(CancellationToken token)=>Execute(async()=>Ok(await themes.GetAsync(token)));
@@ -22,6 +22,8 @@ public sealed class ThemeAdministrationController(ThemeAdministrationStore theme
     [HttpPost("{id:int:min(1)}/apply-to-all")] public Task<IActionResult> ApplyToAll(int id,CancellationToken token)=>Execute(async()=>{await themes.ApplyToAllAsync(id,User.Identity!.Name!,token);return NoContent();});
     private Task<IActionResult> Save(int? id,SaveAdminTheme request,CancellationToken token)=>Execute(async()=>{
         if(string.IsNullOrWhiteSpace(request.ThemeName)||request.IsDefault==true&&request.Active!=true)return Problem(statusCode:400,title:"Check the theme name and active default.");
+        if(request.ImagePositions is not null && (request.ImagePositions.Any(p=>p is null)||request.ImagePositions.Select(p=>p.ImageId).Distinct().Count()!=request.ImagePositions.Length))
+            return Problem(statusCode:400,title:"Use one focal position per image.");
         if(request.PreviewRoles is null || request.PreviewRoles.Any(r=>string.IsNullOrWhiteSpace(r)||r.Trim().Length>200)
             || request.PreviewRoles.Select(r=>r.Trim()).Distinct(StringComparer.Ordinal).Count()!=request.PreviewRoles.Length
             || request.Visibility=="preview"&&request.PreviewRoles.Length==0

@@ -7,6 +7,7 @@ namespace CompanyPortal.Api.Contracts;
 public sealed record AdminTheme(int ThemeId,string ThemeName,string LayoutKey,int DisplayOrder,bool IsDefault,bool Active,DateTime LastChangeAt,
     string? PrimaryColor,string? AccentColor,string? BackgroundColor,int? OverlayOpacity,string? ForegroundPreset,string ImagePresentation,int? ImageGroupId,string Visibility,[property:JsonIgnore] string PreviewRolesJson)
 {
+    public ThemeImagePosition[] ImagePositions {get;init;}=[];
     public string[] PreviewRoles => (JsonSerializer.Deserialize<PreviewRole[]>(PreviewRolesJson??"[]")??[]).Select(r=>r.RoleName).ToArray();
     public sealed record PreviewRole(string RoleName);
 }
@@ -29,4 +30,13 @@ public sealed class SaveAdminTheme
     [Range(1,int.MaxValue)] public int? ImageGroupId {get;init;}
     [RegularExpression("^(hidden|preview|public)$")] public string? Visibility {get;init;}
     [MaxLength(50)] public string[] PreviewRoles {get;init;}=[];
+    [MaxLength(100)] public ThemeImagePosition[]? ImagePositions {get;init;}
+}
+
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public sealed record ThemeImagePosition
+{
+    [JsonRequired,Range(1,int.MaxValue)] public int ImageId {get;init;}
+    [JsonRequired,Range(typeof(decimal),"0","100")] public decimal FocalX {get;init;}
+    [JsonRequired,Range(typeof(decimal),"0","100")] public decimal FocalY {get;init;}
 }

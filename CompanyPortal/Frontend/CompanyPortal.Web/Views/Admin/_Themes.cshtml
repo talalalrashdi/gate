@@ -27,6 +27,14 @@
         <div id="theme-images" role="tabpanel" aria-labelledby="theme-tab-images" hidden>
           <label>مجموعة الصور<select id="theme-image-group"><option value="">الصور الأصلية للقالب</option></select></label>
           <p id="theme-group-summary" class="theme-note"></p><a class="theme-text-button" href="@Url.Content("~/admin/images")" target="_blank" rel="noopener">إدارة مجموعات الصور <i class="iconsax" icon-name="logout-1" aria-hidden="true"></i></a>
+          <fieldset id="theme-focus-controls" class="theme-template-field" hidden>
+            <legend>موضع الصورة</legend>
+            <label>الصورة المراد ضبطها<select id="theme-focus-image"></select></label>
+            <p class="theme-note">اسحب الصورة داخل المعاينة لاختيار الجزء الظاهر. تُحفظ وضعية مستقلة لكل صورة في هذا الثيم. بعض الاتجاهات لا تتحرك إن لم يوجد قص فيها.</p>
+            <label>الموضع الأفقي <output id="theme-focus-x-value"></output><input id="theme-focus-x" type="range" min="0" max="100" step="0.01" value="50"></label>
+            <label>الموضع الرأسي <output id="theme-focus-y-value"></output><input id="theme-focus-y" type="range" min="0" max="100" step="0.01" value="50"></label>
+            <button id="theme-focus-reset" type="button" class="theme-text-button">توسيط الصورة</button>
+          </fieldset>
           <fieldset class="theme-template-field"><legend>طريقة عرض الصور</legend><label class="theme-check"><input type="radio" name="theme-presentation" value="background" checked> خلفية — تملأ المساحة وقد تُقص أطرافها</label><label class="theme-check"><input type="radio" name="theme-presentation" value="artwork"> تصميم كامل — يملأ عرض الواجهة</label></fieldset>
           <p class="theme-note">التصميم الكامل يملأ عرض الواجهة مع الحفاظ على تناسب الصورة وقد يُقص منها رأسيًا. يستبدل الرسم الأصلي للقالب؛ الخط والصورة والعلم لا تظهر مرتين. التدوير والترتيب يُحدّدان من إعدادات المجموعة.</p>
         </div>

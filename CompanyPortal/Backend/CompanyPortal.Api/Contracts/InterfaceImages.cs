@@ -9,7 +9,11 @@ public sealed record ImageGroupItem(int ImageGroupId, int ImageId, int DisplayOr
 public sealed record ImageTheme(int ThemeId, string ThemeName, string LayoutKey, int? ImageGroupId);
 public sealed record ImageAdministration(IReadOnlyList<PortalImage> Images, IReadOnlyList<ImageGroup> Groups, IReadOnlyList<ImageGroupItem> Items, IReadOnlyList<ImageTheme> Themes);
 public sealed record ThemeImageSettings(int ImageGroupId, bool RotateImages, int RotationSeconds, int? DefaultImageId);
-public sealed record ThemeImage(int ImageId, string ImageName, int DisplayOrder);
+public sealed record ThemeImage(int ImageId, string ImageName, int DisplayOrder)
+{
+    public decimal? FocalX {get;init;}
+    public decimal? FocalY {get;init;}
+}
 public sealed record ThemeImages(ThemeImageSettings? Settings, IReadOnlyList<ThemeImage> Images);
 
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]

@@ -36,3 +36,5 @@ body.portal-dashboard .portal-header.is-past-hero .portal-media-subnav-label { -
 /* Both header rows share one surface; current-section state is maintained by editorial.js. */
 body.portal-dashboard .portal-header .portal-media-subnav { background: inherit !important; }
 body.portal-dashboard .portal-header .portal-media-subnav-links a[aria-current="location"] { background: #dbeade !important; color: #173b30 !important; --text-primary: #173b30; font-weight: 700; border-bottom-color: #34795a; }
+/* Explicit framing stays still so the crop matches the administrator's preview. */
+.theme-official-backdrop img[data-positioned]{object-fit:cover!important;object-position:var(--theme-image-position)!important;transform:none!important;animation:none!important}

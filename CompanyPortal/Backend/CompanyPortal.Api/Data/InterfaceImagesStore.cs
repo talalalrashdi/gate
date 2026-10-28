@@ -47,8 +47,13 @@ public sealed class InterfaceImagesStore(IConfiguration configuration)
         await using var connection = Connection();
         var userId=await connection.QuerySingleOrDefaultAsync<int?>(Command("Security.User_getByUsername",new {Username=account},token));
         using var rows = await connection.QueryMultipleAsync(Command("Master.Themes_getImages", new { ThemeId = id,UserId=userId }, token));
-        return new(await rows.ReadSingleOrDefaultAsync<ThemeImageSettings>(), (await rows.ReadAsync<ThemeImage>()).AsList());
+        var settings=await rows.ReadSingleOrDefaultAsync<ThemeImageSettings>();
+        var items=(await rows.ReadAsync<ThemeImage>()).ToArray();
+        rows.Dispose();
+        var positions=(await connection.QueryAsync<PositionRow>(Command("Master.ThemeImagePositions_Get",new {ThemeId=id},token))).ToDictionary(p=>p.ImageId);
+        return new(settings,items.Select(i=>positions.TryGetValue(i.ImageId,out var p)?i with {FocalX=p.FocalX,FocalY=p.FocalY}:i).ToArray());
     }
+    private sealed record PositionRow(int ThemeId,int ImageId,decimal FocalX,decimal FocalY);
     public sealed record Content(byte[] ImageData, string ContentType);
     public async Task<Content?> ContentAsync(int id, bool admin, string account, CancellationToken token)
     {

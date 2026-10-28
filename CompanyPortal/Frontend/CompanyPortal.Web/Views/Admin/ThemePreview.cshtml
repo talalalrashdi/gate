@@ -4,7 +4,7 @@
 @section Head {<link rel="stylesheet" href="@Url.Content("~/vendor/iconsax/icons.css")">}
 @section Styles {
   @await Html.PartialAsync("~/Views/Home/_PortalStyles.cshtml")
-  <style>html{scrollbar-width:thin}body{pointer-events:none}#preview-shell[hidden]{display:none}#preview-message{padding:30px;font-family:Arial,sans-serif;direction:rtl}.portal-floating-alert,.portal-floating-notice{display:none!important}</style>
+  <style>html{scrollbar-width:thin}body{pointer-events:none}body[data-focus-editing] #preview-shell{pointer-events:auto;cursor:grab;touch-action:none;user-select:none}body[data-focus-dragging] #preview-shell{cursor:grabbing}#preview-shell[hidden]{display:none}#preview-message{padding:30px;font-family:Arial,sans-serif;direction:rtl}.portal-floating-alert,.portal-floating-notice{display:none!important}</style>
 }
 <p id="preview-message" role="status">جارٍ التحقق من صلاحية المعاينة…</p>
 <div id="preview-shell" hidden>

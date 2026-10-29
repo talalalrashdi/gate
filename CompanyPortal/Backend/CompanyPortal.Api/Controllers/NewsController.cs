@@ -12,12 +12,20 @@ public sealed class NewsController(NewsStore news, NewsFiles files, ILogger<News
 {
     [HttpGet]
     [ProducesResponseType<NewsPage>(StatusCodes.Status200OK)]
-    public Task<IActionResult> Get([Range(1,1000000)] int page = 1, [Range(1,50)] int pageSize = 8, CancellationToken token = default) => Execute(async () =>
+    public Task<IActionResult> Get([Range(1,1000000)] int page = 1, [Range(1,50)] int pageSize = 8, bool includeHeadlines = false, CancellationToken token = default) => Execute(async () =>
     {
-        var result = await news.GetAsync(page, pageSize, null, token);
-        return Ok(new NewsPage(result.Items.Select(row => new NewsItem(row.NewsId, row.PublishedAt,
-            row.Subject ?? "", row.IsImportant, row.PicturePath is not null, row.PdfPath is not null, row.AttachmentConflict)).ToArray(), page, pageSize, result.Total));
+        var today = DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(4)).Date;
+        var result = await news.GetAsync(page, pageSize, null, token, today);
+        IReadOnlyList<NewsItem>? headlines = null;
+        if (includeHeadlines)
+        {
+            headlines = (await news.GetAsync(1, 5, null, token, today)).Items.Select(ToItem).ToArray();
+        }
+        return Ok(new NewsPage(result.Items.Select(ToItem).ToArray(), page, pageSize, result.Total) { Headlines = headlines });
     }, token);
+
+    private static NewsItem ToItem(NewsStore.Row row) => new(row.NewsId, row.PublishedAt,
+        row.Subject ?? "", row.IsImportant, row.PicturePath is not null, row.PdfPath is not null, row.AttachmentConflict);
 
     [HttpGet("{id:long:min(1)}/pdf")]
     [ProducesResponseType(StatusCodes.Status200OK)]

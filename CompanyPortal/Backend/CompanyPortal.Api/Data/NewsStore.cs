@@ -16,11 +16,13 @@ public sealed class NewsStore(IConfiguration configuration)
         return await connection.QuerySingleOrDefaultAsync<int?>(Command("Security.User_getByUsername", new { Username = ntName }, token)) is not null;
     }
 
-    public async Task<(IReadOnlyList<Row> Items, int Total)> GetAsync(int page, int pageSize, long? newsId, CancellationToken token)
+    public async Task<(IReadOnlyList<Row> Items, int Total)> GetAsync(int page, int pageSize, long? newsId, CancellationToken token, DateTime? publishedOn = null)
     {
         await using var connection = Connection();
         await connection.OpenAsync(token);
-        using var results = await connection.QueryMultipleAsync(Command("News.Items_get", new { Page = page, PageSize = pageSize, NewsId = newsId }, token));
+        var parameters = new DynamicParameters(new { Page = page, PageSize = pageSize, NewsId = newsId });
+        if (publishedOn is not null) parameters.Add("PublishedOn", publishedOn.Value.Date, DbType.Date);
+        using var results = await connection.QueryMultipleAsync(Command("News.Items_get", parameters, token));
         return ((await results.ReadAsync<Row>()).AsList(), await results.ReadSingleAsync<int>());
     }
 

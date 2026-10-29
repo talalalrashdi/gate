@@ -128,6 +128,7 @@ body[data-site-theme="official"] #theme-official > #portal-alerts-section { disp
 .theme-official-headlines { list-style: none; margin: 0; padding: 0; }
 .theme-official-headlines li:nth-child(n+4) { visibility: hidden; }
 .theme-official-headlines.is-rotating li:nth-child(4) { visibility: visible; }
+.theme-official-news-controls[hidden] { display: none !important; }
 .theme-official-headlines li { padding-bottom: 9.2px; transition: padding-bottom 1200ms cubic-bezier(.25,.1,.25,1); }
 .theme-official-headlines .news-headline-surface { --text-primary: #fff; --text-secondary: #fff; position: relative; display: block; overflow: hidden; width: 100%; height: 73.6px; padding: 0; border-radius: 13.8px; background: transparent; text-align: start; font-size: 16.1px; font-weight: 500; line-height: 1.45; text-shadow: 0 2px 18px #00000080; transition: height 1200ms cubic-bezier(.25,.1,.25,1), opacity 900ms ease; }
 .theme-official-headlines img { position: absolute; inset: 9.2px 0 auto auto; display: block; width: 73.6px; height: 55.2px; border-radius: 10.35px; object-fit: cover; transition: width 1200ms cubic-bezier(.25,.1,.25,1), height 1200ms cubic-bezier(.25,.1,.25,1), top 1200ms cubic-bezier(.25,.1,.25,1); }

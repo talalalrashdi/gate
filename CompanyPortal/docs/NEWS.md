@@ -66,3 +66,20 @@ For the internal network, never run Development/004, Development/005 or the init
 - Existing frontend parity: 328 baseline files unchanged, six existing routes/313 static resources checked. Offline source scan passed. Internal SQL/view semantics, IIS file access and internal browser authentication still require destination verification.
 
 26 October 2026 selection update: frontend Release, syntax, original frontend parity and offline asset checks passed. Actual browser verified first-item selection, mouse selection without an attachment, keyboard selection of an attached item, exactly one highlight/pressed state, right-side PDF URL and first-item selection after pagination. No SQL/API or news-source changes were required.
+
+
+## News scopes — final user requirement
+
+Both portal views show **today only**, using the source SQL PublishedAt calendar date and server-calculated Asia/Muscat UTC+04:00 day:
+
+- واجهة/top carousel: latest5 today, sorted PublishedAt DESC then NewsId DESC.
+- مزيد من الأخبار / أخبار عامة: all today's published items, with8-item paging and the same sort order.
+- No news today: the top carousel is blank and its scroll controls are hidden (including before initial load). More-news retains its لا توجد أخبار اليوم message. No fallback to older news.
+
+Refreshing the page refetches the combined response; newly arrived news moves to the top according to PIN_Date, with descending PIN_ID breaking equal-date/time ties. If PIN_Date contains dates only, descending IDs determine arrival order within that day. Actual receipt time cannot be recovered independently if the source uses backdated PIN_Date; map that field appropriately in the source SP when necessary. No automatic polling is introduced.
+
+Migration054 adds optional News.Items_get @PublishedOn filtering after deduplication and before paging/count. API GET /api/news applies today to the main list and, when includeHeadlines=true, also queries today's top5 into the optional Headlines array. Initial UI load uses one HTTP response for both views; subsequent paging does not repeat the carousel query. The same captured day is passed to both queries. Picture/PDF ID lookups retain their unfiltered-by-day authorization/publication recheck for existing links. All original source flags/file safety/deduplication rules remain.
+
+Test-TodayHeadlines.ps1 creates12today+yesterday/tomorrow fixture rows, verifies both day filters, top5 cap, paged totals, then inserts two arrivals with equal timestamps and verifies each newest ID is first in both views after refetch. It checks no-today empty state, anonymous protection and Swagger, then removes only its fixtures. Both Release builds and JS syntax passed. No new SQL migration beyond054 is needed for this final scope adjustment. Restart the API after building the changed source and refresh the portal.
+
+The real and simulated headline lists are both capped at5. Empty→populated→empty transitions restore/hide controls correctly without restarting a fetch. Browser verified blank text/display:none,6 simulated news→5 cards/controls restored, reset→0 cards/controls hidden, no console errors. No API/SQL change to the full today list/page size.

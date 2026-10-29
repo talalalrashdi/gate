@@ -50,15 +50,15 @@
   status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite'); board.before(status);
   const feature = make('div', 'editorial-news-feature');
   const selected = make('article', 'editorial-news-feature-story'); selected.id = 'editorial-news-selected'; selected.setAttribute('aria-live','polite'); selected.setAttribute('aria-atomic','true'); feature.append(selected);
-  const stream = make('div', 'editorial-news-stream'), header = make('header'); header.append(make('h4', null, 'آخر الأخبار'));
+  const stream = make('div', 'editorial-news-stream'), header = make('header'); header.append(make('h4', null, 'أخبار اليوم'));
   const controls = make('div', 'editorial-news-list-controls'), arrows = make('div', 'portal-arrow-controls');
   const previous = make('button', 'portal-arrow-button', '→'), next = make('button', 'portal-arrow-button', '←');
-  previous.type = next.type = 'button'; previous.setAttribute('aria-label', 'صفحة الأخبار السابقة'); next.setAttribute('aria-label', 'عرض المزيد من آخر الأخبار');
+  previous.type = next.type = 'button'; previous.setAttribute('aria-label', 'صفحة الأخبار السابقة'); next.setAttribute('aria-label', 'عرض المزيد من أخبار اليوم');
   const pageStatus = make('output', 'editorial-news-page-status'); pageStatus.setAttribute('aria-live', 'polite');
   arrows.append(previous, next); controls.append(pageStatus, arrows); header.append(controls);
   const newsList = make('ol', 'editorial-news-list'); newsList.id = 'editorial-news-paged-list'; stream.append(header, newsList); board.replaceChildren(feature, stream);
   let page = 1, total = 0, loading = false;
-  let firstPageItems=[],currentPageItems=[],simulatedItems=[],carouselRefresh,realStatus='جارٍ تحميل الأخبار…';
+  let headlineItems=[],firstPageItems=[],currentPageItems=[],simulatedItems=[],carouselRefresh,realStatus='جارٍ تحميل الأخبار…';
   const simulationEnabled=!!document.getElementById('portal-simulation');
   const pageSize = 8;
   const showStory = story => {
@@ -90,10 +90,12 @@
     if(items.length)showStory(items[0]);else{selected.replaceChildren();delete selected.dataset.newsId;}
   };
   const headlinePanel = headlines.closest('.theme-official-news');
-  const headlineControls = [...headlinePanel.querySelectorAll('.theme-official-news-controls button')];
+  const headlineControlGroup=headlinePanel.querySelector('.theme-official-news-controls');
+  const headlineControls = [...headlineControlGroup.querySelectorAll('button')];
+  headlineControlGroup.hidden=true;
   headlineControls.forEach(button => { button.disabled = true; });
   function renderHeadlines(items) {
-    headlines.replaceChildren();
+    headlines.replaceChildren();headlineControlGroup.hidden=!items.length;
     items.forEach((story, index) => {
       const item = make('li'), surface = make('div', 'news-headline-surface'), text = make('span'), heading = make('strong');
       item.classList.toggle('is-breaking', story.isImportant); item.classList.toggle('is-featured', index === 0);
@@ -103,19 +105,20 @@
       text.append(heading, credit); surface.append(text); item.append(surface); headlines.append(item);
     });
     if (items.length) startHeadlineCarousel();
-    else headlines.append(make('li', 'news-empty', 'لا توجد أخبار منشورة حاليًا.'));
+    if(!items.length){headlineControls.forEach(button=>button.disabled=true);carouselRefresh?.();}
   }
   async function load(targetPage) {
     if (loading) return; loading = true; previous.disabled = next.disabled = true;
     status.textContent = 'جارٍ تحميل الأخبار…'; board.setAttribute('aria-busy', 'true');
     try {
-      const response = await fetch(endpoint(`api/news?page=${targetPage}&pageSize=${pageSize}`), { credentials:'include', cache:'no-store', signal:AbortSignal.timeout(15000) });
+      const includeHeadlines=!headlines.dataset.loaded;
+      const response = await fetch(endpoint(`api/news?page=${targetPage}&pageSize=${pageSize}${includeHeadlines?'&includeHeadlines=true':''}`), { credentials:'include', cache:'no-store', signal:AbortSignal.timeout(15000) });
       if (!response.ok) throw new Error('News unavailable');
       const result = await response.json();
       if (!Array.isArray(result.items) || !Number.isInteger(result.totalCount) || result.totalCount < 0) throw new Error('Invalid news response');
       page = targetPage; total = result.totalCount;currentPageItems=result.items;if(page===1)firstPageItems=result.items;renderPage(page===1?[...simulatedItems,...result.items]:result.items);
-      if (page === 1 && !headlines.dataset.loaded) { renderHeadlines([...simulatedItems,...result.items].slice(0,pageSize)); headlines.dataset.loaded = 'true'; }
-      status.textContent = total ? '' : 'لا توجد أخبار منشورة حاليًا.';
+      if (includeHeadlines) { if(!Array.isArray(result.headlines))throw new Error('Invalid headline response');headlineItems=result.headlines;renderHeadlines([...simulatedItems,...headlineItems].slice(0,5));headlines.dataset.loaded='true'; }
+      status.textContent = total ? '' : 'لا توجد أخبار اليوم.';
       pageStatus.textContent = total ? `${page} / ${Math.ceil(total / pageSize)}` : '0 / 0';
     } catch {
       renderPage([]); pageStatus.textContent = ''; status.replaceChildren(document.createTextNode('تعذر تحميل الأخبار. '));
@@ -130,7 +133,7 @@
   if(simulationEnabled)document.addEventListener('portal:simulate',event=>{
     const kind=event.detail?.kind;if(!['news','breaking','reset'].includes(kind))return;
     if(kind==='reset')simulatedItems=[];else{simulatedItems.unshift({newsId:'simulation-'+event.detail.id,subject:event.detail.title,publishedAt:new Date().toISOString(),isImportant:kind==='breaking',hasPdf:false,hasPicture:false,isSimulation:true});simulatedItems=simulatedItems.slice(0,20);}
-    page=1;currentPageItems=firstPageItems;renderPage([...simulatedItems,...currentPageItems]);renderHeadlines([...simulatedItems,...firstPageItems].slice(0,pageSize));
+    page=1;currentPageItems=firstPageItems;renderPage([...simulatedItems,...currentPageItems]);renderHeadlines([...simulatedItems,...headlineItems].slice(0,5));
     previous.disabled=true;next.disabled=pageSize>=total;status.textContent=simulatedItems.length?'محاكاة محلية — الأخبار الحقيقية محفوظة دون تعديل.':realStatus;pageStatus.textContent='1 / '+Math.max(1,Math.ceil(total/pageSize));
   });
   function startHeadlineCarousel() {

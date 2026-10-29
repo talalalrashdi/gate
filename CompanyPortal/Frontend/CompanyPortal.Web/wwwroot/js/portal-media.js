@@ -31,7 +31,7 @@
  function photoControls(){const count=albums.length;root.querySelector('[data-photo-status]').textContent=count?(albumIndex+1)+' / '+count:'0 / 0';root.querySelector('[data-photo-prev]').disabled=count<2;root.querySelector('[data-photo-next]').disabled=count<2;}
  function chooseAlbum(index){
   if(!albums.length)return;albumIndex=(index+albums.length)%albums.length;
-  [...photos.children].forEach((card,i)=>{const next=(albumIndex+1)%albums.length,previous=(albumIndex+albums.length-1)%albums.length,selected=i===albumIndex;card.hidden=!(selected||i===next||i===previous);card.classList.toggle('is-selected',selected);card.style.setProperty('--photo-slot',selected?'0':i===next?'-1':'1');card.querySelector('.editorial-photo-select').setAttribute('aria-pressed',String(selected));card.querySelector('.editorial-photo-enlarge').hidden=!selected;});photoControls();
+  [...photos.children].forEach((card,i)=>{const next=(albumIndex+1)%albums.length,previous=(albumIndex+albums.length-1)%albums.length,selected=i===albumIndex;card.hidden=!(selected||i===next||i===previous);card.classList.toggle('is-selected',selected);card.style.setProperty('--photo-slot',selected?'0':i===next?'-1':'1');const select=card.querySelector('.editorial-photo-select');select.setAttribute('aria-pressed',String(selected));select.setAttribute('aria-label',(selected?'عرض ':'توسيط ')+albums[i].title+(albums[i].items.length>1?' — '+albums[i].items.length+' صور':''));select.setAttribute('aria-haspopup',selected?'dialog':'false');card.querySelector('.editorial-photo-enlarge').hidden=!selected;});photoControls();
  }
  function renderGallery(){
   const photo=currentPhotos[photoIndex];if(!photo)return;image.src=file(photo.mediaId);image.alt=photo.mediaName;caption.textContent=photo.mediaName;
@@ -57,7 +57,7 @@
   albums.push(...items.filter(m=>m.mediaType==='image'&&m.mediaGroupId===null).map(m=>({title:m.mediaName,order:m.displayOrder,key:'m'+m.mediaId,cover:m.mediaId,items:[m]})));albums.sort((a,b)=>a.order-b.order||a.key.localeCompare(b.key));
   for(const album of albums){
    const card=make('article','editorial-photo-slide'),img=make('img');img.src=file(album.cover);img.alt=album.title;img.loading='lazy';
-   const select=make('button','editorial-photo-select');select.type='button';select.setAttribute('aria-label','اختيار '+album.title);select.addEventListener('click',()=>chooseAlbum(albums.indexOf(album)));
+   const select=make('button','editorial-photo-select');select.type='button';select.setAttribute('aria-label','عرض '+album.title+(album.items.length>1?' — '+album.items.length+' صور':''));select.setAttribute('aria-haspopup','dialog');select.setAttribute('aria-controls',gallery.id);select.addEventListener('click',()=>{const index=albums.indexOf(album);if(index===albumIndex)openAlbum(album,select);else chooseAlbum(index);});
    const copy=make('div','editorial-photo-copy');copy.append(make('h3',null,album.title),make('p',null,album.items.length===1?'صورة واحدة':album.items.length+' صور'));
    const open=make('button','editorial-photo-enlarge','↗');open.type='button';open.dataset.editorialGallery='';open.setAttribute('aria-label','عرض '+album.title+(album.items.length>1?' — '+album.items.length+' صور':''));open.addEventListener('click',()=>openAlbum(album,open));card.append(img,select,copy,open);photos.append(card);
    img.addEventListener('error',()=>{copy.querySelector('p').textContent='تعذر تحميل صورة الغلاف؛ افتح المجموعة لعرض الصور.';});

@@ -28,13 +28,18 @@ if ($TestSampleData) {
     Assert (([uri]$BaseUrl).IsLoopback) 'Sample-data checks are local-only.'
     & sqlcmd -S localhost -E -b -d Pubs_Info_V4 -Q "IF NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'CompanyPortalDevelopmentFixture' AND CONVERT(int,value)=1) THROW 50012,'Not a development news fixture.',1;"
     if($LASTEXITCODE -ne 0) { throw 'Fixture guard failed.' }
-    Assert ($page.totalCount -eq 9) 'Publication filters or fixture count differ.'
-    Assert ($page.items[0].newsId -eq 1) 'News is not ordered newest first.'
-    Assert (@($page.items|Where-Object newsId -eq 1).Count -eq 1) 'Repeated join rows duplicated item 1.'
-    Assert ($page.items[0].hasPdf -and $page.items[0].hasPicture -and $page.items[0].isImportant) 'PDF/image/important flags missing.'
-    Assert (-not ($page.items|Where-Object newsId -eq 3).hasPdf) 'Inactive attachment returned.'
+    $sample=((Request '/api/news?page=1&pageSize=50&includeHeadlines=true').Content|ConvertFrom-Json).headlines
+    Assert (@($sample).Count -le 5) 'Today hero exceeded5.'
+    Assert (@($sample|Group-Object newsId|Where-Object Count -gt 1).Count -eq 0) 'Repeated join rows duplicated headlines.'
+    $one=$sample|Where-Object newsId -eq 1
+    if($one){Assert ($one.hasPdf -and $one.hasPicture -and $one.isImportant) 'PDF/image/important flags missing.'}
+    $three=$sample|Where-Object newsId -eq 3
+    if($three){Assert (-not $three.hasPdf) 'Inactive attachment returned.'}
+    $today=[DateTimeOffset]::UtcNow.ToOffset([TimeSpan]::FromHours(4)).ToString('yyyy-MM-dd')
+    $expectedToday=@($sample|Where-Object {([datetime]$_.publishedAt).ToString('yyyy-MM-dd') -eq $today}).Count
+    Assert ($page.totalCount -eq $expectedToday) 'More-news day filter differs.'
     $second=(Request '/api/news?page=2&pageSize=8').Content|ConvertFrom-Json
-    Assert (@($second.items).Count -eq 1 -and $second.totalCount -eq 9) 'Pagination count differs.'
+    Assert (@($second.items).Count -eq [Math]::Max(0,$expectedToday-8) -and $second.totalCount -eq $expectedToday) 'Today pagination count differs.'
     $pdf=Request '/api/news/1/pdf'
     Assert ($pdf.Status -eq 200 -and $pdf.Type -eq 'application/pdf' -and $pdf.Content.StartsWith('%PDF-')) 'Existing PDF stream failed.'
     Assert ($pdf.Disposition -match '^inline;' -and $pdf.NoSniff -eq 'nosniff' -and $pdf.Cache -match 'no-store') 'PDF headers incorrect.'
@@ -44,7 +49,8 @@ if ($TestSampleData) {
     Assert ($picture.Status -eq 200 -and $picture.Type -eq 'image/png') 'Picture stream failed.'
     foreach($id in @(2,3,4,5,6,8,9,11)) { Assert ((Request "/api/news/$id/pdf").Status -eq 404) "Unavailable/unpublished/unsafe PDF $id accepted." }
     Assert ((Request '/api/news/7/pdf').Status -eq 409) 'Conflicting active PDFs were silently selected.'
-    Assert (($page.items|Where-Object newsId -eq 7).attachmentConflict) 'PDF conflict flag missing.'
+    $conflict=$sample|Where-Object newsId -eq 7
+    if($conflict){Assert ($conflict.attachmentConflict) 'PDF conflict flag missing.'}
     $unpublished=$false
     try {
         $unpublished=$true

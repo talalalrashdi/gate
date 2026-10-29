@@ -14,7 +14,23 @@ public sealed class PortalMediaController(PortalMediaStore store,PortalMediaFile
   var c=await store.GetAsync(false,token);
   return Ok(new{Groups=c.Groups.Where(g=>c.Items.Any(m=>m.MediaGroupID==g.MediaGroupID&&m.MediaType=="image")).Select(g=>new{MediaGroupId=g.MediaGroupID,g.GroupName,g.DisplayOrder,
    CoverMediaId=c.Items.Where(m=>m.MediaGroupID==g.MediaGroupID&&m.MediaType=="image").OrderBy(m=>m.MediaID==g.CoverMediaID?0:1).ThenBy(m=>m.DisplayOrder).ThenBy(m=>m.MediaID).First().MediaID}),
-   Items=c.Items.Select(m=>new{MediaId=m.MediaID,m.MediaName,m.MediaType,MediaGroupId=m.MediaGroupID,m.DisplayOrder})});
+   Items=c.Items.Select(m=>new{MediaId=m.MediaID,m.MediaName,m.MediaType,MediaGroupId=m.MediaGroupID,m.DisplayOrder}),
+   UnreadMediaIds=await store.UnreadAsync(User.Identity!.Name!,c.Items,token)});
+ },token);
+ public sealed class AcknowledgeMedia
+ {
+  [System.ComponentModel.DataAnnotations.Required,System.ComponentModel.DataAnnotations.MaxLength(10000)]
+  public int[] MediaIds {get;init;}=[];
+ }
+ [HttpPost("seen"),RequestSizeLimit(131072)]
+ public Task<IActionResult> Seen(AcknowledgeMedia request,CancellationToken token)=>Execute(async()=>
+ {
+  if(Request.Headers["X-CompanyPortal-Request"]!="media-read")return BadRequest();
+  if(!CompanyPortal.Api.Infrastructure.AdminSectionAttribute.AllowedOrigin(HttpContext))return Forbid();
+  if(request.MediaIds.Any(id=>id<=0))return BadRequest();
+  var ids=request.MediaIds.Distinct().ToArray();var visible=(await store.GetAsync(false,token)).Items.Select(m=>m.MediaID).ToHashSet();
+  if(ids.Any(id=>!visible.Contains(id)))return NotFound();
+  if(ids.Length>0)await store.MarkSeenAsync(User.Identity!.Name!,ids,token);return NoContent();
  },token);
  [HttpGet("{id:int:min(1)}/file")]
  public Task<IActionResult> Read(int id,CancellationToken token)=>Execute(async()=>

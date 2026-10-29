@@ -7,7 +7,7 @@ public sealed class AdminController : Controller
 {
     // Section keys served by the admin shell (/admin/{section}); matches data-admin-panel in the views.
     private static readonly HashSet<string> Sections = new(StringComparer.OrdinalIgnoreCase)
-        { "history", "cards", "applications", "documents", "safety", "fixed-orders", "header-content", "notices", "alerts", "media", "images", "themes" };
+        { "events", "history", "cards", "applications", "documents", "safety", "fixed-orders", "header-content", "notices", "alerts", "media", "images", "themes" };
 
     [HttpGet("health")]
     public IActionResult Health() => View();

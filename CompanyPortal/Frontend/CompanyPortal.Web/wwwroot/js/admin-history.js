@@ -1,7 +1,7 @@
 (() => {
   const core=window.AdminCore,form=document.getElementById('history-filters');if(!form)return;
   const by=id=>document.getElementById('history-'+id),list=by('list'),status=by('status'),dialog=by('details');let page=1,total=0,busy=false,generation=0;
-  const names={cards:'البطاقات الأساسية',applications:'الأنظمة الإلكترونية',documents:'وثائق تهمك',safety:'تعليمات السلامة','fixed-orders':'التوجيهات السامية','header-content':'أرقام تهمك والحالة',notices:'التنويهات',alerts:'التنبيهات',media:'أخبارنا',images:'صور الواجهة',themes:'الثيمات والمظهر'};
+  const names={events:'الفعاليات',cards:'البطاقات الأساسية',applications:'الأنظمة الإلكترونية',documents:'وثائق تهمك',safety:'تعليمات السلامة','fixed-orders':'التوجيهات السامية','header-content':'أرقام تهمك والحالة',notices:'التنويهات',alerts:'التنبيهات',media:'أخبارنا',images:'صور الواجهة',themes:'الثيمات والمظهر'};
   const actions={create:'أضاف',update:'عدّل',delete:'حذف','apply-to-all':'طبّق على الجميع'};
   const make=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
   for(const [value,name] of Object.entries(names)){const o=make('option',name);o.value=value;form.elements.section.append(o);}

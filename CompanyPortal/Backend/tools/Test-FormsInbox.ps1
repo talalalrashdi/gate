@@ -10,10 +10,11 @@ try{
  $c.Open();Assert ((Scalar "SELECT COUNT(*) FROM Formsdb.sys.extended_properties WHERE class=0 AND name=N'CompanyPortalDevelopmentFixture'") -eq 1) 'Marked local Formsdb required.'
  $cmd=$c.CreateCommand();$cmd.CommandType='StoredProcedure';$cmd.CommandText='Security.User_getByUsername';[void]$cmd.Parameters.AddWithValue('@Username',[Security.Principal.WindowsIdentity]::GetCurrent().Name);$user=[int]$cmd.ExecuteScalar();Assert ($user -gt 0) 'Registered user required.'
  $before=(Call '/api/forms').Content|ConvertFrom-Json
- $id=[long](Scalar "INSERT Formsdb.dbo.FormInbox(UserId,Title,SenderName) OUTPUT inserted.FormId VALUES($user,N'$title',N'Test sender')");$ids.Add($id)
+ $id=[long](Scalar "INSERT Formsdb.dbo.FormInbox(UserId,Title,SenderName,FormNumber) OUTPUT inserted.FormId VALUES($user,N'$title',N'Test sender',N'2026/TEST-100')");$ids.Add($id)
  $other=[long](Scalar "INSERT Formsdb.dbo.FormInbox(UserId,Title,SenderName) OUTPUT inserted.FormId VALUES(2147483000,N'$title',N'Test sender')");$ids.Add($other)
  $response=Call '/api/forms';Assert ($response.StatusCode -eq 200) 'Catalog failed.';$data=$response.Content|ConvertFrom-Json
  $row=$data.items|Where-Object formId -eq "$id"
+ Assert ($row.formNumber -eq '2026/TEST-100') 'Form number not returned by source/API.'
  Assert ($row -and -not $row.isOpened -and $row.isSamplePreview -and -not $row.canOpen) 'Sample contract failed.'
  Assert ($data.unreadCount -eq $before.unreadCount+1) 'Unread count mismatch.'
  Assert (-not ($data.items|Where-Object formId -eq "$other")) 'Other user exposed.'

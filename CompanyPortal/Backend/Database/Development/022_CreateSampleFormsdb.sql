@@ -15,11 +15,15 @@ GO
 IF OBJECT_ID(N'dbo.FormInbox',N'U') IS NULL
  CREATE TABLE dbo.FormInbox(
  FormId bigint IDENTITY(1,1) NOT NULL CONSTRAINT PK_FormInbox PRIMARY KEY,
+ FormNumber nvarchar(100) NULL,
  UserId int NOT NULL,Title nvarchar(1000) NOT NULL,SenderName nvarchar(500) NOT NULL,
  Purpose nvarchar(100) NOT NULL CONSTRAINT DF_FormInbox_Purpose DEFAULT(N'للعلم'),
  SentAt datetime NOT NULL CONSTRAINT DF_FormInbox_SentAt DEFAULT(GETDATE()),
  IsOpened bit NOT NULL CONSTRAINT DF_FormInbox_IsOpened DEFAULT(0),
  Active bit NOT NULL CONSTRAINT DF_FormInbox_Active DEFAULT(1));
+GO
+IF COL_LENGTH(N'dbo.FormInbox',N'FormNumber') IS NULL
+ ALTER TABLE dbo.FormInbox ADD FormNumber nvarchar(100) NULL;
 GO
 IF COL_LENGTH(N'dbo.FormInbox',N'Purpose') IS NULL
  ALTER TABLE dbo.FormInbox ADD Purpose nvarchar(100) NOT NULL CONSTRAINT DF_FormInbox_Purpose DEFAULT(N'للعلم') WITH VALUES;
@@ -40,6 +44,8 @@ IF NOT EXISTS(SELECT 1 FROM dbo.FormInbox WHERE UserId=@UserId)
  (@UserId,N'طلب صيانة جهاز',N'أحمد العامري · الدعم التقني',N'للإجراء',DATEADD(day,-2,GETDATE()),1),
  (@UserId,N'طلب توفير مستلزمات مكتبية',N'فاطمة الرواحية · الخدمات',N'للعلم',DATEADD(day,-3,GETDATE()),0);
 GO
+UPDATE dbo.FormInbox SET FormNumber=CONVERT(nvarchar(4),YEAR(SentAt))+N'/'+CONVERT(nvarchar(20),FormId) WHERE FormNumber IS NULL;
+GO
 USE CompanyPortal;
 GO
 -- Refuse adapter changes unless the source is explicitly marked as a development fixture.
@@ -48,7 +54,7 @@ IF NOT EXISTS(SELECT 1 FROM Formsdb.sys.extended_properties WHERE class=0 AND na
 GO
 CREATE OR ALTER PROCEDURE Portal.Forms_Inbox_Get @UserId int,@FormId bigint=NULL AS
 BEGIN SET NOCOUNT ON;
- SELECT FormId,Title,SenderName,Purpose,SentAt,IsOpened,CAST(1 AS bit) IsSample
+ SELECT FormId,FormNumber,Title,SenderName,Purpose,SentAt,IsOpened,CAST(1 AS bit) IsSample
  FROM Formsdb.dbo.FormInbox WHERE UserId=@UserId AND Active=1 AND (@FormId IS NULL OR FormId=@FormId)
  ORDER BY SentAt DESC,FormId DESC;
 END;

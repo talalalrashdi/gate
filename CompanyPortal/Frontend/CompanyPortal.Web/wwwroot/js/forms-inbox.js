@@ -1,8 +1,8 @@
 (() => {
   const card=document.querySelector('[data-work-system="requests"]'),base=document.querySelector('meta[name="companyportal-api-base"]')?.content;
   if(!card||!base)return;
-  const list=card.querySelector('#forms-inbox-list'),status=card.querySelector('#forms-inbox-status'),badge=card.querySelector('[data-count-source="forms"]'),dialog=card.querySelector('#forms-sample-dialog');
-  let loading=false,controller,timer,generation=0,failures=0,fingerprint='',rows=[];
+  const list=card.querySelector('#forms-inbox-list'),status=card.querySelector('#forms-inbox-status'),badge=card.querySelector('[data-count-source="forms"]'),dialog=card.querySelector('#forms-sample-dialog'),filter=card.querySelector('#forms-purpose-filter');
+  let loading=false,controller,timer,generation=0,failures=0,fingerprint='',rows=[],selectedPurpose='',unreadCount=0;
   const total=card.querySelector('[data-inbox-total]'),app=card.querySelector('[data-inbox-app]');
   function updateApp(value){let url;try{url=new URL(value);}catch{}const valid=typeof value==='string'&&url&&['https:','http:'].includes(url.protocol)&&!url.username&&!url.password;if(valid){app.href=url.href;app.removeAttribute('aria-disabled');app.title='فتح التطبيق في علامة تبويب جديدة';}else{app.removeAttribute('href');app.setAttribute('aria-disabled','true');app.title='رابط التطبيق لم يُضبط بعد';}}
   const previewOpened=new Set();let sourceData={items:[],unreadCount:0};
@@ -10,29 +10,47 @@
   function updateFresh(){clearTimeout(freshTimer);const now=Date.now();for(const el of list.querySelectorAll('[data-form-id]'))if((freshUntil.get(el.dataset.formId)||0)<=now){const badge=el.querySelector('.portal-form-new');if(badge?.nextSibling?.nodeType===3&&badge.nextSibling.textContent==='\n')badge.nextSibling.remove();badge?.remove();}const next=[...freshUntil.values()].filter(at=>at>now).sort((a,b)=>a-b)[0];if(next&&!document.hidden)freshTimer=setTimeout(updateFresh,next-now+10);}
   const endpoint=path=>new URL(path,new URL(base.replace(/\/?$/,'/'),location.href));
   const make=(tag,cls,text)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el;};
-  function clear(){total.textContent='—';updateApp(null);rows=[];fingerprint='';list.replaceChildren();badge.hidden=false;badge.textContent='—';badge.setAttribute('aria-label','عدد الاستمارات غير المفتوحة غير متاح');if(dialog.open)dialog.close();}
+  function clear(){total.textContent='—';updateApp(null);rows=[];fingerprint='';list.replaceChildren();filter.replaceChildren();selectedPurpose='';badge.hidden=false;badge.textContent='—';badge.setAttribute('aria-label','عدد الاستمارات غير المفتوحة غير متاح');if(dialog.open)dialog.close();}
   function schedule(){clearTimeout(timer);if(!document.hidden)timer=setTimeout(()=>void load(),Math.min(300000,60000*2**failures)+Math.random()*5000);}
   function render(data){
     sourceData=data;const previewCount=data.items.filter(r=>!r.isOpened&&r.isSamplePreview&&!r.canOpen&&previewOpened.has(r.formId)).length;
-    const unreadCount=Math.max(0,data.unreadCount-previewCount);
-    rows=data.items.map(r=>previewOpened.has(r.formId)&&r.isSamplePreview&&!r.canOpen?{...r,isOpened:true}:r);total.textContent=String(rows.length);updateApp(data.appUrl);list.replaceChildren();
-    for(const row of rows){
+    unreadCount=Math.max(0,data.unreadCount-previewCount);
+    rows=data.items.map(r=>previewOpened.has(r.formId)&&r.isSamplePreview&&!r.canOpen?{...r,isOpened:true}:r);total.textContent=String(rows.length);updateApp(data.appUrl);
+    const available=new Set(rows.map(purposeOf));
+    const types=['للعلم','للإجراء',...[...available].filter(type=>!['للعلم','للإجراء'].includes(type)).sort((a,b)=>a.localeCompare(b,'ar'))].filter(type=>available.has(type));
+    if(!types.includes(selectedPurpose))selectedPurpose='';
+    const focused=filter.contains(document.activeElement)?document.activeElement.dataset.purpose:null;
+    filter.replaceChildren();
+    for(const type of ['',...types]){const button=make('button','portal-correspondence-filter-pill',type||'الكل');button.type='button';button.dataset.purpose=type;filter.append(button);}
+    updateFilter();
+    if(focused!==null)[...filter.children].find(button=>button.dataset.purpose===focused)?.focus();
+    renderRows();
+  }
+  function purposeOf(row){const value=typeof row.purpose==='string'&&row.purpose.trim()?row.purpose.trim():'للعلم';return value==='للاجراء'?'للإجراء':value;}
+  function updateFilter(){for(const button of filter.children)button.setAttribute('aria-pressed',String(button.dataset.purpose===selectedPurpose));}
+  filter.addEventListener('click',event=>{const button=event.target.closest('button[data-purpose]');if(!button||!filter.contains(button)||selectedPurpose===button.dataset.purpose)return;selectedPurpose=button.dataset.purpose;updateFilter();renderRows();});
+  function renderRows(){
+    list.replaceChildren();
+    const visible=rows.filter(row=>!selectedPurpose||purposeOf(row)===selectedPurpose);
+    for(const row of visible){
       const el=make(row.canOpen?'a':'button','portal-form-item');el.dataset.state=row.isOpened?'opened':'unopened';el.dataset.formId=row.formId;
       el.setAttribute('aria-label',row.title+' — '+(row.isOpened?'مفتوحة':'غير مفتوحة')+(row.isSamplePreview?' — معاينة محلية':''));
       if(row.canOpen){el.href=endpoint('api/forms/'+row.formId+'/open');el.target='_blank';el.rel='noopener noreferrer';}
       else{el.type='button';el.disabled=!row.isSamplePreview;}
       const title=make('strong','portal-form-title',row.title);
-      const purpose=typeof row.purpose==='string'&&row.purpose.trim()?row.purpose.trim():'للعلم';
-      const heading=make('span','portal-form-heading');heading.append(make('span','portal-form-purpose '+(purpose==='للإجراء'||purpose==='للاجراء'?'is-action':'is-info'),purpose));
+      const purpose=purposeOf(row);
+      const heading=make('span','portal-form-heading');
+      if(typeof row.formNumber==='string'&&row.formNumber.trim()){const number=make('span','portal-form-number',row.formNumber.trim());number.dir='ltr';heading.append(number);}
+      heading.append(make('span','portal-form-purpose '+(purpose==='للإجراء'||purpose==='للاجراء'?'is-action':'is-info'),purpose));
       el.append(heading,title,make('span','portal-form-sender',row.senderName));
       const sent=new Date(row.sentAt),date=make('time',null,new Intl.DateTimeFormat('ar-OM',{dateStyle:'short',timeZone:'Asia/Muscat'}).format(sent)+'\n'+new Intl.DateTimeFormat('ar-OM',{timeStyle:'short',timeZone:'Asia/Muscat'}).format(sent));date.dateTime=row.sentAt;if(!row.isOpened&&(freshUntil.get(row.formId)||0)>Date.now())date.prepend(make('span','portal-form-new','جديد'),document.createTextNode('\n'));el.append(date);
-      if(!row.canOpen&&row.isSamplePreview)el.addEventListener('click',()=>{dialog.querySelector('h2').textContent=row.title;dialog.querySelector('[data-forms-sample-sender]').textContent=row.senderName+' · '+date.textContent;if(!row.isOpened){previewOpened.add(row.formId);freshUntil.delete(row.formId);render(sourceData);}dialog.showModal();});
+      if(!row.canOpen&&row.isSamplePreview)el.addEventListener('click',()=>{dialog.querySelector('h2').textContent=row.title;dialog.querySelector('[data-forms-sample-sender]').textContent=(row.formNumber?row.formNumber+' · ':'')+row.senderName+' · '+date.textContent;if(!row.isOpened){previewOpened.add(row.formId);freshUntil.delete(row.formId);render(sourceData);}dialog.showModal();});
       list.append(el);
     }
     updateFresh();
     badge.textContent=String(unreadCount);badge.hidden=unreadCount===0;badge.setAttribute('aria-label',unreadCount+' استمارات غير مفتوحة');
-    status.hidden=rows.length>0&&(rows.every(r=>r.canOpen||r.isSamplePreview));
-    status.textContent=!rows.length?'لا توجد استمارات واردة.':rows.some(r=>!r.canOpen)?'رابط تطبيق الاستمارات غير مهيأ.':' ';
+    status.hidden=visible.length>0&&(visible.every(r=>r.canOpen||r.isSamplePreview));
+    status.textContent=!visible.length?'لا توجد استمارات واردة.':visible.some(r=>!r.canOpen)?'رابط تطبيق الاستمارات غير مهيأ.':' ';
   }
   async function load(){
     if(loading||document.hidden)return;loading=true;const mine=++generation;controller=new AbortController();list.setAttribute('aria-busy','true');

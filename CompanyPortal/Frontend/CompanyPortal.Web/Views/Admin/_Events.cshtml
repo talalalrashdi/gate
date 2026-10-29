@@ -1,0 +1,10 @@
+<section data-admin-panel="events" id="admin-events" aria-label="الفعاليات" hidden>
+ <div class="admin-panel"><div class="admin-panel-header"><h2>روابط الفعاليات</h2><button type="button" id="event-add" class="admin-primary">إضافة فعالية</button></div>
+ <p id="events-status" role="status"></p><button type="button" id="events-retry" hidden>إعادة المحاولة</button><div id="events-list"></div></div>
+ <form id="event-editor" class="admin-panel" hidden><div class="admin-panel-header"><h2 id="event-editor-title">فعالية جديدة</h2></div>
+ <div class="event-fields"><label>عنوان التبويب<input name="title" required maxlength="150"></label><label>رابط تطبيق الفعالية<input name="appUrl" type="url" dir="ltr" required maxlength="2048" placeholder="https://..."></label>
+ <label>بداية العرض — توقيت مسقط<input name="startAt" type="datetime-local" required></label><label>نهاية العرض — توقيت مسقط<input name="endAt" type="datetime-local" required></label>
+ <label class="event-active"><input name="active" type="checkbox" checked>إظهار الفعالية للجميع خلال الفترة المحددة</label></div>
+ <p class="event-help">يظهر الرابط دائمًا في نهاية الشريط الفرعي ويفتح في علامة تبويب جديدة. تُحمّل الروابط عند فتح البوابة؛ لا يوجد تحديث دوري.</p>
+ <div class="event-actions"><button type="submit" class="admin-primary">حفظ التغييرات</button><button type="button" id="event-cancel">إلغاء</button></div></form>
+</section>

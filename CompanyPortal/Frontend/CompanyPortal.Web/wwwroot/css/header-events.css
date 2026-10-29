@@ -1,0 +1,19 @@
+/* Keep event links distinct before and after the hero, in every theme. */
+body.portal-dashboard .portal-header .portal-media-subnav-links a[data-header-event] {
+ --text-primary:#fff!important;--text-secondary:#fff!important;color:#fff!important;
+ height:32px;padding:0 12px;align-self:center;border:1px solid #ffffff35;border-radius:8px;
+ background:linear-gradient(110deg,#215c49,#8f3f46,#805a31,#215c49);
+ background-size:300% 100%;animation:portal-event-gradient 8s ease-in-out infinite;
+ font-weight:700;box-shadow:0 2px 8px #172d2920;text-shadow:none;
+}
+body.portal-dashboard .portal-header .portal-media-subnav-links a[data-header-event]:hover {filter:brightness(1.1)}
+body.portal-dashboard .portal-header .portal-media-subnav-links a[data-header-event]:focus-visible {outline:2px solid #d3a85f;outline-offset:2px}
+body.portal-dashboard .portal-header .portal-media-subnav-links a[data-header-event] .portal-header-event-new {
+ position:static;display:inline-flex;align-items:center;justify-content:center;flex:none;
+ padding:2px 5px;border-radius:4px;background:#fff4df;color:#7c3039!important;
+ --text-primary:#7c3039;--text-secondary:#7c3039;font-size:9px;font-weight:700;line-height:1.5;
+}
+@keyframes portal-event-gradient {0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@media(prefers-reduced-motion:reduce){body.portal-dashboard .portal-header .portal-media-subnav-links a[data-header-event]{animation:none}}
+
+.portal-header-event-new[hidden]{display:none!important}

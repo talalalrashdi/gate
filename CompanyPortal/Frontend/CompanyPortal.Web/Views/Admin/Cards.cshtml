@@ -2,6 +2,7 @@
     Layout = "_AdminLayout";
 }
 @section Styles {
+  <link rel="stylesheet" href="@Url.Content("~/css/admin-events.css")" asp-append-version="true">
   <link rel="stylesheet" href="@Url.Content("~/css/decision-notices.css")" asp-append-version="true">
   <link rel="stylesheet" href="@Url.Content("~/css/admin-media.css")" asp-append-version="true">
   <link rel="stylesheet" href="@Url.Content("~/css/admin-fixed-orders.css")" asp-append-version="true">
@@ -23,6 +24,7 @@
   <div class="admin-panel"><div class="admin-panel-header"><div><h2>إعدادات البطاقات</h2><p>أنشئ بطاقة تطبيقات، وحدّد الجمهور والإظهار والموضع. احفظ كل بطاقة على حدة.</p></div><button type="button" id="admin-card-create" class="admin-primary" disabled>إضافة بطاقة تطبيقات +</button></div><p id="admin-cards-status" role="status"></p><button type="button" id="admin-cards-retry" hidden>إعادة المحاولة</button><div id="admin-cards"></div></div>
   <aside class="admin-help"><span aria-hidden="true"><i class="iconsax" icon-name="info-circle" aria-hidden="true"></i></span><div><h3>البطاقات والجمهور والصلاحيات</h3><p>بطاقة التطبيقات مشتركة وليست بطاقة شخصية. إظهارها لا يمنح صلاحية للتطبيقات؛ يرى كل موظف التطبيقات المصرح بها فقط. الأدوار تأتي من قاعدة الصلاحيات الحالية.</p><p>الموضع يبدأ من 1. تُحفظ مواضع البطاقات الثابتة، وتُضغط عند غياب بطاقات مقيدة بالأدوار. يحتفظ الموظف بترتيبه للبطاقات المتحركة. قبل إخفاء بطاقة قد يلزم تقديم بطاقة ثابتة تقع خارج العدد الجديد.</p><p>الإخفاء يحتفظ بالإعدادات وترتيب الموظفين. إنشاء البطاقة لا ينشئ ربطًا جديدًا مع الأنظمة؛ البطاقات المتصلة الحالية تحتفظ بمحتواها.</p></div></aside>
 </section>
+@await Html.PartialAsync("_Events")
 @await Html.PartialAsync("_History")
 @await Html.PartialAsync("_Images")
 @await Html.PartialAsync("_Themes")
@@ -34,6 +36,7 @@
 @await Html.PartialAsync("_DecisionNotices")
 @await Html.PartialAsync("_HeaderContent")
 @section Scripts {
+  <script src="@Url.Content("~/js/admin-events.js")" asp-append-version="true"></script>
   <script src="@Url.Content("~/js/admin-decision-notices.js")" asp-append-version="true"></script>
   <script src="@Url.Content("~/js/admin-media.js")" asp-append-version="true"></script>
   <script src="@Url.Content("~/js/fixed-order-text.js")" asp-append-version="true"></script>

@@ -68,7 +68,7 @@
     const image = picture(story);
     if (image) { const visual = make('div', 'editorial-news-card-image'); visual.append(image); selected.append(visual); }
     const copy = make('div', 'editorial-news-item-copy'), heading = make('h3'), label = make('header');
-    if (story.isImportant) label.append(make('span', 'editorial-news-breaking-badge', 'خبر مهم'));
+    if (story.isImportant) label.append(make('span', 'editorial-news-breaking-badge', 'خبر عاجل'));
     heading.append(title(story)); const footer = make('footer'); footer.append(newsDate(story));
     if (story.attachmentConflict) footer.append(make('small', null, 'مرفق الخبر غير متاح حاليًا.'));
     copy.append(label, heading, footer); selected.append(copy);
@@ -79,7 +79,7 @@
       const item = make('li'), article = make('article', 'editorial-news-list-story'), copy = make('div', 'editorial-news-item-copy');
       item.classList.toggle('is-breaking', story.isImportant);
       const image = picture(story, 'editorial-news-thumbnail'); if (image) article.append(image); else article.classList.add('news-without-picture');
-      const label = make('header'); if (story.isImportant) label.append(make('span', 'editorial-news-breaking-badge', 'خبر مهم'));
+      const label = make('header'); if (story.isImportant) label.append(make('span', 'editorial-news-breaking-badge', 'خبر عاجل'));
       const heading = make('h3'); heading.append(make('span','editorial-news-select',story.subject));
       const footer = make('footer'); footer.append(newsDate(story));
       const select = make('button', 'news-story-selector'); select.type = 'button'; select.dataset.newsId=String(story.newsId);
@@ -99,7 +99,7 @@
       item.classList.toggle('is-breaking', story.isImportant); item.classList.toggle('is-featured', index === 0);
       const image = picture(story); if (image) { item.classList.add('has-photo'); surface.append(image); }
       heading.append(title(story)); const credit = make('small');
-      if (story.isImportant) credit.append('خبر مهم · '); credit.append(newsDate(story));
+      if (story.isImportant) credit.append('خبر عاجل · '); credit.append(newsDate(story));
       text.append(heading, credit); surface.append(text); item.append(surface); headlines.append(item);
     });
     if (items.length) startHeadlineCarousel();

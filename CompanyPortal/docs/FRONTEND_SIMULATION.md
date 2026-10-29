@@ -92,3 +92,11 @@
 أُزيلت حقول عنوان المادة ونوع القرار ونوع المراسلة والمرسل. يولّد كل حدث عنوانًا مرقمًا، وزر مراسلة جديدة يتناوب للعلم/للإجراء مع مرسلين جاهزين. زر قرار جديد يأخذ أول نوع من قناة إدارة نشطة (تعميم عند غياب نوع)، وأزرار التنويه والتنبيه تختار نوع القناة الموافق كما كان؛ إعدادات القنوات الفعلية تبقى صاحبة قرار الإظهار. تحديث إعدادات الأنواع زر موجود سابقًا بقي لإعادة تحميل القواعد. البيانات محلية ولا تُكتب في المصدر.
 
 `node CompanyPortal/tools/verify-simulation-menu.mjs` يتحقق من غياب الحقول، جاهزية الأحداث، تناوب المراسلات، القنوات، عدم تكرار جلب القواعد وأحداث Outlook/الهاتف/المسح.
+
+
+### Header events
+`فعالية جديدة` adds a temporary event link directly after وثائق تهمك. Click to open a local simulation preview; reset removes simulated links and retains real ones. No database writes, entries, event fetches or periodic refresh. See HEADER_EVENTS.md.
+
+
+### أخبارنا badges
+صورة جديدة and فيديو جديد add temporary media using existing sample files and show جديد beside أخبارنا. Clicking that header clears the simulation badge without writing real read state; another simulated photo/video restores it. Reset restores real media/badge. Event جديد hides after60 seconds without removing its link.

@@ -9,6 +9,7 @@ public sealed class FormsInboxStore(IConfiguration configuration)
     {
         public long FormId { get; init; }
         public string Title { get; init; } = "";
+        public string? FormNumber { get; init; }
         public string SenderName { get; init; } = "";
         public DateTime SentAt { get; init; }
         public bool IsOpened { get; init; }

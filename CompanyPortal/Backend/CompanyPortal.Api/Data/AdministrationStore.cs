@@ -9,7 +9,7 @@ namespace CompanyPortal.Api.Data;
 /// <summary>Administration section keys. CompanyPortal.Admin manages all of them; Portal.AdminSectionRoles can grant single sections to other roles.</summary>
 public static class AdminSections
 {
-    public static readonly string[] All = ["cards","applications","documents","safety","fixed-orders","header-content","notices","alerts","media","images","themes"];
+    public static readonly string[] All = ["cards","applications","documents","safety","fixed-orders","header-content","notices","alerts","media","images","themes","events"];
 }
 
 public sealed record AdminAccess(bool IsSuperAdmin, IReadOnlySet<string> Sections)

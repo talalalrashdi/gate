@@ -38,7 +38,7 @@ body:has(#forms-sample-dialog[open]){overflow:hidden}
 /* Five stable rows, matching correspondence; unread and new indicators remain independent. */
 #workspace #forms-inbox-list{gap:4px;grid-auto-rows:80px;align-content:start;overflow-y:hidden}
 #workspace .portal-form-item{height:80px;min-height:80px;max-height:80px;box-sizing:border-box;padding:3px 9px;gap:2px 7px;grid-template-columns:minmax(0,1fr) 65px;grid-template-rows:20px 32px 16px;align-content:center}
-#workspace .portal-form-heading{grid-column:1;grid-row:1;display:flex;align-items:center}
+#workspace .portal-form-heading{grid-column:1;grid-row:1;display:flex;gap:6px;align-items:center;min-width:0}
 #workspace .portal-form-purpose{padding:2px 7px;border-radius:6px;font-size:10px;line-height:1.6;white-space:nowrap}
 #workspace .portal-form-purpose.is-info{background:#e3eff4;--text-primary:#355d72;color:#355d72}
 #workspace .portal-form-purpose.is-action{background:#f5e7d6;--text-primary:#795225;color:#795225}
@@ -48,3 +48,6 @@ body:has(#forms-sample-dialog[open]){overflow:hidden}
 
 #workspace .portal-form-item[data-state="opened"]{border-color:#cbd9d0;background:#fff}
 #workspace .portal-form-item[data-state="unopened"]{border-color:#d9b8c2}
+
+#workspace .portal-form-number{font-size:11px;font-weight:700;--text-primary:#536e61;color:#536e61;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+#workspace .portal-form-purpose{flex:none}

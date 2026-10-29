@@ -77,3 +77,11 @@ Development يفعّل AllowSamplePreview للعينات الموسومة فقط
 فتح **المعاينة المحلية** يغيّر حالة العنصر في ذاكرة التبويب إلى مقروء، يزيل «جديد» ويقلل الشارة مرة واحدة. تُحفظ هذه الحالة خلال التحديثات الدورية والعودة للتبويب، وتُمسح بإعادة تحميل الصفحة أو فقد الصلاحية 401/403. لا تُكتب في Formsdb أو UserReads. عند وصول حالة مقروء من المصدر لا يتم إنقاص العداد مرتين. هذا استثناء خاص بالمعاينات للتطوير؛ الروابط الحقيقية تظل تتبع حالة IsOpened وعداد المصدر، كما سبق.
 
 صفوف الاستمارات والمراسلات والبريد المقروء لها حدود واضحة، وتبقى الألوان المميزة لغير المقروء وخمس صفوف ثابتة الارتفاع. اختبار `node CompanyPortal/tools/verify-inbox-previews.mjs` يغطي الفتح، التكرار، التحديث، تأكيد المصدر، مسح الصلاحية وعدم إرسال عمليات كتابة.
+
+
+## Purpose filters
+The forms card uses the same quick-filter pill styling as correspondence: الكل, then available للعلم / للإجراء types and any additional source purpose values. Filtering is local over the authorized inbox response; it sends no extra API requests and never changes total/unread counters. The selected type survives refresh while still available, resets to all when removed, and clears on permission loss. Existing five-row pagination and80px record height are retained. Legacy للاجراء values display/filter as للإجراء; missing purpose retains the existing للعلم fallback.
+
+
+## Form number
+Portal.Forms_Inbox_Get may return `FormNumber` (nvarchar100), independently of the numeric FormId used for authorized links. API returns nullable `formNumber`; the UI displays it beside the purpose badge and in the local preview, retaining80px/five rows. Missing/null numbers from older adapters are hidden; the portal never invents a production form number from FormId. Map the real source number in the SP. Development/028_FormsInboxNumber.sql upgrades only the marked local Formsdb, preserves existing non-null numbers and fills its samples with year/FormId; updated Development022 handles fresh fixtures. The create-if-missing040 contract and generated fresh setup include FormNumber without overwriting installed adapters.

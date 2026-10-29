@@ -12,6 +12,7 @@
 }
 @section Styles {
   @await Html.PartialAsync("_PortalStyles")
+  <link rel="stylesheet" href="@Url.Content("~/css/header-events.css")" asp-append-version="true">
   @if (Configuration.GetValue<bool>("Diagnostics:SimulationEnabled")) { <link rel="stylesheet" href="@Url.Content("~/css/portal-simulation.css")" asp-append-version="true"> }
 }
 

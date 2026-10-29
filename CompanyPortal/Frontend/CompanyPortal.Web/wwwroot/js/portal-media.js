@@ -16,7 +16,9 @@
  videoDialog.addEventListener('close',()=>{clearPlayer();videoOpener?.focus({preventScroll:true});});player.addEventListener('error',()=>{if(player.hasAttribute('src'))videoError.textContent='تعذر تشغيل الفيديو. تحقق من الملف واتصال البوابة أو ترميز الفيديو.';});
  function openVideo(media,button){pause();videoOpener=button;videoTitle.textContent=media.mediaName;videoError.textContent='';player.src=file(media.mediaId);videoDialog.showModal();player.play().catch(()=>{if(videoDialog.open)videoError.textContent='اضغط تشغيل للمشاهدة. إذا تعذر التشغيل، تحقق من الملف واتصال البوابة.';});}
  let albums=[],videoIndex=0,albumIndex=0,currentPhotos=[],photoIndex=0,controller,generation=0,opener;
- function file(id){return endpoint('/'+id+'/file');}
+ let realCatalog={groups:[],items:[]},simulatedItems=[];const simulatedSources=new Map();
+ function file(id){return endpoint('/'+(simulatedSources.get(id)??id)+'/file');}
+ function renderCurrent(){clear();render({...realCatalog,items:[...simulatedItems,...realCatalog.items]});}
  function pause(){track.querySelectorAll('video').forEach(v=>v.pause());}
  function closeGallery(){image.removeAttribute('src');thumbs.replaceChildren();currentPhotos=[];caption.textContent='';gallery.querySelector('#editorial-gallery-status').textContent='';resetZoom();}
  function clear(){videoDialog.close();clearPlayer();pause();track.querySelectorAll('video').forEach(v=>{v.removeAttribute('src');v.load();});gallery.close();closeGallery();track.replaceChildren();photos.replaceChildren();albums=[];videoIndex=0;albumIndex=0;videoControls();photoControls();}
@@ -65,8 +67,8 @@
  }
  async function load(){
   controller?.abort();controller=new AbortController();const current=++generation;clear();retry.hidden=true;status.textContent='جارٍ تحميل الصور والفيديوهات…';root.setAttribute('aria-busy','true');
-  try{const response=await fetch(endpoint(''),{credentials:'include',cache:'no-store',signal:AbortSignal.any([controller.signal,AbortSignal.timeout(15000)])});if(!response.ok)throw new Error(String(response.status));const c=await response.json();if(current!==generation)return;render(c);}
-  catch(e){if(current!==generation)return;clear();status.textContent=e.message==='401'||e.message==='403'?'حسابك غير مخوّل لعرض الوسائط.':'تعذر تحميل صور وفيديوهات أخبارنا. تحقق من الاتصال وأعد المحاولة.';retry.hidden=false;}
+  try{const response=await fetch(endpoint(''),{credentials:'include',cache:'no-store',signal:AbortSignal.any([controller.signal,AbortSignal.timeout(15000)])});if(!response.ok)throw new Error(String(response.status));const c=await response.json();if(current!==generation)return;realCatalog=c;render({...c,items:[...simulatedItems,...c.items]});document.dispatchEvent(new CustomEvent('portal:media-catalog',{detail:c}));}
+  catch(e){if(current!==generation)return;realCatalog={groups:[],items:[]};simulatedItems=[];simulatedSources.clear();document.dispatchEvent(new CustomEvent('portal:media-catalog',{detail:null}));clear();status.textContent=e.message==='401'||e.message==='403'?'حسابك غير مخوّل لعرض الوسائط.':'تعذر تحميل صور وفيديوهات أخبارنا. تحقق من الاتصال وأعد المحاولة.';retry.hidden=false;}
   finally{if(current===generation)root.setAttribute('aria-busy','false');}
  }
  root.querySelectorAll('[data-video-prev]').forEach(b=>b.addEventListener('click',()=>moveVideo(-1)));root.querySelectorAll('[data-video-next]').forEach(b=>b.addEventListener('click',()=>moveVideo(1)));track.addEventListener('keydown',e=>{if(!e.altKey&&!e.ctrlKey&&!e.metaKey&&['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();moveVideo(e.key==='ArrowLeft'?1:-1);}});
@@ -80,5 +82,11 @@
  stage.addEventListener('pointermove',e=>{if(!pan||pan.id!==e.pointerId)return;stage.scrollLeft=pan.left+pan.x-e.clientX;stage.scrollTop=pan.top+pan.y-e.clientY;});
  ['pointerup','pointercancel','lostpointercapture'].forEach(type=>stage.addEventListener(type,stopPan));
  gallery.querySelector('[data-editorial-close]').addEventListener('click',()=>gallery.close());gallery.addEventListener('close',()=>{closeGallery();opener?.focus({preventScroll:true});});retry.addEventListener('click',load);
+ if(document.getElementById('portal-simulation'))document.addEventListener('portal:simulate',e=>{
+  const d=e.detail;if(d?.kind==='reset'){simulatedItems=[];simulatedSources.clear();renderCurrent();return;}
+  if(!['media-photo','media-video'].includes(d?.kind))return;
+  const source=realCatalog.items.find(m=>m.mediaType===(d.kind==='media-photo'?'image':'video'));if(!source)return;
+  const id=-Number(d.id);simulatedSources.set(id,source.mediaId);simulatedItems.unshift({...source,mediaId:id,mediaName:d.title,displayOrder:-Number(d.id)});renderCurrent();
+ });
  document.addEventListener('visibilitychange',()=>{if(document.hidden){++generation;controller?.abort();clear();}else load();});window.addEventListener('pagehide',()=>{++generation;controller?.abort();clear();});window.addEventListener('pageshow',e=>{if(e.persisted)load();});load();
 })();

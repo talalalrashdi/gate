@@ -3,7 +3,7 @@
  const dialog=document.getElementById('portal-simulation-dialog'),status=root.querySelector('[data-simulation-status]');let sequence=0,correspondenceSequence=0,rules=[],loading;
  const panel=root.querySelector('section');
  function position(){const r=root.getBoundingClientRect();panel.style.setProperty('--simulation-left',Math.max(12,Math.min(r.left,innerWidth-Math.min(350,innerWidth*.85)-12))+'px');panel.style.setProperty('--simulation-top',(r.bottom+12)+'px');}
- const names={correspondence:'مراسلة جديدة',decision:'قرار جديد',notice:'تنويه جديد',alert:'إعلان جديد',news:'خبر جديد',breaking:'خبر عاجل'};
+ const names={'media-photo':'صورة جديدة','media-video':'فيديو جديد',event:'فعالية جديدة',correspondence:'مراسلة جديدة',decision:'قرار جديد',notice:'تنويه جديد',alert:'إعلان جديد',news:'خبر جديد',breaking:'خبر عاجل'};
  const base=document.querySelector('meta[name="companyportal-api-base"]')?.content;
  function lock(value){root.querySelectorAll('[data-simulate="decision"],[data-simulate="notice"],[data-simulate="alert"]').forEach(b=>b.disabled=value);}
  async function loadRules(){if(loading)return loading;lock(true);status.textContent='جارٍ تحميل إعدادات الأنواع من البوابة…';

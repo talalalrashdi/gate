@@ -10,7 +10,7 @@ public sealed class FormsInboxController(FormsInboxStore store,IConfiguration co
 {
     [HttpGet]
     public Task<IActionResult> Inbox(CancellationToken token)=>Read(null,data=>
-        Ok(new{items=data.Items.Select(r=>new{formId=r.FormId.ToString(CultureInfo.InvariantCulture),r.Title,r.SenderName,purpose=string.IsNullOrWhiteSpace(r.Purpose)?"للعلم":r.Purpose.Trim(),
+        Ok(new{items=data.Items.Select(r=>new{formId=r.FormId.ToString(CultureInfo.InvariantCulture),r.Title,formNumber=string.IsNullOrWhiteSpace(r.FormNumber)?null:r.FormNumber.Trim(),r.SenderName,purpose=string.IsNullOrWhiteSpace(r.Purpose)?"للعلم":r.Purpose.Trim(),
             sentAt=DecisionNoticesStore.Oman(r.SentAt).ToString("O",CultureInfo.InvariantCulture),r.IsOpened,
             isSamplePreview=r.IsSample&&config.GetValue<bool>("Forms:AllowSamplePreview"),
             canOpen=OpenAddress(r.FormId) is not null}).ToArray(),data.UnreadCount,appUrl=AppAddress()}),token);

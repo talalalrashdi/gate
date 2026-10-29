@@ -9,6 +9,19 @@ public sealed class PortalMediaStore(IConfiguration configuration)
  public sealed record Group(int MediaGroupID,string GroupName,int? CoverMediaID,int DisplayOrder,DateTime LastChangeAt,bool Active);
  public sealed record Media(int MediaID,string MediaName,string MediaPath,string MediaType,int? MediaGroupID,int DisplayOrder,DateTime LastChangeAt,bool Active);
  public sealed record Catalog(IReadOnlyList<Group> Groups,IReadOnlyList<Media> Items);
+ public async Task<string[]> UnreadAsync(string account,IEnumerable<Media> media,CancellationToken token)
+ {
+  await using var c=Connection();var user=await c.QuerySingleOrDefaultAsync<int?>(Command("Security.User_getByUsername",new{Username=account},token));
+  if(user is null)throw new InvalidOperationException("Portal user is unavailable.");
+  var read=(await c.QueryAsync<string>(Command("Portal.UserReads_Get",new{UserId=user.Value,ContentTypeID=3},token))).ToHashSet();
+  return media.Select(m=>m.MediaID.ToString(System.Globalization.CultureInfo.InvariantCulture)).Where(id=>!read.Contains(id)).ToArray();
+ }
+ public async Task MarkSeenAsync(string account,int[] ids,CancellationToken token)
+ {
+  await using var c=Connection();var user=await c.QuerySingleOrDefaultAsync<int?>(Command("Security.User_getByUsername",new{Username=account},token));
+  if(user is null)throw new InvalidOperationException("Portal user is unavailable.");
+  await c.ExecuteAsync(Command("Portal.Media_MarkSeen",new{UserId=user.Value,MediaIdsJson=System.Text.Json.JsonSerializer.Serialize(ids)},token));
+ }
  private SqlConnection Connection()=>new(configuration.GetConnectionString("CompanyPortal")??throw new InvalidOperationException("CompanyPortal connection string is missing."));
  private static CommandDefinition Command(string sp,object args,CancellationToken token)=>new(sp,args,commandType:CommandType.StoredProcedure,commandTimeout:15,cancellationToken:token);
  public async Task<Catalog> GetAsync(bool includeHidden,CancellationToken token)

@@ -1,4 +1,4 @@
-﻿/* CompanyPortal fresh installation, generated from migrations 001-054.
+﻿/* CompanyPortal fresh installation, generated from migrations 001-057.
    Open this entire UTF-8 file in SSMS and Execute (normal mode, no SQLCMD mode).
    Or: sqlcmd -S SQLSERVER -E -b -f 65001 -i CompanyPortal-Setup.sql
    FRESH INSTALL ONLY. Never run on an existing CompanyPortal database.
@@ -4383,6 +4383,216 @@ BEGIN
  WHERE @PublishedOn IS NULL OR (PublishedAt>=@PublishedOn AND PublishedAt<DATEADD(day,1,@PublishedOn));
 END;
 GO
+
+GO
+
+
+-- BEGIN 055_HeaderEventTypes.sql
+USE CompanyPortal;
+GO
+IF COL_LENGTH(N'Mng.HeaderEvents',N'EventTarget') IS NULL
+ EXEC sp_rename N'Mng.HeaderEvents.AppUrl',N'EventTarget',N'COLUMN';
+IF COL_LENGTH(N'Mng.HeaderEvents',N'EventType') IS NULL
+ ALTER TABLE Mng.HeaderEvents ADD EventType int NOT NULL CONSTRAINT DF_HeaderEvents_Type DEFAULT(1) CONSTRAINT CK_HeaderEvents_Type CHECK(EventType IN(0,1,2));
+GO
+USE CompanyPortal;
+GO
+-- Event links are always appended after the fixed secondary navigation. No configurable order.
+-- Event windows are UTC; LastChangeAt follows the portal's existing SQL GETDATE convention.
+CREATE OR ALTER PROCEDURE Mng.HeaderEvents_GetActive AS
+BEGIN SET NOCOUNT ON;
+ SELECT EventId,Title,EventType,EventTarget,StartAt,EndAt FROM Mng.HeaderEvents
+ WHERE Active=1 AND StartAt<=GETUTCDATE() AND EndAt>GETUTCDATE()
+ ORDER BY EventId;
+END;
+GO
+CREATE OR ALTER PROCEDURE Mng.HeaderEvents_GetAll AS
+BEGIN SET NOCOUNT ON;
+ SELECT EventId,Title,EventType,EventTarget,StartAt,EndAt,Active,LastChangeAt FROM Mng.HeaderEvents ORDER BY EventId;
+END;
+GO
+CREATE OR ALTER PROCEDURE Mng.HeaderEvents_Save
+ @EventType int=1,@EventId int=NULL,@Title nvarchar(150),@EventTarget nvarchar(2048),@StartAt datetime,@EndAt datetime,
+ @Active bit,@ChangedBy nvarchar(512)=NULL
+AS
+BEGIN
+ SET NOCOUNT ON; SET XACT_ABORT ON;
+ SET @Title=LTRIM(RTRIM(@Title));SET @EventTarget=LTRIM(RTRIM(@EventTarget));
+ IF NULLIF(@Title,N'') IS NULL OR NULLIF(@EventTarget,N'') IS NULL OR @EventType IS NULL OR @EventType NOT IN (0,1,2) OR (@EventType=1 AND @EventTarget NOT LIKE N'https://%' AND @EventTarget NOT LIKE N'http://%')
+ OR @StartAt IS NULL OR @EndAt IS NULL OR @EndAt<=@StartAt OR @Active IS NULL
+ THROW 50051,'Check the event title, HTTP(S) address, dates.',1;
+ BEGIN TRY
+ BEGIN TRAN;
+ DECLARE @Old nvarchar(max),@New nvarchar(max);
+ IF @EventId IS NOT NULL
+ BEGIN
+  SELECT @Old=(SELECT Title,EventType,EventTarget,StartAt,EndAt,Active FOR JSON PATH,WITHOUT_ARRAY_WRAPPER)
+  FROM Mng.HeaderEvents WITH(UPDLOCK,HOLDLOCK) WHERE EventId=@EventId;
+  IF @Old IS NULL THROW 50052,'Event not found.',1;
+ END;
+ IF @EventId IS NULL
+ BEGIN
+  INSERT Mng.HeaderEvents(Title,EventType,EventTarget,StartAt,EndAt,Active) VALUES(@Title,@EventType,@EventTarget,@StartAt,@EndAt,@Active);
+  SET @EventId=CONVERT(int,SCOPE_IDENTITY());
+ END
+ ELSE
+  UPDATE Mng.HeaderEvents SET Title=@Title,EventType=@EventType,EventTarget=@EventTarget,StartAt=@StartAt,EndAt=@EndAt,Active=@Active,LastChangeAt=GETDATE()
+  WHERE EventId=@EventId AND (Title COLLATE Latin1_General_100_BIN2<>@Title COLLATE Latin1_General_100_BIN2
+   OR EventType<>@EventType OR EventTarget COLLATE Latin1_General_100_BIN2<>@EventTarget COLLATE Latin1_General_100_BIN2
+   OR StartAt<>@StartAt OR EndAt<>@EndAt OR Active<>@Active);
+ SELECT @New=(SELECT Title,EventType,EventTarget,StartAt,EndAt,Active FOR JSON PATH,WITHOUT_ARRAY_WRAPPER) FROM Mng.HeaderEvents WHERE EventId=@EventId;
+ DECLARE @ItemId nvarchar(100)=CONVERT(nvarchar(100),@EventId);
+ EXEC Portal.AdminChanges_Add @ChangedBy=@ChangedBy,@Section='events',@ItemType='event',@ItemId=@ItemId,@ItemTitle=@Title,@OldJson=@Old,@NewJson=@New;
+ COMMIT;SELECT @EventId EventId;
+ END TRY
+ BEGIN CATCH IF @@TRANCOUNT>0 ROLLBACK;THROW;END CATCH;
+END;
+GO
+CREATE OR ALTER PROCEDURE Mng.HeaderEvents_Delete @EventId int,@ChangedBy nvarchar(512)=NULL AS
+BEGIN
+ SET NOCOUNT ON;SET XACT_ABORT ON;
+ BEGIN TRY
+ BEGIN TRAN;
+ DECLARE @Old nvarchar(max),@Title nvarchar(150),@ItemId nvarchar(100)=CONVERT(nvarchar(100),@EventId);
+ SELECT @Title=Title,@Old=(SELECT Title,EventType,EventTarget,StartAt,EndAt,Active FOR JSON PATH,WITHOUT_ARRAY_WRAPPER)
+ FROM Mng.HeaderEvents WITH(UPDLOCK,HOLDLOCK) WHERE EventId=@EventId;
+ IF @Old IS NULL THROW 50052,'Event not found.',1;
+ DELETE Mng.HeaderEvents WHERE EventId=@EventId;
+ EXEC Portal.AdminChanges_Add @ChangedBy=@ChangedBy,@Section='events',@ItemType='event',@ItemId=@ItemId,@ItemTitle=@Title,@OldJson=@Old,@Action='delete';
+ COMMIT;
+ END TRY BEGIN CATCH IF @@TRANCOUNT>0 ROLLBACK;THROW;END CATCH;
+END;
+GO
+
+
+GO
+
+
+-- BEGIN 056_HeaderEventEndOfDay.sql
+USE CompanyPortal;
+GO
+-- Align existing events with the new 23:59 (+04:00) end-date rule.
+-- Preserve the selected local date, identity, target and availability; audit actual changes.
+SET XACT_ABORT ON;
+BEGIN TRY
+ BEGIN TRAN;
+ IF EXISTS(SELECT 1 FROM Mng.HeaderEvents
+  WHERE DATEADD(minute,1199,CONVERT(datetime,CONVERT(date,DATEADD(hour,4,EndAt))))<=StartAt)
+  THROW 50051,'An event starts after 23:59 on its end date. Correct its dates before applying migration 056.',1;
+ DECLARE @Id int,@Title nvarchar(150),@Type int,@Target nvarchar(2048),@Start datetime,@End datetime,@Active bit;
+ DECLARE @Actor nvarchar(512)=ORIGINAL_LOGIN();
+ DECLARE events_end_cursor CURSOR LOCAL FAST_FORWARD FOR
+  SELECT EventId,Title,EventType,EventTarget,StartAt,
+   DATEADD(minute,1199,CONVERT(datetime,CONVERT(date,DATEADD(hour,4,EndAt)))),Active
+  FROM Mng.HeaderEvents
+  WHERE EndAt<>DATEADD(minute,1199,CONVERT(datetime,CONVERT(date,DATEADD(hour,4,EndAt))));
+ OPEN events_end_cursor;
+ FETCH NEXT FROM events_end_cursor INTO @Id,@Title,@Type,@Target,@Start,@End,@Active;
+ WHILE @@FETCH_STATUS=0
+ BEGIN
+  EXEC Mng.HeaderEvents_Save @EventId=@Id,@Title=@Title,@EventType=@Type,@EventTarget=@Target,@StartAt=@Start,@EndAt=@End,@Active=@Active,@ChangedBy=@Actor;
+  FETCH NEXT FROM events_end_cursor INTO @Id,@Title,@Type,@Target,@Start,@End,@Active;
+ END;
+ CLOSE events_end_cursor;DEALLOCATE events_end_cursor;
+ COMMIT;
+END TRY
+BEGIN CATCH
+ IF CURSOR_STATUS('local','events_end_cursor')>=0 CLOSE events_end_cursor;
+ IF CURSOR_STATUS('local','events_end_cursor')>=-1 DEALLOCATE events_end_cursor;
+ IF @@TRANCOUNT>0 ROLLBACK;
+ THROW;
+END CATCH;
+GO
+
+GO
+
+
+-- BEGIN 057_EventsDisplayAndSoftDelete.sql
+USE CompanyPortal;
+GO
+SET XACT_ABORT ON;
+BEGIN TRY
+ BEGIN TRAN;
+ IF OBJECT_ID(N'Mng.Events',N'U') IS NOT NULL AND OBJECT_ID(N'Mng.HeaderEvents',N'U') IS NOT NULL
+  THROW 50051,'Both event tables exist. Resolve the duplicate before applying migration 057.',1;
+ IF OBJECT_ID(N'Mng.Events',N'U') IS NULL EXEC sp_rename N'Mng.HeaderEvents',N'Events';
+ IF COL_LENGTH(N'Mng.Events',N'IsDisplayed') IS NULL
+ BEGIN
+  ALTER TABLE Mng.Events ADD IsDisplayed bit NOT NULL CONSTRAINT DF_Events_IsDisplayed DEFAULT(1) WITH VALUES;
+  -- All old rows are retained events. Old Active meant visibility, not deletion.
+  EXEC(N'UPDATE Mng.Events SET IsDisplayed=Active,Active=1;');
+ END;
+ COMMIT;
+END TRY
+BEGIN CATCH IF @@TRANCOUNT>0 ROLLBACK;THROW;END CATCH;
+GO
+CREATE OR ALTER PROCEDURE Mng.HeaderEvents_GetActive AS
+BEGIN SET NOCOUNT ON;
+ SELECT EventId,Title,EventType,EventTarget,StartAt,EndAt FROM Mng.Events
+ WHERE Active=1 AND IsDisplayed=1 AND StartAt<=GETUTCDATE() AND EndAt>GETUTCDATE()
+ ORDER BY EventId;
+END;
+GO
+CREATE OR ALTER PROCEDURE Mng.HeaderEvents_GetAll AS
+BEGIN SET NOCOUNT ON;
+ SELECT EventId,Title,EventType,EventTarget,StartAt,EndAt,IsDisplayed,Active,LastChangeAt FROM Mng.Events WHERE Active=1 ORDER BY EventId;
+END;
+GO
+CREATE OR ALTER PROCEDURE Mng.HeaderEvents_Save
+ @EventType int=1,@EventId int=NULL,@Title nvarchar(150),@EventTarget nvarchar(2048),@StartAt datetime,@EndAt datetime,
+ @IsDisplayed bit,@ChangedBy nvarchar(512)=NULL
+AS
+BEGIN
+ SET NOCOUNT ON; SET XACT_ABORT ON;
+ SET @Title=LTRIM(RTRIM(@Title));SET @EventTarget=LTRIM(RTRIM(@EventTarget));
+ IF NULLIF(@Title,N'') IS NULL OR NULLIF(@EventTarget,N'') IS NULL OR @EventType IS NULL OR @EventType NOT IN (0,1,2) OR (@EventType=1 AND @EventTarget NOT LIKE N'https://%' AND @EventTarget NOT LIKE N'http://%')
+ OR @StartAt IS NULL OR @EndAt IS NULL OR @EndAt<=@StartAt OR @IsDisplayed IS NULL
+ THROW 50051,'Check the event title, HTTP(S) address, dates.',1;
+ BEGIN TRY
+ BEGIN TRAN;
+ DECLARE @Old nvarchar(max),@New nvarchar(max);
+ IF @EventId IS NOT NULL
+ BEGIN
+  SELECT @Old=(SELECT Title,EventType,EventTarget,StartAt,EndAt,IsDisplayed,Active FOR JSON PATH,WITHOUT_ARRAY_WRAPPER)
+  FROM Mng.Events WITH(UPDLOCK,HOLDLOCK) WHERE EventId=@EventId AND Active=1;
+  IF @Old IS NULL THROW 50052,'Event not found.',1;
+ END;
+ IF @EventId IS NULL
+ BEGIN
+  INSERT Mng.Events(Title,EventType,EventTarget,StartAt,EndAt,IsDisplayed) VALUES(@Title,@EventType,@EventTarget,@StartAt,@EndAt,@IsDisplayed);
+  SET @EventId=CONVERT(int,SCOPE_IDENTITY());
+ END
+ ELSE
+  UPDATE Mng.Events SET Title=@Title,EventType=@EventType,EventTarget=@EventTarget,StartAt=@StartAt,EndAt=@EndAt,IsDisplayed=@IsDisplayed,LastChangeAt=GETDATE()
+  WHERE EventId=@EventId AND Active=1 AND (Title COLLATE Latin1_General_100_BIN2<>@Title COLLATE Latin1_General_100_BIN2
+   OR EventType<>@EventType OR EventTarget COLLATE Latin1_General_100_BIN2<>@EventTarget COLLATE Latin1_General_100_BIN2
+   OR StartAt<>@StartAt OR EndAt<>@EndAt OR IsDisplayed<>@IsDisplayed);
+ SELECT @New=(SELECT Title,EventType,EventTarget,StartAt,EndAt,IsDisplayed,Active FOR JSON PATH,WITHOUT_ARRAY_WRAPPER) FROM Mng.Events WHERE EventId=@EventId AND Active=1;
+ DECLARE @ItemId nvarchar(100)=CONVERT(nvarchar(100),@EventId);
+ EXEC Portal.AdminChanges_Add @ChangedBy=@ChangedBy,@Section='events',@ItemType='event',@ItemId=@ItemId,@ItemTitle=@Title,@OldJson=@Old,@NewJson=@New;
+ COMMIT;SELECT @EventId EventId;
+ END TRY
+ BEGIN CATCH IF @@TRANCOUNT>0 ROLLBACK;THROW;END CATCH;
+END;
+GO
+CREATE OR ALTER PROCEDURE Mng.HeaderEvents_Delete @EventId int,@ChangedBy nvarchar(512)=NULL AS
+BEGIN
+ SET NOCOUNT ON;SET XACT_ABORT ON;
+ BEGIN TRY
+ BEGIN TRAN;
+ DECLARE @Old nvarchar(max),@Title nvarchar(150),@ItemId nvarchar(100)=CONVERT(nvarchar(100),@EventId);
+ SELECT @Title=Title,@Old=(SELECT Title,EventType,EventTarget,StartAt,EndAt,IsDisplayed,Active FOR JSON PATH,WITHOUT_ARRAY_WRAPPER)
+ FROM Mng.Events WITH(UPDLOCK,HOLDLOCK) WHERE EventId=@EventId AND Active=1;
+ IF @Old IS NULL THROW 50052,'Event not found.',1;
+ UPDATE Mng.Events SET Active=0,LastChangeAt=GETDATE() WHERE EventId=@EventId AND Active=1;
+ DECLARE @New nvarchar(max);
+ SELECT @New=(SELECT Title,EventType,EventTarget,StartAt,EndAt,IsDisplayed,Active FOR JSON PATH,WITHOUT_ARRAY_WRAPPER) FROM Mng.Events WHERE EventId=@EventId;
+ EXEC Portal.AdminChanges_Add @ChangedBy=@ChangedBy,@Section='events',@ItemType='event',@ItemId=@ItemId,@ItemTitle=@Title,@OldJson=@Old,@NewJson=@New,@Action='delete';
+ COMMIT;
+ END TRY BEGIN CATCH IF @@TRANCOUNT>0 ROLLBACK;THROW;END CATCH;
+END;
+GO
+
 
 GO
 

@@ -7,7 +7,7 @@ class Element {
  setAttribute(k,v){this.attributes[k]=v;} removeAttribute(k){delete this.attributes[k];}
  append(...items){for(const x of items){x.parent=this;this.children.push(x);}} prepend(x){x.parent=this;this.children.unshift(x);}
  remove(){if(this.parent)this.parent.children=this.parent.children.filter(x=>x!==this);this.isConnected=false;}
- querySelector(selector){if(selector===':scope > .admin-unsaved-badge')return this.children.find(c=>c.className==='admin-unsaved-badge');if(selector==='p')return this.p;if(selector==='h2')return this.heading;if(selector==='[data-confirm-yes]')return this.yes;if(selector==='[data-confirm-no]')return this.no;return null;}
+ querySelector(selector){if(selector==='[data-admin-dirty-slot]')return this.dirtySlot||null;if(selector===':scope > .admin-unsaved-badge')return this.children.find(c=>c.className==='admin-unsaved-badge');if(selector==='p')return this.p;if(selector==='h2')return this.heading;if(selector==='[data-confirm-yes]')return this.yes;if(selector==='[data-confirm-no]')return this.no;return null;}
  querySelectorAll(){return this.controls;} contains(e){return this===e||this.children.some(c=>c.contains(e));} focus(){document.activeElement=this;} close(){this.open=false;} showModal(){this.open=true;}
 }
 const dialog=new Element('dialog');dialog.heading=new Element('h2');dialog.p=new Element('p');dialog.yes=new Element('button');dialog.no=new Element('button');
@@ -37,6 +37,7 @@ const form=new Element('form'),input={type:'text',value:'قبل'};form.controls=
 let prevented=false;windowHandlers.get('beforeunload')({preventDefault(){prevented=true;},returnValue:null});assert(prevented);
 answer=core.mayLeave('media');assert(dialog.open);dialog.no.onclick();assert.equal(await answer,false);assert(tracker.dirty());tracker.saved();assert(!tracker.dirty());assert.equal(form.dataset.adminDirty,'false');
 const second=new Element('form');second.controls=[{type:'text',value:'آخر'}];const another=core.trackForm('media',second);await Promise.resolve();second.controls[0].value='مسودة مستقلة';tracker.saved();assert(another.dirty()); // saving one form never commits another
+const slotted=new Element('form');slotted.controls=[{type:'text',value:'original'}];slotted.dirtySlot=new Element('span');slotted.append(slotted.dirtySlot);const slotTracker=core.trackForm('media',slotted);slotted.controls[0].value='changed';core.refresh();assert.equal(slotted.dirtySlot.children.length,1);core.refresh();assert.equal(slotted.dirtySlot.children.length,1);assert.equal(slotted.children.length,1);slotTracker.saved();assert.equal(slotted.dirtySlot.children.length,0);
 const status=new Element();core.feedback(status,'تم الحفظ.');let success=toasts.children.find(e=>e.className.includes('is-success'));assert(success);assert.equal(status.textContent,'');timers.find(t=>t.ms===4500).cb();assert(!success.isConnected);
 core.feedback(status,'أدخل الاسم والرقم.',true);let error=toasts.children.find(e=>e.className.includes('is-error'));assert(error);for(const timer of timers)timer.cb();assert(error.isConnected);error.children.at(-1).onclick();assert(!error.isConnected);
 nextResponse=new Response(null,{status:401});await core.request('api/admin/media');assert(workspace.hidden);assert(buttons.every(b=>b.hidden));assert(toasts.children.some(e=>e.children[0]?.textContent.includes('انتهت صلاحية الجلسة')));

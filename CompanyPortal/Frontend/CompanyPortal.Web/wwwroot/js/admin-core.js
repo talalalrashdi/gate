@@ -53,8 +53,9 @@
     for(const t of [...trackers]){
       if(!t.element.isConnected){trackers.delete(t);continue;}
       const dirty=!!t.dirty(),value=String(dirty);if(t.element.dataset.adminDirty!==value)t.element.dataset.adminDirty=value;
-      let badge=t.element.querySelector(':scope > .admin-unsaved-badge');
-      if(dirty&&!badge){badge=make('span','غير محفوظ','admin-unsaved-badge');t.element.prepend(badge);}else if(!dirty&&badge)badge.remove();
+      const badgeHost=t.element.querySelector('[data-admin-dirty-slot]')||t.element;
+      let badge=badgeHost.querySelector(':scope > .admin-unsaved-badge');
+      if(dirty&&!badge){badge=make('span','غير محفوظ','admin-unsaved-badge');badgeHost.prepend(badge);}else if(!dirty&&badge)badge.remove();
     }
     document.querySelectorAll('.admin-nav [data-admin-section]').forEach(b=>{const value=String(dirtyIn(b.dataset.adminSection));if(b.dataset.unsaved!==value)b.dataset.unsaved=value;});
   }

@@ -6,9 +6,9 @@ public sealed class HeaderEventsStore(IConfiguration configuration)
 {
  public sealed class Row
  {
-  public int EventId {get;init;} public string Title {get;init;}=""; public string AppUrl {get;init;}="";
+  public int EventId {get;init;} public string Title {get;init;}=""; public int EventType {get;init;}=1; public string EventTarget {get;init;}="";
   public DateTime StartAt {get;init;} public DateTime EndAt {get;init;}
-  public bool Active {get;init;} public DateTime LastChangeAt {get;init;}
+  public bool IsDisplayed {get;init;} public bool Active {get;init;} public DateTime LastChangeAt {get;init;}
  }
  private SqlConnection Connection()=>new(configuration.GetConnectionString("CompanyPortal"));
  private static CommandDefinition Cmd(string name,object? args,CancellationToken token)=>new(name,args,commandType:CommandType.StoredProcedure,commandTimeout:15,cancellationToken:token);
@@ -21,9 +21,9 @@ public sealed class HeaderEventsStore(IConfiguration configuration)
  public async Task<Row[]> All(CancellationToken token){await using var c=Connection();return (await c.QueryAsync<Row>(Cmd("Mng.HeaderEvents_GetAll",null,token))).ToArray();}
  public async Task<int> Save(int? id,CompanyPortal.Api.Contracts.SaveHeaderEvent request,string account,CancellationToken token)
  {
-  await using var c=Connection();return await c.QuerySingleAsync<int>(Cmd("Mng.HeaderEvents_Save",new{EventId=id,Title=request.Title.Trim(),AppUrl=request.AppUrl.Trim(),StartAt=request.StartAt!.Value.UtcDateTime,EndAt=request.EndAt!.Value.UtcDateTime,request.Active,ChangedBy=account},token));
+  await using var c=Connection();return await c.QuerySingleAsync<int>(Cmd("Mng.HeaderEvents_Save",new{EventId=id,Title=request.Title.Trim(),request.EventType,EventTarget=request.Target,StartAt=request.StartAt!.Value.UtcDateTime,EndAt=request.EndOfDay!.Value.UtcDateTime,request.IsDisplayed,ChangedBy=account},token));
  }
  public async Task Delete(int id,string account,CancellationToken token){await using var c=Connection();await c.ExecuteAsync(Cmd("Mng.HeaderEvents_Delete",new{EventId=id,ChangedBy=account},token));}
  public static bool SafeUrl(string url)=>Uri.TryCreate(url,UriKind.Absolute,out var uri)&&uri.Scheme is "http" or "https"&&uri.UserInfo.Length==0;
- public static object View(Row r)=>new{r.EventId,r.Title,r.AppUrl,StartAt=DateTime.SpecifyKind(r.StartAt,DateTimeKind.Utc),EndAt=DateTime.SpecifyKind(r.EndAt,DateTimeKind.Utc),r.Active,LastChangeAt=DecisionNoticesStore.Oman(r.LastChangeAt)};
+ public static object View(Row r)=>new{r.EventId,r.Title,r.EventType,r.EventTarget,StartAt=DateTime.SpecifyKind(r.StartAt,DateTimeKind.Utc),EndAt=DateTime.SpecifyKind(r.EndAt,DateTimeKind.Utc),r.IsDisplayed,r.Active,LastChangeAt=DecisionNoticesStore.Oman(r.LastChangeAt)};
 }

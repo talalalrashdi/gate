@@ -33,6 +33,6 @@
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 
 /* Images/themes open directly into their workspace, with feedback retained for loading/errors. */
-body:is([data-admin-current="images"],[data-admin-current="themes"]) .admin-context,body:is([data-admin-current="images"],[data-admin-current="themes"]) .admin-status-bar:has(#admin-status[data-state="ready"]){display:none}
+body:is([data-admin-current="images"],[data-admin-current="themes"],[data-admin-current="events"]) .admin-context,body:is([data-admin-current="images"],[data-admin-current="themes"],[data-admin-current="events"]) .admin-status-bar:has(#admin-status[data-state="ready"]){display:none}
 #images-status:empty,#themes-status:empty{display:none}
 [data-admin-panel="themes"]>.admin-section-heading{justify-content:flex-end}

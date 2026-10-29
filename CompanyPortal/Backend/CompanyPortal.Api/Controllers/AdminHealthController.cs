@@ -66,7 +66,7 @@ public sealed class AdminHealthController(IConfiguration config,AdministrationSt
             return $"Connected to SQL Server '{SafeHost(b.DataSource)}', database '{SafeHost(database.Name)}', using '{process}' (or the configured SQL login).";
         },["Open SQL Server Configuration Manager and confirm the configured SQL instance is running.","Check ConnectionStrings:CompanyPortal on the API host; do not share its password.",$"In SSMS, add the API identity '{process}' as a login/database user and grant the required EXECUTE permissions."]);
         int? userId=null;
-        var schemaSteps=new[]{"Open SSMS and connect to the configured CompanyPortal database.","Apply the missing numbered migrations in order, through 054. Do not rerun the fresh-install Setup.sql on an existing database.","Grant the API identity EXECUTE on required procedures. If metadata is hidden, grant VIEW DEFINITION on the affected objects and rerun checks."};
+        var schemaSteps=new[]{"Open SSMS and connect to the configured CompanyPortal database.","Apply the missing numbered migrations in order, through 057. Do not rerun the fresh-install Setup.sql on an existing database.","Grant the API identity EXECUTE on required procedures. If metadata is hidden, grant VIEW DEFINITION on the affected objects and rerun checks."};
         if(dbOk)
         {
             Add("SQL_COMPATIBILITY",database!.Compatibility>=130&&database.Major>=14?"ok":"failed","SQL compatibility",
@@ -79,7 +79,7 @@ public sealed class AdminHealthController(IConfiguration config,AdministrationSt
                 var found=(await c.QueryAsync<string>(new CommandDefinition("SELECT SCHEMA_NAME(schema_id)+'.'+name FROM sys.procedures",cancellationToken:ct))).ToHashSet(StringComparer.OrdinalIgnoreCase);
                 var missing=names.Where(n=>!found.Contains(n)).ToArray();
                 if(missing.Length>0){Add("MIGRATIONS","failed","Migration coverage","Missing or invisible procedures: "+string.Join(", ",missing),schemaSteps);throw new HealthCheckException("Required procedures are missing or invisible to the API identity.");}
-                Add("MIGRATIONS","ok","Migration coverage","Required procedure names through migration 054 are present. There is no migration ledger; this verifies current objects, not historical execution order.");
+                Add("MIGRATIONS","ok","Migration coverage","Required procedure names through migration 057 are present. There is no migration ledger; this verifies current objects, not historical execution order.");
                 return $"All {names.Length} required procedures are visible. Execution permissions are checked for the identity/source probes below; visibility alone does not prove every feature works.";
             },schemaSteps);
             await Probe("USER_LOOKUP","Windows account to user",async ct=>

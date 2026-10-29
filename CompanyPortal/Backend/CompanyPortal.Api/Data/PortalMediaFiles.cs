@@ -7,12 +7,12 @@ public sealed class MediaFileException(string code,int status):Exception(code)
 public sealed class PortalMediaFiles(FolderPathsStore folders)
 {
  public sealed record Opened(FileStream Stream,string ContentType,string FileName);
- public async Task<Opened> OpenAsync(string path,string type,CancellationToken token)
+ public async Task<Opened> OpenAsync(string path,string type,CancellationToken token,string folderKey="PortalMedia")
  {
   if(string.IsNullOrWhiteSpace(path))throw new MediaFileException("INVALID_PATH",400);
   if(type is not ("image" or "video"))throw new MediaFileException("UNSUPPORTED_TYPE",400);
   IReadOnlyList<string> roots;
-  try{roots=await folders.GetAsync("PortalMedia",token);}
+  try{roots=await folders.GetAsync(folderKey,token);}
   catch(InvalidOperationException){throw new MediaFileException("ROOT_NOT_CONFIGURED",503);}
   try
   {

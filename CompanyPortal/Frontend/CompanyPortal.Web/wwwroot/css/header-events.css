@@ -17,3 +17,12 @@ body.portal-dashboard .portal-header .portal-media-subnav-links a[data-header-ev
 @media(prefers-reduced-motion:reduce){body.portal-dashboard .portal-header .portal-media-subnav-links a[data-header-event]{animation:none}}
 
 .portal-header-event-new[hidden]{display:none!important}
+
+html:has(.portal-event-video[open]),body:has(.portal-event-video[open]){overflow:hidden!important}.portal-event-video{width:min(1000px,90vw);max-height:90vh;border:0;border-radius:16px;padding:20px;background:#fff;color:#123047}.portal-event-video::backdrop{background:rgb(0 0 0 / 75%)}.portal-event-video video{display:block;width:100%;max-height:72vh;background:#000}.portal-event-video h2{font-size:20px;margin:0 0 16px}.portal-event-video button{float:left;border:1px solid #dce5dc;border-radius:8px;padding:8px 16px;cursor:pointer}
+/* Let event tabs use the full row; safe centring keeps overflow reachable in RTL. */
+body.portal-dashboard .portal-header .portal-media-subnav-links:has(> a[data-header-event]) {
+ width:100%;justify-content:safe center;box-sizing:border-box;padding-inline:6px;
+ scroll-padding-inline:6px;scrollbar-width:thin;scrollbar-color:#81928980 transparent;
+}
+body.portal-dashboard .portal-header .portal-media-subnav-links:has(> a[data-header-event])::-webkit-scrollbar {display:block;height:4px}
+body.portal-dashboard .portal-header .portal-media-subnav-links:has(> a[data-header-event])::-webkit-scrollbar-thumb {background:#81928980;border-radius:4px}

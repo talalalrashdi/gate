@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 const all=[],events={},timers=new Map(),streams=[],requests=[],notices=[];
-let document;const simulationEvents={};
+let document,editorOptions;const simulationEvents={};
 class Node {
  children=[];dataset={};attributes={};listeners={};disabled=false;hidden=false;value='';_text='';classes=new Set();
  constructor(tag){this.tagName=tag;all.push(this);this.classList={add:(...names)=>names.forEach(n=>this.classes.add(n)),toggle:(name,on)=>{if(on)this.classes.add(name);else this.classes.delete(name);}};}
@@ -29,7 +29,7 @@ class Source{
 const RealDate=Date;
 class Clock extends RealDate{constructor(...args){super(...(args.length?args:['2026-10-20T06:00:00Z']));}static now(){return RealDate.parse('2026-10-20T06:00:00Z');}}
 document={querySelector:s=>s==='[data-schedule-source="exchange"]'?planner:{content:'https://api.test/portal/'},getElementById:id=>ids[id]||null,createElement:tag=>new Node(tag),activeElement:null,dispatchEvent(){},addEventListener:(name,fn)=>simulationEvents[name]=fn};
-const context=vm.createContext({document,window:{addEventListener:(name,fn)=>events[name]=fn,showToast:text=>notices.push(text)},location:{href:'https://portal.test/'},Intl,Date:Clock,URL,URLSearchParams,AbortSignal,EventSource:Source,CustomEvent:class{},
+const context=vm.createContext({document,window:{CompanyPortalCalendarEditor:options=>{editorOptions=options;return {open(){},shared(){}};},addEventListener:(name,fn)=>events[name]=fn,showToast:text=>notices.push(text)},location:{href:'https://portal.test/'},Intl,Date:Clock,URL,URLSearchParams,AbortSignal,EventSource:Source,CustomEvent:class{},
  fetch:async(url,options)=>{requests.push({url,options});return {ok:true,json:async()=>({timeZone:'Asia/Muscat',calendars:[{key:'own',name:'My calendar',isOwn:true},{key:'manager',name:'Manager',isOwn:false}]})};},
  setTimeout:(callback,delay)=>{const id=timers.size+1;timers.set(id,{callback,delay});return id;},clearTimeout:id=>timers.delete(id),localStorage:new Proxy({},{get(){throw new Error('Do not read or store Exchange/local task data in browser storage');}})});
 vm.runInContext(await readFile(new URL('../Frontend/CompanyPortal.Web/wwwroot/js/exchange-schedule.js',import.meta.url),'utf8'),context);
@@ -61,6 +61,8 @@ simulate('calendar-shared');assert.equal(picker.value,'simulation-manager');asse
 simulate('calendar-shared-manual');assert.ok(planner.textContent.includes('يدويًا'));byLabel('إعادة الاتصال بتقويم Outlook').listeners.click();assert.equal(picker.value,'simulation-manager');
 byLabel('الشهر التالي').listeners.click();byLabel('العودة إلى اليوم').listeners.click();assert.equal(picker.value,'simulation-manager');
 picker.value='own';picker.listeners.change();assert.ok(byClass('exchange-agenda-items').textContent.includes('تم تعديل الموعد'));
+const created=await editorOptions.request('api/schedule/appointments','POST',{calendarKey:'own',subject:'Editor draft',start:'2026-10-20T05:00Z',end:'2026-10-20T06:00Z'});
+editorOptions.changed('own');const createdRow=byClass('exchange-agenda-items').children.find(n=>n.textContent.includes('Editor draft'));assert.ok(createdRow,'Simulated create did not render');
 simulate('calendar-revoke');assert.equal(picker.children.length,1);assert.equal(picker.value,'own');
 simulate('task-new');assert.equal(byClass('exchange-task-items').children.length,6);simulate('task-complete');assert.equal(byClass('exchange-task-items').children.length,5);
 all.find(n=>n.dataset.filter==='overdue').listeners.click();assert.equal(byClass('exchange-task-items').children.length,1);simulate('task-examples');assert.equal(byClass('exchange-task-items').children.length,5);

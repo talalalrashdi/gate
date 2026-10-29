@@ -1,6 +1,6 @@
-﻿# Full transfer and internal Exchange acceptance
+# Full transfer and internal Exchange acceptance
 
-Target supplied by user: a separate **Windows 10 / SQL Server Express** machine; .NET 10 Hosting Bundle will be installed there. No application authentication/Exchange code was changed for this test run.
+Target supplied by user: a separate **Windows 10 / SQL Server Express** machine; .NET 10 Hosting Bundle will be installed there. Updated authentication prerequisites: employee Windows delegation; see ../docs/EXCHANGE_CALENDAR_TASKS.md. Earlier local test results below are historical.
 
 ## Before taking the package inside
 
@@ -8,7 +8,7 @@ Target supplied by user: a separate **Windows 10 / SQL Server Express** machine;
 - Take the complete .NET 10 x64 Hosting Bundle installer (not only the desktop runtime), internal certificate chains, and any Windows feature installation media needed to enable IIS offline. Install IIS first, then the Hosting Bundle.
 - On the destination, run `winver`: confirm the exact edition/build against Microsoft's .NET 10 supported OS list. Windows 10 alone is not enough to establish supported hosting; check the actual edition/LTSC lifecycle. Windows Authentication must be available in that Windows edition. [Supported operating systems](https://github.com/dotnet/core/blob/main/release-notes/10.0/supported-os.md).
 - Check SQL Express version using `SELECT SERVERPROPERTY('ProductVersion'),SERVERPROPERTY('Edition');`. This exported script targets SQL Server **2017 or later**. The instance may be `localhost\SQLEXPRESS`, not `localhost`; use its real name in the connection string. No SQL Agent jobs are required.
-- Arrange domain access, internal DNS/HTTPS names, an approved API service identity, scoped EWS impersonation for the test mailbox, and internal certificate trust **before** enabling Exchange. These are destination prerequisites, not fixes that require a different application build.
+- Arrange domain access, internal DNS/HTTPS names, an approved API service identity, employee Kerberos constrained delegation to Exchange HTTP, and internal certificate trust **before** enabling Exchange. These are destination prerequisites, not fixes that require a different application build.
 - Use CURRENT_DATA_README.md for the exact snapshot. Map the exported sample NTName to the internal test account while retaining its UserId; configure mailbox mappings, API SQL grants and news paths.
 
 ## Automated checks inside

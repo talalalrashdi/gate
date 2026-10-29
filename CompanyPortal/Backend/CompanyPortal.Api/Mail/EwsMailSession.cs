@@ -119,8 +119,7 @@ public sealed partial class EwsMailSession : IAsyncDisposable
     private HttpRequestMessage Request(XElement operation)
     {
         var envelope = new XElement(Soap + "Envelope", new XAttribute(XNamespace.Xmlns + "s", Soap), new XAttribute(XNamespace.Xmlns + "t", T), new XAttribute(XNamespace.Xmlns + "m", M),
-            new XElement(Soap + "Header", new XElement(T + "RequestServerVersion", new XAttribute("Version", "Exchange2013_SP1")),
-                new XElement(T + "ExchangeImpersonation", new XElement(T + "ConnectingSID", new XElement(T + "SmtpAddress", mailbox)))), new XElement(Soap + "Body", operation));
+            new XElement(Soap + "Header", new XElement(T + "RequestServerVersion", new XAttribute("Version", "Exchange2013_SP1"))), new XElement(Soap + "Body", operation));
         var request = new HttpRequestMessage(HttpMethod.Post, options.EwsUrl) { Content = new StringContent(envelope.ToString(SaveOptions.DisableFormatting), Encoding.UTF8, "text/xml") };
         request.Headers.Add("SOAPAction", "\"" + M.NamespaceName + "/" + operation.Name.LocalName + "\"");
         request.Headers.Add("X-AnchorMailbox", mailbox);

@@ -75,13 +75,13 @@ The settings are in the API's [appsettings.json](../Backend/CompanyPortal.Api/ap
 | `EwsUrl` | Internal Exchange EWS HTTPS endpoint. |
 | `OutlookWebUrl` | Internal Outlook Web base address, used for message links. |
 | `OutlookWebInboxUrl` | Exact verified inbox address for **فتح البريد**, on the same Outlook Web origin. |
-| `AccessMode` | Currently `Unconfigured`. The implemented live access mode is `ScopedServiceAccountImpersonation`, subject to Exchange administrator approval and provisioning. |
+| `AccessMode` | `WindowsDelegation`: each EWS call uses the signed-in employee Windows token. IIS requires Kerberos constrained delegation. |
 | `MailboxAddresses` | Explicit Windows-account → mailbox-address mappings, currently empty. |
 | `LatestMessageCount` | Latest messages returned, default 10; allowed range 1–20. |
 | `OpenMode` | `Message` or `InboxSelected`. |
 | `InboxSelectedUrlTemplate` | Verified full-inbox selection URL template containing `{itemId}`; currently empty. |
 
-The API runs under a Windows service/IIS identity. An Exchange administrator must authorize that identity to access only the intended mailboxes. Employee Windows sign-in to the portal does not automatically grant the API access to their mailbox. Setting an access-mode name in JSON does not grant Exchange permissions.
+The API calls EWS as the employee using WindowsIdentity.RunImpersonatedAsync. No EWS ApplicationImpersonation role is used. IIS needs HTTP SPNs and Kerberos constrained delegation to Exchange; automatic sign-in or setting the JSON value alone does not configure this. SQL still uses the API process identity.
 
 The API server must also reach Exchange through internal DNS/networking and trust its HTTPS certificate. IIS and any proxy must allow the long-lived connections to stream without buffering. No public internet connection is needed for the runtime design.
 
@@ -89,6 +89,6 @@ The API server must also reach Exchange through internal DNS/networking and trus
 
 Implemented and locally checked: protocol/event handling with simulated Exchange responses, unread counting, frontend updates, account isolation checks, link configuration, reconnection, and the browser's unavailable state. No actual Exchange mailbox has been accessed by these tests.
 
-Still required internally: real mailbox authentication, service-account scope, certificates, end-to-end live updates and timing, the inbox/message URLs, and the optional full-inbox selection template. Changing appsettings supplies the application configuration; the Exchange/IIS permissions and infrastructure must be set up separately.
+Still required internally: real mailbox authentication, employee Kerberos delegation, certificates, end-to-end live updates and timing, the inbox/message URLs, and the optional full-inbox selection template. Changing appsettings supplies the application configuration; the Exchange/IIS permissions and infrastructure must be set up separately.
 
 See [EMAIL.md](EMAIL.md) for the detailed setup, endpoints, limits, test commands and protocol references.

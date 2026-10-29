@@ -11,25 +11,28 @@ public sealed partial class EwsMailSession
     private static bool Flag(XElement? node,string name)=>node?.Element(T+name)?.Value is "true" or "1";
     private static DateTimeOffset Instant(string value)=>DateTimeOffset.Parse(value,CultureInfo.InvariantCulture,DateTimeStyles.AssumeUniversal);
     private static XElement Folder(string kind,string owner)=>new(T+"DistinguishedFolderId",new XAttribute("Id",kind),new XElement(T+"Mailbox",new XElement(T+"EmailAddress",owner)));
-    public async Task<CalendarAccess> CalendarAccessAsync(string owner,CancellationToken token)
+    public async Task<CalendarAccess> CalendarAccessAsync(string owner,CancellationToken token,string? folderId=null)
     {
-        // The SOAP impersonation header remains the viewing employee, even when owner is a manager.
-        var doc=await CallAsync(new XElement(M+"GetFolder",new XElement(M+"FolderShape",new XElement(T+"BaseShape","IdOnly"),
-            new XElement(T+"AdditionalProperties",Field("folder:EffectiveRights"))),new XElement(M+"FolderIds",Folder("calendar",owner))),token);
-        var rights=doc.Descendants(T+"CalendarFolder").SingleOrDefault()?.Element(T+"EffectiveRights");
-        return new(Flag(rights,"Read"),Flag(rights,"CreateContents"),Flag(rights,"Modify"),Flag(rights,"Delete"),Flag(rights,"ViewPrivateItems"));
+        return (await CalendarFolderAsync(owner,folderId,token)).Rights;
     }
-    public async Task<CalendarResult> CalendarAsync(string owner,DateOnly from,DateOnly to,TimeZoneInfo zone,CancellationToken token)
+    internal async Task<(string Id,CalendarAccess Rights)> CalendarFolderAsync(string owner,string? folderId,CancellationToken token)
     {
-        var access=await CalendarAccessAsync(owner,token);
+        var doc=await CallAsync(new XElement(M+"GetFolder",new XElement(M+"FolderShape",new XElement(T+"BaseShape","IdOnly"),new XElement(T+"AdditionalProperties",Field("folder:EffectiveRights"))),new XElement(M+"FolderIds",CalendarFolder(owner,folderId))),token);
+        var folder=doc.Descendants(T+"CalendarFolder").SingleOrDefault()??throw new EwsResponseException("ErrorFolderNotFound");
+        var rights=folder.Element(T+"EffectiveRights");return(folder.Element(T+"FolderId")?.Attribute("Id")?.Value??throw new XmlException("Missing calendar folder ID."),new(Flag(rights,"Read"),Flag(rights,"CreateContents"),Flag(rights,"Modify"),Flag(rights,"Delete"),Flag(rights,"ViewPrivateItems")));
+    }
+    private static XElement CalendarFolder(string owner,string? folderId)=>string.IsNullOrEmpty(folderId)?Folder("calendar",owner):new(T+"FolderId",new XAttribute("Id",folderId));
+    public async Task<CalendarResult> CalendarAsync(string owner,DateOnly from,DateOnly to,TimeZoneInfo zone,CancellationToken token,string? folderId=null)
+    {
+        var access=await CalendarAccessAsync(owner,token,folderId);
         if(!access.Read)throw new EwsResponseException("ErrorAccessDenied");
         var start=TimeZoneInfo.ConvertTimeToUtc(from.ToDateTime(TimeOnly.MinValue),zone);
         var end=TimeZoneInfo.ConvertTimeToUtc(to.ToDateTime(TimeOnly.MinValue),zone);
         var doc=await CallAsync(new XElement(M+"FindItem",new XAttribute("Traversal","Shallow"),
             new XElement(M+"ItemShape",new XElement(T+"BaseShape","IdOnly"),new XElement(T+"AdditionalProperties",
-                new[]{"item:Subject","item:Sensitivity","item:EffectiveRights","calendar:Start","calendar:End","calendar:IsAllDayEvent","calendar:Location","calendar:Organizer","calendar:IsCancelled","calendar:MyResponseType"}.Select(Field))),
+                new[]{"item:Subject","item:Sensitivity","item:EffectiveRights","calendar:Start","calendar:End","calendar:IsAllDayEvent","calendar:Location","calendar:Organizer","calendar:IsCancelled","calendar:MyResponseType","calendar:IsMeeting","calendar:IsOrganizer","calendar:CalendarItemType"}.Select(Field))),
             new XElement(M+"CalendarView",new XAttribute("StartDate",XmlConvert.ToString(start,XmlDateTimeSerializationMode.Utc)),new XAttribute("EndDate",XmlConvert.ToString(end,XmlDateTimeSerializationMode.Utc)),new XAttribute("MaxEntriesReturned",1000)),
-            new XElement(M+"ParentFolderIds",Folder("calendar",owner))),token);
+            new XElement(M+"ParentFolderIds",CalendarFolder(owner,folderId))),token);
         var own=string.Equals(owner,mailbox,StringComparison.OrdinalIgnoreCase);
         var items=doc.Descendants(T+"CalendarItem").Select(item=>{
             var sensitivity=item.Element(T+"Sensitivity")?.Value;
@@ -42,7 +45,10 @@ public sealed partial class EwsMailSession
                 mask?(privateItem?"موعد خاص":"وقت مشغول"):item.Element(T+"Subject")?.Value??"",Instant(item.Element(T+"Start")?.Value??throw new XmlException("Missing appointment start.")),
                 Instant(item.Element(T+"End")?.Value??throw new XmlException("Missing appointment end.")),Flag(item,"IsAllDayEvent"),
                 mask?"":item.Element(T+"Location")?.Value??"",mask?"":item.Element(T+"Organizer")?.Descendants(T+"Name").FirstOrDefault()?.Value??"",
-                Flag(item,"IsCancelled"),privateItem,mask?"":item.Element(T+"MyResponseType")?.Value??"");
+                Flag(item,"IsCancelled"),privateItem,mask?"":item.Element(T+"MyResponseType")?.Value??""){
+                ChangeKey=item.Element(T+"ItemId")?.Attribute("ChangeKey")?.Value??"",IsMeeting=Flag(item,"IsMeeting"),
+                DetailsAvailable=!mask,CanEdit=!mask&&EditableMeeting(item,owner)&&item.Element(T+"CalendarItemType")?.Value!="RecurringMaster"&&!Flag(item,"IsCancelled")&&Flag(item.Element(T+"EffectiveRights"),"Modify"),
+                CanDelete=!mask&&EditableMeeting(item,owner)&&item.Element(T+"CalendarItemType")?.Value!="RecurringMaster"&&Flag(item.Element(T+"EffectiveRights"),"Delete")};
         }).OrderBy(i=>i.Start).ToArray();
         if(items.Length>1000 || items.Any(i=>i.End<i.Start))throw new XmlException("Invalid calendar results.");
         return new(items,doc.Descendants(M+"RootFolder").Any(f=>f.Attribute("IncludesLastItemInRange")?.Value is "false" or "0"));
@@ -69,10 +75,10 @@ public sealed partial class EwsMailSession
         return new(items,!complete);
     }
     // Only invalidation signals leave this method: owner item IDs/details never reach a delegate.
-    public async IAsyncEnumerable<bool> ObserveFoldersAsync(string[] folders,[EnumeratorCancellation] CancellationToken token)
+    public async IAsyncEnumerable<bool> ObserveFoldersAsync(string[] folders,[EnumeratorCancellation] CancellationToken token,string? owner=null,string? calendarFolderId=null)
     {
         var doc=await CallAsync(new XElement(M+"Subscribe",new XElement(M+"StreamingSubscriptionRequest",new XAttribute("SubscribeToAllFolders","false"),
-            new XElement(T+"FolderIds",folders.Select(kind=>Folder(kind,mailbox))),new XElement(T+"EventTypes",new[]{"CreatedEvent","ModifiedEvent","DeletedEvent","MovedEvent","CopiedEvent","FreeBusyChangedEvent"}.Select(name=>new XElement(T+"EventType",name))))),token);
+            new XElement(T+"FolderIds",folders.Select(kind=>kind=="calendar"?CalendarFolder(owner??mailbox,calendarFolderId):Folder(kind,mailbox))),new XElement(T+"EventTypes",new[]{"CreatedEvent","ModifiedEvent","DeletedEvent","MovedEvent","CopiedEvent","FreeBusyChangedEvent"}.Select(name=>new XElement(T+"EventType",name))))),token);
         var id=doc.Descendants(M+"SubscriptionId").Single().Value;
         try
         {

@@ -1,5 +1,15 @@
 # Exchange authentication decision and resume notes
 
+## Current decision — 29 October 2026
+
+The user authorized switching CompanyPortal to employee Windows delegation and adding shared-calendar discovery/editing. This is now implemented with WindowsIdentity.RunImpersonatedAsync for all EWS sends, isolated HTTP sessions and retained/disposed caller tokens. The ExchangeImpersonation SOAP header is removed. Set AccessMode=WindowsDelegation; no ApplicationImpersonation role is required. Existing SQL connections continue using the API process identity. No AD/Exchange permissions were changed here.
+
+Calendar create/edit/delete checks current Exchange folder/item permissions, parent folder, private-item access and ChangeKey. Discovery checks Outlook shortcuts, with manual owner-mailbox entry when needed. Shared delegate subscriptions can be refused by Exchange; in that case the UI explicitly requires manual calendar refresh while personal task notifications continue. It never impersonates the owner to bypass this limit.
+
+See [current calendar/API/IIS instructions](EXCHANGE_CALENDAR_TASKS.md). Local mocks and simulation are not live IIS/Exchange acceptance. The earlier comparison and troubleshooting below are preserved as historical context; statements that the choice was deferred or CompanyPortal still used service-account impersonation describe the earlier version only.
+
+## Historical discussion
+
 Recorded: 22 October 2026.
 
 ## Status and purpose

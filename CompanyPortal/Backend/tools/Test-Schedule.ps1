@@ -1,4 +1,4 @@
-﻿param([string]$BaseUrl='http://localhost:5091')
+param([string]$BaseUrl='http://localhost:5091')
 $ErrorActionPreference='Stop'
 if(-not ([uri]$BaseUrl).IsLoopback){throw 'Local development only.'}
 Add-Type -AssemblyName System.Net.Http
@@ -23,6 +23,26 @@ try{
  Check ((Read '/api/schedule/stream?from=2026-10-01&to=2026-11-01' 'https://untrusted.invalid').Status -eq 403) 'Untrusted SSE origin accepted.'
  $anonymous=[Net.Http.HttpClient]::new()
  try{$response=$anonymous.GetAsync($BaseUrl+'/api/schedule/calendars').GetAwaiter().GetResult();try{Check ([int]$response.StatusCode -eq 401) 'Anonymous schedule access accepted.'}finally{$response.Dispose()}}finally{$anonymous.Dispose()}
- $request=[Net.Http.HttpRequestMessage]::new([Net.Http.HttpMethod]::Post,$BaseUrl+'/api/schedule');try{$response=$client.SendAsync($request).GetAwaiter().GetResult();try{Check ([int]$response.StatusCode -in @(404,405)) 'Unexpected calendar write endpoint.'}finally{$response.Dispose()}}finally{$request.Dispose()}
- Write-Output 'PASS: Swagger, authenticated disabled state/no-store, date/key validation, anonymous denial, origin protection and no write endpoints.'
+ $anonymous=[Net.Http.HttpClient]::new()
+ try{$request=[Net.Http.HttpRequestMessage]::new([Net.Http.HttpMethod]::Post,$BaseUrl+'/api/schedule/appointments');$request.Headers.Add('X-CompanyPortal-Request','schedule');$request.Content=[Net.Http.StringContent]::new('{}',[Text.Encoding]::UTF8,'application/json');try{$response=$anonymous.SendAsync($request).GetAwaiter().GetResult();try{Check ([int]$response.StatusCode -eq 401) 'Anonymous calendar write accepted.'}finally{$response.Dispose()}}finally{$request.Dispose()}}finally{$anonymous.Dispose()}
+ function WriteCheck($method,$path,$json,$expected,$header=$true,$origin=''){
+  $request=[Net.Http.HttpRequestMessage]::new([Net.Http.HttpMethod]::new($method),$BaseUrl+$path)
+  $request.Content=[Net.Http.StringContent]::new($json,[Text.Encoding]::UTF8,'application/json')
+  if($header){$request.Headers.Add('X-CompanyPortal-Request','schedule')}
+  if($origin){$request.Headers.Add('Origin',$origin)}
+  try{$response=$client.SendAsync($request).GetAwaiter().GetResult();try{Check ([int]$response.StatusCode -eq $expected) "$method $path expected $expected got $([int]$response.StatusCode)"}finally{$response.Dispose()}}finally{$request.Dispose()}
+ }
+ Check ($null -ne $definition.paths.'/api/schedule/appointments'.post -and $null -ne $definition.paths.'/api/schedule/appointments'.put -and $null -ne $definition.paths.'/api/schedule/appointments'.delete -and $null -ne $definition.paths.'/api/schedule/calendars/open'.post) 'Calendar editing routes missing.'
+ $draft='{"subject":"Test","start":"2026-10-20T09:00:00+04:00","end":"2026-10-20T10:00:00+04:00","calendarKey":"own"}'
+ WriteCheck 'POST' '/api/schedule/appointments' $draft 503
+ WriteCheck 'POST' '/api/schedule/appointments' $draft 400 $false
+ WriteCheck 'POST' '/api/schedule/appointments' $draft 403 $true 'https://untrusted.invalid'
+ WriteCheck 'POST' '/api/schedule/appointments' '{}' 400
+ WriteCheck 'POST' '/api/schedule/appointments' '{"subject":"Test","start":"2026-10-20T11:00Z","end":"2026-10-20T10:00Z"}' 400
+ WriteCheck 'POST' '/api/schedule/calendars/open' '{"mailbox":"bad"}' 400
+ WriteCheck 'POST' '/api/schedule/calendars/open' '{"mailbox":"boss@example.test"}' 503
+ WriteCheck 'PUT' '/api/schedule/appointments' $draft 400
+ WriteCheck 'DELETE' '/api/schedule/appointments' '{}' 400
+ Write-Output 'PASS: Swagger reads/writes, disabled state/no-store, date/key/body validation, anonymous denial, write header and origin protection.'
+
 }finally{$client.Dispose()}

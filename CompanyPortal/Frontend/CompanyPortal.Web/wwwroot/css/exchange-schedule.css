@@ -1,4 +1,4 @@
-/* Outlook-backed read-only planner, shared by the three portal templates. */
+/* Outlook planner, shared by the three portal templates. */
 #systems .exchange-planner{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
 #systems .exchange-planner .personal-planner-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
 #systems .exchange-planner .personal-planner-head small{display:block;font-size:10px;color:#607568;margin:5px 0}
@@ -50,3 +50,29 @@ body[data-site-theme=work] #systems #theme-work-calendar .exchange-agenda{
  body[data-site-theme=work] #systems #theme-work-calendar .exchange-planner .exchange-agenda{grid-column:1 / -1}
 }
 @media(max-width:600px){#systems .exchange-planner{grid-template-columns:1fr}}
+.exchange-calendar-tools{display:flex;flex-wrap:wrap;gap:8px;margin-block:8px}
+#systems .exchange-calendar-tools button,#systems .exchange-appointment>button{border:1px solid #bfd2c9;border-radius:7px;background:#fff;color:#194d3b;padding:6px 10px;font:inherit;font-size:12px}
+#systems .exchange-appointment>button{margin-top:6px}
+.exchange-editor{width:min(620px,90vw);max-height:88vh;overflow:auto;box-sizing:border-box;border:1px solid #d0ddd6;border-radius:18px;background:#fff;color:#183f33;padding:24px;font-family:inherit;box-shadow:0 20px 90px #0005}
+.exchange-editor::backdrop{background:#142d27aa}
+.exchange-editor[open]{display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;overflow:hidden}
+.exchange-editor header,.exchange-editor footer{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.exchange-editor h2{font-size:21px;margin:0}
+.exchange-editor form{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:max-content;gap:14px;margin-block:20px;overflow:auto;min-height:0;padding:4px}
+.exchange-editor form>p,.exchange-editor label:has(textarea){grid-column:1/-1}
+.exchange-editor label{display:flex;flex-direction:column;gap:7px;font-size:14px;font-weight:600}
+.exchange-editor label:has([type=checkbox]){flex-direction:row;align-items:center;grid-column:1/-1}
+.exchange-editor input:not([type=checkbox]),.exchange-editor textarea{box-sizing:border-box;width:100%;padding:10px;border:1px solid #b9d0c4;border-radius:7px;background:#fafcfb;color:#183f33;font:inherit;font-weight:400}
+.exchange-editor input:is([type=datetime-local],[type=date]){direction:ltr}
+.exchange-editor textarea{min-height:100px;resize:vertical}
+.exchange-editor button{border:1px solid #c6d7ce;border-radius:8px;padding:9px 15px;background:#f3f7f4;color:#194b3b;font:inherit;cursor:pointer}
+.exchange-editor button[type=submit]{--text-primary:#fff;background:#215c46;color:#fff!important}
+.exchange-editor .is-danger{--text-primary:#fff;background:#923f48;color:#fff!important;border-color:#923f48}
+.exchange-editor-error{color:#a12737;line-height:1.8;white-space:pre-line}
+.exchange-editor-error:empty{display:none}
+.exchange-editor-hint{font-size:12px;color:#566c60}
+.exchange-editor-confirm{border:1px solid #b44c57;padding:18px;background:#fff7f7;border-radius:10px}
+.exchange-editor-confirm button{margin-inline-end:10px}
+.exchange-editor :is(button,input,textarea):focus-visible{outline:3px solid #307b59;outline-offset:2px}
+.exchange-editor [inert]{opacity:.55}
+@media(max-width:600px){.exchange-editor form{grid-template-columns:1fr}}

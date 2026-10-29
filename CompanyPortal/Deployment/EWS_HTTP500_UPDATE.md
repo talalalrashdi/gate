@@ -1,5 +1,7 @@
 # Update for SQL Server 2017 and EWS HTTP500
 
+> Superseded authentication: the current API uses WindowsDelegation, with no ExchangeImpersonation header. If ErrorImpersonateUserDenied persists, check that the new API was published and is running. Follow ../docs/EXCHANGE_CALENDAR_TASKS.md for Kerberos/IIS setup. The account-role advice below describes the old build.
+
 ## SQL already imported
 
 Do not import the snapshot again. Run **SqlServer2017-Compatibility.sql** in SSMS against the offline instance. It changes the three database compatibility levels to **140**, without rebuilding tables or changing saved rows. Level100 can hide problems until a feature uses OPENJSON; that feature needs level130 or higher.

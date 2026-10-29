@@ -42,6 +42,7 @@ builder.Services.AddScoped<DocumentFiles>();
 builder.Services.AddScoped<NewsFiles>();
 builder.Services.AddScoped<FolderPathsStore>();
 builder.Services.AddScoped<MailIdentityStore>();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<MailSessionFactory>();
 builder.Services.AddScoped<ScheduleService>();
 builder.Services.AddSingleton<MailStreamLimits>();

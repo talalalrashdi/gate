@@ -1,94 +1,67 @@
 # Exchange calendar and tasks
 
-Read-only implementation, 20 October 2026. Exchange remains disabled locally until approved internal configuration is supplied. No real Exchange data, AD rights, database tables or employee browser tasks were changed or imported.
+Updated 29 October 2026. Exchange access now uses the employee's Windows credentials. Calendar editing and shared-calendar discovery are implemented; real Exchange/IIS acceptance remains pending. No new NuGet package or database migration is required.
 
-## Employee experience
+## What employees can do
 
-The existing calendar in all three portal templates now shows Outlook-backed data: a 42-day month grid, a selected-day agenda (initially today), and the employee's outstanding tasks. Tasks can be filtered into all, overdue, today and upcoming; entries show due date, importance, progress and status. Appointments include title, local times, location, organizer, all-day, tentative/response and cancellation information. Recurring occurrences come from EWS CalendarView; all-day/end-exclusive dates use the configured timezone.
+- View today's agenda, a month grid and outstanding personal tasks, with existing task filters and notifications.
+- Select their own calendar, configured shared calendars, or calendars found in Outlook navigation shortcuts. Discovery is best effort, not an organization-wide permission inventory. **فتح تقويم مشترك** accepts the owner's mailbox when discovery cannot find it. Manual selections last for the open page only.
+- Create an appointment when Exchange grants CreateContents. Open appointment details, edit or delete when that item's EffectiveRights allow it. A reviewer gets a read-only editor. Private shared items remain masked unless Exchange allows access; masked rows have no details button.
+- Edit/delete one recurring occurrence; whole-series editing belongs in Outlook. Meeting attendees cannot edit the organizer's meeting. Organizer/delegate meeting changes require explicit confirmation that Exchange will notify participants. Creating a portal appointment does not invite attendees. Deletion uses Deleted Items rather than a hard delete.
+- Save explicit drafts using the editor; closing with changes asks before discarding. A stale ChangeKey returns a conflict and requires reopening the appointment. A timed-out write is not automatically retried: check Outlook before retrying.
 
-The compact floating summary shows upcoming items in the viewed date range and the outstanding-task count. Its plus button expands the month/day/task view. In the work template the planner is displayed inline. Calendar/task notifications also feed the existing header notification list. New items trigger an in-portal notice, and subsequent changes refresh the view without page reload. Initial loading and reconnect snapshots do not announce every old item as new. Changed items outside the displayed month can produce a generic update notice.
+Tasks remain read-only, personal Tasks-folder items. Shared-task discovery/editing, new attendee invitations, recurrence editing, and delegation management are future work.
 
-There are no create/edit/delete/complete actions in this version. The old local add-task controls are hidden/disabled. Existing localStorage tasks and notes remain untouched; the Exchange planner neither seeds more demo tasks nor uploads, reads or merges the retained data. Demo calendar notifications are suppressed in the Exchange view. No Exchange item data is saved to SQL or browser storage. Admin theme previews remain independent, read-only illustrative content.
+## Windows authentication
 
-A disconnected view clears private data and shows unavailable; it never replaces it with demo rows or treats an unknown task count as zero. **تحديث** reloads access/calendar metadata and reconnects the stream, preserving the selected calendar/month when still allowed.
+`Exchange:AccessMode` must be `WindowsDelegation`. Every EWS HTTP send runs inside `WindowsIdentity.RunImpersonatedAsync` using the authenticated employee token. This includes inbox/calendar/tasks reads, discovery, writes, Subscribe, GetStreamingEvents and Unsubscribe. Sessions copy and dispose the Windows identity and isolate HTTP connection pools/cookies. There is no process-account fallback and no EWS ExchangeImpersonation header. SQL access continues under the API's normal process identity.
 
-## Connection and delegation
+NTName still resolves an active UserId with Security.User_getByUsername. Supply trusted SMTP mappings in Exchange:MailboxAddresses. That mapping identifies the default employee mailbox; Exchange authenticates the actual Windows caller and enforces permissions. It does not turn a mapping or portal-admin role into mailbox access.
 
-Reuse the existing Exchange EWS URL, internal Outlook Web URL, approved Windows API service identity, scoped ApplicationImpersonation arrangement and trusted NTName-to-SMTP mappings. HTTP uses UseDefaultCredentials as the API process identity, not forwarded employee credentials. The EWS impersonation header represents the mapped, registered employee for every calendar/task data read.
+Keep Enabled and ScheduleEnabled false until internal settings are ready. Configure EwsUrl, OutlookWebUrl, OutlookWebInboxUrl, MailboxAddresses and ScheduleTimeZone. Existing SharedCalendars remains supported with Key, Name, Mailbox and EnableNotifications; configured keys remain 1–40 ASCII letters/digits/underscore/hyphen, up to ten per employee. Automatic discovery adds at most30 Outlook shortcuts, with actual calendar rights checked. Browser references for discovered/manual calendars are protected, bound to the Windows account, expire after12hours, and are reauthorized on use. A server recycle/key change may require reopening a manually selected calendar. Persist Data Protection keys under the normal protected IIS application identity when required.
 
-Personal calendars use the default Exchange Calendar folder, and tasks use the default Tasks folder. Secondary calendar folders and Outlook’s aggregated To-Do view (including flagged mail) are future extensions.
+### IIS prerequisites
 
-Shared-calendar candidates are configured per Windows account initially. A configured candidate is NOT an authorization grant: the API probes that folder in the employee's EWS context and excludes inaccessible calendars. The request uses the manager as the folder owner while retaining the employee in ExchangeImpersonation. The browser sends only the configured calendar key, never a mailbox address. Personal tasks always come from the signed-in employee's Tasks folder; delegated task folders are outside this version.
+No extra notification application or Windows service is needed. Existing frontend and API applications handle this feature.
 
-EffectiveRights are read from Exchange, not inferred from portal roles. Reported folder flags are informational; any future write operations must reauthorize the individual item/action, including owned-versus-all-item rights and meeting handling. Private shared items are masked (subject becomes موعد خاص, location/organizer/response cleared) unless Exchange explicitly reports private-item visibility on the item or, when absent there, the folder. The mailbox owner retains their own private details. Actual private/delegate behaviour still needs verification against the internal Exchange installation. Read-only API scope remains read-only even when Exchange reports editor rights.
+1. Configure Windows authentication on the API and the correct exact credentialed CORS portal origin. Anonymous API requests must be rejected.
+2. Use the approved portal/API DNS names, internal TLS trust and unique HTTP SPNs aligned with IIS kernel-mode/app-pool credential settings. The Exchange team must identify the correct identity owning the Exchange HTTP namespace, especially behind a load balancer.
+3. Configure **Kerberos constrained delegation** on the agreed API server/app-pool identity to the approved Exchange HTTP service. Do not grant ApplicationImpersonation to employees or enable unrestricted delegation. NTLM sign-in alone cannot forward the employee to Exchange.
+4. Test from a separate domain workstation, not only localhost or the IIS server. The employee must be eligible for delegation and have an Exchange mailbox; shared-calendar rights must already exist in Exchange.
+5. Re-publish both apps, change any old AccessMode value to WindowsDelegation, restart the API, and use /admin/health to check the caller/process identities and live folder access. Never disable TLS validation.
+6. Allow SSE response flushing through IIS/proxies. If long opaque item/calendar references exceed default IIS query limits, set a reviewed request-filtering maxQueryString (for example16384) and maxUrl (for example32768) on the API application; keep application field limits in place.
 
-## Streaming and shared-calendar limitation
+RunImpersonatedAsync implements employee-context calls; it does not configure AD delegation or make an NTLM token remotely delegatable. See [authentication decision and IIS notes](EXCHANGE_AUTHENTICATION_DECISION.md).
 
-A normal personal schedule stream subscribes to the employee's Calendar and Tasks folders before the initial snapshot. EWS Created/Modified/Deleted/Moved/Copied/FreeBusyChanged events invalidate the snapshot; the API then reads current data and sends SSE to the browser. Status-only events do not read items. Held Exchange requests renew after timeout; browser reconnects subscribe again and obtain fresh data. There is no periodic folder-item polling or unattended mailbox worker. Closing the page cancels subscriptions; notifications require an active portal connection.
+## Shared-calendar notifications
 
-Ordinary EWS delegate access cannot subscribe to another mailbox's events. A shared calendar therefore has `EnableNotifications=false` by default: its initial/manual data reads work through delegation, and the UI explicitly says the shared calendar needs manual refresh. To enable shared live updates, the Exchange administrator must approve and scope owner-mailbox subscriptions and set that flag true. The owner session performs Subscribe/GetStreamingEvents/Unsubscribe only; it yields invalidation signals, not owner item IDs/content. Every resulting snapshot is read again as the viewing employee, enforcing delegate/private rights. Employee calendar/tasks subscriptions remain active while a shared calendar is selected.
+Own calendar and tasks use EWS streaming. While a shared calendar is selected, personal tasks continue streaming; the API attempts that shared calendar's subscription only as the employee when EnableNotifications is true. Ordinary EWS delegate subscriptions can fail with ErrorSubscriptionDelegateAccessNotSupported. That expected failure falls back to a readable shared calendar with an explicit manual-refresh message. No owner impersonation or silent polling is used. Portal changes reconnect/read after a successful save so the employee sees their change immediately. External shared-calendar changes cannot be promised to arrive instantly when Exchange refuses subscriptions.
 
-Every event/15-second heartbeat rechecks registration and mailbox mapping; schedule authorization is also rechecked against Exchange. These are authorization/connection checks, not calendar-item polling. Detected rights changes close the stream and clear the browser before reconnecting. A ten-minute stream lifetime forces fresh authentication. SSE responses are private/no-store and accept only configured origins when supplied. IIS/proxy buffering must be disabled, as for email.
+The browser uses SSE; EWS events invalidate snapshots. Status frames do not fetch items. The15-second heartbeat rechecks registration/configuration and calendar rights, not calendar-item polling. Connection lifetime10minutes, reconnect backoff5–30seconds. Disconnects clear stale private data. Active employee changes produce notices; initial/reconnect snapshots do not announce all old items.
 
-The shared mail/schedule stream budget defaults to four browser streams per account and 100 per API process (configurable, bounded). A normal tab uses one email SSE plus one schedule SSE; navigation may briefly overlap old/new streams during cancellation. Shared live calendars additionally require an owner EWS subscription. Review Exchange throttling, scopes, server load, tabs and API instance count before broad rollout; exceeded limits return429 and reconnect with backoff.
-
-## Configuration
-
-Keep all features off until the internal Exchange prerequisites from EMAIL.md are complete. No passwords belong in appsettings. Example only; replace every example account/address with approved real values:
-
-```json
-{
-  "Exchange": {
-    "Enabled": true,
-    "ScheduleEnabled": true,
-    "EwsUrl": "https://exchange.internal.example/EWS/Exchange.asmx",
-    "OutlookWebUrl": "https://mail.internal.example/owa/",
-    "AccessMode": "ScopedServiceAccountImpersonation",
-    "MailboxAddresses": {
-      "COMPANY\\secretary": "secretary@company.example",
-      "COMPANY\\manager": "manager@company.example"
-    },
-    "ScheduleTimeZone": "Asia/Muscat",
-    "MaximumStreamsPerAccount": 4,
-    "MaximumStreams": 100,
-    "SharedCalendars": {
-      "COMPANY\\secretary": [
-        {
-          "Key": "manager",
-          "Name": "تقويم المدير",
-          "Mailbox": "manager@company.example",
-          "EnableNotifications": false
-        }
-      ]
-    }
-  }
-}
-```
-
-Existing mail settings (inbox URL, message-opening mode, count, etc.) remain in the same Exchange section. `ScheduleEnabled` is separate so enabling email does not silently enable schedule requests. Use an installed timezone (IANA recommended); Windows IDs are converted to IANA in browser responses. Up to ten shared candidates per employee are accepted; keys are unique, case-sensitive, 1–40 ASCII letters/digits/underscore/hyphen and cannot be own. Names are at most200 characters. Actual shared-calendar membership/discovery from Outlook is not implemented; replace this trusted candidate lookup later if the internal directory provides it, keeping Exchange permission checks.
+Existing limits remain4 browser streams/account and100/API process by default. One tab uses email plus schedule; a shared live subscription may add an upstream EWS connection. Capacity/Exchange throttling must be measured before thousands of concurrent users are enabled.
 
 ## API
 
-All require Windows authentication and an active registered/mapped employee. No client-selected UserId or SMTP target is accepted.
+All require a registered, mapped Windows employee and private/no-store responses.
 
-| Endpoint | Purpose |
-| --- | --- |
-| GET /api/schedule/calendars | Allowed calendar keys/names, effective rights and live-update capability |
-| GET /api/schedule?from=2026-10-01&to=2026-11-01&calendar=own | Selected calendar date range plus employee's outstanding tasks |
-| GET /api/schedule/stream?from=2026-10-01&to=2026-11-01&calendar=own | SSE schedule snapshots, with the same permissions |
+| Route | Purpose |
+|---|---|
+| GET /api/schedule/calendars | Own/configured/discovered readable calendars, rights and discovery warning |
+| POST /api/schedule/calendars/open | Check owner's mailbox and return a protected calendar reference |
+| GET /api/schedule?from=...&to=...&calendar=... | Month/day snapshot and personal tasks |
+| GET /api/schedule/stream?from=...&to=...&calendar=... | SSE snapshots |
+| GET /api/schedule/appointments?calendar=...&itemId=... | Details after item membership/private/read checks |
+| POST /api/schedule/appointments | Create in selected authorized calendar |
+| PUT /api/schedule/appointments | Edit with fresh item rights and ChangeKey |
+| DELETE /api/schedule/appointments | Move to Deleted Items with fresh rights/ChangeKey |
 
-`from` is inclusive and `to` exclusive, local dates in ScheduleTimeZone; ranges are1–42 days, years1900–2100. Default calendar key is own. Appointment results cap at1000; outstanding tasks page in batches of100, up to500. Responses and UI explicitly indicate truncation rather than claiming a complete schedule. Disabled/unconfigured connection returns503, inaccessible calendar403, invalid range/key400, excess streams429. Errors do not return SOAP, credentials or mailbox addresses. No write endpoints exist.
+Writes require X-CompanyPortal-Request: schedule, JSON and an allowed origin. No client-selected UserId is trusted. Shared mailbox entry is a candidate only; Exchange checks access. IDs cannot escape the selected calendar: ParentFolderId is rechecked before detail/edit/delete. Invalid inputs400, anonymous401, denied403, stale409, stream budget429, disabled/unavailable503. Save field limits: subject255, location255, plain body5000; End>Start, duration<=366days. All-day end is exclusive midnight in ScheduleTimeZone; UI shows an inclusive last day. List range1–42days; max1000 calendar items and500 tasks, with truncation warnings.
 
-## Verification and internal acceptance
+## Verification
 
-- Both Release apps build; no new runtime packages or SQL migration.
-- `dotnet run --project Backend/tools/ScheduleChecks/ScheduleChecks.csproj -c Release --no-restore` uses fake Exchange responses to verify employee-context delegate access, effective/private rights, CalendarView UTC boundaries and occurrences, all-day/cancellation, task paging and due dates, denied/revoked rights, owner-only subscription invalidations, event-driven refresh and unsubscribe/cancellation. NuGet audit metadata may be unavailable on the disconnected development machine; no new package dependencies were introduced.
-- `node tools/verify-schedule.mjs` checks day/month/all-day rendering, task filters, literal text, notifications, authenticated SSE, no polling/storage, stale-month protection, manual shared refresh, invalid-data clearing and reconnect lifecycle.
-- Existing MailChecks and verify-email.mjs remain regression checks for email.
-- `powershell -NoProfile -File Backend/tools/Test-Schedule.ps1` verifies the real local HTTP/Swagger/auth/origin/disabled configuration paths without contacting Exchange.
+ScheduleChecks uses mocked SOAP to test privacy, revocation, recurrence reads, timezone/all-day, task paging, streaming cleanup, discovery, create/update/delete, membership, per-item rights, stale changes, meeting confirmation and async Windows token lifetime. MailChecks covers inbox counts/links/events and ensures the old impersonation header is absent. Test-Schedule.ps1 checks real local Swagger/auth/disabled routes/validation/write headers/origins. verify-schedule.mjs covers renderer/events/simulation and absence of polling/storage. Browser simulation exercises appointment create/edit/delete/all-day/shared editor and discard confirmation without mailbox or SQL writes.
 
-Internal acceptance still requires real EWS authentication/TLS, mailbox mappings and service scope; two employees; read-only versus editor delegates; private-item denial/allowance and permission revocation; recurring exceptions/all-day/timezone/DST; new/changed/deleted/completed items; notification latency/reconnect/IIS buffering; owner-scoped shared notifications; and Exchange throttling. This implementation does not provision or validate those internal rights automatically.
+Internal acceptance must still test remote IIS/Kerberos, TLS and actual Exchange build; two employees; reviewer/editor/author delegates and owned-item rules; private-item rights/revocation; recurring occurrence updates; meeting participant notifications; all-day/timezone/DST; arrival/read/task events; subscription fallback/reconnect/recycle and realistic capacity. Mocks are not proof of live Exchange behavior.
 
-References: [EWS CalendarView](https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/calendarview), [effective rights](https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/effectiverights), [delegate notification limitation](https://learn.microsoft.com/en-us/exchange/client-developer/exchange-web-services/handling-delegation-related-errors-in-ews-in-exchange), [streaming notifications](https://learn.microsoft.com/en-us/exchange/client-developer/exchange-web-services/how-to-stream-notifications-about-mailbox-events-by-using-ews-in-exchange).
-
-Local acceptance completed: authenticated HTTP/Swagger/disabled/origin/range checks passed; portal parity passed (328 baseline files unchanged, six routes,313 original resources); the actual browser displayed the unavailable/read-only planner, expanded it, navigated months/today and reported no JavaScript errors. Simulated protocol and frontend lifecycle tests passed. Screenshot: E:/GatePortal/outlook-calendar-tasks.png. These checks are not a live Exchange connection.
+References: [Windows authentication](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/windowsauth?view=aspnetcore-10.0), [RunImpersonatedAsync](https://learn.microsoft.com/en-us/dotnet/api/system.security.principal.windowsidentity.runimpersonatedasync?view=net-10.0), [delegate access](https://learn.microsoft.com/en-us/exchange/client-developer/exchange-web-services/delegate-access-and-ews-in-exchange), [delegate subscription limitation](https://learn.microsoft.com/en-us/exchange/client-developer/exchange-web-services/handling-delegation-related-errors-in-ews-in-exchange), [meeting updates](https://learn.microsoft.com/en-us/exchange/client-developer/exchange-web-services/how-to-update-appointments-and-meetings-by-using-ews-in-exchange).

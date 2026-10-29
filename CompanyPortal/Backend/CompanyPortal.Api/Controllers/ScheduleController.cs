@@ -10,12 +10,27 @@ using Microsoft.Data.SqlClient;
 namespace CompanyPortal.Api.Controllers;
 
 [ApiController,Authorize,Route("api/schedule")]
-public sealed class ScheduleController(MailIdentityStore identities,ScheduleService schedules,MailStreamLimits limits,IConfiguration configuration,ILogger<ScheduleController> logger):ControllerBase
+public sealed class ScheduleController(MailIdentityStore identities,ScheduleService schedules,MailSessionFactory sessions,MailStreamLimits limits,IConfiguration configuration,ILogger<ScheduleController> logger):ControllerBase
 {
     private static readonly JsonSerializerOptions JsonOptions=new(JsonSerializerDefaults.Web);
     [HttpGet("calendars")]
     [ProducesResponseType<ScheduleCatalog>(200)]
     public Task<IActionResult> Calendars(CancellationToken token)=>Execute(async(account,mailbox)=>Ok(await schedules.CalendarsAsync(account,mailbox,token)),token);
+    [HttpPost("calendars/open")]
+    public Task<IActionResult> OpenShared(OpenSharedCalendar request,CancellationToken token){if(WriteGuard() is {} rejection)return Task.FromResult(rejection);return Execute(async(account,mailbox)=>Ok(await schedules.OpenAsync(account,mailbox,request.Mailbox.Trim(),token)),token);}
+    [HttpGet("appointments")]
+    public Task<IActionResult> Appointment([FromQuery,System.ComponentModel.DataAnnotations.Required,System.ComponentModel.DataAnnotations.StringLength(8000)] string itemId,[FromQuery] string calendar="own",CancellationToken token=default)
+    {if(!ValidKey(calendar))return Task.FromResult<IActionResult>(BadRequest());return Execute(async(account,mailbox)=>{var target=schedules.Resolve(account,mailbox,calendar);await using var session=sessions.Create(mailbox);return Ok(await session.AppointmentAsync(target.Mailbox,target.FolderId,itemId,token));},token);}
+    [HttpPost("appointments"),RequestSizeLimit(32768)]
+    public Task<IActionResult> CreateAppointment(SaveCalendarAppointment request,CancellationToken token)
+    {if(WriteGuard() is {} rejection)return Task.FromResult(rejection);return Execute(async(account,mailbox)=>{var target=schedules.Resolve(account,mailbox,request.CalendarKey);await using var session=sessions.Create(mailbox);return StatusCode(201,await session.CreateAppointmentAsync(target.Mailbox,target.FolderId,request,token));},token);}
+    [HttpPut("appointments"),RequestSizeLimit(32768)]
+    public Task<IActionResult> UpdateAppointment(SaveCalendarAppointment request,CancellationToken token)
+    {if(WriteGuard() is {} rejection)return Task.FromResult(rejection);if(string.IsNullOrWhiteSpace(request.ItemId)||string.IsNullOrWhiteSpace(request.ChangeKey))return Task.FromResult<IActionResult>(BadRequest("Item ID/change key and request header required."));return Execute(async(account,mailbox)=>{var target=schedules.Resolve(account,mailbox,request.CalendarKey);await using var session=sessions.Create(mailbox);await session.UpdateAppointmentAsync(target.Mailbox,target.FolderId,request,token);return NoContent();},token);}
+    [HttpDelete("appointments"),RequestSizeLimit(16384)]
+    public Task<IActionResult> DeleteAppointment(DeleteCalendarAppointment request,CancellationToken token)
+    {if(WriteGuard() is {} rejection)return Task.FromResult(rejection);return Execute(async(account,mailbox)=>{var target=schedules.Resolve(account,mailbox,request.CalendarKey);await using var session=sessions.Create(mailbox);await session.DeleteAppointmentAsync(target.Mailbox,target.FolderId,request,token);return NoContent();},token);}
+    private IActionResult? WriteGuard()=>!CompanyPortal.Api.Infrastructure.AdminSectionAttribute.AllowedOrigin(HttpContext)?Forbid():Request.Headers["X-CompanyPortal-Request"]!="schedule"?BadRequest("Required request header missing."):null;
     [HttpGet]
     [ProducesResponseType<ScheduleSnapshot>(200)]
     public Task<IActionResult> Get([FromQuery] DateOnly from,[FromQuery] DateOnly to,[FromQuery] string calendar="own",CancellationToken token=default)
@@ -101,16 +116,18 @@ public sealed class ScheduleController(MailIdentityStore identities,ScheduleServ
     {
         Prepare();var account=Account();if(account is null)return Unauthorized();if(!Enabled())return Unavailable();
         try{var mailbox=await identities.ResolveAsync(account,token);return mailbox is null?Forbid():await action(account,mailbox);}
+        catch(CalendarOperationException error){return Problem(statusCode:error.Status,title:error.Message);}
+        catch(EwsResponseException error)when(error.Code is "ErrorIrresolvableConflict" or "ErrorInvalidChangeKey" or "ErrorChangeKeyRequired" or "ErrorStaleObject"){return Problem(statusCode:409,title:"تم تعديل الموعد في Outlook. أعد فتحه قبل المحاولة.");}
         catch(EwsResponseException error)when(error.Code is "ErrorAccessDenied" or "ErrorFolderNotFound" or "ErrorItemNotFound" or "ErrorInvalidIdMalformed"){return Forbid();}
         catch(Exception error)when(ScheduleFailure(error)||error is OperationCanceledException&&!token.IsCancellationRequested){logger.LogWarning(error,"Exchange schedule read is unavailable.");return Unavailable();}
     }
     private static bool ValidRange(DateOnly from,DateOnly to)=>from.Year>=1900&&to.Year<=2100&&to.DayNumber-from.DayNumber is >0 and <=42;
-    private static bool ValidKey(string key)=>key is not null&&System.Text.RegularExpressions.Regex.IsMatch(key,"^[a-zA-Z0-9_-]{1,40}$");
+    private static bool ValidKey(string key)=>key is not null&&System.Text.RegularExpressions.Regex.IsMatch(key,"^[a-zA-Z0-9_-]{1,4096}$");
     private bool Enabled()=>configuration.GetValue<bool>("Exchange:Enabled")&&configuration.GetValue<bool>("Exchange:ScheduleEnabled");
     private void Prepare()=>Response.Headers.CacheControl="private, no-store";
     private string? Account()=>User.Identity?.Name is {Length:>0 and <=512} account?account:null;
     private ObjectResult Unavailable()=>Problem(statusCode:503,title:"Exchange calendar and tasks are not configured or are temporarily unavailable.");
-    private static bool ScheduleFailure(Exception error)=>error is SqlException or InvalidOperationException or HttpRequestException or IOException or XmlException or FormatException or OverflowException or TimeZoneNotFoundException or InvalidTimeZoneException;
+    private static bool ScheduleFailure(Exception error)=>error is SqlException or InvalidOperationException or HttpRequestException or IOException or XmlException or FormatException or OverflowException or TimeZoneNotFoundException or InvalidTimeZoneException or UnauthorizedAccessException or System.Security.SecurityException;
     private bool PermittedOrigin(){var origin=Request.Headers.Origin.ToString();return origin.Length==0||origin==$"{Request.Scheme}://{Request.Host}"||(configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()??[]).Contains(origin,StringComparer.Ordinal);}
     private async Task Send(string name,object data,CancellationToken token){await Response.WriteAsync($"event: {name}\ndata: {JsonSerializer.Serialize(data,JsonOptions)}\n\n",token);await Response.Body.FlushAsync(token);}
 }

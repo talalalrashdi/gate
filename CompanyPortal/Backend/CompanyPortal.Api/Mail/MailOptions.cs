@@ -32,8 +32,8 @@ public sealed class MailOptions
     }
     public void Validate()
     {
-        if (!Enabled || AccessMode != "ScopedServiceAccountImpersonation")
-            throw new InvalidOperationException("Configure and approve the Exchange service identity before enabling mail.");
+        if (!Enabled || AccessMode != "WindowsDelegation")
+            throw new InvalidOperationException("Set Exchange:AccessMode=WindowsDelegation and configure employee Windows authentication and Kerberos constrained delegation before enabling Exchange.");
         _ = HttpsAddress(EwsUrl); _ = HttpsAddress(OutlookWebUrl);
         if (!string.IsNullOrWhiteSpace(OutlookWebInboxUrl)) _ = InboxLink();
         if (LatestMessageCount is < 1 or > 20 || OpenMode is not ("Message" or "InboxSelected"))
@@ -91,6 +91,7 @@ public sealed class SharedCalendarOptions
     public string Key {get;set;}="";
     public string Name {get;set;}="";
     public string Mailbox {get;set;}="";
+    public string? FolderId {get;set;}
     // Enable only after owner-scoped subscriptions have been approved internally.
     public bool EnableNotifications {get;set;}
 }

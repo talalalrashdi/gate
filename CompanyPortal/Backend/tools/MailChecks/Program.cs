@@ -6,7 +6,7 @@ using System.Xml.Linq;
 using CompanyPortal.Api.Mail;
 
 static void Assert(bool value, string message) { if (!value) throw new Exception(message); }
-static MailOptions Settings() => new() { Enabled = true, EwsUrl = "https://exchange.test/EWS/Exchange.asmx", OutlookWebUrl = "https://exchange.test/owa/", AccessMode = "ScopedServiceAccountImpersonation", LatestMessageCount = 2 };
+static MailOptions Settings() => new() { Enabled = true, EwsUrl = "https://exchange.test/EWS/Exchange.asmx", OutlookWebUrl = "https://exchange.test/owa/", AccessMode = "WindowsDelegation", LatestMessageCount = 2 };
 static void Reject(Action action, string message) { try { action(); } catch (InvalidOperationException) { return; } throw new Exception(message); }
 static async Task Fault(string body, string expected, HttpStatusCode status = HttpStatusCode.InternalServerError)
 {
@@ -32,6 +32,7 @@ Reject(options.Validate, "Off-origin inbox URL accepted.");
 options.OutlookWebInboxUrl = "https://exchange.test/owa/#verified-inbox-route";
 Assert(options.InboxLink() == options.OutlookWebInboxUrl, "Explicit inbox destination was ignored.");
 Reject(() => new MailOptions().Validate(), "Disabled configuration accepted.");
+var legacy = Settings(); legacy.AccessMode = "ScopedServiceAccountImpersonation"; Reject(legacy.Validate, "Old service-account mode accepted.");
 var invalid = Settings(); invalid.EwsUrl = "http://exchange.test/ews"; Reject(invalid.Validate, "HTTP credentials accepted.");
 invalid = Settings(); invalid.AccessMode = "DefaultCredentials"; Reject(invalid.Validate, "Unapproved identity mode accepted.");
 invalid = Settings(); invalid.OpenMode = "InboxSelected"; Reject(invalid.Validate, "Unverified inbox template accepted.");
@@ -123,7 +124,7 @@ sealed class FakeExchange : HttpMessageHandler
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
     {
         var xml = XElement.Parse(await request.Content!.ReadAsStringAsync(token));
-        if (request.RequestUri!.Scheme != "https" || xml.Descendants(T + "SmtpAddress").Single().Value != "alice@example.test"
+        if (request.RequestUri!.Scheme != "https" || xml.Descendants(T + "ExchangeImpersonation").Any()
             || request.Headers.GetValues("X-AnchorMailbox").Single() != "alice@example.test") throw new Exception("Wrong mailbox identity or endpoint.");
         var operation = xml.Element(S + "Body")!.Elements().Single().Name.LocalName;
         Calls.Add(operation);

@@ -125,7 +125,7 @@ public sealed class MailController(MailIdentityStore identities, MailSessionFact
     private void Prepare() => Response.Headers.CacheControl = "private, no-store";
     private string? Account() => User.Identity?.Name is { Length: > 0 and <= 512 } name ? name : null;
     private ObjectResult Unavailable() => Problem(statusCode: 503, title: "Mail is not configured or is temporarily unavailable.");
-    private static bool MailFailure(Exception error) => error is SqlException or InvalidOperationException or HttpRequestException or IOException or XmlException or FormatException or OverflowException;
+    private static bool MailFailure(Exception error) => error is SqlException or InvalidOperationException or HttpRequestException or IOException or XmlException or FormatException or OverflowException or UnauthorizedAccessException or System.Security.SecurityException;
     private bool PermittedOrigin()
     {
         var origin = Request.Headers.Origin.ToString();

@@ -1,4 +1,6 @@
+using CompanyPortal.Logging;
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddCentralErrorLogging();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient("CompanyPortalApi", (services, client) =>
@@ -19,6 +21,11 @@ builder.Services.AddHttpClient("CompanyPortalApi", (services, client) =>
 });
 
 var app = builder.Build();
+app.Use(async (context, next) =>
+{
+    context.Response.OnStarting(() => { context.Response.Headers["X-Reference-ID"] = context.TraceIdentifier; return Task.CompletedTask; });
+    await next(context);
+});
 
 if (!app.Environment.IsDevelopment())
 {

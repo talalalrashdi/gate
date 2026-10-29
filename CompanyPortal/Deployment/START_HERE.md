@@ -21,3 +21,7 @@ The service identity authenticates to SQL/Exchange; the browser employee is sepa
 **Keep current images/themes/settings?** Restore a CompanyPortal SQL backup instead of running the fresh-install script. The script creates the base data, not an export of current uploads/preferences.
 
 See [the full IIS guide](../AIRGAP_IIS_GUIDE.md) in the published handoff, or [the source guide](../docs/AIRGAP_IIS_GUIDE.md), for exact settings, permissions, real-source configuration and troubleshooting. Microsoft reference: [ASP.NET Core on IIS](https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/?view=aspnetcore-10.0).
+
+
+## Central error logging
+Run `CentralLog-Setup.sql` separately and configure `ConnectionStrings:CentralLog` in both applications. Grant their application identities EXECUTE on its two insert procedures and Modify on their own `App_Data/Logs` folders for fallback. System ID is `CentralLogging:SystemId` (9999 initially). See `../docs/CENTRAL_LOGGING.md`.

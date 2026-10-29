@@ -7,3 +7,6 @@ node_modules/
 **/artifacts/
 *.user
 *.suo
+
+# CentralLog local fallback (contains diagnostic information)
+**/App_Data/Logs/

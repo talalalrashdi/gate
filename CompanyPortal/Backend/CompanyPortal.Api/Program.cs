@@ -1,3 +1,4 @@
+using CompanyPortal.Logging;
 using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.OpenApi;
@@ -5,9 +6,11 @@ using CompanyPortal.Api.Data;
 using CompanyPortal.Api.Mail;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddCentralErrorLogging();
 
 builder.Services.AddControllers();
-builder.Services.AddProblemDetails();
+builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>
+    context.ProblemDetails.Extensions["reference"] = context.HttpContext.TraceIdentifier);
 builder.Services.AddHealthChecks();
 builder.Services.AddScoped<DatabaseConnectionCheck>();
 builder.Services.AddScoped<UserSettingsStore>();
@@ -45,7 +48,7 @@ builder.Services.AddCors(options => options.AddPolicy("Portal", policy =>
     var origins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
     if (origins.Length > 0)
         policy.WithOrigins(origins).WithMethods("GET", "POST", "PUT", "DELETE")
-            .WithHeaders("Content-Type", "X-CompanyPortal-Request").AllowCredentials();
+            .WithHeaders("Content-Type", "X-CompanyPortal-Request").WithExposedHeaders("X-Reference-ID").AllowCredentials();
 }));
 builder.Services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
     .AddNegotiate();
@@ -66,6 +69,11 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+app.Use(async (context, next) =>
+{
+    context.Response.OnStarting(() => { context.Response.Headers["X-Reference-ID"] = context.TraceIdentifier; return Task.CompletedTask; });
+    await next(context);
+});
 
 app.UseExceptionHandler();
 // Inside exception handling so confirmed client cancellations are handled before it logs an error.

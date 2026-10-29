@@ -20,7 +20,7 @@ public class HomeController : Controller
     public IActionResult Error(int? code=null)
     {
         var exception=HttpContext.Features.Get<IExceptionHandlerPathFeature>();
-        var model=PortalError.Create(exception is not null?500:code??500,System.Diagnostics.Activity.Current?.Id??HttpContext.TraceIdentifier);
+        var model=PortalError.Create(exception is not null?500:code??500,HttpContext.TraceIdentifier);
         Response.StatusCode=model.StatusCode;
         Response.Headers.XContentTypeOptions="nosniff";
         return View(model);

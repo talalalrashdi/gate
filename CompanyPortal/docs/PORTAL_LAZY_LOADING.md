@@ -14,7 +14,7 @@ The hero and navigation appear immediately. Workspace cards retain their normal 
 - Email: live SSE and unread count remain immediate; offscreen row rendering waits. Calendar/task live connections and notifications remain immediate.
 - Decisions: source metadata and floating notices remain immediate; offscreen decision list rendering waits.
 - Technical services: dropdown catalog waits until the card approaches view.
-- Magazine: issue catalog and unread badge remain immediate; bundled PDF.js, flipbook and selected PDF loading wait until the reader approaches view.
+- Magazine: the issue catalog and unread badge load immediately, then the selected PDF and reader libraries prepare immediately so the reader is ready sooner. Individual pages near the current spread and visible thumbnails are still drawn lazily.
 - Documents/safety: authorized catalogs and unread badges remain immediate; offscreen cover/tab rendering waits. PDF files continue loading only when opened.
 - أخبارنا: catalog and unread badge remain immediate; carousel rendering waits. Video thumbnail metadata loads near each video; actual playback remains in its dialog. Photo thumbnails retain native lazy loading.
 

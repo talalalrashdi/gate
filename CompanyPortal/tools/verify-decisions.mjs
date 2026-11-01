@@ -25,7 +25,8 @@ async function fixture(data){
   calls++;assert.equal(url,'https://portal.test/backend/api/decisions');assert.equal(options.credentials,'include');assert.equal(options.cache,'no-store');assert.equal(options.method,undefined);assert.equal(options.body,undefined);
   return {ok:code===200,status:code,json:async()=>result};
  }});
- await settle();return {ids,document,window,search(){ids.get('work-library-search').listeners.input();for(const [id,timer] of timers){if(timer.delay===150){timers.delete(id);timer.fn();}}},async reload(){window.listeners.online();await settle();},setResponse(value,status=200){result=value;code=status;},get calls(){return calls;}};
+ assert.equal(ids.get('decisions-list').children.length,5,'Five decision skeleton rows while request is pending');assert.equal(ids.get('decisions-list').dataset.loading,'true');
+ await settle();assert.equal(ids.get('decisions-list').dataset.loading,'false');return {ids,document,window,search(){ids.get('work-library-search').listeners.input();for(const [id,timer] of timers){if(timer.delay===150){timers.delete(id);timer.fn();}}},async reload(){window.listeners.online();await settle();},setResponse(value,status=200){result=value;code=status;},get calls(){return calls;}};
 }
 const row=(id,title,type='قرارات إدارية')=>({decisionId:id,title,decisionType:type,publishedAt:'2026-10-21T09:00:00',hasRead:false,decisionNumber:'2026/66'});
 const f=await fixture([row('9007199254740992','<b>قرار</b>'),row('9007199254740993','اعتماد التدريب','تعاميم')]);

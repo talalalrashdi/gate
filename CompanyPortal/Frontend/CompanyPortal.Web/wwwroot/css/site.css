@@ -52,3 +52,27 @@ body .documents-categories .library-tab-new{display:inline-flex;margin:0 7px 0 0
 
 /* Preserve the existing card heights while their offscreen rows wait to render. */
 [data-work-system][data-lazy-state="waiting"] :is(#forms-inbox-list,#correspondence-inbox-list,#decisions-list,.portal-email-list){min-height:400px;background:repeating-linear-gradient(to bottom,#e8eeea66 0 72px,transparent 72px 84px);border-radius:10px}
+
+/* Five real-sized decision placeholders, removed on render/error. */
+#workspace #decisions-list[data-loading="true"]{background:none}
+#decisions-list .decision-skeleton{pointer-events:none}
+#decisions-list .decision-skeleton .portal-doc-surface{border:1px solid #e3e8e4;background:#fbfcfb}
+#decisions-list .skeleton-bar{display:block;border-radius:6px;background:linear-gradient(100deg,#e5ebe7 20%,#f5f7f5 45%,#e5ebe7 70%);background-size:220% 100%;animation:portal-skeleton 1.5s linear infinite}
+#decisions-list .skeleton-type{width:48px;height:14px;margin:8px auto}
+#decisions-list .skeleton-number{width:58px;height:10px;margin:8px auto}
+#decisions-list .skeleton-title{width:78%;height:15px;margin:12px auto}
+#decisions-list .skeleton-date{width:56px;height:9px;margin:8px auto 0 0}
+@keyframes portal-skeleton{to{background-position:-220% 0}}
+@media(prefers-reduced-motion:reduce){#decisions-list .skeleton-bar{animation:none}}
+
+#workspace #technical-inbox-list{display:grid;grid-auto-rows:max-content;align-content:start;gap:4px;flex:1;min-height:0!important;overflow-y:hidden}
+#workspace .technical-inbox-item{cursor:default;height:80px;min-height:80px}
+#workspace .technical-inbox-meta{grid-column:1;grid-row:3;display:flex;flex-wrap:wrap;gap:4px 10px;font-size:10px;color:#526d62}
+#workspace .technical-inbox-attachment{display:inline-flex;align-items:center;gap:3px;color:#315f6b}
+#workspace .technical-inbox-attachment i{font-size:13px}
+#technical-inbox-status{font-size:12px;color:#62766d}
+[data-work-system="technical-inbox"][data-lazy-state="waiting"] #technical-inbox-list{min-height:400px!important;border-radius:10px;background:repeating-linear-gradient(to bottom,#e8eeea66 0 76px,transparent 76px 84px)}
+
+#workspace .technical-inbox-meta{flex-wrap:nowrap;min-width:0}
+#workspace .technical-inbox-meta>span{min-width:0;max-width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#workspace .technical-inbox-meta>.technical-inbox-attachment{flex-shrink:0}

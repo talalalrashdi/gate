@@ -22,9 +22,10 @@ async function fixture({ held = false, offline = false, isSaved = true, mismatch
   const status = { setAttribute() {} };
   let currentKeys = ['library', 'inbox', 'email'];
   const cached = new Map();
+  const attributes={'data-catalog-state':'loading','aria-busy':'true'},placeholders=Array.from({length:3},()=>({removed:false,remove(){this.removed=true;}}));
   const workspace = {
-    setAttribute() {},
-    querySelectorAll: selector => currentKeys.filter(id => !selector.includes('data-user-card-id') || !id.startsWith('custom-')).map(id => ({ dataset: { workSystem: id }, remove() { currentKeys=currentKeys.filter(key=>key!==id); } })),
+    setAttribute(k,v) {attributes[k]=v;},
+    querySelectorAll: selector => selector==='[data-workspace-placeholder]'?placeholders:currentKeys.filter(id => !selector.includes('data-user-card-id') || !id.startsWith('custom-')).map(id => ({ dataset: { workSystem: id }, remove() { currentKeys=currentKeys.filter(key=>key!==id); } })),
     addEventListener: (type, action) => listeners.set(type, action),
     dispatchEvent: event => { if(event.type==='workspace:order-select'){applied.push(event.detail.cardKeys); currentKeys = Array.from(event.detail.cardKeys);} }
   };
@@ -55,11 +56,11 @@ async function fixture({ held = false, offline = false, isSaved = true, mismatch
     }
   });
   await settle();
-  return { applied, writes, status, release, cached, reorder(cardKeys) { currentKeys = cardKeys; listeners.get('workspace:order-changed')({ detail: { cardKeys } }); } };
+  return { applied, writes, status, release, cached, attributes, placeholders, reorder(cardKeys) { currentKeys = cardKeys; listeners.get('workspace:order-changed')({ detail: { cardKeys } }); } };
 }
 const saved = await fixture();
 assert.deepEqual(JSON.parse(JSON.stringify(saved.applied)), [['email', 'library', 'inbox']]);
-assert.equal(saved.writes.length, 0, 'Loading must not write');
+assert.equal(saved.writes.length, 0, 'Loading must not write');assert.equal(saved.attributes['data-catalog-state'],'ready');assert.equal(saved.attributes['aria-busy'],'false');assert.ok(saved.placeholders.every(p=>p.removed));
 const unsaved = await fixture({ isSaved: false });
 assert.deepEqual(Array.from(unsaved.applied[0]), ['email','library','inbox'], 'Use the server default order for an unsaved account');
 saved.reorder(['inbox', 'email', 'library']); saved.reorder(['email', 'inbox', 'library']);
@@ -68,11 +69,12 @@ assert.deepEqual(saved.writes, [['email', 'inbox', 'library']], 'Keep latest uns
 saved.reorder(['library', 'library', 'email']);
 await settle();
 assert.equal(saved.writes.length, 1, 'Reject duplicates');
-const delayed = await fixture({ held: true });
+const delayed = await fixture({ held: true });assert.equal(delayed.attributes['aria-busy'],'true');assert.equal(delayed.attributes['data-catalog-state'],'loading');assert.equal(delayed.placeholders.filter(p=>!p.removed).length,3);
 delayed.reorder(['inbox', 'library', 'email']); delayed.release(); await settle();
 assert.deepEqual(Array.from(delayed.applied[0]), ['inbox','library','email'], 'Late read applies policy without overriding newer user order');
 assert.deepEqual(delayed.writes, [['inbox', 'library', 'email']]);
-const offline = await fixture({ offline: true });
+assert.ok(delayed.placeholders.every(p=>p.removed));
+const offline = await fixture({ offline: true });assert.equal(offline.attributes['data-catalog-state'],'error');assert.equal(offline.attributes['aria-busy'],'false');assert.ok(offline.placeholders.every(p=>p.removed));
 offline.reorder(['email', 'inbox', 'library']); await settle();
 assert.equal(offline.applied.length,0,'Never restore a cached audience/catalog as authorization');
 assert.equal(offline.writes.length,0,'Do not save an unverified catalog');

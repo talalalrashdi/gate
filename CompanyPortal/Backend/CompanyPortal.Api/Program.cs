@@ -26,6 +26,7 @@ builder.Services.AddScoped<ProfileSummaryStore>();
 builder.Services.AddScoped<FormsInboxStore>();
 builder.Services.AddScoped<CorrespondenceInboxStore>();
 builder.Services.AddScoped<TechnicalServicesStore>();
+builder.Services.AddScoped<TechnicalInboxStore>();
 builder.Services.AddScoped<PortalMediaStore>();
 builder.Services.AddScoped<PortalMediaFiles>();
 builder.Services.AddDataProtection();

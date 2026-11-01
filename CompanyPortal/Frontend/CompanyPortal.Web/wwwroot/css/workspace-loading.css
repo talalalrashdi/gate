@@ -1,0 +1,39 @@
+/* The first paint shows neutral placeholders until the authorized catalog is ready. */
+#workspace-cards[data-catalog-state="loading"] > :is([data-work-system],.portal-workspace-add-group){display:none!important}
+.portal-dashboard #workspace-cards.portal-workspace-grid > .workspace-loading-card{flex:0 0 min(320px,calc(100vw - 64px));min-width:0;pointer-events:none;user-select:none}
+.workspace-loading-heading{display:flex;align-items:center;gap:14px;padding-bottom:22px;border-bottom:1px solid #e1e6df}
+.workspace-loading-shape{display:block;background:linear-gradient(100deg,#e6ece8 20%,#f6f8f6 45%,#e6ece8 70%);background-size:220% 100%;border-radius:6px;animation:workspace-loading-shimmer 1.5s linear infinite}
+.workspace-loading-icon{width:42px;height:42px;border-radius:12px;flex:none}
+.workspace-loading-title{width:46%;height:19px}
+.workspace-loading-filter{height:36px;margin:18px 0}
+.workspace-loading-posts{display:grid;gap:9px}
+.workspace-loading-post{display:flex;align-items:center;gap:12px;height:78px;padding:12px;border:1px solid #e3e9e4;border-radius:12px;background:#fbfcfb}
+.workspace-loading-type{width:45px;height:45px;flex:none}
+.workspace-loading-post>div{flex:1;min-width:0}
+.workspace-loading-line{height:13px;width:90%}
+.workspace-loading-line-short{height:10px;width:55%;margin-top:12px}
+@keyframes workspace-loading-shimmer{to{background-position:-220% 0}}
+
+/* Preserve inbox surfaces; only add a two-pixel hover lift. */
+#workspace :is(.portal-correspondence-item,.portal-form-item){transition:transform .16s ease}
+@media(hover:hover) and (pointer:fine){#workspace :is(.portal-correspondence-item,.portal-form-item):hover{transform:translateY(-2px)}}
+
+/* Legible labels and numbers within the existing five-row inbox layout. */
+#workspace :is(.portal-correspondence-purpose,.portal-form-purpose){font-size:12px;line-height:1.4}
+#workspace :is(.portal-correspondence-number,.portal-form-number){font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+#workspace .portal-correspondence-title{font-size:14px;line-height:1.2}
+#workspace #forms-inbox-list .portal-form-title{font-size:14px;line-height:1.15}
+#workspace .portal-correspondence-sender,#workspace .portal-form-item>.portal-form-sender{font-size:11px}
+#workspace .portal-correspondence-item time,#workspace .portal-form-item>time{font-size:12px;line-height:1.5;font-variant-numeric:tabular-nums}
+
+/* Five technical requests occupy 456px; both pages retain the same card height. */
+#workspace #technical-inbox-list{max-height:none;grid-auto-rows:88px;gap:4px;align-content:start;overflow-y:hidden}
+#workspace .technical-inbox-item{box-sizing:border-box;height:88px;min-height:88px;max-height:88px;padding:4px 9px;grid-template-columns:minmax(0,1fr) 76px;grid-template-rows:18px 38px 18px;gap:2px 8px;align-content:center}
+#workspace .technical-inbox-item .portal-correspondence-title{font-size:15px;line-height:1.25;-webkit-line-clamp:2}
+#workspace .technical-inbox-meta{font-size:12px;line-height:1.4;font-variant-numeric:tabular-nums}
+#workspace .technical-inbox-attachment i{font-size:15px}
+#workspace .portal-work-technical-inbox .portal-inbox-total{font-size:13px}
+#workspace .portal-work-technical-inbox .portal-inbox-total b{font-size:16px}
+@media(prefers-reduced-motion:reduce){.workspace-loading-shape{animation:none}#workspace :is(.portal-correspondence-item,.portal-form-item){transition:none;transform:none!important}}
+
+.portal-dashboard #workspace-cards[data-catalog-state="loading"][data-workspace-view="grid"]{grid-template-columns:repeat(3,minmax(0,320px));justify-content:start}

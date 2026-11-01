@@ -18,10 +18,14 @@
   function clear(){lazy.clear();ready=false;rows=[];realRows=[];fingerprint='';document.dispatchEvent(new CustomEvent('portal:decisions',{detail:{rows:[],loaded:false}}));list.replaceChildren();types.replaceChildren();types.closest('label').hidden=true;}
   function schedule(){clearTimeout(timer);if(!document.hidden)timer=setTimeout(()=>void load(),Math.min(300000,60000*2**failures)+Math.random()*5000);}
   const lazy=window.CompanyPortalLazy?.gate(card)||{run:f=>f(),clear(){},activate(){}};
+  function skeleton(){
+    list.replaceChildren();list.dataset.loading='true';list.setAttribute('aria-busy','true');
+    for(let i=0;i<5;i++){const row=make('div','portal-decision-link decision-skeleton');row.setAttribute('aria-hidden','true');const surface=make('span','portal-doc-surface'),type=make('span','portal-doc-type'),copy=make('span','portal-doc-copy');type.append(make('span','skeleton-bar skeleton-type'),make('span','skeleton-bar skeleton-number'));copy.append(make('span','skeleton-bar skeleton-title'),make('span','skeleton-bar skeleton-date'));surface.append(type,copy);row.append(surface);list.append(row);}
+  }
   function render(){lazy.run(renderVisible);}
   function renderVisible(){
     reset.hidden=!search.value;if(!ready)return;
-    list.replaceChildren();
+    list.dataset.loading='false';list.setAttribute('aria-busy','false');list.replaceChildren();
     const terms=normalize(search.value).split(/\s+/).filter(Boolean);
     const shown=rows.filter(row=>(!category||row.decisionType===category)&&terms.every(term=>normalize(row.title).includes(term)));
     const categories=[...new Set(rows.map(row=>row.decisionType))].sort((a,b)=>a.localeCompare(b,'ar'));
@@ -45,7 +49,7 @@
   }
   async function load(){
     if(document.hidden||loading)return;clearTimeout(timer);loading=true;controller=new AbortController();const current=++generation;
-    if(!ready){status.hidden=false;status.textContent='جارٍ تحميل القرارات…';list.setAttribute('aria-busy','true');}
+    if(!ready){status.hidden=false;status.textContent='جارٍ تحميل القرارات…';skeleton();}
     try{
       const response=await fetch(endpoint('api/decisions'),{credentials:'include',cache:'no-store',signal:AbortSignal.any([controller.signal,AbortSignal.timeout(15000)])});
       if(!response.ok){if(response.status===401||response.status===403)clear();throw new Error(response.status===403?'الحساب غير مسجل أو غير نشط في البوابة.':response.status===401?'تعذر التحقق من حساب Windows.':'تعذر تحديث القرارات. ستتم إعادة المحاولة تلقائيًا.');}
@@ -55,8 +59,8 @@
       data.forEach(row=>{if(confirmed.has(row.decisionId))row.hasRead=true;});realRows=data;const combined=[...simulatedRows,...data],next=JSON.stringify(combined),recovering=failures>0;failures=0;
       if(next!==fingerprint||!ready){rows=combined;fingerprint=next;ready=true;document.dispatchEvent(new CustomEvent('portal:decisions',{detail:{rows,loaded:true}}));renderTypes();render();}
       else if(recovering)render();else list.querySelectorAll('time[datetime]').forEach(time=>time.textContent=decisionDate(time.dateTime));
-    }catch(error){if(current!==generation)return;failures=Math.min(3,failures+1);status.hidden=false;status.textContent=error.name==='Error'?error.message:'تعذر الاتصال بخدمة القرارات. ستتم إعادة المحاولة تلقائيًا.';}
-    finally{if(current===generation){loading=false;list.setAttribute('aria-busy','false');schedule();}}
+    }catch(error){if(current!==generation)return;failures=Math.min(3,failures+1);if(list.dataset.loading==='true'){list.dataset.loading='false';list.replaceChildren();}status.hidden=false;status.textContent=error.name==='Error'?error.message:'تعذر الاتصال بخدمة القرارات. ستتم إعادة المحاولة تلقائيًا.';}
+    finally{if(current===generation){loading=false;if(list.dataset.loading!=='true')list.setAttribute('aria-busy','false');schedule();}}
   }
   async function mark(id){
     const row=rows.find(row=>row.decisionId===id);if(!row||row.hasRead||attempted.has(id))return;

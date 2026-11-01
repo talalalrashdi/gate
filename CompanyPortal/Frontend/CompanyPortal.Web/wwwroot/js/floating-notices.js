@@ -2,7 +2,7 @@
   const notice=document.getElementById('portal-floating-alert'),alert=document.getElementById('portal-floating-notice');
   const toggle=document.getElementById('portal-notices-visibility'),dialog=document.getElementById('decision-notices-dialog');
   const base=document.querySelector('meta[name="companyportal-api-base"]')?.content;
-  if(!notice||!alert||!toggle||!dialog||!base)return;
+  if(!notice||!alert||!dialog||!base)return;
   let initialized=false,seenEligible=new Set();
   const visibleChannels=new Set(),dismissedNotices=new Set(),pendingDismissals=new Set();
   const dismissStatus=notice.querySelector('[data-notice-dismiss-status]');
@@ -19,9 +19,9 @@
     target.append(make('strong',row.title));
     target.append(make('small',row.decisionType+' · '+new Intl.DateTimeFormat('ar-OM',{dateStyle:'medium'}).format(new Date(row.publishedAt))));
   }
-  function typeTitle(target,row){
+  function typeTitle(target,row,badge){
     target.replaceChildren(make('span',row.decisionType));
-    if(!row.hasRead){const badge=make('small','جديد');badge.className='portal-decision-unread';target.append(badge);}
+    if(badge)badge.hidden=row.hasRead;
   }
   function render(preserveSelection=false){
     clearTimeout(timer);clearTimeout(rotation);
@@ -43,11 +43,11 @@
       if(freshAlert)index=alerts.findIndex(r=>r.decisionId===freshAlert.row.decisionId);
     }
     const expanded=visibleChannels.size>0;
-    toggle.setAttribute('aria-expanded',String(expanded));toggle.title=expanded?'إخفاء التنويه والتنبيهات':'إظهار التنويه والتنبيهات';toggle.setAttribute('aria-label',toggle.title);
+    if(toggle){toggle.setAttribute('aria-expanded',String(expanded));toggle.title=expanded?'إخفاء التنويه والتنبيهات':'إظهار التنويه والتنبيهات';toggle.setAttribute('aria-label',toggle.title);}
     index=Math.max(0,Math.min(index,Math.max(0,alerts.length-1)));noticeIndex=Math.max(0,Math.min(noticeIndex,Math.max(0,notices.length-1)));
     notice.hidden=document.hidden||!visibleChannels.has(1)||!notices.length;alert.hidden=document.hidden||!visibleChannels.has(2)||!alerts.length;
-    if(notices.length){typeTitle(notice.querySelector('[data-notice-type]'),notices[noticeIndex]);fill(notice.querySelector('[data-notice-link]'),notices[noticeIndex],false);notice.querySelector('[data-notice-position]').textContent=(noticeIndex+1)+' / '+notices.length;notice.querySelector('[data-notice-prev]').disabled=noticeIndex===0;notice.querySelector('[data-notice-next]').disabled=noticeIndex===notices.length-1;notice.querySelector('.portal-notice-paging').hidden=notices.length<2;}
-    if(alerts.length){typeTitle(alert.querySelector('[data-alert-type]'),alerts[index]);fill(link,alerts[index],false);alert.querySelector('.portal-floating-notice-position').textContent=(index+1)+' / '+alerts.length;
+    if(notices.length){typeTitle(notice.querySelector('[data-notice-type]'),notices[noticeIndex],notice.querySelector('[data-notice-new]'));fill(notice.querySelector('[data-notice-link]'),notices[noticeIndex],false);notice.querySelector('[data-notice-position]').textContent=(noticeIndex+1)+' / '+notices.length;notice.querySelector('[data-notice-prev]').disabled=noticeIndex===0;notice.querySelector('[data-notice-next]').disabled=noticeIndex===notices.length-1;notice.querySelector('.portal-notice-paging').hidden=notices.length<2;}
+    if(alerts.length){typeTitle(alert.querySelector('[data-alert-type]'),alerts[index],alert.querySelector('[data-alert-new]'));fill(link,alerts[index],false);alert.querySelector('.portal-floating-notice-position').textContent=(index+1)+' / '+alerts.length;
       alert.querySelector('.portal-floating-notice-prev').disabled=index===0;alert.querySelector('.portal-floating-notice-next').disabled=index===alerts.length-1;}
     if(dialog.open){if(!notices.length&&!alerts.length){dialog.close();return;}renderList();}
     // Boundary timers and visible carousel rotation do not make network requests.
@@ -75,7 +75,7 @@
   document.addEventListener('portal:decisions',event=>{rows=event.detail.rows;render(true);if(event.detail.loaded&&event.detail.origin!=='simulation')initialized=true;});
   document.addEventListener('portal:decision-read',event=>{rows.filter(r=>r.decisionId===event.detail).forEach(r=>r.hasRead=true);render(true);});
   document.addEventListener('portal:decision-read-error',()=>{dialog.querySelector('[data-notices-status]').textContent='تعذر حفظ حالة القراءة. يمكنك إعادة فتح المادة بعد تحديث الصفحة.';});
-  toggle.addEventListener('click',()=>{
+  toggle?.addEventListener('click',()=>{
     if(visibleChannels.size)visibleChannels.clear();else{visibleChannels.add(1);visibleChannels.add(2);}
     render();
   });
@@ -83,12 +83,12 @@
   notice.querySelector('[data-notice-next]').addEventListener('click',()=>{noticeIndex++;render();});
   alert.querySelector('.portal-floating-notice-prev').addEventListener('click',()=>{index--;render();});
   alert.querySelector('.portal-floating-notice-next').addEventListener('click',()=>{index++;render();});
-  alert.querySelector('.portal-floating-notice-close').addEventListener('click',()=>{visibleChannels.delete(2);render();toggle.focus({preventScroll:true});});
+  alert.querySelector('.portal-floating-notice-close').addEventListener('click',()=>{visibleChannels.delete(2);render();toggle?.focus({preventScroll:true});});
   async function dismissNotice(){
     const row=available(1)[noticeIndex];if(!row||pendingDismissals.has(row.decisionId))return;
     const id=row.decisionId;dismissStatus.hidden=true;dismissedNotices.add(id);
     if(!available(1).length)visibleChannels.delete(1);render();
-    if(notice.hidden)toggle.focus({preventScroll:true});
+    if(notice.hidden)toggle?.focus({preventScroll:true});
     // Simulated dismissals are local only; real dismissals belong to the current DB user.
     if(row.isSimulation)return;
     pendingDismissals.add(id);

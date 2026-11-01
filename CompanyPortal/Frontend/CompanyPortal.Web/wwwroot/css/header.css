@@ -256,3 +256,7 @@ body .portal-media-new { padding:2px 5px; border-radius:4px; background:#fff0ec;
 .portal-media-new[hidden] { display: none !important; }
 
 /* Temporary diagnostics shortcut floats below the secondary navigation. */
+
+/* Important numbers end at their content instead of stretching beside contact results. */
+.portal-header-search[data-search-mode="phone"] .portal-phone-important{align-self:start}
+.theme-official-story-action[hidden]{display:none!important}

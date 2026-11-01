@@ -24,7 +24,7 @@
     const bounds=root.getBoundingClientRect();
     const offset=Math.max(0,sectionNav.getBoundingClientRect().bottom)+16;
     const anchor=Math.min(window.innerHeight-1,offset+1);
-    const positions=navItems.map(item=>({item,rect:item.target.getBoundingClientRect()})).filter(({rect})=>rect.height>0);
+    const positions=navItems.map(item=>({item,rect:(item.target.id==='editorial-news'?root.querySelector('.editorial-masthead')||item.target:item.target).getBoundingClientRect()})).filter(({rect})=>rect.height>0);
     let nextLink=positions.filter(({rect})=>rect.top<=anchor).at(-1)?.item.link||null;
     const maxScroll=Math.max(0,document.documentElement.scrollHeight-window.innerHeight);
     if(maxScroll>0&&window.scrollY>=maxScroll-2&&positions.at(-1)?.rect.top<window.innerHeight)nextLink=positions.at(-1).item.link;

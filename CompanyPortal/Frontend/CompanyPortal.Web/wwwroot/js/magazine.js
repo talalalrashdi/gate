@@ -221,9 +221,8 @@
     [previous,next,pageInput,thumbButton,zoomButton,fullButton,zoomOut].filter(Boolean).forEach(n=>n.disabled=true);pageInput.value='1';pageInput.removeAttribute('max');
     pdfLink.removeAttribute('href');pdfLink.setAttribute('aria-disabled','true');name.textContent='—';message.hidden=false;
   }
-  const lazyReader=window.CompanyPortalLazy?.gate(reader)||{run:f=>f(),clear(){}};
-  async function selectIssue(){lazyReader.run(()=>void openSelectedIssue());}
-  async function openSelectedIssue(){
+  // Prepare the selected issue after catalog load; pages/thumbnails stay lazily drawn.
+  async function selectIssue(){
     controller?.abort();controller=new AbortController();const signal=controller.signal,stamp=++generation;
     const selected=issues.find(row=>String(row.magazineId)===issueSelect.value);clearReader();retry.hidden=true;
     if(!selected){message.textContent='لا توجد أعداد منشورة حاليًا.';return;}
@@ -258,7 +257,7 @@
     }catch(e){if(stamp!==generation||signal.aborted)return;issueSelect.replaceChildren(new Option('تعذّر تحميل الأعداد',''));message.textContent='تعذّر تحميل أعداد المجلة. تحقق من الاتصال وأعد المحاولة.';retry.hidden=false;}
   }
   issueSelect.addEventListener('change',selectIssue);retry.addEventListener('click',loadCatalog);
-  function suspend(){lazyReader.clear();++generation;controller?.abort();clearReader();issues=[];updateBadge();issueSelect.replaceChildren();issueSelect.disabled=true;}
+  function suspend(){++generation;controller?.abort();clearReader();issues=[];updateBadge();issueSelect.replaceChildren();issueSelect.disabled=true;}
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)maybeMarkRead();});window.addEventListener('pagehide',suspend);window.addEventListener('pageshow',e=>{if(e.persisted)loadCatalog();});
   fullButton.addEventListener('click', async () => {
     try { if (document.fullscreenElement === reader) await document.exitFullscreen(); else { await reader.requestFullscreen(); stage.focus({ preventScroll: true }); } }

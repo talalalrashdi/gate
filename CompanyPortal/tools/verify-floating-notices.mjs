@@ -9,9 +9,10 @@ class Element{
  querySelector(s){if(!this.nodes.has(s))this.nodes.set(s,new Element());return this.nodes.get(s);}
  setAttribute(k,v){this.attributes[k]=v;}removeAttribute(k){delete this.attributes[k];}addEventListener(k,fn){this.listeners[k]=fn;}matches(){return false;}focus(){}showModal(){this.open=true;}close(){this.open=false;this.listeners.close?.();}
 }
-function fixture(rows){
+function fixture(rows,noToggle=false){
  const notice=new Element(),alert=new Element(),toggle=new Element(),dialog=new Element(),events={},timers=new Map();let timer=0,requests=0;
  const ids={'portal-floating-alert':notice,'portal-floating-notice':alert,'portal-notices-visibility':toggle,'decision-notices-dialog':dialog,'portal-simulation':new Element()};
+ if(noToggle)delete ids['portal-notices-visibility'];
  const document={hidden:false,getElementById:id=>ids[id],querySelector:()=>({content:'https://api.test/'}),createElement:()=>new Element(),addEventListener:(type,fn)=>events[type]=fn};
  vm.runInNewContext(source,{document,window:{addEventListener(){}},URL,Date,Intl,AbortSignal,location:{href:"https://portal.test/"},setTimeout:(fn,delay)=>{timers.set(++timer,{fn,delay});return timer;},clearTimeout:id=>timers.delete(id),fetch:()=>{requests++;throw Error('Reading must not send dismissal or duplicate read requests');}});
  const emit=(name,detail)=>events[name]({detail});const catalog=data=>emit('portal:decisions',{rows:data,loaded:true,origin:'api'});
@@ -19,7 +20,7 @@ function fixture(rows){
 }
 const row=(id,channels,hasRead=false)=>({decisionId:id,title:'Decision '+id,decisionType:'تعميم',publishedAt:new Date().toISOString(),hasRead,notices:channels.map(channelId=>({channelId,fromAt:new Date(Date.now()-60000).toISOString(),toAt:new Date(Date.now()+86400000).toISOString()}))});
 let f=fixture([row('1',[1]),row('2',[1]),row('3',[2]),row('4',[2])]);assert.ok(f.notice.hidden&&f.alert.hidden);f.show();assert.equal(f.noticeId,'1');assert.equal(f.alertId,'3');
-assert.equal(f.notice.querySelector('[data-notice-type]').textContent,'تعميمجديد','Notice badge must be beside type');assert.equal(f.alert.querySelector('[data-alert-type]').textContent,'تعميمجديد','Alert badge must be beside type');assert.equal(f.notice.querySelector('[data-notice-link]').children.some(n=>n.className==='portal-decision-unread'),false,'Duplicate badge remained in popup body');
+assert.equal(f.notice.querySelector('[data-notice-type]').textContent,'تعميم','Notice type must not contain new badge');assert.equal(f.alert.querySelector('[data-alert-type]').textContent,'تعميم','Alert type must not contain new badge');assert.equal(f.notice.querySelector('[data-notice-new]').hidden,false);assert.equal(f.alert.querySelector('[data-alert-new]').hidden,false);assert.equal(f.notice.querySelector('[data-notice-link]').children.some(n=>n.className==='portal-decision-unread'),false,'Duplicate badge remained in popup body');
 f.read('2');assert.equal(f.notice.hidden,false,'Reading another notice must not close current notice');assert.equal(f.alert.hidden,false);
 f.read('1');assert.equal(f.notice.hidden,true,'Reading displayed notice must close it');assert.equal(f.alert.hidden,false,'Unrelated alert must stay open');assert.equal(f.toggle.attributes['aria-expanded'],'true');
 f.read('1');assert.equal(f.alert.hidden,false,'Repeated read must not close unrelated channel');
@@ -31,3 +32,6 @@ f.alert.querySelector('.portal-floating-notice-all').listeners.click();const lis
 f.read('simulation-2');assert.equal(f.notice.hidden,true);assert.equal(f.alert.hidden,false);f.read('simulation-3');assert.equal(f.alert.hidden,true);assert.equal(f.toggle.attributes['aria-expanded'],'false');assert.equal(f.dialog.open,false,'Empty all-notices dialog must close');
 f=fixture([row('30',[1]),row('31',[1]),row('32',[1])]);f.show();f.notice.querySelector('[data-notice-next]').listeners.click();assert.equal(f.noticeId,'31');f.read('30');assert.equal(f.noticeId,'31','Reading a different row shifted the current popup');
 console.log('PASS: only read decisions removed, remaining unread items stay open, current item preserved for unrelated reads, both-channel item, empty channels close, refresh/shared-row mutations, main catalog retained and no extra requests.');
+
+f=fixture([row('40',[1]),row('41',[2])],true);f.reveal('40',[1]);f.reveal('41',[2]);assert.ok(!f.notice.hidden&&!f.alert.hidden,'Removed header toggle disabled popups');f.read('40');assert.equal(f.notice.hidden,true);assert.equal(f.alert.hidden,false);f.alert.querySelector('.portal-floating-notice-close').listeners.click();assert.equal(f.alert.hidden,true);f.rows.push(row('42',[1]));f.catalog(f.rows);assert.equal(f.notice.hidden,false,'New eligible decision should still reveal channel without header toggle');assert.equal(f.requests,0);
+console.log('PASS popup heading badges are separate; read/close/new arrival work without visibility button.');

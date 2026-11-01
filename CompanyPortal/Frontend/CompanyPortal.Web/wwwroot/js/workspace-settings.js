@@ -65,7 +65,7 @@
       // Custom cards are fetched for this account, never restored from browser data.
       await window.CompanyPortalCustomCards?.ready;
       const response = await request();
-      if (!response.ok) { show(failed(response)); return; }
+      if (!response.ok) { workspace.setAttribute('data-catalog-state','error');show(failed(response)); return; }
       const result = await response.json();
       if (!policy.valid(result.cards,result.cardKeys) || result.cards.some(card => !card.isCustom && !['connected','applications'].includes(card.cardType))
           || result.cards.some(card => card.cardType === 'applications' && (!Array.isArray(card.applications)
@@ -74,10 +74,16 @@
       if (!valid(result.cardKeys) || !policy.valid(result.cards, keys())) throw new Error('Card catalog mismatch');
       definitions = result.cards;
       workspace.setAttribute('data-card-catalog-ready','');
+      workspace.setAttribute('data-catalog-state','ready');
       apply(policy.normalize(version ? keys() : result.cardKeys, definitions));
       if (!version) show(result.isSaved ? 'تم تحميل ترتيب بطاقات حسابك.' : 'يُحفظ ترتيب البطاقات في حسابك عند تغييره.');
     } catch {
+      workspace.setAttribute('data-catalog-state','error');
       if (!version) show('تعذر تحميل البطاقات المتاحة لحسابك. أعد تحميل الصفحة للمحاولة مجددًا.');
+    } finally {
+      workspace.setAttribute('aria-busy','false');
+      workspace.querySelectorAll('[data-workspace-placeholder]').forEach(node=>node.remove());
+      workspace.dispatchEvent(new CustomEvent('workspace:cards-changed'));
     }
   })();
   workspace.addEventListener('workspace:order-changed', event => {

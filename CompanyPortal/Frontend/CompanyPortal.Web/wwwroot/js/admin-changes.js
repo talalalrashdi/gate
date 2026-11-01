@@ -15,7 +15,6 @@
     });
   }
   async function load(section){
-    if(['important-numbers','institution-status'].includes(section))section='header-content';
     if(['overview','history'].includes(section)||!core.can(section)||cache.has(section)||pending.has(section))return;
     const version=versions.get(section)||0;failed.delete(section);
     const task=(async()=>{try{
@@ -37,7 +36,8 @@
   }
   const routes={events:'events','admin-cards':'cards','application-directory':'applications','document-library':'documents','safety-library':'safety','fixed-orders':'fixed-orders','header-content':'header-content',media:'media','admin-images':'images','admin-themes':'themes'};
   document.addEventListener('admin:saved',e=>{
-    const section=e.detail.header==='decision-notices'?(e.detail.path.match(/decision-notices\/([12])/)[1]==='1'?'notices':'alerts'):routes[e.detail.header];
+    let section=e.detail.header==='decision-notices'?(e.detail.path.match(/decision-notices\/([12])/)[1]==='1'?'notices':'alerts'):routes[e.detail.header];
+    if(section==='header-content')section=e.detail.path.includes('important-numbers')?'important-numbers':'institution-status';
     if(!section)return;versions.set(section,(versions.get(section)||0)+1);cache.delete(section);
     clearTimeout(timers.get(section));timers.set(section,setTimeout(()=>void load(section),250));
   });

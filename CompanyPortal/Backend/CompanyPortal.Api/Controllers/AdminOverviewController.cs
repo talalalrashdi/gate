@@ -7,7 +7,7 @@ using Microsoft.Data.SqlClient;
 namespace CompanyPortal.Api.Controllers;
 
 [ApiController, Authorize, Route("api/admin"),
- AdminSection("admin-overview", "cards", "applications", "documents", "safety", "fixed-orders", "header-content", "notices", "alerts", "media", "images", "themes")]
+ AdminSection("admin-overview", "cards", "applications", "documents", "safety", "fixed-orders", "important-numbers","institution-status", "notices", "alerts", "media", "images", "themes", "events", "permissions")]
 public sealed class AdminOverviewController(AdminChangesStore changes, OrganizationStatusStore status,
     HeaderContentStore header, MagazinesStore magazines, PortalMediaStore media, DecisionNoticesStore notices,
     LegalDecisionsStore decisions, ILogger<AdminOverviewController> logger) : ControllerBase
@@ -26,11 +26,11 @@ public sealed class AdminOverviewController(AdminChangesStore changes, Organizat
     {
         var access = await HttpContext.GetAdminAccessAsync();
         var cards = new List<object>();
-        if (access.CanManage("header-content"))
+        if (access.CanManage("institution-status"))
         {
             var current = await status.GetAsync(token);
             var levels = await header.GetLevelsAsync(token);
-            cards.Add(new { Section = "header-content", Kind = "status", Value = current,
+            cards.Add(new { Section = "institution-status", Kind = "status", Value = current,
                 Name = levels.FirstOrDefault(l => l.ColorValue == current?.ColorValue)?.Title });
         }
         var magazine = (await magazines.GetAsync(User.Identity!.Name!, null, token))?.FirstOrDefault();

@@ -16,6 +16,7 @@ builder.Services.AddScoped<DatabaseConnectionCheck>();
 builder.Services.AddScoped<UserSettingsStore>();
 builder.Services.AddScoped<UserCardsStore>();
 builder.Services.AddScoped<AdministrationStore>();
+builder.Services.AddScoped<AdminPermissionsStore>();
 builder.Services.AddScoped<AdminChangesStore>();
 builder.Services.AddScoped<ThemeAdministrationStore>();
 builder.Services.AddScoped<InterfaceImagesStore>();

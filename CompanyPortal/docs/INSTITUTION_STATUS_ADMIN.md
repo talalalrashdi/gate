@@ -24,6 +24,8 @@ Section navigation and Back/Forward warn before leaving an unsaved editor. Cance
 
 ## Verification
 
-Both builds pass with zero warnings/errors. Shared admin/core/asset/history/label/offline checks pass, including alias authorization. Actual HTTP checks cover current-status read, invalid/missing values400, unauthenticated401, missing write header400 and valid Swagger. SQL rollback checks cover same-status no-op, correct actor/user ID/time, old/new audit and invalid status rejection; the live status and history remained unchanged.
+Both builds pass with zero warnings/errors. Shared admin/core/asset/history/label/offline checks pass. Actual HTTP checks cover current-status read, invalid/missing values400, unauthenticated401, missing write header400 and valid Swagger. SQL rollback checks cover same-status no-op, correct actor/user ID/time, old/new audit and invalid status rejection; the live status and history remained unchanged.
+
+Migration063 supersedes the shared header-content permission described above: numbers now require important-numbers, and status requires institution-status. Existing grants migrate to both. Reads, writes, previews and author labels enforce the split. See [ADMIN_ROLES.md](ADMIN_ROLES.md).
 
 Desktop browser acceptance confirmed separate sidebar items, removed label/toolbar, status selection confirmation, leave-without-save warning, discarded selection on returning, and no browser errors. No live status change was committed during browser tests.

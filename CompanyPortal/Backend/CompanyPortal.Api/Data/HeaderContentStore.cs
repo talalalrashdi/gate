@@ -19,11 +19,11 @@ public sealed class HeaderContentStore(IConfiguration configuration)
     public async Task<StatusLevel[]> GetLevelsAsync(CancellationToken token)=>
         (await Levels(token)).Select(r=>new StatusLevel(r.ColorValue,Colors[r.ColorValue-1],r.Title,r.ColorName,r.Summary,r.GuideText,Steps(r.Actions))).ToArray();
 
-    public async Task<HeaderContentAdministration> GetForAdministrationAsync(CancellationToken token)
+    public async Task<HeaderContentAdministration> GetForAdministrationAsync(CancellationToken token,bool includeNumbers=true,bool includeLevels=true)
     {
         await using var c=Connection();
-        var numbers=(await c.QueryAsync<ImportantNumberAdministration>(Command("Mng.ImportantNumbers_GetAll",null,token))).ToArray();
-        var levels=(await Levels(token)).Select(r=>new StatusLevelAdministration(r.ColorValue,Colors[r.ColorValue-1],r.Title,r.ColorName,r.Summary,r.GuideText,r.Actions,r.LastChangeAt)).ToArray();
+        var numbers=includeNumbers?(await c.QueryAsync<ImportantNumberAdministration>(Command("Mng.ImportantNumbers_GetAll",null,token))).ToArray():[];
+        var levels=includeLevels?(await Levels(token)).Select(r=>new StatusLevelAdministration(r.ColorValue,Colors[r.ColorValue-1],r.Title,r.ColorName,r.Summary,r.GuideText,r.Actions,r.LastChangeAt)).ToArray():[];
         return new(numbers,levels);
     }
 

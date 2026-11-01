@@ -29,11 +29,11 @@
         if(section==='notices'){block.append(make('strong',row.decisionType),make('a',row.title),make('small',row.publishedAt?.slice(0,10)||''));}
         else{const button=make('button',undefined,'portal-floating-notice-content');button.append(make('span',row.decisionType),make('strong',row.title),make('small',row.publishedAt?.slice(0,10)||''));block.append(button);}container.append(block);}
       window.scrollTo({top:0});
-    }else if(section==='header-content'&&v.kind==='numbers'){
+    }else if(section==='important-numbers'&&v.kind==='numbers'){
       const panel=document.getElementById('portal-search-panel');panel.hidden=false;panel.dataset.searchMode='phone';panel.querySelector('.portal-phone-important').hidden=false;document.getElementById('portal-search-title').textContent='دليل الهاتف';
       const list=document.getElementById('portal-important-numbers');list.replaceChildren();for(const row of (v.rows||[]).slice(0,100)){if(!text(row.title)||!text(row.number)||!row.active)continue;const item=make('div'),number=make('dd',row.number);number.dir='ltr';item.append(make('dt',row.title),number);list.append(item);}
       document.getElementById('portal-important-numbers-note').textContent='معاينة الأرقام الظاهرة فقط';panel.scrollIntoView({block:'center'});
-    }else if(section==='header-content'&&v.kind==='status'){
+    }else if(section==='institution-status'&&v.kind==='status'){
       if(!text(v.title)||!text(v.summary)||!['green','yellow','orange','red'].includes(v.color))return;
       const status=document.querySelector('.portal-org-status');status.open=true;status.querySelector('.portal-org-status-copy strong').textContent=v.title;
       status.querySelectorAll('.portal-org-status-dot').forEach(dot=>dot.className='portal-org-status-dot is-'+v.color);
@@ -45,5 +45,5 @@
     // One draft per document; reopening starts a new frame and cannot accumulate old content.
     if(shell.dataset.received)return;shell.dataset.received='true';void apply(event.data.section,event.data.value).catch(()=>message.textContent='تعذر عرض المعاينة. أغلق النافذة وأعد المحاولة.');
   });
-  fetch(new URL('api/access',api),{credentials:'include',cache:'no-store',signal:AbortSignal.timeout(10000)}).then(async r=>{if(!r.ok)throw new Error();const access=await r.json();if(!access.isAdmin)throw new Error();sections=new Set((access.sections||[]).filter(s=>['media','fixed-orders','notices','alerts','header-content'].includes(s)));parent.postMessage({type:'companyportal:content-ready'},location.origin);}).catch(()=>message.textContent='المعاينة متاحة فقط لحساب إدارة القسم.');
+  fetch(new URL('api/access',api),{credentials:'include',cache:'no-store',signal:AbortSignal.timeout(10000)}).then(async r=>{if(!r.ok)throw new Error();const access=await r.json();if(!access.isAdmin)throw new Error();sections=new Set((access.sections||[]).filter(s=>['media','fixed-orders','notices','alerts','important-numbers','institution-status'].includes(s)));parent.postMessage({type:'companyportal:content-ready'},location.origin);}).catch(()=>message.textContent='المعاينة متاحة فقط لحساب إدارة القسم.');
 })();

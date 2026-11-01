@@ -2,6 +2,7 @@
   const panels = [...document.querySelectorAll('[data-admin-panel]')];
   let buttons = [...document.querySelectorAll('[data-admin-section]')];
   const titles = {
+    permissions:['الأدوار والصلاحيات','حدّد أقسام الإدارة المتاحة لكل دور من نظام الأمن.'],
     events:['الفعاليات','أضف فعالية لعرض PDF أو فيديو أو فتح تطبيق، وحدّد فترة ظهورها وأعد تفعيلها لاحقًا.'],
     overview:['نظرة عامة','إدارة محتوى البوابة ومظهرها من مكان واحد.'],
     history:['سجل التعديلات','جميع تعديلات الإدارة؛ للمدير العام فقط، مع مقارنة قبل وبعد دون تراجع.'],

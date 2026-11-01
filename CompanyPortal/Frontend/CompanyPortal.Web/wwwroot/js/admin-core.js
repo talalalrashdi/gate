@@ -1,7 +1,7 @@
 /* Shared admin transport, feedback, confirmations, access and draft guards. No business writes. */
 (() => {
   'use strict';
-  const permissionKey=section=>['important-numbers','institution-status'].includes(section)?'header-content':section;
+  const permissionKey=section=>section;
   const base=new URL(document.querySelector('meta[name="companyportal-api-base"]').content.replace(/\/?$/,'/'),location.href);
   const trackers=new Set(),sections=new Set();let access=null,accessPending,confirming=false,feedbackUntil=0,feedbackText='',lastFeedback='',lastFeedbackAt=0,leaving=false;
   const dialog=document.getElementById('admin-confirm'),toasts=document.getElementById('admin-toasts');
@@ -71,7 +71,7 @@
   function reloadWithoutDraft(url){leaving=true;location.replace(url);location.reload();}
   function applyAccess(){
     sections.clear();if(access?.isAdmin)for(const key of access.sections||[])sections.add(key);
-    if(access?.isSuperAdmin)sections.add('history');
+    if(access?.isSuperAdmin){sections.add('history');sections.add('permissions');}
     document.querySelectorAll('[data-admin-super]').forEach(e=>e.hidden=!access?.isSuperAdmin);
     const allowed=sections.size>0,workspace=document.getElementById('admin-workspace'),message=document.getElementById('admin-access-message');
     workspace.hidden=!allowed;message.hidden=allowed;

@@ -7,32 +7,32 @@ using Microsoft.Data.SqlClient;
 
 namespace CompanyPortal.Api.Controllers;
 
-[ApiController,Authorize,Route("api/admin/header-content"),RequestSizeLimit(16384),AdminSection("header-content","header-content")]
+[ApiController,Authorize,Route("api/admin/header-content"),RequestSizeLimit(16384)]
 public sealed class HeaderContentAdministrationController(HeaderContentStore store,ILogger<HeaderContentAdministrationController> logger):ControllerBase
 {
-    [HttpGet,ProducesResponseType<HeaderContentAdministration>(StatusCodes.Status200OK)]
-    public Task<IActionResult> Get(CancellationToken token)=>Execute(async()=>Ok(await store.GetForAdministrationAsync(token)));
+    [HttpGet,AdminSection("header-content","important-numbers","institution-status"),ProducesResponseType<HeaderContentAdministration>(StatusCodes.Status200OK)]
+    public Task<IActionResult> Get(CancellationToken token)=>Execute(async()=>{var access=await HttpContext.GetAdminAccessAsync();return Ok(await store.GetForAdministrationAsync(token,access.CanManage("important-numbers"),access.CanManage("institution-status")));});
 
-    [HttpPost("important-numbers"),Consumes("application/json")]
+    [HttpPost("important-numbers"),AdminSection("header-content","important-numbers"),Consumes("application/json")]
     public Task<IActionResult> CreateNumber(SaveImportantNumberRequest request,CancellationToken token)=>Execute(async()=>
         StatusCode(201,new {Id=await store.SaveNumberAsync(null,request,User.Identity!.Name!,token)}));
 
-    [HttpPut("important-numbers/{id:int:min(1)}"),Consumes("application/json")]
+    [HttpPut("important-numbers/{id:int:min(1)}"),AdminSection("header-content","important-numbers"),Consumes("application/json")]
     public Task<IActionResult> UpdateNumber(int id,SaveImportantNumberRequest request,CancellationToken token)=>Execute(async()=>
     {await store.SaveNumberAsync(id,request,User.Identity!.Name!,token);return NoContent();});
 
-    [HttpDelete("important-numbers/{id:int:min(1)}")]
+    [HttpDelete("important-numbers/{id:int:min(1)}"),AdminSection("header-content","important-numbers")]
     public Task<IActionResult> DeleteNumber(int id,CancellationToken token)=>Execute(async()=>
     {await store.DeleteNumberAsync(id,User.Identity!.Name!,token);return NoContent();});
 
-    [HttpPut("status-levels/{colorValue:int:range(1,4)}"),Consumes("application/json")]
+    [HttpPut("status-levels/{colorValue:int:range(1,4)}"),AdminSection("header-content","institution-status"),Consumes("application/json")]
     public Task<IActionResult> UpdateLevel(int colorValue,SaveStatusLevelRequest request,CancellationToken token)=>Execute(async()=>
     {await store.SaveLevelAsync(colorValue,request,User.Identity!.Name!,token);return NoContent();});
 
-    [HttpGet("current-status")]
+    [HttpGet("current-status"),AdminSection("header-content","institution-status")]
     public Task<IActionResult> Current(CancellationToken token)=>Execute(async()=>Ok(await store.CurrentAsync(token)));
 
-    [HttpPut("current-status"),Consumes("application/json")]
+    [HttpPut("current-status"),AdminSection("header-content","institution-status"),Consumes("application/json")]
     public Task<IActionResult> SetCurrent(SaveCurrentStatusRequest request,CancellationToken token)=>Execute(async()=>
     {await store.SetCurrentAsync(request.ColorValue!.Value,User.Identity!.Name!,token);return NoContent();});
 

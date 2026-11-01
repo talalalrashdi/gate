@@ -14,7 +14,7 @@ document.querySelectorAll('[data-header-content-editor]').forEach(root => {
     Object.entries(attrs).forEach(([k,v])=>{if(k!=='multiline')input.setAttribute(k,v);});wrap.append(make('span',{textContent:label}),input);return [wrap,input];}
 
   function numberRow(item){
-    const row=make('div',{className:'hc-number-row'});row.setAttribute('role','row');AdminChanges.tag(row,'header-content','important-number',item?.id);
+    const row=make('div',{className:'hc-number-row'});row.setAttribute('role','row');AdminChanges.tag(row,'important-numbers','important-number',item?.id);
     const title=make('input',{value:item?.title??'',maxLength:150,required:true,placeholder:'مثال: طوارئ المؤسسة'});title.setAttribute('aria-label','الاسم');
     const number=make('input',{value:item?.number??'',maxLength:50,required:true,dir:'ltr',placeholder:'1000'});number.setAttribute('aria-label','الرقم');
     const order=make('input',{type:'number',min:0,max:100000,value:item?.sortOrder??(numbers.children.length+1)});order.setAttribute('aria-label','الترتيب');
@@ -40,7 +40,7 @@ document.querySelectorAll('[data-header-content-editor]').forEach(root => {
   }
 
   function levelCard(level){
-    const card=make('form',{className:'hc-level is-'+level.color});card.noValidate=true;AdminChanges.tag(card,'header-content','status-level',level.colorValue);
+    const card=make('form',{className:'hc-level is-'+level.color});card.noValidate=true;AdminChanges.tag(card,'institution-status','status-level',level.colorValue);
     const head=make('div',{className:'hc-level-head'});head.append(make('span',{className:'hc-dot'}),make('strong',{textContent:level.title}));
     const [titleWrap,title]=field('العنوان',level.title,{maxlength:100,required:''});
     const [nameWrap,name]=field('اسم اللون',level.colorName,{maxlength:30,required:''});

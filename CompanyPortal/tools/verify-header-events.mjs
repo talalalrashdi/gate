@@ -33,3 +33,19 @@ for(const simulation of [false,true]){
  assert.equal(calls,2,'Each page load fetches once');
 }
 console.log('PASS: event links, safe new-tab URLs, single fetch/no polling, simulation and reset, load-race preservation, disabled simulation guard and no badge renewal after refresh.');
+
+// Return-to-tab refresh: at most once per five minutes; a failed refresh keeps the links already shown.
+{
+ let now=Date.now(),ok=true,calls=0;class FakeDate extends Date{static now(){return now;}}
+ let rows=[{eventId:1,title:'فعالية المؤسسة',eventType:1,eventTarget:'https://events.test/one',startAt:'2026-10-01T08:00:00Z'}];
+ const parent=new Element(),marker=new Element();parent.append(marker);const events={},windowEvents={};
+ const document={hidden:false,getElementById:id=>id==='portal-header-events'?marker:null,querySelector:()=>({content:'http://api.test/'}),createElement:()=>new Element(),addEventListener:(k,f)=>events[k]=f};
+ vm.runInNewContext(await readFile(new URL('../Frontend/CompanyPortal.Web/wwwroot/js/header-events.js',import.meta.url),'utf8'),{Date:FakeDate,window:{addEventListener:(k,f)=>windowEvents[k]=f},setTimeout:()=>0,clearTimeout(){},document,URL,location:{href:'http://portal.test/'},AbortSignal,fetch:async()=>{calls++;return {ok,json:async()=>rows};}});
+ const settle=()=>new Promise(setImmediate),titles=()=>parent.children.slice(1).map(n=>n.dataset.eventTitle);
+ await settle();assert.equal(calls,1);assert.deepEqual(titles(),['فعالية المؤسسة']);
+ events.visibilitychange();await settle();assert.equal(calls,1,'Refreshed before five minutes');
+ now+=5*60000;rows=[...rows,{eventId:3,title:'فعالية جديدة',eventType:1,eventTarget:'https://events.test/three',startAt:'2026-10-01T09:00:00Z'}];
+ events.visibilitychange();await settle();assert.equal(calls,2,'No refresh after five minutes');assert.deepEqual(titles(),['فعالية المؤسسة','فعالية جديدة']);
+ now+=5*60000;ok=false;windowEvents.pageshow();await settle();assert.equal(calls,3,'pageshow did not refresh');assert.deepEqual(titles(),['فعالية المؤسسة','فعالية جديدة'],'Failed refresh removed links');
+}
+console.log('PASS return refresh: five-minute minimum, new events appear, pageshow refresh, failure keeps links.');

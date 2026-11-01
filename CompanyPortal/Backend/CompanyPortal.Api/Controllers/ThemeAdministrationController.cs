@@ -12,8 +12,8 @@ public sealed class ThemeAdministrationController(ThemeAdministrationStore theme
 {
     [HttpGet] public Task<IActionResult> Get(CancellationToken token)=>Execute(async()=>Ok(await themes.GetAsync(token)));
     [HttpGet("templates")] public Task<IActionResult> Templates(CancellationToken token)=>Execute(()=>Task.FromResult<IActionResult>(Ok(new ThemeTemplate[]{
-        new("official","الرسمي","assets/hero-oman-fort.png","#0A2947","#8B5E3C","#F5F1EA",45,"light"),
-        new("work","العملي","assets/hero-oman-mosque.png","#800000","#F28500","#F5F1EA",35,"light"),
+        new("official","الرسمي","assets/hero-oman-fort.webp","#0A2947","#8B5E3C","#F5F1EA",45,"light"),
+        new("work","العملي","assets/hero-oman-mosque.webp","#800000","#F28500","#F5F1EA",35,"light"),
         new("national-day","اليوم الوطني","assets/national-day-complete.jpg","#143F33","#A3333B","#F5F9F3",80,"dark")
     })));
     // Role names the portal already knows, for suggestions only (there is no full role catalog).

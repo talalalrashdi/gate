@@ -1,6 +1,6 @@
 # Header events
 
-Administration: `/admin/events` → الفعاليات. Events always follow وثائق تهمك, ordered by EventId, with the moving gradient and a جديد badge only until one minute after StartAt (publication start). Refreshing the page does not renew this deadline; older events render without the badge. Republished events use their new start time. Simulation remains a local one-minute timer. Employee catalog loads once per page; no polling. Visibility is evaluated on page load, and checked again whenever a file is requested.
+Administration: `/admin/events` → الفعاليات. Events always follow وثائق تهمك, ordered by EventId, with the moving gradient and a جديد badge only until one minute after StartAt (publication start). Refreshing the page does not renew this deadline; older events render without the badge. Republished events use their new start time. Simulation remains a local one-minute timer. Employee catalog loads on page open and again when the employee returns to the tab at least five minutes after the last load (1 November 2026, see [PORTAL_PERFORMANCE.md](PORTAL_PERFORMANCE.md)); no polling. A failed refresh keeps the links already shown, and no refresh runs while the event video dialog is open. Visibility is evaluated on each load, and checked again whenever a file is requested.
 
 ## Types and targets
 

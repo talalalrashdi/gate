@@ -59,13 +59,15 @@
       body: JSON.stringify({ cardKeys }) } : {})
   });
   let version = 0, writes = Promise.resolve();
-  const initial = (async () => {
-    show('جارٍ تحميل ترتيب البطاقات…');
+  // Startup and the in-place refresh after a personal card is saved share this path.
+  // Resolves true only when the account catalog was applied.
+  async function load(refresh = false) {
+    if (!refresh) show('جارٍ تحميل ترتيب البطاقات…');
     try {
       // Custom cards are fetched for this account, never restored from browser data.
       await window.CompanyPortalCustomCards?.ready;
       const response = await request();
-      if (!response.ok) { workspace.setAttribute('data-catalog-state','error');show(failed(response)); return; }
+      if (!response.ok) { workspace.setAttribute('data-catalog-state','error');show(failed(response)); return false; }
       const result = await response.json();
       if (!policy.valid(result.cards,result.cardKeys) || result.cards.some(card => !card.isCustom && !['connected','applications'].includes(card.cardType))
           || result.cards.some(card => card.cardType === 'applications' && (!Array.isArray(card.applications)
@@ -77,22 +79,30 @@
       workspace.setAttribute('data-catalog-state','ready');
       apply(policy.normalize(version ? keys() : result.cardKeys, definitions));
       if (!version) show(result.isSaved ? 'تم تحميل ترتيب بطاقات حسابك.' : 'يُحفظ ترتيب البطاقات في حسابك عند تغييره.');
+      return true;
     } catch {
+      // A failed refresh is followed by the caller's full reload, so keep the current state.
+      if (refresh) return false;
       workspace.setAttribute('data-catalog-state','error');
       if (!version) show('تعذر تحميل البطاقات المتاحة لحسابك. أعد تحميل الصفحة للمحاولة مجددًا.');
+      return false;
     } finally {
       workspace.setAttribute('aria-busy','false');
       workspace.querySelectorAll('[data-workspace-placeholder]').forEach(node=>node.remove());
       workspace.dispatchEvent(new CustomEvent('workspace:cards-changed'));
     }
-  })();
+  }
+  let loading = load();
+  // Waits for queued order saves so a refresh never races an order write.
+  window.CompanyPortalCardCatalog = { refresh: () => (loading = writes.then(() => load(true))) };
   workspace.addEventListener('workspace:order-changed', event => {
     const cardKeys = event.detail?.cardKeys;
     if (!valid(cardKeys)) return;
-    const selected = [...cardKeys], current = ++version;
+    // Capture the load current at queue time; a later refresh waits for this write, so awaiting it would deadlock.
+    const selected = [...cardKeys], current = ++version, ready = loading;
     show('جارٍ حفظ ترتيب البطاقات…');
     writes = writes.then(async () => {
-      await initial;
+      await ready;
       if (current !== version) return;
       if (!definitions) { show('تعذر تحميل مواضع البطاقات. أعد تحميل الصفحة.'); return; }
       const normalized = policy.normalize(selected, definitions);

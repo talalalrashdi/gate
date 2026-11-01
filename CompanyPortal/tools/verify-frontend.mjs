@@ -101,7 +101,7 @@ for (const route of ['', 'index.html', 'design-b.html']) {
     throw new Error(`Portal differs: /${route}, offset ${at}\nActual: ${actualHtml.slice(Math.max(0, at - 80), at + 140)}\nExpected: ${baselineHtml.slice(Math.max(0, at - 80), at + 140)}`);
   }
   assert.ok(html.includes('<title>البوابة</title>'), 'Portal tab title');
-  assert.ok(html.includes(`rel="icon" type="image/png" href="${mount}/assets/oman-khanjar.png"`), 'Portal favicon');
+  assert.ok(html.includes(`rel="icon" type="image/png" href="${mount}/assets/oman-khanjar-160.png"`), 'Portal favicon (small copy of the emblem)');
   const buttons = [...html.matchAll(/<button[^>]*data-theme-option="([^"]+)"[^>]*>(\d)<\/button>/g)];
   assert.deepEqual(buttons.map(button => [button[1], button[2]]), [['official', '1'], ['work', '2'], ['national-day', '3']], 'Visible theme mapping');
   const scripts = [...html.matchAll(/<script\b[^>]*src="([^"]+)"[^>]*><\/script>/g)].map(match => match[1].split('?')[0]);
@@ -112,7 +112,7 @@ for (const route of ['profile', 'profile/', 'user-profile.html']) {
   const html = await (await request(route)).text();
   assert.equal(canonicalHtml(html), canonicalHtml(expectedHtml(profile)), `Profile differs: /${route}`);
   assert.ok(html.includes('<title>البوابة</title>'), 'Profile tab title');
-  assert.ok(html.includes(`rel="icon" type="image/png" href="${mount}/assets/oman-khanjar.png"`), 'Profile favicon');
+  assert.ok(html.includes(`rel="icon" type="image/png" href="${mount}/assets/oman-khanjar-160.png"`), 'Profile favicon (small copy of the emblem)');
 }
 
 // Includes runtime-generated image paths and magazine pages, not just HTML links.

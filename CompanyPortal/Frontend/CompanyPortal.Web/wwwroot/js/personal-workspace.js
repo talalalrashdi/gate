@@ -140,8 +140,13 @@
     if (Object.hasOwn(themes, event.detail?.layoutKey))
       selectTheme(event.detail.layoutKey, event.detail.themeName);
   });
+  // Later scenes keep their file in data-src until rotation needs them.
+  function prepareScene(image) {
+    if (image?.dataset.src && !image.getAttribute('src')) image.src = image.dataset.src;
+  }
   function showOfficialScene(index) {
     sceneIndex = index;
+    prepareScene(sceneImages[index]);
     const scene = sceneImages[index]?.dataset.officialImage;
     sceneImages.forEach(image => image.classList.toggle('is-active', image.dataset.officialImage === scene));
     const story = sceneStories[scene];
@@ -159,10 +164,15 @@
     const photoTheme = document.body.dataset.siteTheme === 'official' || (document.body.dataset.siteTheme === 'work' && document.querySelector('.portal-news-personal'));
     const running = !backdrop.dataset.managed && !paused && !document.hidden && !announcementDialog?.open && photoTheme;
     backdrop.dataset.paused = String(!running);
+    // Fetch the next scene 3 s before it shows; by then theme-managed images have replaced the fallback if configured.
     if (running) sceneTimer = setTimeout(() => {
-      showOfficialScene((sceneIndex + 1) % sceneImages.length);
-      syncOfficialPlayback();
-    }, 8000);
+      if (backdrop.dataset.managed) return;
+      prepareScene(sceneImages[(sceneIndex + 1) % sceneImages.length]);
+      sceneTimer = setTimeout(() => {
+        showOfficialScene((sceneIndex + 1) % sceneImages.length);
+        syncOfficialPlayback();
+      }, 3000);
+    }, 5000);
   }
   document.addEventListener('companyportal:theme-images', () => {
     if (!backdrop?.dataset.managed) showOfficialScene(0);

@@ -85,10 +85,20 @@
     finally { add.disabled = false; }
   }
   function reload() { location.hash = 'workspace'; location.reload(); }
+  // Redraw the cards and the account card order in place; the full reload stays as the fallback.
+  async function refresh(focusId) {
+    try {
+      groups = await request('api/user-cards'); render();
+      if (!await window.CompanyPortalCardCatalog?.refresh()) throw new Error('Card catalog not refreshed');
+      dialog.close();
+      const card = focusId ? workspace.querySelector('[data-user-card-id="' + focusId + '"] .portal-group-edit') : null;
+      (card || add).focus();
+    } catch { reload(); }
+  }
   async function mutate(method, body) {
     if (busy) return;
     busy = true; error.hidden = true; form.querySelectorAll('button').forEach(button => { button.disabled = true; });
-    try { await request('api/user-cards' + (editing === null ? '' : '/' + editing), method, body); reload(); }
+    try { const saved = await request('api/user-cards' + (editing === null ? '' : '/' + editing), method, body); await refresh(method === 'DELETE' ? null : saved?.userCardId ?? editing); }
     catch (failure) { error.textContent = failure.message || 'تعذر حفظ البطاقة.'; error.hidden = false; }
     finally { busy = false; form.querySelectorAll('button').forEach(button => { button.disabled = false; }); }
   }

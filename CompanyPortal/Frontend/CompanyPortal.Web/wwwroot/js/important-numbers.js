@@ -4,6 +4,9 @@
   const base = document.querySelector('meta[name="companyportal-api-base"]')?.content;
   if (!list || !base) return;
   const note = document.getElementById('portal-important-numbers-note');
+  // Refreshed on return to the tab when the last load is five minutes old; failures keep the shown list.
+  const staleAfter = 5 * 60000;
+  let loadedAt = 0;
   async function load() {
     try {
       const url = new URL('api/header-content/important-numbers', new URL(base.replace(/\/?$/, '/'), location.href));
@@ -17,9 +20,13 @@
         row.append(title, number); return row;
       }));
       note.textContent = numbers.length ? '' : 'لا توجد أرقام حاليًا.';
+      loadedAt = Date.now();
     } catch {
       if (!list.children.length) note.textContent = 'تعذر تحميل الأرقام.';
     }
   }
+  const refreshIfStale = () => { if (!document.hidden && loadedAt && Date.now() - loadedAt >= staleAfter) void load(); };
+  document.addEventListener('visibilitychange', refreshIfStale);
+  window.addEventListener('pageshow', refreshIfStale);
   void load();
 })();

@@ -57,7 +57,8 @@
   const pageStatus = make('output', 'editorial-news-page-status'); pageStatus.setAttribute('aria-live', 'polite');
   arrows.append(previous, next); controls.append(pageStatus, arrows); header.append(controls);
   const newsList = make('ol', 'editorial-news-list'); newsList.id = 'editorial-news-paged-list'; stream.append(header, newsList); board.replaceChildren(feature, stream);
-  let page = 1, total = 0, loading = false;
+  let page = 1, total = 0, loading = false, loadedAt = 0;
+  const staleAfter = 5 * 60000;
   let headlineItems=[],firstPageItems=[],currentPageItems=[],simulatedItems=[],carouselRefresh,realStatus='جارٍ تحميل الأخبار…';
   const simulationEnabled=!!document.getElementById('portal-simulation');
   const pageSize = 8;
@@ -119,7 +120,7 @@
       const result = await response.json();
       if (!Array.isArray(result.items) || !Number.isInteger(result.totalCount) || result.totalCount < 0) throw new Error('Invalid news response');
       page = targetPage; total = result.totalCount;currentPageItems=result.items;if(page===1)firstPageItems=result.items;renderPage(page===1?[...simulatedItems,...result.items]:result.items);
-      if (includeHeadlines) { if(!Array.isArray(result.headlines))throw new Error('Invalid headline response');headlineItems=result.headlines;renderHeadlines([...simulatedItems,...headlineItems].slice(0,5));headlines.dataset.loaded='true'; }
+      if (includeHeadlines) { if(!Array.isArray(result.headlines))throw new Error('Invalid headline response');headlineItems=result.headlines;renderHeadlines([...simulatedItems,...headlineItems].slice(0,5));headlines.dataset.loaded='true';loadedAt=Date.now(); }
       status.textContent = total ? '' : 'لا توجد أخبار اليوم.';
       pageStatus.textContent = total ? `${page} / ${Math.ceil(total / pageSize)}` : '0 / 0';
     } catch {
@@ -131,6 +132,35 @@
     }
   }
   previous.onclick = () => load(page - 1); next.onclick = () => load(page + 1);
+  // Quiet refresh on return to the tab after five minutes: same page plus today's headlines.
+  // Redraws only what changed, keeps the selected story, and leaves everything as shown on failure.
+  async function refreshIfStale() {
+    if (document.hidden || loading || !loadedAt || Date.now() - loadedAt < staleAfter || simulatedItems.length) return;
+    loading = true; let restart = false;
+    try {
+      const response = await fetch(endpoint(`api/news?page=${page}&pageSize=${pageSize}&includeHeadlines=true`), { credentials:'include', cache:'no-store', signal:AbortSignal.timeout(15000) });
+      if (!response.ok) return;
+      const result = await response.json();
+      if (!Array.isArray(result.items) || !Array.isArray(result.headlines) || !Number.isInteger(result.totalCount) || result.totalCount < 0 || simulatedItems.length) return;
+      loadedAt = Date.now();
+      if (!result.items.length && page > 1) { restart = true; return; }
+      total = result.totalCount;
+      if (JSON.stringify(result.items) !== JSON.stringify(currentPageItems)) {
+        const selectedId = selected.dataset.newsId; currentPageItems = result.items; if (page === 1) firstPageItems = result.items;
+        renderPage(result.items);
+        const keep = result.items.find(story => String(story.newsId) === selectedId); if (keep) showStory(keep);
+      }
+      if (JSON.stringify(result.headlines) !== JSON.stringify(headlineItems)) { headlineItems = result.headlines; renderHeadlines(headlineItems.slice(0, 5)); }
+      status.textContent = total ? '' : 'لا توجد أخبار اليوم.';
+      pageStatus.textContent = total ? `${page} / ${Math.ceil(total / pageSize)}` : '0 / 0';
+      realStatus = status.textContent;
+    } catch {} finally {
+      loading = false; previous.disabled = page <= 1; next.disabled = page * pageSize >= total;
+      if (restart) load(1);
+    }
+  }
+  document.addEventListener('visibilitychange', refreshIfStale);
+  window.addEventListener('pageshow', refreshIfStale);
   load(1);
   if(simulationEnabled)document.addEventListener('portal:simulate',event=>{
     const kind=event.detail?.kind;if(!['news','breaking','reset'].includes(kind))return;

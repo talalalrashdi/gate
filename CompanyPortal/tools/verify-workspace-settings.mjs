@@ -17,7 +17,7 @@ assert.deepEqual(Array.from(policy.normalize(['inbox','email','library'], locked
 assert.equal(policy.valid([...locked.slice(0,2), {...locked[2], isFixed:true, displayOrder:2}], ['library','inbox','email']), false);
 const source = await readFile(new URL('../Frontend/CompanyPortal.Web/wwwroot/js/workspace-settings.js', import.meta.url), 'utf8');
 const settle = async () => { for (let i = 0; i < 12; i++) await new Promise(resolve => setImmediate(resolve)); };
-async function fixture({ held = false, offline = false, isSaved = true, mismatch = false, custom = false } = {}) {
+async function fixture({ held = false, offline = false, isSaved = true, mismatch = false, custom = false, server = {} } = {}) {
   const listeners = new Map(), writes = [], applied = [];
   const status = { setAttribute() {} };
   let currentKeys = ['library', 'inbox', 'email'];
@@ -31,8 +31,9 @@ async function fixture({ held = false, offline = false, isSaved = true, mismatch
   };
   let release;
   const gate = held ? new Promise(resolve => { release = resolve; }) : Promise.resolve();
+  const window = { CompanyPortalWorkspacePolicy: policy, CompanyPortalCustomCards: { ready: Promise.resolve().then(() => { if (custom) currentKeys.push('custom-41'); }) } };
   vm.runInNewContext(source, {
-    window: { CompanyPortalWorkspacePolicy: policy, CompanyPortalCustomCards: { ready: Promise.resolve().then(() => { if (custom) currentKeys.push('custom-41'); }) } },
+    window,
     localStorage: { getItem: () => offline ? JSON.stringify(definitions) : null, setItem(key,value) { cached.set(key,value); } },
     URL, location: { href: 'http://portal.test/' }, AbortSignal: { timeout() {} },
     CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options?.detail; } },
@@ -52,11 +53,13 @@ async function fixture({ held = false, offline = false, isSaved = true, mismatch
         return { ok: true };
       }
       await gate;
-      return { ok: true, json: async () => ({ cardKeys: mismatch ? ['missing'] : ['email', 'library', 'inbox', ...(custom ? ['custom-41'] : [])], cards: [...definitions,...(custom ? [customDefinition] : [])], isSaved }) };
+      if (server.fail) throw new Error('Offline');
+      const withCustom = custom || server.custom;
+      return { ok: true, json: async () => ({ cardKeys: mismatch ? ['missing'] : ['email', 'library', 'inbox', ...(withCustom ? ['custom-41'] : [])], cards: [...definitions,...(withCustom ? [customDefinition] : [])], isSaved }) };
     }
   });
   await settle();
-  return { applied, writes, status, release, cached, attributes, placeholders, reorder(cardKeys) { currentKeys = cardKeys; listeners.get('workspace:order-changed')({ detail: { cardKeys } }); } };
+  return { applied, writes, status, release, cached, attributes, placeholders, window, addCard(key) { currentKeys.push(key); }, reorder(cardKeys) { currentKeys = cardKeys; listeners.get('workspace:order-changed')({ detail: { cardKeys } }); } };
 }
 const saved = await fixture();
 assert.deepEqual(JSON.parse(JSON.stringify(saved.applied)), [['email', 'library', 'inbox']]);
@@ -83,3 +86,18 @@ const personal = await fixture({ custom: true });
 assert.equal(personal.applied[0].length, 4, 'Wait for account-owned cards before loading their combined order');
 assert.equal([...personal.cached.values()].some(value => value.includes('Private card name') || value.includes('custom-41')), false, 'Never cache personal card definitions');
 console.log('Workspace synchronization checks passed: read-only loading, server defaults, latest order, delayed reads, invalid lists and fail-closed offline catalog.');
+
+// In-place refresh after a personal card is saved (replaces the former full page reload).
+const server = {}, live = await fixture({ server });
+live.addCard('custom-41'); server.custom = true;
+assert.equal(await live.window.CompanyPortalCardCatalog.refresh(), true, 'Refresh with the new personal card failed');
+assert.deepEqual(Array.from(live.applied.at(-1)), ['email', 'library', 'inbox', 'custom-41'], 'Refresh must apply the account order including the new card');
+assert.equal(live.writes.length, 0, 'Refresh must not write the order');assert.equal(live.attributes['data-catalog-state'], 'ready');
+server.fail = true;
+assert.equal(await live.window.CompanyPortalCardCatalog.refresh(), false, 'A failed refresh must report failure so the caller reloads');
+assert.equal(live.attributes['data-catalog-state'], 'ready', 'A failed refresh must not mark the catalog as broken');
+server.fail = false; live.reorder(['custom-41', 'inbox', 'email', 'library']);
+assert.equal(await live.window.CompanyPortalCardCatalog.refresh(), true);
+assert.deepEqual(live.writes, [['custom-41', 'inbox', 'email', 'library']], 'Refresh must wait for the queued order save');
+assert.deepEqual(Array.from(live.applied.at(-1)), ['custom-41', 'inbox', 'email', 'library'], 'Refresh must keep the user\'s newer order');
+console.log('PASS card refresh: new personal card applied without writes, failure reported without breaking the catalog, queued order saves first.');

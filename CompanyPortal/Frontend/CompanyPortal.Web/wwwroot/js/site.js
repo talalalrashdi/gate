@@ -263,7 +263,7 @@ updateWorkspaceNavigation();
   const days=value=>value==null?'—':number.format(value)+' يوم';
   function showTime(field,value){id(field).textContent=value||'';rows[field].hidden=!value;}
   const sources={
-    person:row=>{if(!row)return;if(row.displayName)id('name').textContent=row.displayName;const position=[row.jobTitle,row.department].filter(Boolean).join(' · ');if(position)id('position').textContent=position;},
+    person:row=>{if(!row)return;if(row.displayName){document.querySelectorAll('[data-user-display-name]').forEach(n=>n.textContent=row.displayName);profileTrigger.title=row.displayName;const avatar=profileTrigger.querySelector('img');if(avatar)avatar.alt='صورة '+row.displayName;document.dispatchEvent(new CustomEvent('portal:person',{detail:row}));}const position=[row.jobTitle,row.department].filter(Boolean).join(' · ');if(position)id('position').textContent=position;},
     attendance:row=>{showTime('arrival',time(row?.arrivalAt));showTime('departure',time(row?.expectedLeaveAt));},
     'leave-balance':row=>{id('holiday').textContent=days(row?.holidayDays);id('deduction').textContent=days(row?.daysToBeDeleted);}
   };

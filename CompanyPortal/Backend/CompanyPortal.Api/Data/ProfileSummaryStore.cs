@@ -5,7 +5,7 @@ namespace CompanyPortal.Api.Data;
 
 public sealed class ProfileSummaryStore(IConfiguration configuration)
 {
-    public sealed record Person(string? DisplayName,string? JobTitle,string? Department);
+    public sealed record Person(string? DisplayName,string? JobTitle,string? Department){public int UserId {get;init;}};
     public sealed record Attendance(string? DisplayName,string? JobTitle,string? Department,DateTime? AttendanceDate,DateTime? ArrivalAt,DateTime? ExpectedLeaveAt);
     public sealed record LeaveBalance(decimal? HolidayDays,decimal? DaysToBeDeleted,DateTime? AsOfDate,DateTime? DeletionDate);
     private SqlConnection Connection()=>new(configuration.GetConnectionString("CompanyPortal") ?? throw new InvalidOperationException("CompanyPortal connection string is missing."));
@@ -13,7 +13,7 @@ public sealed class ProfileSummaryStore(IConfiguration configuration)
     public async Task<int?> GetUserIdAsync(string name,CancellationToken token)
     {await using var c=Connection();return await c.QuerySingleOrDefaultAsync<int?>(Command("Security.User_getByUsername",new{Username=name},token));}
     public async Task<Person?> GetPersonAsync(int userId,CancellationToken token)
-    {await using var c=Connection();return await c.QuerySingleOrDefaultAsync<Person>(Command("Portal.UserProfile_Get",new{UserId=userId},token));}
+    {await using var c=Connection();var person=await c.QuerySingleOrDefaultAsync<Person>(Command("Portal.UserProfile_Get",new{UserId=userId},token));return person is null?null:person with{UserId=userId};}
     public async Task<Attendance?> GetAttendanceAsync(int userId,CancellationToken token)
     {await using var c=Connection();return await c.QuerySingleOrDefaultAsync<Attendance>(Command("Portal.UserAttendance_Get",new{UserId=userId},token));}
     public async Task<LeaveBalance?> GetLeaveBalanceAsync(int userId,CancellationToken token)

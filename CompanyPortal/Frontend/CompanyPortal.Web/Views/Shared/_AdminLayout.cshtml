@@ -32,8 +32,8 @@
     <main class="admin-main" id="admin-main">
       <header class="admin-topbar"><div>البوابة <span aria-hidden="true">/</span> لوحة الإدارة</div><a href="@Url.Content("~/")">عرض البوابة <i class="iconsax" icon-name="logout-1" aria-hidden="true"></i></a></header>
       <div class="admin-content">
-        <div class="admin-page-heading"><div><p class="admin-eyebrow">لوحة الإدارة</p><h1 id="admin-page-title">@(ViewData["AdminSection"] as string == "cards" ? "إدارة البطاقات الأساسية" : "نظرة عامة")</h1><p id="admin-page-description">إدارة محتوى البوابة ومظهرها من مكان واحد.</p></div><span class="admin-context"><span aria-hidden="true"></span> إعدادات البوابة</span></div>
-        <div class="admin-status-bar"><span class="admin-status-dot" aria-hidden="true"></span><p id="admin-status" role="status" aria-live="polite">جارٍ التحقق من الصلاحية…</p><button type="button" id="admin-retry" hidden>إعادة المحاولة</button></div>
+        <div class="admin-page-heading"><div><p class="admin-eyebrow">لوحة الإدارة</p><h1 id="admin-page-title">@(ViewData["AdminSection"] as string == "cards" ? "إدارة البطاقات الأساسية" : "نظرة عامة")</h1><p id="admin-page-description">إدارة محتوى البوابة ومظهرها من مكان واحد.</p></div></div>
+        <div class="admin-access-status" hidden><p id="admin-status" role="status" aria-live="polite">جارٍ التحقق من الصلاحية…</p><button type="button" id="admin-retry" hidden>إعادة المحاولة</button></div>
         <div id="admin-access-message" class="admin-access-message"><i class="iconsax" icon-name="shield-tick" aria-hidden="true"></i><h2>مساحة إدارة البوابة</h2><p>يجري التحقق من صلاحية حسابك لعرض إعدادات الإدارة.</p></div>
         <div id="admin-workspace" hidden>@RenderBody()</div>
         <footer class="admin-footer"><span>البوابة · مساحة الإدارة</span><span>تُحفظ إعدادات كل قسم على حدة؛ راجع رسالة الحفظ قبل المغادرة.</span></footer>

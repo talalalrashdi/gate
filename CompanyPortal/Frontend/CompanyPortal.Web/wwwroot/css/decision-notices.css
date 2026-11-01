@@ -52,3 +52,6 @@
 .portal-dashboard .portal-work-library #decisions-list .portal-item-meta{position:absolute;bottom:-3px;inset-inline:0;justify-content:flex-end;text-align:left}
 .portal-dashboard .portal-work-library #decisions-list .portal-item-meta time{margin-inline-start:auto;text-align:left}
 .portal-dashboard .portal-work-library #decisions-list .portal-doc-type .portal-decision-number{font-size:12px;font-weight:700;line-height:1.5}
+
+:is(#portal-floating-alert [data-notice-type],#portal-floating-notice [data-alert-type]){display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:7px;padding-inline-end:28px;font-size:12px}
+:is([data-notice-type],[data-alert-type])>.portal-decision-unread{margin:0;align-self:center;font-size:10px;line-height:1.5}

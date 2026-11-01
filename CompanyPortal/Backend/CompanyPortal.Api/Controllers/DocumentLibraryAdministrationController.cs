@@ -8,7 +8,7 @@ namespace CompanyPortal.Api.Controllers;
 
 [ApiController,Authorize,Route("api/admin/document-library"),Route("api/admin/safety-library"),RequestSizeLimit(65536)]
 [AdminSection("document-library","documents",Path="/api/admin/document-library"),AdminSection("safety-library","safety",Path="/api/admin/safety-library")]
-public sealed class DocumentLibraryAdministrationController(DocumentTabsStore tabs,DocumentsStore documents,
+public sealed class DocumentLibraryAdministrationController(DocumentTabsStore tabs,DocumentsStore documents,FolderPathsStore paths,
     ILogger<DocumentLibraryAdministrationController> logger):ControllerBase
 {
     private bool IsSafety=>Request.Path.StartsWithSegments("/api/admin/safety-library");
@@ -17,9 +17,12 @@ public sealed class DocumentLibraryAdministrationController(DocumentTabsStore ta
     public Task<IActionResult> Get(CancellationToken token)=>Execute(async rows=>
     {
         var catalog=await tabs.GetAsync(true,token,SectionKey);
-        return Ok(new {Tabs=catalog.Tabs.Select(t=>new {DocumentTabId=t.DocumentTabID,t.TabName,FolderId=t.FolderID,t.DisplayOrder,t.LastChangeAt,t.Active}),
+        IReadOnlyList<string> roots=[];
+        try{roots=await paths.GetAsync("docs",token);}catch(InvalidOperationException){/* Show configuration guidance without blocking tab editing. */}
+
+        return Ok(new {Source=new {Database="CompanyPortal",Table="Mng.Document",Procedure="Portal.Document_GetAll",FolderProcedure="Mstr.Utls_GetFolderPaths",FolderKey="docs",Roots=roots},Tabs=catalog.Tabs.Select(t=>new {DocumentTabId=t.DocumentTabID,t.TabName,FolderId=t.FolderID,t.DisplayOrder,t.LastChangeAt,t.Active}),
             Items=catalog.Items.Select(i=>new {DocumentTabId=i.DocumentTabID,DocumentId=i.DocumentID}),Documents=rows.Select(r=>new {DocumentId=r.DocumentID,r.DocumentName,
-            FileName=r.DocumentPath,FolderId=r.FolderID,r.FolderName}).ToArray()});
+            FileName=r.DocumentPath,FolderId=r.FolderID,r.FolderName,r.FolderPath,SourcePaths=DocumentFiles.SourcePaths(r,roots)}).ToArray()});
     },token);
 
     [HttpPost,Consumes("application/json")]

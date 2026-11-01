@@ -13,18 +13,24 @@
   link.append(...content.childNodes);content.replaceWith(link);
   const make=(tag,text)=>{const n=document.createElement(tag);n.textContent=text;return n;};
   function available(channel){const now=Date.now();return rows.filter(r=>!r.hasRead&&(channel!==1||!dismissedNotices.has(r.decisionId))&&r.notices?.some(n=>n.channelId===channel&&Date.parse(n.fromAt)<=now&&now<Date.parse(n.toAt)));}
-  function fill(target,row){
+  function fill(target,row,showNew=true){
     target.href=row.isSimulation?'#':endpoint(row.decisionId);if(row.isSimulation){target.removeAttribute('target');target.dataset.simulation='true';}else{target.target='_blank';delete target.dataset.simulation;}target.dataset.decisionId=row.decisionId;target.replaceChildren();
-    if(!row.hasRead){const badge=make('small','جديد');badge.className='portal-decision-unread';target.append(badge);}
+    if(showNew&&!row.hasRead){const badge=make('small','جديد');badge.className='portal-decision-unread';target.append(badge);}
     target.append(make('strong',row.title));
     target.append(make('small',row.decisionType+' · '+new Intl.DateTimeFormat('ar-OM',{dateStyle:'medium'}).format(new Date(row.publishedAt))));
   }
-  function render(){
+  function typeTitle(target,row){
+    target.replaceChildren(make('span',row.decisionType));
+    if(!row.hasRead){const badge=make('small','جديد');badge.className='portal-decision-unread';target.append(badge);}
+  }
+  function render(preserveSelection=false){
     clearTimeout(timer);clearTimeout(rotation);
-    // Use the displayed IDs: the shared row may already be marked read before this render.
-    for(const [channel,target] of [[1,notice.querySelector('[data-notice-link]')],[2,link]])
-      if(rows.some(row=>row.decisionId===target.dataset.decisionId&&row.hasRead))visibleChannels.delete(channel);
+    const previousNotice=notice.querySelector('[data-notice-link]').dataset.decisionId,previousAlert=link.dataset.decisionId;
     const notices=available(1),alerts=available(2);
+    if(preserveSelection===true){
+      const n=notices.findIndex(r=>r.decisionId===previousNotice),a=alerts.findIndex(r=>r.decisionId===previousAlert);
+      if(n>=0)noticeIndex=n;if(a>=0)index=a;
+    }
     if(!notices.length)visibleChannels.delete(1);
     if(!alerts.length)visibleChannels.delete(2);
     const eligible=[...notices.map(row=>({row,channel:1})),...alerts.map(row=>({row,channel:2}))];
@@ -40,10 +46,10 @@
     toggle.setAttribute('aria-expanded',String(expanded));toggle.title=expanded?'إخفاء التنويه والتنبيهات':'إظهار التنويه والتنبيهات';toggle.setAttribute('aria-label',toggle.title);
     index=Math.max(0,Math.min(index,Math.max(0,alerts.length-1)));noticeIndex=Math.max(0,Math.min(noticeIndex,Math.max(0,notices.length-1)));
     notice.hidden=document.hidden||!visibleChannels.has(1)||!notices.length;alert.hidden=document.hidden||!visibleChannels.has(2)||!alerts.length;
-    if(notices.length){notice.querySelector('[data-notice-type]').textContent=notices[noticeIndex].decisionType;fill(notice.querySelector('[data-notice-link]'),notices[noticeIndex]);notice.querySelector('[data-notice-position]').textContent=(noticeIndex+1)+' / '+notices.length;notice.querySelector('[data-notice-prev]').disabled=noticeIndex===0;notice.querySelector('[data-notice-next]').disabled=noticeIndex===notices.length-1;notice.querySelector('.portal-notice-paging').hidden=notices.length<2;}
-    if(alerts.length){fill(link,alerts[index]);alert.querySelector('.portal-floating-notice-position').textContent=(index+1)+' / '+alerts.length;
+    if(notices.length){typeTitle(notice.querySelector('[data-notice-type]'),notices[noticeIndex]);fill(notice.querySelector('[data-notice-link]'),notices[noticeIndex],false);notice.querySelector('[data-notice-position]').textContent=(noticeIndex+1)+' / '+notices.length;notice.querySelector('[data-notice-prev]').disabled=noticeIndex===0;notice.querySelector('[data-notice-next]').disabled=noticeIndex===notices.length-1;notice.querySelector('.portal-notice-paging').hidden=notices.length<2;}
+    if(alerts.length){typeTitle(alert.querySelector('[data-alert-type]'),alerts[index]);fill(link,alerts[index],false);alert.querySelector('.portal-floating-notice-position').textContent=(index+1)+' / '+alerts.length;
       alert.querySelector('.portal-floating-notice-prev').disabled=index===0;alert.querySelector('.portal-floating-notice-next').disabled=index===alerts.length-1;}
-    if(dialog.open)renderList();
+    if(dialog.open){if(!notices.length&&!alerts.length){dialog.close();return;}renderList();}
     // Boundary timers and visible carousel rotation do not make network requests.
     const next=rows.flatMap(r=>r.notices??[]).flatMap(n=>[Date.parse(n.fromAt),Date.parse(n.toAt)]).filter(t=>t>Date.now()).sort((a,b)=>a-b)[0];
     if(next&&!document.hidden)timer=setTimeout(render,Math.min(2147483647,Math.max(20,next-Date.now()+20)));
@@ -66,8 +72,8 @@
     });
     document.addEventListener('portal:simulation-reset',()=>{visibleChannels.clear();for(const id of dismissedNotices)if(id.startsWith('simulation-'))dismissedNotices.delete(id);noticeIndex=0;index=0;render();});
   }
-  document.addEventListener('portal:decisions',event=>{rows=event.detail.rows;render();if(event.detail.loaded&&event.detail.origin!=='simulation')initialized=true;});
-  document.addEventListener('portal:decision-read',event=>{rows.filter(r=>r.decisionId===event.detail).forEach(r=>r.hasRead=true);render();});
+  document.addEventListener('portal:decisions',event=>{rows=event.detail.rows;render(true);if(event.detail.loaded&&event.detail.origin!=='simulation')initialized=true;});
+  document.addEventListener('portal:decision-read',event=>{rows.filter(r=>r.decisionId===event.detail).forEach(r=>r.hasRead=true);render(true);});
   document.addEventListener('portal:decision-read-error',()=>{dialog.querySelector('[data-notices-status]').textContent='تعذر حفظ حالة القراءة. يمكنك إعادة فتح المادة بعد تحديث الصفحة.';});
   toggle.addEventListener('click',()=>{
     if(visibleChannels.size)visibleChannels.clear();else{visibleChannels.add(1);visibleChannels.add(2);}

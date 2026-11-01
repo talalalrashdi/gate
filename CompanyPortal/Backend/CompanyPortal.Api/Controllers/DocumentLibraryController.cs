@@ -8,20 +8,44 @@ namespace CompanyPortal.Api.Controllers;
 
 [ApiController,Authorize,Route("api/document-library"),Route("api/safety-library")]
 public sealed class DocumentLibraryController(DocumentTabsStore tabs,DocumentsStore documents,DocumentFiles files,
-    ILogger<DocumentLibraryController> logger):ControllerBase
+    LibraryReadsStore reads,ILogger<DocumentLibraryController> logger):ControllerBase
 {
     private string SectionKey=>Request.Path.StartsWithSegments("/api/safety-library")?"safety":"documents";
-    public sealed record LibraryDocument(Guid DocumentId,string DocumentName);
+    public sealed record LibraryDocument(Guid DocumentId,string DocumentName,bool HasRead,bool HasSeen);
     public sealed record LibraryTab(int DocumentTabId,string TabName,IReadOnlyList<LibraryDocument> Documents);
 
     [HttpGet,ProducesResponseType<LibraryTab[]>(StatusCodes.Status200OK)]
     public Task<IActionResult> Get(CancellationToken token)=>Execute(async rows=>
     {
         var catalog=await tabs.GetAsync(false,token,SectionKey);
+        var states=await reads.GetAsync(User.Identity!.Name!,token);
+        var opened=states.Where(r=>r.ContentTypeID==4).Select(r=>r.ContentId).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var seen=states.Where(r=>r.ContentTypeID==5).Select(r=>r.ContentId).ToHashSet(StringComparer.OrdinalIgnoreCase);
         return Ok(catalog.Tabs.Select(tab=>new LibraryTab(tab.DocumentTabID,tab.TabName,rows
             .Where(row=>row.FolderID==tab.FolderID&&catalog.Items.Any(i=>i.DocumentTabID==tab.DocumentTabID&&i.DocumentID==row.DocumentID))
-            .Select(row=>new LibraryDocument(row.DocumentID,row.DocumentName)).ToArray()))
+            .Select(row=>new LibraryDocument(row.DocumentID,row.DocumentName,opened.Contains(row.DocumentID.ToString("D")),seen.Contains(SectionKey+":"+row.DocumentID.ToString("D")))).ToArray()))
             .Where(tab=>tab.Documents.Count>0).ToArray());
+    },token);
+
+    public sealed class SeenRequest
+    {
+        [System.ComponentModel.DataAnnotations.Required,System.ComponentModel.DataAnnotations.MaxLength(500)]
+        public Guid[] DocumentIds {get;init;}=[];
+    }
+    [HttpPost("seen"),RequestSizeLimit(32768)]
+    public Task<IActionResult> Seen(SeenRequest request,CancellationToken token)=>Acknowledge(request.DocumentIds,false,token);
+    [HttpPost("{id:guid}/read")]
+    public Task<IActionResult> Read(Guid id,CancellationToken token)=>Acknowledge([id],true,token);
+    private Task<IActionResult> Acknowledge(Guid[] ids,bool markRead,CancellationToken token)=>Execute(async rows=>
+    {
+        if(Request.Headers["X-CompanyPortal-Request"]!="library-read")return BadRequest();
+        if(!CompanyPortal.Api.Infrastructure.AdminSectionAttribute.AllowedOrigin(HttpContext))return Forbid();
+        var catalog=await tabs.GetAsync(false,token,SectionKey);
+        var visible=rows.Where(row=>catalog.Items.Any(i=>i.DocumentID==row.DocumentID&&catalog.Tabs.Any(t=>t.DocumentTabID==i.DocumentTabID&&t.FolderID==row.FolderID))).Select(r=>r.DocumentID).ToHashSet();
+        if(ids.Any(id=>!visible.Contains(id)))return NotFound();
+        if(markRead)foreach(var id in ids){await using var opened=await files.OpenAsync(rows.Single(r=>r.DocumentID==id),true,token);if(opened is null)return NotFound();}
+        if(ids.Length>0)await reads.MarkAsync(User.Identity!.Name!,SectionKey,ids.Distinct().ToArray(),markRead,token);
+        return NoContent();
     },token);
 
     [HttpGet("{id:guid}/file")]

@@ -2,6 +2,8 @@
 -- (from Development/014). Not part of the production/fresh-install scripts.
 USE [CompanyPortal];
 GO
+IF OBJECT_ID(N'Security.UserProfile_getById',N'P') IS NOT NULL
+ THROW 50038,'SecurityDB profile adapter is installed; use Development/028 instead of reverting it.',1;
 IF OBJECT_ID(N'Development.ProfilePeople',N'U') IS NULL
  THROW 50038,'Run Development/014_CreateSampleProfileSummary.sql first.',1;
 IF OBJECT_DEFINITION(OBJECT_ID(N'Portal.UserProfile_Get')) NOT LIKE N'%WHERE 1=0%'

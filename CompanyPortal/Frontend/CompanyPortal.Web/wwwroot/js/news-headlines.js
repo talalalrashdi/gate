@@ -74,7 +74,7 @@
     copy.append(label, heading, footer); selected.append(copy);
   };
   const renderPage = items => {
-    newsList.replaceChildren(); feature.hidden = !items.length;
+    newsList.replaceChildren(); board.hidden = !items.length; feature.hidden = !items.length;
     items.forEach(story => {
       const item = make('li'), article = make('article', 'editorial-news-list-story'), copy = make('div', 'editorial-news-item-copy');
       item.classList.toggle('is-breaking', story.isImportant);

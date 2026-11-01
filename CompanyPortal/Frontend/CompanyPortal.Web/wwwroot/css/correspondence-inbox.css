@@ -28,3 +28,5 @@ body:has(#correspondence-sample-dialog[open]){overflow:hidden}
 
 #workspace .portal-correspondence-item[data-state="opened"]{border-color:#cbd9d0;background:#fff}
 #workspace .portal-correspondence-item[data-state="unopened"]{border-color:#d9b8c2}
+
+#workspace article.portal-correspondence-item{cursor:default}

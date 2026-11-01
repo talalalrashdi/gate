@@ -7,7 +7,8 @@ class Element {
   set textContent(value){this._text=String(value);this.children=[];}
   get textContent(){return this._text+this.children.map(n=>n.textContent).join('');}
   set innerHTML(_){throw Error('Use literal text.');}
-  append(...nodes){this.children.push(...nodes);}
+  append(...nodes){nodes.forEach(n=>n.parentElement=this);this.children.push(...nodes);}
+  insertBefore(node,before){node.parentElement=this;this.children.splice(this.children.indexOf(before),0,node);}
   replaceChildren(...nodes){this.children=nodes;this._text='';}
   setAttribute(k,v){this.attributes[k]=v;}
   addEventListener(k,fn){this.listeners[k]=fn;}
@@ -18,17 +19,17 @@ class Element {
 const list=new Element('div'),status=new Element('p'),retry=new Element('button'),add=new Element('button'),root=new Element('section');root.dataset.pdfLibraryAdmin='documents';root.append(list,status,retry,add);
 const targets={'[data-library-list]':list,'[data-library-status]':status,'[data-library-retry]':retry,'[data-library-add]':add};
 const lookup=root.querySelector.bind(root);root.querySelector=s=>targets[s]??lookup(s);
-const documents=Array.from({length:501},(_,i)=>({documentId:`pdf-${i}`,documentName:`وثيقة ${i}`,folderId:101,folderName:'القوانين'}));
+const documents=Array.from({length:501},(_,i)=>({documentId:`pdf-${i}`,documentName:`وثيقة ${i}`,folderId:101,folderName:'القوانين',sourcePaths:[`D:\\PortalFiles\\Docs\\القوانين\\file${i}.pdf`]}));
 const tabs=Array.from({length:20},(_,i)=>({documentTabId:i+1,tabName:`قسم ${i+1}`,folderId:101,displayOrder:i,active:true}));
-const catalog={documents,tabs,items:tabs.flatMap(t=>documents.slice(0,499).map(d=>({documentTabId:t.documentTabId,documentId:d.documentId})))};
+const catalog={source:{roots:['D:\\PortalFiles\\Docs']},documents,tabs,items:tabs.flatMap(t=>documents.slice(0,499).map(d=>({documentTabId:t.documentTabId,documentId:d.documentId})))};
 const core={request:async()=>({ok:true,json:async()=>catalog}),feedback(){},watch(){},whenSection(section,fn){fn();}};
 const document={querySelector:()=>({content:'http://localhost:5092/'}),querySelectorAll:()=>[root],createElement:tag=>new Element(tag)};
 vm.runInNewContext(await readFile(new URL('../Frontend/CompanyPortal.Web/wwwroot/js/admin-documents.js',import.meta.url),'utf8'),{document,window:{AdminCore:core},AdminChanges:{tag(){}},URL,location:{href:'http://localhost:5093/admin/documents'},Event});
 for(let i=0;i<8;i++)await new Promise(r=>setImmediate(r));
-assert.equal(list.children.length,20);assert.equal(list.querySelectorAll('input[type="checkbox"]').length,20,'Only active flags render before expanding large lists.');
+assert.match(root.textContent,/D:\\PortalFiles\\Docs/);assert.equal(list.children.length,20);assert.equal(list.querySelectorAll('input[type="checkbox"]').length,20,'Only active flags render before expanding large lists.');
 const form=list.children[0],picker=form.querySelector('.admin-document-picker');
 picker.open=true;picker.listeners.toggle();
-let inputs=picker.querySelectorAll('input');assert.equal(inputs.length,501);assert.equal(inputs.filter(n=>n.checked).length,499);
+assert.ok(picker.textContent.includes('file0.pdf'),'Admin file path missing');let inputs=picker.querySelectorAll('input');assert.equal(inputs.length,501);assert.equal(inputs.filter(n=>n.checked).length,499);
 inputs[499].checked=true;inputs[499].listeners.change();assert.equal(inputs[500].disabled,true);assert.match(form.textContent,/500 \/ 500/);
 inputs[499].checked=false;inputs[499].listeners.change();assert.equal(inputs[500].disabled,false);
 picker.open=false;picker.listeners.toggle();assert.equal(picker.querySelectorAll('input').length,0);

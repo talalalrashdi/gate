@@ -5,6 +5,14 @@ document.querySelectorAll('[data-pdf-library-admin]').forEach(root => {
   const endpoint=path=>new URL('api/admin/'+route+path,new URL(base.replace(/\/?$/,'/'),location.href));
   const list=root.querySelector('[data-library-list]'),status=root.querySelector('[data-library-status]'),retry=root.querySelector('[data-library-retry]'),add=root.querySelector('[data-library-add]');
   const make=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=terms(text);return n;};
+  const source=make('aside','admin-document-source');source.hidden=true;list.parentElement.insertBefore(source,list);
+  function showSource(){
+    source.replaceChildren();const data=catalog?.source;if(!data){source.hidden=true;return;}source.hidden=false;
+    source.append(make('strong',null,'مصدر ملفات PDF'),make('p',null,'الملفات المسجلة في CompanyPortal.Mng.Document — تُقرأ عبر Portal.Document_GetAll حسب صلاحيات حسابك.'),make('p',null,'المجلدات الأساسية من CompanyPortal.Mstr.Utls، المفتاح docs، عبر Mstr.Utls_GetFolderPaths:'));
+    for(const path of data.roots||[])source.append(make('code','admin-document-path',path));
+    if(!data.roots?.length)source.append(make('p',null,'لم يُضبط مسار صحيح. أضف مجلدًا مطلقًا في Mstr.Utls تحت Key = docs وstrVal = مسار المجلد، ثم أعد التحميل.'));
+    source.append(make('p',null,'يُضاف مسار المجلد الفرعي واسم الملف إلى المسار الأساسي. يجب منح حساب تشغيل API صلاحية القراءة. وجود الملف على القرص وحده لا يسجله في البوابة.'));
+  }
   let catalog,loaded=false,busy=false;
   const dirty=()=>!!root.querySelector('.is-dirty');
   const core=window.AdminCore;
@@ -37,7 +45,10 @@ document.querySelectorAll('[data-pdf-library-admin]').forEach(root => {
       for(const id of selected)if(!docs.some(d=>d.documentId===id))docs.push({documentId:id,documentName:'ملف محفوظ غير متاح في المجلد لحسابك — أزِل اختياره أو راجع الصلاحية'});
       pickerTitle.textContent=(isSafety?'اختيار ملف الكتيب':'اختيار ملفات PDF')+' ('+docs.length+')';
       if(!picker.open)return;
-      docs.forEach(doc=>{const l=make('label'),c=make('input');c.type=isSafety?'radio':'checkbox';if(isSafety)c.name='booklet-pdf';c.value=doc.documentId;c.checked=selected.has(doc.documentId);l.append(c,make('span',null,doc.documentName));files.append(l);c.addEventListener('change',()=>{if(c.checked){if(isSafety)selected.clear();selected.add(c.value);}else selected.delete(c.value);sync();});});
+      docs.forEach(doc=>{const l=make('label'),c=make('input');c.type=isSafety?'radio':'checkbox';if(isSafety)c.name='booklet-pdf';c.value=doc.documentId;c.checked=selected.has(doc.documentId);const details=make('span','admin-document-file');details.append(make('span',null,doc.documentName));
+      for(const path of doc.sourcePaths||[])details.append(make('code','admin-document-path',path));
+      if(!doc.sourcePaths?.length&&doc.fileName)details.append(make('small','admin-document-path',[doc.folderPath,doc.fileName].filter(Boolean).join(' \\ ')));
+      l.append(c,details);files.append(l);c.addEventListener('change',()=>{if(c.checked){if(isSafety)selected.clear();selected.add(c.value);}else selected.delete(c.value);sync();});});
       if(!docs.length)files.append(make('p',null,'لا توجد ملفات PDF مسجلة ومتاحة في هذا المجلد.'));
     }
     picker.addEventListener('toggle',()=>{filesList();sync();});
@@ -48,7 +59,7 @@ document.querySelectorAll('[data-pdf-library-admin]').forEach(root => {
       try{
         const response=await request(isNew?'':'/'+tab.documentTabId,isNew?'POST':'PUT',value);
         if(!response.ok){
-          if(response.status===401||response.status===403){loaded=false;list.replaceChildren();catalog=null;}
+          if(response.status===401||response.status===403){loaded=false;list.replaceChildren();catalog=null;source.hidden=true;source.replaceChildren();}
           message(response.status===400?'تحقق من المجلد والملفات المحددة. يجب أن تكون ملفات PDF متاحة لحسابك.':response.status===401||response.status===403?'ليس لديك صلاحية إدارة الوثائق.':response.status===404?'التبويب لم يعد موجودًا؛ أعد تحميل القائمة.':'تعذر حفظ التبويب. أعد المحاولة.',true);return;
         }
         const result=await response.json();tab.documentTabId=result.documentTabId;Object.assign(tab,value);if(isNew)catalog.tabs.push(tab);
@@ -62,9 +73,9 @@ document.querySelectorAll('[data-pdf-library-admin]').forEach(root => {
     if(busy)return;busy=true;lock();message('جارٍ تحميل تبويبات الوثائق…');
     try{
       const response=await request('');if(!response.ok)throw new Error(String(response.status));
-      catalog=await response.json();loaded=true;list.replaceChildren(...catalog.tabs.map(t=>form(t)));
+      catalog=await response.json();showSource();loaded=true;list.replaceChildren(...catalog.tabs.map(t=>form(t)));
       message(catalog.documents.length?'اختر الملفات المسجلة من المجلد المطلوب.':'لا توجد ملفات PDF متاحة لحسابك. راجع التسجيل والصلاحيات.');
-    }catch(e){loaded=false;catalog=null;list.replaceChildren();message(e.message==='401'||e.message==='403'?'ليس لديك صلاحية إدارة الوثائق.':'تعذر تحميل الوثائق. تحقق من الاتصال وقاعدة البيانات.',true);}
+    }catch(e){loaded=false;catalog=null;source.hidden=true;source.replaceChildren();list.replaceChildren();message(e.message==='401'||e.message==='403'?'ليس لديك صلاحية إدارة الوثائق.':'تعذر تحميل الوثائق. تحقق من الاتصال وقاعدة البيانات.',true);}
     finally{busy=false;lock();}
   }
   add.addEventListener('click',()=>{if(!busy&&!list.querySelector('[data-new-tab]')){const f=form({tabName:'',folderId:0,displayOrder:(catalog.tabs.length+1)*10,active:true},true);list.prepend(f);f.querySelector('input').focus();}});

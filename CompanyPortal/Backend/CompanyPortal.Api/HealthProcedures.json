@@ -60,6 +60,8 @@
   "Portal.Isnad_Create",
   "Portal.Isnad_Recipients_Get",
   "Portal.KnownRoles_get",
+  "Portal.LibraryReads_Get",
+  "Portal.LibraryReads_Mark",
   "Portal.Magazines_GetAll",
   "Portal.MediaGroups_Save",
   "Portal.Media_GetAll",
@@ -88,6 +90,7 @@
   "Portal.UserSettings_setTheme",
   "Security.Apps_getForAdministration",
   "Security.Apps_getForUser",
+  "Security.UserProfile_getById",
   "Security.UserRoles_get",
   "Security.User_getByUsername",
   "Security.User_getPersonalId"

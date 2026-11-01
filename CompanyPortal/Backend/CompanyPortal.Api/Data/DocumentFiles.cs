@@ -6,16 +6,25 @@ public sealed class DocumentFiles(FolderPathsStore folders)
     private static bool SafeSegment(string value)=>!string.IsNullOrWhiteSpace(value)&&value is not ("." or "..")
         &&!value.EndsWith('.')&&!value.EndsWith(' ')&&!value.Any(c=>c<32||"<>:\"/\\|?*".Contains(c));
 
-    public async Task<FileStream?> OpenAsync(DocumentsStore.Row row,bool pdf,CancellationToken token)
+    private static string? RelativePath(DocumentsStore.Row row)
     {
         if(!SafeSegment(row.DocumentPath)||string.IsNullOrWhiteSpace(row.FolderPath))return null;
-        // Existing SQL folder paths separate names with ' \ '. Remove separator padding only.
         var segments=row.FolderPath.Split('\\').Select(segment=>segment.Trim()).ToArray();
-        if(segments.Any(segment=>!SafeSegment(segment)))return null;
+        return segments.Any(segment=>!SafeSegment(segment))?null:Path.Combine(segments.Append(row.DocumentPath).ToArray());
+    }
+    // Administration only: candidates under the same configured roots used by the protected reader.
+    public static string[] SourcePaths(DocumentsStore.Row row,IReadOnlyList<string> roots)
+    {
+        var relative=RelativePath(row);
+        return relative is null?[]:roots.Select(root=>Path.GetFullPath(Path.Combine(root,relative))).ToArray();
+    }
+    public async Task<FileStream?> OpenAsync(DocumentsStore.Row row,bool pdf,CancellationToken token)
+    {
+        var relative=RelativePath(row);if(relative is null)return null;
         var roots=await folders.GetAsync("docs",token);
         foreach(var root in roots)
         {
-            var fullPath=Path.GetFullPath(Path.Combine(new[]{root}.Concat(segments).Append(row.DocumentPath).ToArray()));
+            var fullPath=Path.GetFullPath(Path.Combine(root,relative));
             var comparison=OperatingSystem.IsWindows()?StringComparison.OrdinalIgnoreCase:StringComparison.Ordinal;
             if(!fullPath.StartsWith(Path.TrimEndingDirectorySeparator(Path.GetFullPath(root))+Path.DirectorySeparatorChar,comparison))continue;
             if(OperatingSystem.IsWindows()&&(fullPath.StartsWith(@"\\?\",StringComparison.Ordinal)

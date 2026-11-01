@@ -28,15 +28,20 @@ for(const kind of ['forms','correspondence']){
  await windowEvents.online();await new Promise(setImmediate);assert.equal(list.children.length,1,'Refresh lost active filter');
  choose('للعلم');assert.equal(list.children.length,1);assert.equal(list.children[0].dataset[idKey],'1');choose('');assert.equal(list.children.length,2);
 
- list.children[0].listeners.click();assert.equal(dialog.open,true);assert.equal(badge.textContent,'2');assert.equal(list.children[0].dataset.state,'opened');assert.equal(data.items[0].isOpened,false,'Sample source was mutated');
- dialog.close();list.children[0].listeners.click();assert.equal(badge.textContent,'2','Repeated preview double-decremented');dialog.close();
  const refresh=async()=>{await windowEvents.online();await new Promise(setImmediate);};
- await refresh();assert.equal(badge.textContent,'2');assert.equal(list.children[0].dataset.state,'opened','Source refresh undid preview state');
+ if(isForms){
+  list.children[0].listeners.click();assert.equal(dialog.open,true);assert.equal(badge.textContent,'2');assert.equal(list.children[0].dataset.state,'opened');assert.equal(data.items[0].isOpened,false,'Sample source was mutated');
+  dialog.close();list.children[0].listeners.click();assert.equal(badge.textContent,'2','Repeated preview double-decremented');dialog.close();
+  await refresh();assert.equal(badge.textContent,'2');assert.equal(list.children[0].dataset.state,'opened','Source refresh undid preview state');
+ }else{
+  assert.equal(list.children[0].listeners.click,undefined,'Real correspondence must not toggle read locally');assert.equal(list.children[0].href,undefined,'Real correspondence must not open a URL');
+  await refresh();assert.equal(badge.textContent,'3');assert.equal(list.children[0].dataset.state,'unopened','Read state must stay source-owned');
+ }
  data.items[0].isOpened=true;data.unreadCount=2;await refresh();assert.equal(badge.textContent,'2','Source acknowledgement deducted twice');
- data.items[1].canOpen=true;await refresh();assert.equal(list.children[1].listeners.click,undefined,'Real link must leave read tracking to source');
+ data.items[1].canOpen=true;await refresh();assert.equal(list.children[1].listeners.click,undefined,'Real link must leave read tracking to source');if(!isForms)assert.equal(list.children[1].href,undefined,'Legacy canOpen flag restored a correspondence URL');
  data.items.push({...data.items[0],[idKey]:'3',purpose:'نوع مستقبلي'});await refresh();choose('نوع مستقبلي');assert.equal(list.children.length,1);assert.equal(list.children[0].dataset[idKey],'3');
  data.items.pop();await refresh();assert.equal(list.children.length,2,'Removed purpose did not reset to all');
  responseStatus=403;await refresh();assert.equal(filter.children.length,0,'Authorization loss retained filters');assert.equal(list.children.length,0);responseStatus=200;data.items[0].isOpened=false;data.unreadCount=3;await refresh();assert.equal(badge.textContent,'3','Authorization loss must clear local preview state');
  assert.ok(requests.every(r=>!r.opts.method||r.opts.method==='GET'),'Preview must never write to source');windowEvents.pagehide();
- console.log('PASS '+kind+': preview read appearance/count, duplicate click, refresh, source acknowledgement, real-link source authority, 403 reset and no writes.');
+ console.log('PASS '+kind+': '+(isForms?'local preview read, repeat/refresh/source acknowledgement':'SP-owned read state/count, no per-item URL/preview, legacy link flag ignored')+', filters, 403 reset and no writes.');
 }

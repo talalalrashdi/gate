@@ -12,27 +12,18 @@ public sealed class CorrespondenceInboxController(CorrespondenceInboxStore store
     public Task<IActionResult> Inbox(CancellationToken token)=>Read(null,data=>
         Ok(new{items=data.Items.Select(r=>new{correspondenceId=r.CorrespondenceId.ToString(CultureInfo.InvariantCulture),r.DocNo,r.Title,r.Purpose,r.SenderName,
             receivedAt=DecisionNoticesStore.Oman(r.ReceivedAt).ToString("O",CultureInfo.InvariantCulture),r.IsOpened,
-            isSamplePreview=r.IsSample&&config.GetValue<bool>("Correspondence:AllowSamplePreview"),canOpen=OpenAddress(r) is not null}).ToArray(),data.UnreadCount,appUrl=AppAddress()}),token);
+            isSamplePreview=false,canOpen=false}).ToArray(),data.UnreadCount,appUrl=AppAddress()}),token);
 
     [HttpGet("{id:long:min(1)}/open")]
     public Task<IActionResult> Open(long id,CancellationToken token)=>Read(id,data=>
     {
         var row=data.Items.SingleOrDefault(r=>r.CorrespondenceId==id);if(row is null)return NotFound();
-        var address=OpenAddress(row);
-        return address is null?Problem(statusCode:503,title:"لم يتم إعداد رابط تطبيق المراسلات بعد."):Redirect(address);
+        return Problem(statusCode:503,title:"فتح المراسلة من البوابة غير متاح حاليًا.");
     },token);
     private string? AppAddress()
     {
         var value=config["Correspondence:AppUrl"];
         return Uri.TryCreate(value,UriKind.Absolute,out var address)&&address.Scheme is "https" or "http"&&address.UserInfo.Length==0?address.AbsoluteUri:null;
-    }
-    private string? OpenAddress(CorrespondenceInboxStore.Row row)
-    {
-        var template=config["Correspondence:ItemUrlTemplate"];
-        if(string.IsNullOrWhiteSpace(template)||!template.Contains("{id}",StringComparison.Ordinal)&&!template.Contains("{docNo}",StringComparison.Ordinal))return null;
-        var url=template.Replace("{id}",row.CorrespondenceId.ToString(CultureInfo.InvariantCulture),StringComparison.Ordinal)
-            .Replace("{docNo}",Uri.EscapeDataString(row.DocNo),StringComparison.Ordinal);
-        return Uri.TryCreate(url,UriKind.Absolute,out var address)&&address.Scheme is "https" or "http"&&address.UserInfo.Length==0?address.AbsoluteUri:null;
     }
     private async Task<IActionResult> Read(long? id,Func<CorrespondenceInboxStore.Inbox,IActionResult> action,CancellationToken token)
     {

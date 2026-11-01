@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import {readFile} from 'node:fs/promises';
+const links={},badges={},events={},requests=[];let failed=false;
+for(const name of ['documents','safety']){links[name]={addEventListener(n,f){this[n]=f;}};badges[name]={hidden:true,closest(){return links[name];}};}
+const document={querySelector(selector){return badges[selector.includes('"safety"')?'safety':'documents'];},addEventListener(n,f){(events[n]??=[]).push(f);},dispatchEvent(e){events[e.type]?.forEach(f=>f(e));}};
+const window={showToast(){}};
+vm.runInNewContext(await readFile(new URL('../Frontend/CompanyPortal.Web/wwwroot/js/library-reads.js',import.meta.url),'utf8'),{window,document,AbortSignal,CustomEvent:class{constructor(type,options){this.type=type;Object.assign(this,options);}},fetch:async(url,options)=>{requests.push({url,options});assert.equal(options.credentials,'include');assert.equal(options.headers['X-CompanyPortal-Request'],'library-read');return {ok:!failed};}});
+const settle=async()=>{for(let i=0;i<8;i++)await new Promise(setImmediate);};
+const docs=window.CompanyPortalLibraryReads('documents',p=>'/documents'+p),safety=window.CompanyPortalLibraryReads('safety',p=>'/safety'+p);
+const d={documentId:'one',hasRead:false,hasSeen:false},s={...d};let changed=0;
+links.documents.click();assert.equal(requests.length,0,'Early click must wait for the existing catalog');docs.catalog([{documents:[d]}],()=>changed++);await settle();
+assert.equal(requests.length,1);assert.equal(requests[0].url,'/documents/seen');assert.equal(badges.documents.hidden,true);assert.equal(d.hasRead,false,'Section visit falsely marked the PDF read');
+links.documents.click();await settle();assert.equal(requests.length,1,'Repeated visit duplicated acknowledgement');
+safety.catalog([{documents:[s]}],()=>changed++);assert.equal(badges.safety.hidden,false);
+await docs.open(d);assert.equal(d.hasRead,true);assert.equal(s.hasRead,true,'Same PDF read was not shared between library sections');assert.equal(badges.safety.hidden,true);assert.equal(changed,2);
+await docs.open(d);assert.equal(requests.length,2,'Repeated PDF opening duplicated read write');
+failed=true;const other={documentId:'other',hasRead:false,hasSeen:false};docs.catalog([{documents:[other]}],()=>{});links.documents.click();await settle();assert.equal(badges.documents.hidden,false,'Failed visit was claimed saved');await docs.open(other);assert.equal(other.hasRead,false,'Failed PDF read was claimed saved');failed=false;await docs.open(other);assert.equal(other.hasRead,true);
+const many=Array.from({length:501},(_,i)=>({documentId:'batch'+i,hasRead:false,hasSeen:false}));docs.catalog([{documents:many}],()=>{});const before=requests.length;links.documents.click();await settle();assert.equal(requests.length-before,2,'Large catalog was not batched');assert.equal(badges.documents.hidden,true);
+docs.clear();assert.equal(badges.documents.hidden,true);
+console.log('PASS: section versus PDF read, early click, persisted-catalog flags, shared PDF state, idempotency, retry/failure, 500-item batches and no polling.');

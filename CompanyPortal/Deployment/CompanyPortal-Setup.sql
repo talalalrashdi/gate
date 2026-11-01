@@ -1,4 +1,4 @@
-﻿/* CompanyPortal fresh installation, generated from migrations 001-057.
+﻿/* CompanyPortal fresh installation, generated from migrations 001-059.
    Open this entire UTF-8 file in SSMS and Execute (normal mode, no SQLCMD mode).
    Or: sqlcmd -S SQLSERVER -E -b -f 65001 -i CompanyPortal-Setup.sql
    FRESH INSTALL ONLY. Never run on an existing CompanyPortal database.
@@ -4596,6 +4596,71 @@ GO
 
 GO
 
+
+-- BEGIN 058_SecurityUserProfile.sql
+USE CompanyPortal;
+GO
+-- Integration boundary: map this SP to the real security/employee database on deployment.
+IF OBJECT_ID(N'Security.UserProfile_getById',N'P') IS NULL
+ EXEC(N'CREATE PROCEDURE Security.UserProfile_getById @UserId int AS BEGIN SET NOCOUNT ON;
+ SELECT CAST(NULL AS nvarchar(300)) DisplayName,CAST(NULL AS nvarchar(300)) JobTitle,CAST(NULL AS nvarchar(300)) Department WHERE 1=0; END;');
+GO
+CREATE OR ALTER PROCEDURE Portal.UserProfile_Get @UserId int AS
+BEGIN
+ SET NOCOUNT ON;
+ EXEC Security.UserProfile_getById @UserId=@UserId;
+END;
+GO
+
+GO
+
+
+-- BEGIN 059_LibraryReads.sql
+USE CompanyPortal;
+GO
+SET XACT_ABORT ON;
+BEGIN TRAN;
+IF EXISTS(SELECT 1 FROM Mstr.ContentType WHERE (ContentTypeID=4 AND ContentTypeName<>N'ملفات الوثائق') OR (ContentTypeID=5 AND ContentTypeName<>N'مشاهدة المكتبات'))
+ THROW 50012,'Library content types are already reserved.',1;
+SET IDENTITY_INSERT Mstr.ContentType ON;
+IF NOT EXISTS(SELECT 1 FROM Mstr.ContentType WHERE ContentTypeID=4) INSERT Mstr.ContentType(ContentTypeID,ContentTypeName) VALUES(4,N'ملفات الوثائق');
+IF NOT EXISTS(SELECT 1 FROM Mstr.ContentType WHERE ContentTypeID=5) INSERT Mstr.ContentType(ContentTypeID,ContentTypeName) VALUES(5,N'مشاهدة المكتبات');
+SET IDENTITY_INSERT Mstr.ContentType OFF;
+COMMIT;
+GO
+-- IDs are rechecked against the user's current, published PDF catalog by the API.
+-- Type4: GUID = PDF opened (shared by both library sections).
+-- Type5: section:GUID = section entry seen. Visiting a section does not mark its PDFs read.
+CREATE OR ALTER PROCEDURE Portal.LibraryReads_Get @UserId int AS
+BEGIN
+ SET NOCOUNT ON;
+ SELECT ContentTypeID,ContentId FROM Portal.UserReads WHERE UserId=@UserId AND ContentTypeID IN(4,5) AND Active=1;
+END;
+GO
+CREATE OR ALTER PROCEDURE Portal.LibraryReads_Mark @UserId int,@Section nvarchar(20),@DocumentIdsJson nvarchar(max),@MarkRead bit AS
+BEGIN
+ SET NOCOUNT ON;SET XACT_ABORT ON;
+ IF @UserId<=0 OR @Section NOT IN(N'documents',N'safety') OR ISJSON(@DocumentIdsJson)<>1 OR (SELECT COUNT(*) FROM Mstr.ContentType WHERE ContentTypeID IN(4,5) AND Active=1)<>2
+  THROW 50012,'Invalid library acknowledgement.',1;
+ DECLARE @Docs TABLE(Id uniqueidentifier PRIMARY KEY);
+ INSERT @Docs SELECT DISTINCT TRY_CONVERT(uniqueidentifier,value) FROM OPENJSON(@DocumentIdsJson) WHERE TRY_CONVERT(uniqueidentifier,value) IS NOT NULL;
+ IF (SELECT COUNT(*) FROM @Docs)>500 THROW 50012,'Library acknowledgement batch is too large.',1;
+ DECLARE @Ids TABLE(ContentTypeID int,ContentId nvarchar(200),PRIMARY KEY(ContentTypeID,ContentId));
+ INSERT @Ids SELECT 5,@Section+N':'+LOWER(CONVERT(nvarchar(36),Id)) FROM @Docs;
+ IF @MarkRead=1 INSERT @Ids SELECT 4,LOWER(CONVERT(nvarchar(36),Id)) FROM @Docs;
+ BEGIN TRAN;
+ DECLARE @Lock int,@Resource nvarchar(255)=N'Portal.Library.Reads.'+CONVERT(nvarchar(20),@UserId);
+ EXEC @Lock=sys.sp_getapplock @Resource=@Resource,@LockMode='Exclusive',@LockOwner='Transaction',@LockTimeout=5000;
+ IF @Lock<0 THROW 50012,'Library acknowledgement is busy.',1;
+ UPDATE r SET Active=1,ReadAt=GETDATE() FROM Portal.UserReads r JOIN @Ids i ON i.ContentId=r.ContentId AND i.ContentTypeID=r.ContentTypeID WHERE r.UserId=@UserId AND r.Active=0;
+ INSERT Portal.UserReads(UserId,ContentTypeID,ContentId)
+ SELECT @UserId,i.ContentTypeID,i.ContentId FROM @Ids i WHERE NOT EXISTS(SELECT 1 FROM Portal.UserReads r WHERE r.UserId=@UserId AND r.ContentTypeID=i.ContentTypeID AND r.ContentId=i.ContentId);
+ COMMIT;
+END;
+GO
+
+GO
+
 IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'USE [master];
 -- DEVELOPMENT ONLY. Never run this against the real internal security database.
 USE [master];
@@ -4751,6 +4816,46 @@ COMMIT;
 ');
 GO
 
+IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'USE [SecurityDB];
+-- DEVELOPMENT ONLY: security identity/name source. Replace the adapter SELECT internally.
+USE SecurityDB;
+');
+GO
+
+IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'USE [SecurityDB];
+
+IF COL_LENGTH(N''dbo.Users'',N''DisplayName'') IS NULL ALTER TABLE dbo.Users ADD DisplayName nvarchar(300) NULL;
+IF COL_LENGTH(N''dbo.Users'',N''JobTitle'') IS NULL ALTER TABLE dbo.Users ADD JobTitle nvarchar(300) NULL;
+IF COL_LENGTH(N''dbo.Users'',N''Department'') IS NULL ALTER TABLE dbo.Users ADD Department nvarchar(300) NULL;
+');
+GO
+
+IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'USE [SecurityDB];
+
+-- Preserve existing populated security names; carry the local profile samples into SecurityDB once.
+IF OBJECT_ID(N''CompanyPortal.Development.ProfilePeople'',N''U'') IS NOT NULL
+ UPDATE u SET DisplayName=COALESCE(u.DisplayName,p.DisplayName),JobTitle=COALESCE(u.JobTitle,p.JobTitle),Department=COALESCE(u.Department,p.Department)
+ FROM dbo.Users u JOIN CompanyPortal.Development.ProfilePeople p ON p.UserId=u.UserId AND p.Active=1;
+UPDATE dbo.Users SET DisplayName=N''أحمد سالم'' WHERE DisplayName IS NULL AND NTName=(SELECT TestNTName FROM #PortalDeployment);
+');
+GO
+
+IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'USE [CompanyPortal];
+
+USE CompanyPortal;
+');
+GO
+
+IF (SELECT TestSources FROM #PortalDeployment)=1 EXEC(N'USE [CompanyPortal];
+
+CREATE OR ALTER PROCEDURE Security.UserProfile_getById @UserId int AS
+BEGIN
+ SET NOCOUNT ON;
+ SELECT DisplayName,JobTitle,Department FROM SecurityDB.dbo.Users WHERE UserId=@UserId AND Active=1;
+END;
+');
+GO
+
 USE master;
 GO
 IF (SELECT TestSources FROM #PortalDeployment)=1
@@ -4772,7 +4877,7 @@ IF (SELECT TestSources FROM #PortalDeployment)=1
  CREATE TABLE dbo.Public_info_News_Prodc (
   PIP_ID int IDENTITY(1,1) NOT NULL PRIMARY KEY,
   News_ID int NOT NULL REFERENCES dbo.Public_info_News(PIN_ID), Active bit NOT NULL DEFAULT(1));
- INSERT dbo.Public_info_News(PIN_Subject) VALUES(N''خبر تجريبي لاختبار البوابة'');
+ INSERT dbo.Public_info_News(PIN_Subject) VALUES(N''Ø®Ø¨Ø± ØªØ¬Ø±ÙŠØ¨ÙŠ Ù„Ø§Ø®ØªØ¨Ø§Ø± Ø§Ù„Ø¨ÙˆØ§Ø¨Ø©'');
  INSERT dbo.Public_info_News_Prodc(News_ID) VALUES(1);');
 GO
 USE CompanyPortal;

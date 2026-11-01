@@ -80,12 +80,12 @@
   }
   async function loadAccess(){
     if(accessPending)return accessPending;
-    const status=document.getElementById('admin-status'),retry=document.getElementById('admin-retry');retry.hidden=true;status.dataset.state='loading';status.textContent='جارٍ التحقق من الصلاحية…';
+    const status=document.getElementById('admin-status'),retry=document.getElementById('admin-retry');retry.hidden=true;status.parentElement.hidden=true;status.dataset.state='loading';status.textContent='جارٍ التحقق من الصلاحية…';
     accessPending=(async()=>{try{
       const r=await request('api/access',{timeout:10000});if(!r.ok)throw new Error();const data=await r.json();
       if(typeof data.isAdmin!=='boolean'||!Array.isArray(data.sections)||data.sections.some(s=>typeof s!=='string'))throw new Error();
-      access=data;applyAccess();status.dataset.state=data.isAdmin?'ready':'error';status.textContent=data.isAdmin?'تم التحقق من صلاحية الإدارة.':'لا تملك صلاحية إدارة البوابة.';
-    }catch{access=null;applyAccess();status.dataset.state='error';status.textContent='تعذر التحقق من صلاحية الإدارة.';retry.hidden=false;}finally{accessPending=null;}})();return accessPending;
+      access=data;applyAccess();status.dataset.state=data.isAdmin?'ready':'error';status.textContent=data.isAdmin?'':'لا تملك صلاحية إدارة البوابة.';status.parentElement.hidden=data.isAdmin;
+    }catch{access=null;applyAccess();status.dataset.state='error';status.textContent='تعذر التحقق من صلاحية الإدارة.';status.parentElement.hidden=false;retry.hidden=false;}finally{accessPending=null;}})();return accessPending;
   }
   function whenSection(section,action){document.addEventListener('admin:section',event=>{if(event.detail.section===section&&(section==='overview'?sections.size>0:sections.has(section)))action();});if(document.body.dataset.adminCurrent===section&&(section==='overview'?sections.size>0:sections.has(section)))queueMicrotask(action);}
   // Observe only structural/state changes; input values are compared by each editor.

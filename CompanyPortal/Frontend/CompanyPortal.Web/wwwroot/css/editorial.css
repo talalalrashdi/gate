@@ -452,3 +452,5 @@ html:has(:is(#editorial-gallery-dialog,#editorial-video-dialog)[open]),body:has(
 .editorial-local-flip-page { background: #fff; overflow: hidden; }
 .editorial-local-flip-page canvas { display: block; width: 100%; height: 100%; object-fit: contain; }
 .editorial-local-flip-page.is-blank { background: #f6f4ee; }
+
+#editorial-agency-news[hidden]{display:none!important}

@@ -38,6 +38,7 @@ builder.Services.AddScoped<LegalDecisionsStore>();
 builder.Services.AddScoped<DecisionNoticesStore>();
 builder.Services.AddScoped<DocumentsStore>();
 builder.Services.AddScoped<DocumentTabsStore>();
+builder.Services.AddScoped<LibraryReadsStore>();
 builder.Services.AddScoped<DocumentFiles>();
 builder.Services.AddScoped<NewsFiles>();
 builder.Services.AddScoped<FolderPathsStore>();

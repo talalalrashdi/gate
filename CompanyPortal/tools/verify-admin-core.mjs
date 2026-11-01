@@ -13,6 +13,7 @@ class Element {
 const dialog=new Element('dialog');dialog.heading=new Element('h2');dialog.p=new Element('p');dialog.yes=new Element('button');dialog.no=new Element('button');
 const toasts=new Element(),workspace=new Element(),message=new Element();message.p=new Element('p');
 const ids={'admin-confirm':dialog,'admin-toasts':toasts,'admin-workspace':workspace,'admin-access-message':message,'admin-status':new Element(),'admin-retry':new Element()};
+ids['admin-status'].parentElement=new Element();
 const buttons=['overview','cards','media','themes'].flatMap(key=>[false,true].map(feature=>{const e=new Element('button');e.dataset.adminSection=key;e.feature=feature;return e;}));
 const handlers=new Map(),windowHandlers=new Map(),timers=[];
 const document={body:{dataset:{}},activeElement:new Element('button'),createElement:tag=>new Element(tag),getElementById:id=>ids[id],querySelector:()=>({content:'http://localhost:5091/'}),querySelectorAll:selector=>selector==='[data-admin-requires]'?[]:selector.startsWith('.admin-nav')?buttons.filter(b=>!b.feature):buttons,addEventListener:(name,cb)=>{if(!handlers.has(name))handlers.set(name,[]);handlers.get(name).push(cb);},dispatchEvent:event=>{for(const cb of handlers.get(event.type)||[])cb(event);}};

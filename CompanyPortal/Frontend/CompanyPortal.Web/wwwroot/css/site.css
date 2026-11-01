@@ -12,7 +12,7 @@ body .portal-media-rail article > div:not(.portal-text-tile) { left: 16px; paddi
 body .portal-doc-categories button[aria-pressed="true"] { background: #000; color: #fff !important; border: 0; box-shadow: none; }
 body .portal-profile-footer a { background: #dce8df; }
 body .portal-toast { background: #f8f7fa; border: 1px solid #dedbe4; box-shadow: 0 8px 25px #00000012; }
-@font-face{font-family:GTArabic;src:url('../assets/fonts/GTAmericaArabic-Regular.ttf') format('truetype');font-weight:400;font-display:swap}@font-face{font-family:GTArabic;src:url('../assets/fonts/GTAmericaArabic-Bold.ttf') format('truetype');font-weight:700;font-display:swap}
+@font-face{font-family:GTArabic;src:url('../assets/fonts/GTAmericaArabic-Regular.woff2') format('woff2'),url('../assets/fonts/GTAmericaArabic-Regular.ttf') format('truetype');font-weight:400;font-display:swap}@font-face{font-family:GTArabic;src:url('../assets/fonts/GTAmericaArabic-Bold.woff2') format('woff2'),url('../assets/fonts/GTAmericaArabic-Bold.ttf') format('truetype');font-weight:700;font-display:swap}
 /* One continuous opening section: introduction, divider, then the systems board. */
 .portal-section.portal-systems {
   position: relative;

@@ -33,7 +33,7 @@
     window.CompanyPortalTheme.previewLayout(theme.layoutKey,typeof theme.themeName==='string'?theme.themeName:'');
     window.CompanyPortalTheme.apply(theme);
     const valid=Array.isArray(images)&&images.length<=100&&images.every(image=>Number.isInteger(image.imageId)&&image.imageId>0);
-    if(signature!==nextSignature&&valid&&images.length&&settings)window.CompanyPortalTheme.setImages({...settings,images:images.map(image=>({imageId:image.imageId,url:new URL(`api/images/${image.imageId}/content`,api).href}))});
+    if(signature!==nextSignature&&valid&&images.length&&settings)window.CompanyPortalTheme.setImages({...settings,images:images.map(image=>({imageId:image.imageId,url:new URL(`api/images/${image.imageId}/${image.hasDisplay===true?'display':'content'}`,api).href}))});
     signature=nextSignature;
     shell.hidden=false;message.hidden=true;
   });

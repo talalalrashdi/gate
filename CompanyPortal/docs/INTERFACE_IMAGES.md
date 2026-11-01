@@ -101,8 +101,18 @@ The library offers **حذف الصورة** with confirmation. Deletion marks an 
 - **Upload:** the admin browser shrinks large photos before sending them: long side over 2560 px or file over 1.5 MB → JPEG stays JPEG, other formats become WebP, quality 0.86, kept only when smaller. Re-encoding also drops camera metadata (for example GPS). SVG is sent unchanged.
 - **Preview copy:** every upload also sends a 480 px WebP preview (`thumbnail` form field, at most 512 KB / 640 px, raster only, checked by `ImageValidation.ReadThumbnail`). It is stored in `Master.Images.ThumbnailData/ThumbnailType`.
 - **Existing images:** «إنشاء نسخ معاينة صغيرة (n)» in the library makes previews in the browser and sends them with `PUT /api/admin/images/{id}/thumbnail`. That can be done once per image (409 afterwards), which keeps the cache safe. It is not recorded in the change history (the snapshot has no bytes).
-- `GET /api/images/{id}/thumbnail` uses the same access rule as `/content` and is cached the same way; 404 when there is no preview. `Images_getAll` returns `HasThumbnail`. The admin library, group list and theme cards use the preview; the portal always uses the full image.
+- `GET /api/images/{id}/thumbnail` uses the same access rule as `/content` and is cached the same way; 404 when there is no preview. `Images_getAll` returns `HasThumbnail`. The admin library, group list and theme cards use the preview; the portal uses the display copy when one exists (below), otherwise the full image.
 - Procedures: `Images_add` (optional `@ThumbnailData/@ThumbnailType`, history lines kept), `Images_setThumbnail`, `Images_getThumbnail`.
+- Both browser-side copy buttons read the original with a fresh credentialed `fetch` (`cache:'no-store'`): a library tile may already have cached `/content` as a plain `<img>` without CORS headers, which would make the canvas read fail.
+
+## Display copies (migration 064, 1 November 2026)
+
+Images uploaded before migration 050 were stored at full size and the portal downloaded them in full. A **display copy** now sits next to the untouched original (`Master.Images.DisplayData/DisplayType`, at most 4 MB, JPEG/PNG/WebP).
+
+- **Making copies:** «إنشاء نسخ عرض أصغر (n)» beside the preview button appears only while raster images without a copy exceed the upload limits (long side over 2560 px or file over 1.5 MB). It applies the upload rule — long side 2560 px, JPEG stays JPEG, other formats WebP, quality 0.86 — and sends `PUT /api/admin/images/{id}/display` (images admins; multipart `display`, raster, at most 2560 px per side, checked by `ImageValidation.ReadDisplay`). `Master.Images_setDisplay` stores it once only, only for active non-SVG images and only when smaller than the original (409 otherwise). Not recorded in the change history (no bytes in snapshots).
+- **Serving:** `GET /api/images/{id}/display` has the same access rule and one-year immutable caching as `/content`; 404 when there is no copy. `GET /api/admin/images` and `GET /api/themes/{id}/images` include `hasDisplay`; the portal (`theme-settings.js`) and the theme-editor preview request `/display` when it is true. The original remains available through `/content`.
+- **Compatibility:** `Images_getAll` and `Themes_getImages` keep their existing result-set columns and return the display-copy image IDs as an **extra** result set, so older API builds keep working against a migrated database and the new API tolerates an unmigrated one (`GridReader.IsConsumed`).
+- Procedures: `Images_setDisplay`, `Images_getDisplay` (new); `Images_getAll`, `Themes_getImages` (extra result set). Health expects both new procedures. Local results: [PORTAL_PERFORMANCE.md](PORTAL_PERFORMANCE.md).
 
 
 ## مساحة تحرير المجموعات — 28 أكتوبر 2026

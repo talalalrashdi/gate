@@ -34,7 +34,7 @@
   function groupData(theme){
     const group=library.groups.find(g=>g.imageGroupId===theme.imageGroupId&&g.active);
     const ids=group?library.items.filter(i=>i.imageGroupId===group.imageGroupId&&i.active).sort((a,b)=>a.displayOrder-b.displayOrder).filter(i=>library.images.some(image=>image.imageId===i.imageId)):[];
-    return {settings:group?{rotateImages:group.rotateImages,rotationSeconds:group.rotationSeconds,defaultImageId:group.defaultImageId}:null,images:ids.map(i=>({imageId:i.imageId}))};
+    return {settings:group?{rotateImages:group.rotateImages,rotationSeconds:group.rotationSeconds,defaultImageId:group.defaultImageId}:null,images:ids.map(i=>({imageId:i.imageId,hasDisplay:library.images.find(image=>image.imageId===i.imageId)?.hasDisplay===true}))};
   }
   function focusPosition(){return draft?.imagePositions.find(p=>p.imageId===focusImageId)||{imageId:focusImageId,focalX:50,focalY:draft?.imagePresentation==='artwork'?50:56};}
   function syncFocus(){

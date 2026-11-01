@@ -76,6 +76,17 @@ public static partial class ImageValidation
             throw new ArgumentException("The preview copy must be at most 640 pixels per side.");
         return image;
     }
+    // Display copy made by the admin browser for older oversized images: raster only, long side at most 2560 px.
+    public const int MaximumDisplayBytes = 4 * 1024 * 1024, MaximumDisplaySide = 2560;
+    public static ValidatedImage ReadDisplay(byte[] data, string extension)
+    {
+        if (data.Length > MaximumDisplayBytes || extension.Equals(".svg", StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException("The display copy must be a JPEG, PNG or WebP image up to 4 MB.");
+        var image = Read(data, extension);
+        if (image.Width > MaximumDisplaySide || image.Height > MaximumDisplaySide)
+            throw new ArgumentException("The display copy must be at most 2560 pixels per side.");
+        return image;
+    }
     private static void Dimensions(int width, int height)
     {
         if (width is < 1 or > 12000 || height is < 1 or > 12000 || (long)width*height > 40_000_000)

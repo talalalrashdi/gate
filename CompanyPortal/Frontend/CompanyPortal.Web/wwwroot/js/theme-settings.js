@@ -22,7 +22,8 @@
       if (current !== imageVersion || !data.settings || !Array.isArray(data.images) || !data.images.length) return;
       if (!data.images.every(image => Number.isInteger(image.imageId) && image.imageId > 0)) return;
       document.dispatchEvent(new CustomEvent('companyportal:theme-images', {detail:{
-        ...data.settings, images:data.images.map(image => ({...image, url:new URL(`api/images/${image.imageId}/content`,root).href}))
+        // A smaller display copy (long side 2560 px) replaces oversized originals when one has been made.
+        ...data.settings, images:data.images.map(image => ({...image, url:new URL(`api/images/${image.imageId}/${image.hasDisplay === true ? 'display' : 'content'}`,root).href}))
       }}));
     } catch { /* Keep the original layout images if the API is unavailable. */ }
   }

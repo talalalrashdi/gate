@@ -46,6 +46,18 @@ public sealed class InterfaceImagesController(InterfaceImagesStore images, NewsS
         return ImageValidation.ReadThumbnail(memory.ToArray(),Path.GetExtension(Path.GetFileName(file.FileName.Replace('\\','/'))));
     }
 
+    // Smaller display copy for an older oversized image; the original is kept unchanged.
+    [HttpPut("{id:int:min(1)}/display"), Consumes("multipart/form-data"), RequestSizeLimit(ImageValidation.MaximumDisplayBytes+64*1024), AdminSection("admin-images", "images")]
+    public Task<IActionResult> SetDisplay(int id, IFormFile display, CancellationToken token) => Execute(async _ =>
+    {
+        if (display.Length > ImageValidation.MaximumDisplayBytes) throw new ArgumentException("The display copy must be up to 4 MB.");
+        await using var stream = display.OpenReadStream();
+        using var memory = new MemoryStream();
+        await stream.CopyToAsync(memory,token);
+        var copy = ImageValidation.ReadDisplay(memory.ToArray(),Path.GetExtension(Path.GetFileName(display.FileName.Replace('\\','/'))));
+        return await images.SetDisplayAsync(id,copy,token) ? NoContent() : Problem(statusCode:409,title:"The image is missing, is SVG, already has a display copy, or the copy is not smaller.");
+    },true,token);
+
     [HttpDelete("{id:int:min(1)}"), AdminSection("admin-images", "images")]
     public Task<IActionResult> Delete(int id, CancellationToken token) => Execute(async _ =>
         await images.DeleteAsync(id,User.Identity!.Name!,token) ? NoContent() : NotFound(),true,token);
@@ -66,13 +78,16 @@ public sealed class InterfaceImagesController(InterfaceImagesStore images, NewsS
     public Task<IActionResult> Theme(int id, CancellationToken token) => Execute(async _ => Ok(await images.ThemeAsync(id,User.Identity!.Name!,token)),false,token);
 
     [HttpGet("/api/images/{id:int:min(1)}/content")]
-    public Task<IActionResult> Content(int id, CancellationToken token) => Image(id,false,token);
+    public Task<IActionResult> Content(int id, CancellationToken token) => Image(id,"Master.Images_getContent",token);
     // Preview copy; same access rule. Set once only, so it is cached like the full image.
     [HttpGet("/api/images/{id:int:min(1)}/thumbnail")]
-    public Task<IActionResult> Thumbnail(int id, CancellationToken token) => Image(id,true,token);
-    private Task<IActionResult> Image(int id, bool thumbnail, CancellationToken token) => Execute(async admin =>
+    public Task<IActionResult> Thumbnail(int id, CancellationToken token) => Image(id,"Master.Images_getThumbnail",token);
+    // Display copy (long side at most 2560 px); same access rule and caching. 404 when none exists.
+    [HttpGet("/api/images/{id:int:min(1)}/display")]
+    public Task<IActionResult> Display(int id, CancellationToken token) => Image(id,"Master.Images_getDisplay",token);
+    private Task<IActionResult> Image(int id, string procedure, CancellationToken token) => Execute(async admin =>
     {
-        var content = await images.ContentAsync(id,admin,User.Identity!.Name!,token,thumbnail);
+        var content = await images.ContentAsync(id,admin,User.Identity!.Name!,token,procedure);
         if (content is null) return NotFound();
         // Image bytes never change for an ImageId (no update path), so the browser may keep them.
         // Without this, the portal re-downloads each image on every rotation.

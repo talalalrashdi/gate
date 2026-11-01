@@ -3,7 +3,12 @@ using System.Text.Json.Serialization;
 
 namespace CompanyPortal.Api.Contracts;
 
-public sealed record PortalImage(int ImageId, string ImageName, string ContentType, int PixelWidth, int PixelHeight, long ByteLength, DateTime LastChangeAt, bool HasThumbnail);
+// HasDisplay: a smaller display copy exists (/api/images/{id}/display). Set from a separate result set so the
+// procedure's first result set keeps its columns for older API builds.
+public sealed record PortalImage(int ImageId, string ImageName, string ContentType, int PixelWidth, int PixelHeight, long ByteLength, DateTime LastChangeAt, bool HasThumbnail)
+{
+    public bool HasDisplay {get;init;}
+}
 public sealed record ImageGroup(int ImageGroupId, string GroupName, bool RotateImages, int RotationSeconds, int? DefaultImageId, bool Active, DateTime LastChangeAt);
 public sealed record ImageGroupItem(int ImageGroupId, int ImageId, int DisplayOrder, bool Active);
 public sealed record ImageTheme(int ThemeId, string ThemeName, string LayoutKey, int? ImageGroupId);
@@ -11,6 +16,8 @@ public sealed record ImageAdministration(IReadOnlyList<PortalImage> Images, IRea
 public sealed record ThemeImageSettings(int ImageGroupId, bool RotateImages, int RotationSeconds, int? DefaultImageId);
 public sealed record ThemeImage(int ImageId, string ImageName, int DisplayOrder)
 {
+    // A smaller display copy exists (/api/images/{id}/display); the portal prefers it.
+    public bool HasDisplay {get;init;}
     public decimal? FocalX {get;init;}
     public decimal? FocalY {get;init;}
 }

@@ -36,7 +36,10 @@
   // Admin previews use the small copy when there is one; the portal always uses the full image.
   const preview = image => { const img=node('img');img.src=url(`api/images/${image.imageId}/${image.hasThumbnail?'thumbnail':'content'}`);img.alt='';img.loading='lazy';return img; };
   // Sizes for the browser-side copies. Display copy: long side 2560 px (theme backgrounds); preview: 480 px WebP.
-  const displaySide=2560, previewSide=480, shrinkFrom=1536*1024, previewLimit=512*1024;
+  const displaySide=2560, previewSide=480, shrinkFrom=1536*1024, previewLimit=512*1024, displaySkipped=new Set();
+  // Raster images larger than the upload shrink limits and still without a display copy.
+  const needsDisplay=image=>image.contentType!=='image/svg+xml'&&!image.hasDisplay&&!displaySkipped.has(image.imageId)
+    &&(Math.max(image.pixelWidth,image.pixelHeight)>displaySide||image.byteLength>shrinkFrom);
   function loadImage(src,credentials=false){return new Promise((resolve,reject)=>{const img=new Image();if(credentials)img.crossOrigin='use-credentials';img.decoding='async';img.onload=()=>resolve(img);img.onerror=()=>reject(new Error('image'));img.src=src;});}
   function drawCopy(source,width,height,side,type,quality){
     const scale=Math.min(1,side/Math.max(width,height)),canvas=document.createElement('canvas');
@@ -66,6 +69,7 @@
   function renderLibrary(){
     library.replaceChildren();byId('images-count').textContent=`(${data.images.length})`;
     const missing=data.images.filter(i=>!i.hasThumbnail).length,previews=byId('image-previews');previews.hidden=!missing;previews.textContent=`إنشاء نسخ معاينة صغيرة (${missing})`;
+    const large=data.images.filter(needsDisplay).length,displays=byId('image-displays');displays.hidden=!large;displays.textContent=`إنشاء نسخ عرض أصغر (${large})`;
     byId('images-selected-count').textContent=`${selection.length} صورة مختارة`;
     if(!data.images.length)library.append(node('p','المكتبة فارغة. ارفع الصور للبدء.'));
     data.images.slice(0,imageLimit).forEach(image=>{
@@ -158,18 +162,48 @@
     // A success message shows only as a short toast; the size note stays on the status line.
     say(`تم رفع ${added.length} صورة. اختر الصور لإضافتها إلى المجموعة.`);if(shrunk)say(shrunk);
   });});
+  // Older oversized raster images (uploaded before the shrink above) get a display copy with the same
+  // settings as new uploads: long side 2560 px, JPEG stays JPEG, others WebP, quality .86. Stored once,
+  // only when smaller; the original stays unchanged. The portal then requests /display instead of /content.
+  // Fresh credentialed read of an original for a browser-side copy. The library tiles may already have cached the
+  // same URL as a plain <img> without CORS headers, which would make a cross-origin canvas read fail; so bypass the cache.
+  async function loadOriginal(image){
+    const response=await fetch(url(`api/images/${image.imageId}/content`),{credentials:'include',cache:'no-store'});
+    if(!response.ok)throw new Error('image');
+    const blob=await response.blob();
+    if(image.contentType!=='image/svg+xml')return createImageBitmap(blob);
+    const objectUrl=URL.createObjectURL(blob);try{return await loadImage(objectUrl);}finally{URL.revokeObjectURL(objectUrl);}
+  }
+  const sizeOf=(source,image)=>[source.naturalWidth||source.width||image.pixelWidth,source.naturalHeight||source.height||image.pixelHeight];
+  byId('image-displays').addEventListener('click',()=>run(async()=>{
+    let made=0,failed=0;
+    for(const image of data.images.filter(needsDisplay)){
+      say(`جارٍ تجهيز نسخة عرض أصغر: ${image.imageName}…`);
+      let source;
+      try{
+        source=await loadOriginal(image);const jpeg=image.contentType==='image/jpeg';
+        const copy=await drawCopy(source,...sizeOf(source,image),displaySide,jpeg?'image/jpeg':'image/webp',.86);
+        if(!copy||copy.size>=image.byteLength){displaySkipped.add(image.imageId);continue;}
+        const body=new FormData();body.append('display',new File([copy],jpeg?'display.jpg':'display.webp',{type:copy.type}));
+        await request(`api/admin/images/${image.imageId}/display`,'PUT',body);made++;
+      }catch{failed++;}finally{source?.close?.();}
+    }
+    data=await request('api/admin/images');renderLibrary();renderSelection();
+    say(failed?`أُنشئت نسخ عرض أصغر لـ ${made} صورة، وتعذر إنشاؤها لـ ${failed}. أعد المحاولة لاحقًا.`:`تم إنشاء نسخ عرض أصغر لـ ${made} صورة. الصور الأصلية محفوظة دون تغيير.`,failed>0);
+  }));
   // Older images have no preview copy; make one in the browser from the full image and store it once.
   byId('image-previews').addEventListener('click',()=>run(async()=>{
     let made=0,failed=0;
     for(const image of data.images.filter(i=>!i.hasThumbnail)){
       say(`جارٍ تجهيز نسخة معاينة: ${image.imageName}…`);
+      let source;
       try{
-        const source=await loadImage(url(`api/images/${image.imageId}/content`).href,true);
-        const small=await drawCopy(source,source.naturalWidth||image.pixelWidth,source.naturalHeight||image.pixelHeight,previewSide,'image/webp',.8);
+        source=await loadOriginal(image);
+        const small=await drawCopy(source,...sizeOf(source,image),previewSide,'image/webp',.8);
         if(!small||small.size>previewLimit)throw new Error('size');
         const body=new FormData();body.append('thumbnail',new File([small],'preview.webp',{type:'image/webp'}));
         await request(`api/admin/images/${image.imageId}/thumbnail`,'PUT',body);made++;
-      }catch{failed++;}
+      }catch{failed++;}finally{source?.close?.();}
     }
     data=await request('api/admin/images');renderLibrary();renderSelection();
     say(failed?`أُنشئت نسخ معاينة لـ ${made} صورة، وتعذر إنشاؤها لـ ${failed}. أعد المحاولة لاحقًا.`:`تم إنشاء نسخ معاينة صغيرة لـ ${made} صورة.`,failed>0);

@@ -22,6 +22,8 @@
   "Master.Themes_getForAdministration",
   "Master.Themes_getImages",
   "Master.Themes_save",
+  "Mng.CurrentStatus_AdminGet",
+  "Mng.CurrentStatus_Set",
   "Mng.CurrentStatus_get",
   "Mng.HeaderEvents_Delete",
   "Mng.HeaderEvents_GetActive",

@@ -1,6 +1,7 @@
 /* Shared admin transport, feedback, confirmations, access and draft guards. No business writes. */
 (() => {
   'use strict';
+  const permissionKey=section=>['important-numbers','institution-status'].includes(section)?'header-content':section;
   const base=new URL(document.querySelector('meta[name="companyportal-api-base"]').content.replace(/\/?$/,'/'),location.href);
   const trackers=new Set(),sections=new Set();let access=null,accessPending,confirming=false,feedbackUntil=0,feedbackText='',lastFeedback='',lastFeedbackAt=0,leaving=false;
   const dialog=document.getElementById('admin-confirm'),toasts=document.getElementById('admin-toasts');
@@ -27,9 +28,10 @@
     if(url.origin!==base.origin)throw new Error('عنوان خدمة الإدارة غير صالح.');
     const write=!['GET','HEAD'].includes(method),headers={};
     if(write){if(!header)throw new Error('ترويسة طلب الإدارة مطلوبة.');headers['X-CompanyPortal-Request']=header;if(body!==undefined&&!(body instanceof FormData))headers['Content-Type']='application/json';}
-    let response;
+    let response;const finishLoad=!write?window.AdminSections?.begin(path):null;
     try{response=await fetch(url,{method,credentials:'include',cache:'no-store',headers,signal:AbortSignal.timeout(timeout),...(body===undefined?{}:{body:body instanceof FormData?body:JSON.stringify(body)})});}
-    catch(error){reportTransport(error.name==='TimeoutError'?'انتهت مهلة الاتصال. تعذر تأكيد العملية؛ تحقق من النتيجة قبل إعادة الحفظ.':'تعذر الاتصال بخدمة البوابة. تحقق من الاتصال وأعد المحاولة.');throw error;}
+    catch(error){finishLoad?.(false);reportTransport(error.name==='TimeoutError'?'انتهت مهلة الاتصال. تعذر تأكيد العملية؛ تحقق من النتيجة قبل إعادة الحفظ.':'تعذر الاتصال بخدمة البوابة. تحقق من الاتصال وأعد المحاولة.');throw error;}
+    finishLoad?.(response.ok);
     if(!response.ok){if(!handled.includes(response.status))reportTransport(errorMessage(response.status));if(response.status===401){access=null;applyAccess();}else if(response.status===403)void loadAccess();}
     if(response.ok&&write&&!url.pathname.endsWith('/preview'))document.dispatchEvent(new CustomEvent('admin:saved',{detail:{header,path:url.pathname}}));
     return response;
@@ -65,14 +67,15 @@
     const tracker=watch(section,element,()=>fresh||serial()!==baseline,busy);
     return {saved(){baseline=serial();fresh=false;refresh();},dirty:tracker.dirty};
   }
-  async function mayLeave(section){if(busyIn(section)){notify('انتظر اكتمال العملية الحالية.','error');return false;}return !dirtyIn(section)||await discard();}
+  async function mayLeave(section){if(busyIn(section)){notify('انتظر اكتمال العملية الحالية.','error');return false;}return !dirtyIn(section)||await discard('ستُفقد التغييرات غير المحفوظة عند مغادرة القسم. هل تريد المتابعة؟');}
+  function reloadWithoutDraft(url){leaving=true;location.replace(url);location.reload();}
   function applyAccess(){
     sections.clear();if(access?.isAdmin)for(const key of access.sections||[])sections.add(key);
     if(access?.isSuperAdmin)sections.add('history');
     document.querySelectorAll('[data-admin-super]').forEach(e=>e.hidden=!access?.isSuperAdmin);
     const allowed=sections.size>0,workspace=document.getElementById('admin-workspace'),message=document.getElementById('admin-access-message');
     workspace.hidden=!allowed;message.hidden=allowed;
-    document.querySelectorAll('[data-admin-section]').forEach(button=>{const ok=allowed&&(button.dataset.adminSection==='overview'||sections.has(button.dataset.adminSection));button.hidden=!ok;button.disabled=!ok;});
+    document.querySelectorAll('[data-admin-section]').forEach(button=>{const ok=allowed&&(button.dataset.adminSection==='overview'||sections.has(permissionKey(button.dataset.adminSection)));button.hidden=!ok;button.disabled=!ok;});
     document.querySelectorAll('[data-admin-requires]').forEach(e=>e.hidden=!sections.has(e.dataset.adminRequires));
     if(!allowed)document.getElementById('admin-retry').hidden=false;
     if(!allowed)message.querySelector('p').textContent=access?'لا تملك صلاحية إدارة أقسام البوابة.':'تعذر التحقق من الصلاحية. أعد المحاولة.';
@@ -87,14 +90,14 @@
       access=data;applyAccess();status.dataset.state=data.isAdmin?'ready':'error';status.textContent=data.isAdmin?'':'لا تملك صلاحية إدارة البوابة.';status.parentElement.hidden=data.isAdmin;
     }catch{access=null;applyAccess();status.dataset.state='error';status.textContent='تعذر التحقق من صلاحية الإدارة.';status.parentElement.hidden=false;retry.hidden=false;}finally{accessPending=null;}})();return accessPending;
   }
-  function whenSection(section,action){document.addEventListener('admin:section',event=>{if(event.detail.section===section&&(section==='overview'?sections.size>0:sections.has(section)))action();});if(document.body.dataset.adminCurrent===section&&(section==='overview'?sections.size>0:sections.has(section)))queueMicrotask(action);}
+  function whenSection(section,action){document.addEventListener('admin:section',event=>{if(event.detail.section===section&&(section==='overview'?sections.size>0:sections.has(permissionKey(section))))action();});if(!window.AdminSections?.isLoading(section)&&document.body.dataset.adminCurrent===section&&(section==='overview'?sections.size>0:sections.has(permissionKey(section))))queueMicrotask(action);}
   // Observe only structural/state changes; input values are compared by each editor.
   let queued=false;function schedule(){if(queued)return;queued=true;queueMicrotask(()=>{queued=false;refresh();});}
   document.addEventListener('input',schedule);document.addEventListener('change',schedule);document.addEventListener('click',schedule);
   new MutationObserver(records=>{if(records.some(r=>r.type==='childList'&&[...r.addedNodes,...r.removedNodes].some(n=>n.nodeType===1&&!n.matches('.admin-unsaved-badge'))||r.type==='attributes'))schedule();}).observe(document.getElementById('admin-workspace'),{subtree:true,childList:true,attributes:true,attributeFilter:['class','hidden','disabled']});
   window.addEventListener('beforeunload',e=>{if(!leaving&&(dirtyIn()||busyIn())){e.preventDefault();e.returnValue='';}});
-  document.addEventListener('click',async e=>{const a=e.target.closest('a[href]');if(!a||a.target==='_blank'||e.button!==0||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey||!dirtyIn()&&!busyIn())return;const url=new URL(a.href);if(url.href===location.href||url.protocol==='javascript:')return;e.preventDefault();if(await mayLeave()){leaving=true;location.assign(url.href);}},true);
+  document.addEventListener('click',async e=>{const a=e.target.closest('a[href]');if(!a||a.target==='_blank'||e.button!==0||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey||!dirtyIn()&&!busyIn())return;const url=new URL(a.href);if(url.href===location.href||url.protocol==='javascript:')return;e.preventDefault();if(await mayLeave()){leaving=true;const here=new URL(location.href);if(url.origin===here.origin&&url.pathname===here.pathname&&url.search===here.search)reloadWithoutDraft(url.href);else location.assign(url.href);}},true);
   document.getElementById('admin-retry').onclick=()=>void loadAccess();
-  window.AdminCore={request,feedback,notify,confirm,discard,watch,trackForm,refresh,dirtyIn,busyIn,mayLeave,whenSection,can:section=>section==='overview'?sections.size>0:sections.has(section),loadAccess};
+  window.AdminCore={request,feedback,notify,confirm,discard,watch,trackForm,refresh,dirtyIn,busyIn,mayLeave,reloadWithoutDraft,whenSection,can:section=>section==='overview'?sections.size>0:sections.has(permissionKey(section)),loadAccess};
   void loadAccess();
 })();

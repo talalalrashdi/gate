@@ -46,9 +46,10 @@
  }
  function eventState(row){return !row.isDisplayed?['hidden','مخفية']:Date.parse(row.endAt)<=Date.now()?['expired','انتهت']:Date.parse(row.startAt)>Date.now()?['scheduled','مجدولة']:['live','منشورة للجميع'];}
  function detail(label,value){const box=make('div','');box.append(make('dt',label),make('dd',value));return box;}
+ let eventLimit=8;
  function render(rows){
   list.replaceChildren();if(!rows.length){const empty=make('p','لا توجد فعاليات. أضف فعالية وحدّد فترة عرضها.');empty.className='event-empty';list.append(empty);}
-  for(const row of rows){
+  for(const row of rows.slice(0,eventLimit)){
    const item=make('article','');item.className='event-row';item.dataset.eventId=row.eventId;const [key,state]=eventState(row);item.dataset.state=key;
    const heading=make('div','');heading.className='event-row-heading';const title=make('h3',row.title),badge=make('span',state),titleBlock=make('div','');titleBlock.className='event-title-block';badge.className='event-status event-status--'+key;titleBlock.append(make('span','العنوان'),title);heading.append(titleBlock,badge);
    const info=make('dl','');info.className='event-details';info.append(detail('النوع',types[row.eventType??1]),detail('بداية العرض',fmt.format(new Date(row.startAt))),detail('نهاية العرض',fmt.format(new Date(row.endAt))));
@@ -59,6 +60,7 @@
    if(row.isDisplayed){const hide=make('button','إخفاء عن الجميع');hide.type='button';hide.className='event-hide';hide.onclick=()=>void hideEvent(row);actions.append(hide);}
    const reschedule=make('button','إعادة جدولة');reschedule.type='button';reschedule.onclick=()=>void edit(row,true);actions.append(reschedule,remove);item.append(heading,info,target,actions);AdminChanges.tag(item,'events','event',row.eventId);list.append(item);
   }
+  window.AdminLists?.more(list,Math.min(eventLimit,rows.length),rows.length,()=>{eventLimit+=8;render(rows);});
  }
  async function hideEvent(row){if(busy||tracker.dirty()&&!await core.discard())return;if(!await core.confirm('سيتم إخفاء «'+row.title+'» عن جميع المستخدمين دون حذفها. يختفي التبويب عند إعادة تحميل البوابة، ويتوقف الوصول لملف الفعالية فورًا.',{title:'إخفاء الفعالية عن الجميع؟',accept:'إخفاء عن الجميع',danger:true}))return;
   await run(async()=>{await request('/'+row.eventId,'PUT',{title:row.title,eventType:row.eventType??1,eventTarget:row.eventTarget??row.appUrl,startAt:row.startAt,endAt:row.endAt,isDisplayed:false});close();await load();message('تم إخفاء الفعالية عن الجميع.');});

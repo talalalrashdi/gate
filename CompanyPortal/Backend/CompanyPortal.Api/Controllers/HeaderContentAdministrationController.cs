@@ -29,6 +29,13 @@ public sealed class HeaderContentAdministrationController(HeaderContentStore sto
     public Task<IActionResult> UpdateLevel(int colorValue,SaveStatusLevelRequest request,CancellationToken token)=>Execute(async()=>
     {await store.SaveLevelAsync(colorValue,request,User.Identity!.Name!,token);return NoContent();});
 
+    [HttpGet("current-status")]
+    public Task<IActionResult> Current(CancellationToken token)=>Execute(async()=>Ok(await store.CurrentAsync(token)));
+
+    [HttpPut("current-status"),Consumes("application/json")]
+    public Task<IActionResult> SetCurrent(SaveCurrentStatusRequest request,CancellationToken token)=>Execute(async()=>
+    {await store.SetCurrentAsync(request.ColorValue!.Value,User.Identity!.Name!,token);return NoContent();});
+
     private async Task<IActionResult> Execute(Func<Task<IActionResult>> action)
     {
         try

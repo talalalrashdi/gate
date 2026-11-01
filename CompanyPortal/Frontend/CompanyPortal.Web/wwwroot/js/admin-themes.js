@@ -134,7 +134,7 @@
     try{library=await request('api/admin/images');}catch{return;}finally{libraryLoading=false;}
     if(draft){groupOptions();changed();}renderGallery();
   }
-  window.addEventListener('focus',()=>{if(document.body.dataset.adminCurrent==='themes')refreshLibrary();});
+
   function cover(theme){const data=groupData(theme),first=data.images.find(i=>i.imageId===data.settings?.defaultImageId)||data.images[0];return first?new URL(`api/images/${first.imageId}/${library.images.find(image=>image.imageId===first.imageId)?.hasThumbnail?'thumbnail':'content'}`,api).href:new URL(template(theme.layoutKey).thumbnail,document.baseURI).href;}
   function renderGallery(){
     gallery.replaceChildren();themes.forEach(theme=>{
@@ -213,5 +213,5 @@
   });
   get('themes-retry').addEventListener('click',async()=>{if(!busy&&(!dirty()||await core.discard()))load();});
   core.watch('themes',form,()=>!editor.hidden&&dirty(),()=>busy);
-  core.whenSection('themes',()=>{if(!busy&&!dirty())load();else refreshLibrary();});
+  core.whenSection('themes',()=>{if(!loaded&&!busy)load();});
 })();

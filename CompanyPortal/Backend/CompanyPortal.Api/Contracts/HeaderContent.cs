@@ -25,3 +25,8 @@ public sealed class SaveStatusLevelRequest
     [StringLength(300)] public string? GuideText { get; init; }
     [StringLength(1500)] public string? Actions { get; init; }
 }
+
+public sealed class SaveCurrentStatusRequest
+{
+    [Required,Range(1,4)] public int? ColorValue { get; init; }
+}

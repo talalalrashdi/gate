@@ -47,6 +47,23 @@ public sealed class HeaderContentStore(IConfiguration configuration)
             new {ColorValue=(byte)colorValue,request.Title,request.ColorName,request.Summary,request.GuideText,Actions=string.Join('\n',Steps(request.Actions)),ChangedBy=changedBy},token));
     }
 
+    public sealed record CurrentRow(int Id,byte ColorValue,DateTime LastUpdated,string? ChangedBy,int? UserId);
+    public sealed record ChangeRow(long AdminChangeId,DateTime ChangedAt,string ChangedBy,int? StatusId,int? FromColorValue,string? FromTitle,int? ToColorValue,string? ToTitle);
+    private sealed record Author(string ChangedBy,string DisplayName);
+    public async Task<object> CurrentAsync(CancellationToken token)
+    {
+        await using var c=Connection();
+        using var data=await c.QueryMultipleAsync(Command("Mng.CurrentStatus_AdminGet",null,token));
+        var current=await data.ReadSingleOrDefaultAsync<CurrentRow>();var history=(await data.ReadAsync<ChangeRow>()).ToArray();
+        var names=history.Select(r=>r.ChangedBy).Concat(current?.ChangedBy is string name?[name]:Array.Empty<string>()).Distinct().ToArray();
+        var authors=(await c.QueryAsync<Author>(Command("Portal.AdminAuthors_Get",new{NamesJson=System.Text.Json.JsonSerializer.Serialize(names)},token))).ToDictionary(r=>r.ChangedBy,r=>r.DisplayName);
+        string? Who(string? account)=>account is null?null:authors.GetValueOrDefault(account,account);
+        return new{current=current is null?null:new{current.Id,current.ColorValue,lastUpdated=DecisionNoticesStore.Oman(current.LastUpdated),current.ChangedBy,current.UserId,displayName=Who(current.ChangedBy)},
+            history=history.Select(r=>new{changeId=r.AdminChangeId.ToString(System.Globalization.CultureInfo.InvariantCulture),changedAt=DecisionNoticesStore.Oman(r.ChangedAt),r.ChangedBy,displayName=Who(r.ChangedBy),r.FromColorValue,r.FromTitle,r.ToColorValue,r.ToTitle})};
+    }
+    public async Task SetCurrentAsync(int colorValue,string changedBy,CancellationToken token)
+    {await using var c=Connection();await c.ExecuteAsync(Command("Mng.CurrentStatus_Set",new{ColorValue=colorValue,ChangedBy=changedBy},token));}
+
     private async Task<LevelRow[]> Levels(CancellationToken token)
     {
         await using var c=Connection();

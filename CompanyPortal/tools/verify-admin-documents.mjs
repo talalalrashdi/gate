@@ -24,12 +24,12 @@ const tabs=Array.from({length:20},(_,i)=>({documentTabId:i+1,tabName:`قسم ${i
 const catalog={source:{roots:['D:\\PortalFiles\\Docs']},documents,tabs,items:tabs.flatMap(t=>documents.slice(0,499).map(d=>({documentTabId:t.documentTabId,documentId:d.documentId})))};
 const core={request:async()=>({ok:true,json:async()=>catalog}),feedback(){},watch(){},whenSection(section,fn){fn();}};
 const document={querySelector:()=>({content:'http://localhost:5092/'}),querySelectorAll:()=>[root],createElement:tag=>new Element(tag)};
-vm.runInNewContext(await readFile(new URL('../Frontend/CompanyPortal.Web/wwwroot/js/admin-documents.js',import.meta.url),'utf8'),{document,window:{AdminCore:core},AdminChanges:{tag(){}},URL,location:{href:'http://localhost:5093/admin/documents'},Event});
+vm.runInNewContext(await readFile(new URL('../Frontend/CompanyPortal.Web/wwwroot/js/admin-documents.js',import.meta.url),'utf8'),{document,window:{AdminCore:core,AdminLists:{compact(){},more(host,shown,total,action){host.more=shown<total?action:null;}}},AdminChanges:{tag(){}},URL,location:{href:'http://localhost:5093/admin/documents'},Event});
 for(let i=0;i<8;i++)await new Promise(r=>setImmediate(r));
 assert.match(root.textContent,/D:\\PortalFiles\\Docs/);assert.equal(list.children.length,20);assert.equal(list.querySelectorAll('input[type="checkbox"]').length,20,'Only active flags render before expanding large lists.');
 const form=list.children[0],picker=form.querySelector('.admin-document-picker');
 picker.open=true;picker.listeners.toggle();
-assert.ok(picker.textContent.includes('file0.pdf'),'Admin file path missing');let inputs=picker.querySelectorAll('input');assert.equal(inputs.length,501);assert.equal(inputs.filter(n=>n.checked).length,499);
+assert.ok(picker.textContent.includes('file0.pdf'),'Admin file path missing');let inputs=picker.querySelectorAll('input');assert.equal(inputs.length,40,'Initial picker must render only 40 rows');const fieldset=picker.querySelector('fieldset');while(fieldset.more)fieldset.more();inputs=picker.querySelectorAll('input');assert.equal(inputs.length,501);assert.equal(inputs.filter(n=>n.checked).length,499);
 inputs[499].checked=true;inputs[499].listeners.change();assert.equal(inputs[500].disabled,true);assert.match(form.textContent,/500 \/ 500/);
 inputs[499].checked=false;inputs[499].listeners.change();assert.equal(inputs[500].disabled,false);
 picker.open=false;picker.listeners.toggle();assert.equal(picker.querySelectorAll('input').length,0);

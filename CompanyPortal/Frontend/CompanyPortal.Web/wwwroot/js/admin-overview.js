@@ -15,7 +15,7 @@
     try{
       const r=await core.request('api/admin/overview');if(!r.ok)throw new Error();const data=await r.json();root.replaceChildren();
       for(const item of data.cards){
-        const target=card(item.kind==='notices'?item.section:item.kind==='status'?'header-content':item.kind,item.section);
+        const target=card(item.kind==='notices'?item.section:item.kind==='status'?'header-content':item.kind,item.kind==='status'?'institution-status':item.section);
         if(item.kind==='status'){
           if(!item.value){target.append(make('p','لم تُسجل حالة المؤسسة.'));continue;}
           const line=make('p',undefined,'admin-overview-current'),dot=make('span',undefined,'admin-overview-status-dot is-'+item.value.color);line.append(dot,make('strong',item.name||'حالة المؤسسة'));target.append(line,make('small','آخر تحديث: '+AdminChanges.date(item.value.lastUpdated)));
@@ -27,7 +27,7 @@
       }
       const history=card('changes',core.can('history')?'history':null);if(core.can('history'))history.parentElement.querySelector('.admin-overview-link').textContent='سجل التعديلات';history.parentElement.classList.add('admin-overview-history');
       list(history,data.changes,(li,row)=>{
-        const button=make('button',row.itemTitle||row.itemType);button.type='button';button.dataset.adminSection=row.section;
+        const button=make('button',row.itemTitle||row.itemType);button.type='button';button.dataset.adminSection=row.section==='header-content'?(['status-level','current-status'].includes(row.itemType)?'institution-status':'important-numbers'):row.section;
         li.append(button,make('small',(actions[row.action]||row.action)+' · '+row.displayName+' · '+AdminChanges.date(row.changedAt)));
       });status.textContent='البيانات الحالية من قاعدة البيانات؛ تُحدّث عند فتح النظرة العامة.';
     }catch{root.replaceChildren();status.textContent='تعذر تحميل النظرة العامة. تحقق من الاتصال وأعد المحاولة.';retry.hidden=false;}

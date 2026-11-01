@@ -3,7 +3,7 @@ $ErrorActionPreference = 'Stop'
 $database = Join-Path $PSScriptRoot '../Backend/Database'
 $parts = [Collections.Generic.List[string]]::new()
 $parts.Add(@'
-/* CompanyPortal fresh installation, generated from migrations 001-061.
+/* CompanyPortal fresh installation, generated from migrations 001-062.
    Open this entire UTF-8 file in SSMS and Execute (normal mode, no SQLCMD mode).
    Or: sqlcmd -S SQLSERVER -E -b -f 65001 -i CompanyPortal-Setup.sql
    FRESH INSTALL ONLY. Never run on an existing CompanyPortal database.
@@ -139,7 +139,7 @@ DECLARE @account nvarchar(512)=(SELECT ApiIdentity FROM #PortalDeployment), @sql
 IF @account<>N''
 BEGIN
  SELECT @sql+=N'GRANT EXECUTE ON OBJECT::'+QUOTENAME(SCHEMA_NAME(schema_id))+N'.'+QUOTENAME(name)+N' TO '+QUOTENAME(@account)+N';'
- FROM sys.procedures WHERE SCHEMA_NAME(schema_id) IN(N'Security',N'Portal',N'Master',N'News',N'Mstr');
+ FROM sys.procedures WHERE SCHEMA_NAME(schema_id) IN(N'Security',N'Portal',N'Master',N'News',N'Mstr',N'Mng');
  SELECT @sql+=N'GRANT EXECUTE, REFERENCES ON TYPE::'+QUOTENAME(SCHEMA_NAME(schema_id))+N'.'+QUOTENAME(name)+N' TO '+QUOTENAME(@account)+N';'
  FROM sys.table_types;
  EXEC(@sql);

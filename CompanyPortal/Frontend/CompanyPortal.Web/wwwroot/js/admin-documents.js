@@ -39,20 +39,23 @@ document.querySelectorAll('[data-pdf-library-admin]').forEach(root => {
     const values=()=>({tabName:name.value.trim(),folderId:Number(folder.value),displayOrder:Number(order.value),active:active.checked,documentIds:[...selected].sort()});
     let original=JSON.stringify(values());
     function sync(){const changed=isNew||JSON.stringify(values())!==original;f.classList.toggle('is-dirty',changed);save.disabled=busy||!changed||!selected.size||selected.size>500||!folder.value;note.textContent=changed?'تغييرات غير محفوظة':terms('تم حفظ إعدادات التبويب.');selectionCount.textContent=isSafety?'اختر ملف PDF واحدًا للكتيب.':'الملفات المحددة: '+selected.size+' / 500 — يمكن عرض عدة ملفات PDF في التبويب نفسه.';if(!isSafety)files.querySelectorAll('input[type="checkbox"]').forEach(c=>{c.disabled=busy||(!c.checked&&selected.size>=500);});}
+    let documentLimit=40;
     function filesList(){
+      if(!catalog)return;
       files.replaceChildren(make('legend',null,isSafety?'ملف PDF للكتيب — اختر ملفًا واحدًا':'ملفات PDF — اختر ما يظهر في التبويب'));
       const docs=catalog.documents.filter(d=>d.folderId===Number(folder.value));
       for(const id of selected)if(!docs.some(d=>d.documentId===id))docs.push({documentId:id,documentName:'ملف محفوظ غير متاح في المجلد لحسابك — أزِل اختياره أو راجع الصلاحية'});
       pickerTitle.textContent=(isSafety?'اختيار ملف الكتيب':'اختيار ملفات PDF')+' ('+docs.length+')';
       if(!picker.open)return;
-      docs.forEach(doc=>{const l=make('label'),c=make('input');c.type=isSafety?'radio':'checkbox';if(isSafety)c.name='booklet-pdf';c.value=doc.documentId;c.checked=selected.has(doc.documentId);const details=make('span','admin-document-file');details.append(make('span',null,doc.documentName));
+      docs.slice(0,documentLimit).forEach(doc=>{const l=make('label'),c=make('input');c.type=isSafety?'radio':'checkbox';if(isSafety)c.name='booklet-pdf';c.value=doc.documentId;c.checked=selected.has(doc.documentId);const details=make('span','admin-document-file');details.append(make('span',null,doc.documentName));
       for(const path of doc.sourcePaths||[])details.append(make('code','admin-document-path',path));
       if(!doc.sourcePaths?.length&&doc.fileName)details.append(make('small','admin-document-path',[doc.folderPath,doc.fileName].filter(Boolean).join(' \\ ')));
       l.append(c,details);files.append(l);c.addEventListener('change',()=>{if(c.checked){if(isSafety)selected.clear();selected.add(c.value);}else selected.delete(c.value);sync();});});
+      window.AdminLists?.more(files,Math.min(documentLimit,docs.length),docs.length,()=>{documentLimit+=40;filesList();sync();});
       if(!docs.length)files.append(make('p',null,'لا توجد ملفات PDF مسجلة ومتاحة في هذا المجلد.'));
     }
     picker.addEventListener('toggle',()=>{filesList();sync();});
-    folder.addEventListener('change',()=>{selected.clear();filesList();sync();});f.addEventListener('input',sync);f.addEventListener('change',sync);f.addEventListener('library:sync',sync);
+    folder.addEventListener('change',()=>{documentLimit=40;selected.clear();filesList();sync();});f.addEventListener('input',sync);f.addEventListener('change',sync);f.addEventListener('library:sync',sync);
     f.addEventListener('submit',async e=>{
       e.preventDefault();if(busy||!f.reportValidity())return;const value=values();if(!value.tabName||!selected.size)return;
       busy=true;lock();message('جارٍ حفظ التبويب…');
@@ -67,7 +70,7 @@ document.querySelectorAll('[data-pdf-library-admin]').forEach(root => {
         original=JSON.stringify(value);f.classList.remove('is-dirty');f.replaceWith(form(tab));message('تم الحفظ. تظهر التغييرات للموظفين عند إعادة تحميل البوابة.');
       }catch{message('تعذر تأكيد الحفظ. أعد تحميل القائمة للتحقق قبل إعادة المحاولة.',true);}
       finally{busy=false;lock();}
-    });filesList();sync();core.watch(section,f,()=>f.classList.contains('is-dirty'),()=>busy);return f;
+    });filesList();sync();window.AdminLists?.compact(f,tab.tabName||(isSafety?'كتيب جديد':'تبويب جديد'),isNew);core.watch(section,f,()=>f.classList.contains('is-dirty'),()=>busy);return f;
   }
   async function load(){
     if(busy)return;busy=true;lock();message('جارٍ تحميل تبويبات الوثائق…');

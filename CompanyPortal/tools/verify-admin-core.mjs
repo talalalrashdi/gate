@@ -21,7 +21,8 @@ const window={addEventListener:(name,cb)=>windowHandlers.set(name,cb)};
 let access={isAdmin:true,isSuperAdmin:false,sections:['media']},nextResponse,networkFailure;
 const calls=[];
 const fetch=async(url,options)=>{calls.push({url:url.href,options});if(url.pathname==='/api/access')return new Response(JSON.stringify(access),{status:200});if(networkFailure)throw networkFailure;return nextResponse||new Response(null,{status:204});};
-vm.runInNewContext(await readFile(new URL('../Frontend/CompanyPortal.Web/wwwroot/js/admin-core.js',import.meta.url),'utf8'),{document,window,location:{href:'http://localhost:5082/admin',assign(){}},URL,Date,Map,Set,Promise,Response,AbortSignal,FormData,fetch,CustomEvent,MutationObserver:class{observe(){}},queueMicrotask,setTimeout:(cb,ms)=>{timers.push({cb,ms});return timers.length;}});
+const reloadCalls=[];
+vm.runInNewContext(await readFile(new URL('../Frontend/CompanyPortal.Web/wwwroot/js/admin-core.js',import.meta.url),'utf8'),{document,window,location:{href:'http://localhost:5082/admin',assign(){},replace(url){reloadCalls.push(url);},reload(){reloadCalls.push('reload');}},URL,Date,Map,Set,Promise,Response,AbortSignal,FormData,fetch,CustomEvent,MutationObserver:class{observe(){}},queueMicrotask,setTimeout:(cb,ms)=>{timers.push({cb,ms});return timers.length;}});
 const core=window.AdminCore;await core.loadAccess();
 assert(core.can('media'));assert(!core.can('cards'));assert(core.can('overview'));assert(!workspace.hidden);
 assert(buttons.filter(b=>!['overview','media'].includes(b.dataset.adminSection)).every(b=>b.hidden&&b.disabled));
@@ -44,5 +45,8 @@ core.feedback(status,'أدخل الاسم والرقم.',true);let error=toasts.
 nextResponse=new Response(null,{status:401});await core.request('api/admin/media');assert(workspace.hidden);assert(buttons.every(b=>b.hidden));assert(toasts.children.some(e=>e.children[0]?.textContent.includes('انتهت صلاحية الجلسة')));
 access={isAdmin:true,isSuperAdmin:false,sections:['media']};await core.loadAccess();nextResponse=new Response(null,{status:403});await core.request('api/admin/themes');await core.loadAccess();assert(toasts.children.some(e=>e.children[0]?.textContent.includes('لا تملك صلاحية هذا القسم')));assert(!core.can('themes'));
 const successesBefore=toasts.children.filter(e=>e.className.includes('is-success')).length;core.feedback(status,'تم رفع 0 صورة. تعذر الاتصال.',true);assert.equal(toasts.children.filter(e=>e.className.includes('is-success')).length,successesBefore);assert(status.textContent);
+access={isAdmin:true,isSuperAdmin:false,sections:['header-content']};await core.loadAccess();assert(core.can('important-numbers'));assert(core.can('institution-status'));assert(!core.can('themes'));
 networkFailure=Object.assign(new Error(),{name:'TimeoutError'});await assert.rejects(()=>core.request('api/admin/media'));assert(toasts.children.some(e=>e.children[0]?.textContent.includes('انتهت مهلة الاتصال')));
 console.log('PASS: restricted/super-admin visibility; transport/header/JSON/upload; unsafe destination rejection; modal cancel/Escape/reentry/focus; independent draft baselines; native unload guard; persistent errors/timed success;401/403/timeout messages. No external writes.');
+
+core.reloadWithoutDraft('http://localhost:5082/admin#cards');assert.deepEqual(reloadCalls,['http://localhost:5082/admin#cards','reload']);let secondWarning=false;windowHandlers.get('beforeunload')({preventDefault(){secondWarning=true;}});assert.equal(secondWarning,false,'Confirmed discard must not ask a second time on reload');

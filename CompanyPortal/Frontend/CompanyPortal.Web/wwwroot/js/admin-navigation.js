@@ -10,7 +10,8 @@
     documents:['وثائق تهمك','اختر مجلدًا وملفات PDF مسجلة، ورتّب التبويبات وحدّد إظهارها.'],
     safety:['تعليمات السلامة','اختر ملفات PDF للكتيبات وحدّد أسماءها وترتيبها وإظهارها.'],
     'fixed-orders':['التوجيهات السامية','أضف التوجيهات وحدّد التاريخ والنصوص مع معاينة تنسيقها قبل الحفظ.'],
-    'header-content':['أرقام تهمك وحالة المؤسسة','أدر أرقام نافذة دليل الهاتف، ونصوص كل لون في حالة المؤسسة.'],
+    'important-numbers':['أرقام تهمك','أدر أرقام نافذة دليل الهاتف وترتيبها وإظهارها.'],
+    'institution-status':['حالة المؤسسة','أدر نصوص كل لون في حالة المؤسسة ودليل الحالات.'],
     notices:['إدارة التنويهات','اختر أنواع القرارات وفترة العرض وحدّد الاستثناءات.'],
     alerts:['إدارة التنبيهات','اختر أنواع القرارات وفترة العرض وحدّد الاستثناءات.'],
     media:['أخبارنا','أدر الفيديوهات والصور وألبوماتها، وتحقق من الملفات قبل نشرها للجميع.'],
@@ -29,25 +30,28 @@
   history.replaceState({...history.state,adminPosition:0},'',location.href);
   panels.forEach(p=>p.hidden=true);
   function show(key,focus=false){
+    if(key==='header-content')key='important-numbers';
     if(!Object.hasOwn(titles,key)||!core.can(key))key='overview';
     current=key;document.body.dataset.adminCurrent=key;
     buttons.forEach(b=>{const allowed=core.can(b.dataset.adminSection);b.hidden=!allowed;b.disabled=!allowed;});
     document.querySelectorAll('[data-admin-group]').forEach(g=>{g.hidden=![...g.querySelectorAll('[data-admin-section]')].some(b=>core.can(b.dataset.adminSection));});
-    panels.forEach(p=>p.hidden=p.dataset.adminPanel!==key||!core.can(key));
+    panels.forEach(p=>p.hidden=true);
     buttons.filter(b=>b.closest('.admin-nav')).forEach(b=>{if(b.dataset.adminSection===key)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
     const heading=document.getElementById('admin-page-title');heading.textContent=titles[key][0];const description=document.getElementById('admin-page-description');description.textContent=titles[key][1];description.hidden=!titles[key][1];
     if(focus){heading.tabIndex=-1;heading.focus({preventScroll:true});window.scrollTo({top:0,behavior:'instant'});}
-    document.dispatchEvent(new CustomEvent('admin:section',{detail:{section:key}}));core.refresh();
+    const reveal=()=>{if(current!==key||!core.can(key))return;panels.forEach(p=>p.hidden=p.dataset.adminPanel!==key);document.dispatchEvent(new CustomEvent('admin:section',{detail:{section:key}}));core.refresh();};
+    if(window.AdminSections)void window.AdminSections.open(key,reveal);else reveal();
   }
   document.addEventListener('click',async e=>{
     const button=e.target.closest('[data-admin-section]');if(!button)return;e.preventDefault();e.stopImmediatePropagation();
     const key=button.dataset.adminSection;if(navigating||button.disabled||!core.can(key))return;
-    navigating=true;try{if(key!==current&&!await core.mayLeave(current))return;const next=new URL(location.href);next.hash=key;if(key!==current){position++;history.pushState({adminPosition:position},'',next);}url=location.href;show(key,true);}finally{navigating=false;}
+    navigating=true;try{const hadDraft=key!==current&&core.dirtyIn(current);if(key!==current&&!await core.mayLeave(current))return;const next=new URL(location.href);next.hash=key;if(hadDraft){core.reloadWithoutDraft(next.href);return;}if(key!==current){position++;history.pushState({adminPosition:position},'',next);}url=location.href;show(key,true);}finally{navigating=false;}
   },true);
   window.addEventListener('popstate',async e=>{
     if(reverting){reverting=false;return;}const target=e.state?.adminPosition;
     if(navigating)return;navigating=true;
-    try{if(!await core.mayLeave(current)){if(Number.isInteger(target)&&target!==position){reverting=true;history.go(position-target);}else history.replaceState({adminPosition:position},'',url);return;}
+    try{const hadDraft=core.dirtyIn(current);if(!await core.mayLeave(current)){if(Number.isInteger(target)&&target!==position){reverting=true;history.go(position-target);}else history.replaceState({adminPosition:position},'',url);return;}
+      if(hadDraft){core.reloadWithoutDraft(location.href);return;}
       position=Number.isInteger(target)?target:position;url=location.href;show(location.hash.slice(1),true);
     }finally{navigating=false;}
   });

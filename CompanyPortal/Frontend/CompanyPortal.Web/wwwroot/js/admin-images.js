@@ -62,12 +62,13 @@
     }finally{source.close?.();if(objectUrl)URL.revokeObjectURL(objectUrl);}
   }
   const megabytes=bytes=>(bytes/1048576).toFixed(1)+' MB';
+  let imageLimit=24;
   function renderLibrary(){
     library.replaceChildren();byId('images-count').textContent=`(${data.images.length})`;
     const missing=data.images.filter(i=>!i.hasThumbnail).length,previews=byId('image-previews');previews.hidden=!missing;previews.textContent=`إنشاء نسخ معاينة صغيرة (${missing})`;
     byId('images-selected-count').textContent=`${selection.length} صورة مختارة`;
     if(!data.images.length)library.append(node('p','المكتبة فارغة. ارفع الصور للبدء.'));
-    data.images.forEach(image=>{
+    data.images.slice(0,imageLimit).forEach(image=>{
       const tile=node('article',undefined,'image-tile'),check=node('input');AdminChanges.tag(tile,'images','image',image.imageId);check.type='checkbox';check.checked=selection.some(i=>i.imageId===image.imageId);
       check.setAttribute('aria-label','اختيار '+image.imageName);
       check.addEventListener('change',()=>{
@@ -88,8 +89,9 @@
       tile.append(preview(image),node('strong',image.imageName),node('small',`${image.pixelWidth} × ${image.pixelHeight} · ${Math.ceil(image.byteLength/1024)} KB`),line,remove);library.append(tile);
     });
   }
+  function moreImages(){window.AdminLists?.more(library,Math.min(imageLimit,data.images.length),data.images.length,()=>{imageLimit+=24;renderLibrary();renderSelection();});}
   function renderSelection(){
-    updateContext();library.querySelectorAll('.image-tile').forEach(tile=>tile.classList.toggle('is-selected',tile.querySelector('input[type=checkbox]').checked));
+    moreImages();updateContext();library.querySelectorAll('.image-tile').forEach(tile=>tile.classList.toggle('is-selected',tile.querySelector('input[type=checkbox]').checked));
     itemsRoot.replaceChildren();byId('images-selected-count').textContent=`${selection.length} صورة مختارة`;
     if(defaultId===null||!selection.some(i=>i.imageId===defaultId&&i.active))defaultId=selection.find(i=>i.active)?.imageId??null;
     if(!selection.length)itemsRoot.append(node('p','اختر الصور من المكتبة المقابلة. يمكنك حفظ مجموعة فارغة وتجهيزها لاحقًا.'));

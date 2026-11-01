@@ -23,7 +23,7 @@ document.querySelectorAll('[data-header-content-editor]').forEach(root => {
     const cells=[title,number,order,active].map(input=>{const cell=make('span');cell.setAttribute('role','cell');if(!item)cell.dataset.label=input.getAttribute('aria-label');cell.append(input);return cell;});
     const actions=make('span',{className:'hc-actions'});actions.setAttribute('role','cell');actions.append(save,remove);row.append(...cells,actions);const tracker=core.trackForm(section,row,{isNew:!item,busy:()=>busy});
     save.addEventListener('click',async()=>{
-      if(busy)return;if(!title.value.trim()||!number.value.trim()){message('أدخل الاسم والرقم.');(title.value.trim()?number:title).focus();return;}
+      if(busy||core.validate&&!core.validate(row))return;if(!title.value.trim()||!number.value.trim()){message('أدخل الاسم والرقم.');(title.value.trim()?number:title).focus();return;}
       busy=true;lock(row,true);message('جارٍ الحفظ…');
       try{const body={title:title.value.trim(),number:number.value.trim(),sortOrder:Number(order.value)||0,active:active.checked};
         const response=await request(item?'/important-numbers/'+item.id:'/important-numbers',item?'PUT':'POST',body);

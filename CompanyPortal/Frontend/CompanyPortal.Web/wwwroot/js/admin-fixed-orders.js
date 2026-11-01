@@ -27,7 +27,7 @@
   async function choose(row){
     if(busy||(dirty()&&!await core.discard('إلغاء التغييرات غير المحفوظة وفتح التوجيه؟')))return;
     current=row;isNew=!row;AdminChanges.tag(form,'fixed-orders','directive',row?.fixedOrderId);editor.hidden=false;error.hidden=true;
-    const data=row||{timestamp:null,timestamp2:null,timestampType:null,contentBefor:null,contentAfter:'',contentText:'بتغيير ds{0}de إلى ss{1}se'};
+    const data=row||{timestamp:null,timestamp2:null,timestampType:1,contentBefor:null,contentAfter:'',contentText:'بتغيير ds{0}de إلى ss{1}se'};
     for(const [key,input] of Object.entries(fields))input.value=data[key]??'';
     original=JSON.stringify(values());byId('fixed-order-editor-title').textContent=isNew?'توجيه جديد':'تعديل التوجيه';save.textContent=isNew?'حفظ ونشر التوجيه':'حفظ التغييرات';renderList();sync();if(isNew)creationModal=window.AdminEditorModal.open({title:'إضافة توجيه',section:'fixed-orders',content:editor,status,mount:root,busy:()=>busy,onCancel:async()=>!dirty()||await core.discard(),onClosed:()=>{editorHome.append(editor);editor.hidden=true;isNew=false;current=null;creationModal=null;renderList();}});fields.contentAfter.focus();
   }

@@ -73,6 +73,9 @@
     form.addEventListener('submit',async event=>{
       event.preventDefault();if(busy)return;
       const selected=values();
+      if(!selected.cardName){core.fieldError?.(name,'أدخل اسم البطاقة.');return;}
+      if(card.cardType==='applications'&&!selected.appIds.length){core.fieldError?.(appChoices.querySelector('input'),'اختر تطبيقًا واحدًا على الأقل للبطاقة.');return;}
+      if(selected.audience==='roles'&&!selected.roleNames.length){core.fieldError?.(roles,'أدخل اسم دور واحد على الأقل للجمهور المحدد.');return;}
       if(!selected.cardName || (card.cardType==='applications'&&!selected.appIds.length) || (selected.audience==='roles'&&!selected.roleNames.length)
         ||selected.roleNames.some(role=>role.length>200)||selected.roleNames.length>50||selected.appIds.length>100){setStatus('أدخل الاسم واختر التطبيقات والأدوار المطلوبة ضمن الحدود.','error');return;}
       if(card.active&&!selected.active&&!await core.confirm('إخفاء هذه البطاقة من بوابة الموظفين؟ سيبقى ترتيبها المحفوظ.',{title:'إخفاء البطاقة',accept:'إخفاء',danger:true}))return;

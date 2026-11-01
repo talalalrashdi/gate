@@ -3,7 +3,7 @@
     ViewData["BodyClass"] = "connection-check";
 }
 @section Styles {
-    <link rel="stylesheet" href="@Url.Content("~/css/connection-check.css")">
+    <link rel="stylesheet" href="@Url.Content("~/css/connection-check.css")" asp-append-version="true">
 }
 <main data-connection-status="@(Model.DatabaseConnected ? "connected" : "failed")">
     <h1>فحص الاتصال</h1>

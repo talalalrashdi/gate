@@ -140,7 +140,7 @@
   picker.addEventListener('change',async()=>{if(busy||groupDirty()&&!await core.discard('توجد تغييرات غير محفوظة. هل تريد الانتقال إلى مجموعة أخرى؟')){picker.value=String(groupId??'');return;}editGroup(picker.value?Number(picker.value):null);});
   active.addEventListener('change',()=>{if(active.checked||!usedBy().length)return;active.checked=true;say('لا يمكن إيقاف مجموعة يستخدمها ثيم ('+usedBy().map(t=>t.themeName).join('، ')+'). اختر لها صورًا أخرى من محرر الثيم أولًا.',true);});
   form.addEventListener('input',mark);form.addEventListener('change',mark);rotate.addEventListener('change',refreshConstraints);
-  form.addEventListener('submit',event=>{event.preventDefault();if(!name.value.trim()){name.focus();return;}run(async()=>{
+  form.addEventListener('submit',event=>{event.preventDefault();if(!name.value.trim()){core.fieldError?.(name,'أدخل اسم مجموعة الصور.');return;}run(async()=>{
     say('جارٍ حفظ المجموعة…');
     const result=await request('api/admin/images/groups'+(groupId?'/'+groupId:''),groupId?'PUT':'POST',{groupName:name.value.trim(),rotateImages:rotate.checked,rotationSeconds:Number(seconds.value),defaultImageId:defaultId,active:active.checked,items:selection.map((i,index)=>({...i,displayOrder:index+1}))});
     groupId=result.imageGroupId;

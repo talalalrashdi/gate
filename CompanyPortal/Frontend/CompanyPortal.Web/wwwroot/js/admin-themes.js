@@ -128,7 +128,7 @@
   function groupOptions(){
     const groups=get('theme-image-group');groups.replaceChildren(option('','الصور الأصلية للقالب'));library.groups.filter(g=>g.active||g.imageGroupId===draft.imageGroupId).forEach(g=>groups.append(option(g.imageGroupId,g.groupName+(g.active?'':' (غير نشطة)'))));groups.value=String(draft.imageGroupId??'');
   }
-  // Groups created on the images page (often in another tab) appear without reloading; the draft is kept.
+  // Groups created on the images page appear when the themes section is reopened; the draft is kept.
   async function refreshLibrary(){
     if(!loaded||busy||libraryLoading)return;libraryLoading=true;
     try{library=await request('api/admin/images');}catch{return;}finally{libraryLoading=false;}
@@ -201,7 +201,7 @@
   }
   form.addEventListener('submit',async event=>{
     event.preventDefault();if(busy||!draft)return;
-    if(!draft.themeName.trim()){get('theme-name').focus();return;}
+    if(!draft.themeName.trim()){showTab('details');core.fieldError?.(get('theme-name'),'أدخل اسم الثيم.');return;}
     const badColour=['primaryColor','accentColor','backgroundColor'].find(key=>draft[key]!==null&&!/^#[\da-f]{6}$/i.test(draft[key]));
     if(badColour){showTab('colours');say(colourMessage,true);get('theme-colour-'+badColour)?.focus();return;}
     if(draft.visibility==='preview'&&(!draft.previewRoles.length||draft.previewRoles.length>50||draft.previewRoles.some(r=>r.length>200)||new Set(draft.previewRoles).size!==draft.previewRoles.length)){showTab('details');say('أدخل حتى 50 دورًا مختلفًا، بطول لا يزيد عن 200 حرف لكل دور.',true);return;}
@@ -213,5 +213,7 @@
   });
   get('themes-retry').addEventListener('click',async()=>{if(!busy&&(!dirty()||await core.discard()))load();});
   core.watch('themes',form,()=>!editor.hidden&&dirty(),()=>busy);
-  core.whenSection('themes',()=>{if(!loaded&&!busy)load();});
+  // First visit loads everything; reopening the section re-reads only the image library (groups/images made
+  // on صور الواجهة since then), keeping any open draft. No refresh on window focus.
+  core.whenSection('themes',()=>{if(!loaded&&!busy)load();else void refreshLibrary();});
 })();

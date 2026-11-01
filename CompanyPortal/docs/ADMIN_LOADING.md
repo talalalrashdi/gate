@@ -16,7 +16,7 @@ Images initially render24 tiles, then24 more per click. Events initially render8
 
 ## Freshness and drafts
 
-The global refresh/last-load toolbar was removed at the user's request. Existing error retry controls remain. Clean editors retain loaded data on revisits; overview/history retain read-on-open behavior. Unsaved section navigation warns and then reloads the chosen destination on confirmation, clearing in-memory drafts and selections. A cancellation preserves the current editor. Browser Back/Forward uses the same warning/discard behavior. No polling was introduced.
+The global refresh/last-load toolbar was removed at the user's request. Existing error retry controls remain. Clean editors retain loaded data on revisits; overview/history retain read-on-open behavior. Exception: reopening الثيمات والمظهر re-reads only the image library (one `GET /api/admin/images`) so image groups created on صور الواجهة appear in the theme editor; an open theme draft is kept. There is no refresh on window focus. Unsaved section navigation warns and then reloads the chosen destination on confirmation, clearing in-memory drafts and selections. A cancellation preserves the current editor. Browser Back/Forward uses the same warning/discard behavior. No polling was introduced.
 
 ## Layout
 

@@ -1905,6 +1905,13 @@
       "reason": "Former stock header avatar; replaced by assets/avatar-placeholder.svg and the Dalil photo.",
       "bytes": 1752887,
       "sha256": "243704d6c841b9e906c6650afa2d34d60ff68e36d1aa0ba025f6edf9a94eb3d6"
+    },
+    {
+      "path": "assets/fonts/LICENSE.txt",
+      "originalPath": "assets/fonts/LICENSE.txt",
+      "reason": "Removed 1 November 2026 at the user's request: IBM Plex OFL text that did not describe the bundled GT America Arabic (Grilli Type) fonts; not referenced by any page or font-face.",
+      "bytes": 4456,
+      "sha256": "7e6b2818edbd8f6a01ae80641cc8f16a51080d08fb4e532be3a0b6f74adb07da"
     }
   ]
 }

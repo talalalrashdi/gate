@@ -4,24 +4,31 @@
   const permissionKey=section=>section;
   const base=new URL(document.querySelector('meta[name="companyportal-api-base"]').content.replace(/\/?$/,'/'),location.href);
   const trackers=new Set(),sections=new Set();let access=null,accessPending,confirming=false,feedbackUntil=0,feedbackText='',lastFeedback='',lastFeedbackAt=0,leaving=false;
+  let committed=null;
   const dialog=document.getElementById('admin-confirm'),toasts=document.getElementById('admin-toasts');
   const make=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;};
   function notify(text,type='success'){
     if(!text)return;if(text===lastFeedback&&Date.now()-lastFeedbackAt<2000)return;lastFeedback=text;lastFeedbackAt=Date.now();
     const e=make('div',undefined,'admin-toast is-'+type);e.setAttribute('role',type==='error'?'alert':'status');
-    const close=make('button','×');close.type='button';close.setAttribute('aria-label','إغلاق الرسالة');close.onclick=()=>e.remove();e.append(make('span',text),close);toasts.append(e);
+    const close=make('button','×');close.type='button';close.setAttribute('aria-label','إغلاق الرسالة');close.onclick=()=>e.remove();e.append(make('span',text),close);
+    const open=[...document.querySelectorAll('dialog[open]')].filter(d=>d.tagName==='DIALOG'&&d.open).at(-1);let host=toasts;
+    if(open){host=open.querySelector(':scope > .admin-modal-toasts');if(!host){host=make('div',undefined,'admin-modal-toasts');host.setAttribute('aria-label','رسائل الإجراء');open.append(host);}}host.append(e);
     if(type!=='error')setTimeout(()=>e.remove(),4500);
   }
   function feedback(element,text,error=false){
     const failed=error||/^(تعذر|لم يتم|لا يمكن|ليس لديك|أدخل|تحقق|بلغت|تجاوزت|حسابك)/.test(text);
-    const success=/^تم (الحفظ|حفظ|حذف|الحذف|رفع|إخفاء|تعيين)/.test(text)||text.startsWith('الثيم مباشر');
+    const success=/^(تم (الحفظ|حفظ|حذف|الحذف|رفع|إخفاء|تعيين|إنشاء|تعطيل|تطبيق|نشر|تحديث)|تمت (إضافة|إزالة|تحديث))/.test(text)||text.startsWith('الثيم مباشر');
     const value=failed&&Date.now()<feedbackUntil?feedbackText:text;
     element.textContent=success&&!failed?'':value;element.dataset.error=String(failed);
-    if(failed&&!(Date.now()<feedbackUntil))notify(value,'error');else if(success&&!failed)notify(/حذف|الحذف/.test(text)?'تم الحذف':/رفع/.test(text)?'تم الرفع':'تم الحفظ');
+    if(failed&&!(Date.now()<feedbackUntil))notify(value,'error');else if(success&&!failed){const generic=/^تم (?:الحفظ|الحذف)(?:[.،]|$)|^تم حفظ التغييرات(?:[.،]|$)/.test(text);const concise=text.split(/\.(?:\s|$)/)[0];notify(generic&&committed&&Date.now()-committed.at<30000?committed.text:concise);committed=null;}
     refresh();
   }
   function errorMessage(status){return ({401:'انتهت صلاحية الجلسة. أعد تسجيل الدخول أو تحميل الصفحة.',403:'لا تملك صلاحية هذا القسم.',400:'تحقق من القيم المطلوبة وصحتها.',404:'العنصر غير موجود. أعد تحميل القائمة.',409:'تعذر الحفظ لوجود تعارض. راجع البيانات وأعد المحاولة.',413:'حجم الملف يتجاوز الحد المسموح.',429:'طلبات كثيرة. انتظر قليلًا ثم أعد المحاولة.'})[status]||'تعذر إتمام العملية. تحقق من الاتصال وأعد المحاولة.';}
   function reportTransport(text){feedbackText=text;feedbackUntil=Date.now()+2000;notify(text,'error');}
+  function actionText(path,method){
+    const routes=[[/\/application-directory\/applications\/\d+$/,['تمت إضافة معلومات التطبيق','تم حفظ وصف التطبيق وتصنيفه','تم حذف معلومات التطبيق']],[/\/media\/groups(?:\/\d+)?$/,['تمت إضافة ألبوم الصور','تم حفظ ألبوم الصور','تم حذف ألبوم الصور']],[/\/media\/items(?:\/\d+)?$/,['تمت إضافة الوسائط','تم حفظ الوسائط','تم حذف الوسائط']],[/\/permissions$/,['تم إنشاء الدور','تم حفظ صلاحيات الدور','تم تعطيل الدور']],[/\/important-numbers(?:\/\d+)?$/,['تمت إضافة الرقم','تم حفظ الرقم','تم حذف الرقم']],[/\/current-status$/,['تم تطبيق حالة المؤسسة','تم تطبيق حالة المؤسسة','تم حذف الحالة']],[/\/categories(?:\/\d+)?$/,['تم إنشاء التصنيف','تم حفظ التصنيف','تم حذف التصنيف']],[/\/fixed-orders(?:\/\d+)?$/,['تمت إضافة التوجيه','تم حفظ التوجيه','تم حذف التوجيه']],[/\/cards(?:\/\d+)?$/,['تمت إضافة بطاقة التطبيقات','تم حفظ البطاقة','تم حذف البطاقة']],[/\/custom-popups(?:\/\d+)?$/,['تمت إضافة التنويه المخصص','تم حفظ التنويه المخصص','تم حذف التنويه المخصص']],[/\/document-library(?:\/\d+)?$/,['تمت إضافة تبويب الوثائق','تم حفظ تبويب الوثائق','تم حذف تبويب الوثائق']],[/\/safety-library(?:\/\d+)?$/,['تمت إضافة كتيب السلامة','تم حفظ كتيب السلامة','تم حذف كتيب السلامة']],[/\/events(?:\/\d+)?$/,['تمت إضافة الفعالية','تم حفظ الفعالية','تم حذف الفعالية']],[/\/images\/groups(?:\/\d+)?$/,['تم إنشاء مجموعة الصور','تم حفظ مجموعة الصور','تم حذف مجموعة الصور']],[/\/themes(?:\/\d+)?$/,['تم إنشاء الثيم','تم حفظ الثيم','تم حذف الثيم']],[/\/decision-notices\/1(?:\/window)?$/,['تم حفظ إعدادات التنويهات','تم حفظ إعدادات التنويهات','تم حذف التنويه']],[/\/decision-notices\/2(?:\/window)?$/,['تم حفظ إعدادات التنبيهات','تم حفظ إعدادات التنبيهات','تم حذف التنبيه']]];
+    return routes.find(([pattern])=>pattern.test(path))?.[1][method==='DELETE'?2:method==='POST'?0:1]||'تم حفظ التغييرات';
+  }
   async function request(path,options={}){
     // handled: statuses the caller explains with its own specific message, so the generic one is not shown.
     const {method='GET',body,header,timeout=15000,handled=[]}=options,url=new URL(path,base);
@@ -32,8 +39,8 @@
     try{response=await fetch(url,{method,credentials:'include',cache:'no-store',headers,signal:AbortSignal.timeout(timeout),...(body===undefined?{}:{body:body instanceof FormData?body:JSON.stringify(body)})});}
     catch(error){finishLoad?.(false);reportTransport(error.name==='TimeoutError'?'انتهت مهلة الاتصال. تعذر تأكيد العملية؛ تحقق من النتيجة قبل إعادة الحفظ.':'تعذر الاتصال بخدمة البوابة. تحقق من الاتصال وأعد المحاولة.');throw error;}
     finishLoad?.(response.ok);
-    if(!response.ok){if(!handled.includes(response.status))reportTransport(errorMessage(response.status));if(response.status===401){access=null;applyAccess();}else if(response.status===403)void loadAccess();}
-    if(response.ok&&write&&!url.pathname.endsWith('/preview'))document.dispatchEvent(new CustomEvent('admin:saved',{detail:{header,path:url.pathname}}));
+    if(!response.ok){let explained=false;if(response.status===400&&window.AdminValidation){try{explained=window.AdminValidation.server(await response.clone().json());}catch{/* Non-validation responses keep their section's own explanation. */}}if(explained)reportTransport('تعذر الحفظ. راجع الحقول الموضحة في النموذج.');else if(!handled.includes(response.status))reportTransport(errorMessage(response.status));if(response.status===401){access=null;applyAccess();}else if(response.status===403)void loadAccess();}
+    if(response.ok&&write&&!url.pathname.endsWith('/preview')){committed={at:Date.now(),text:actionText(url.pathname,method)};document.dispatchEvent(new CustomEvent('admin:saved',{detail:{header,path:url.pathname}}));}
     return response;
   }
   async function confirm(message,{title='تأكيد الإجراء',accept,danger=false}={}){
@@ -98,6 +105,6 @@
   window.addEventListener('beforeunload',e=>{if(!leaving&&(dirtyIn()||busyIn())){e.preventDefault();e.returnValue='';}});
   document.addEventListener('click',async e=>{const a=e.target.closest('a[href]');if(!a||a.target==='_blank'||e.button!==0||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey||!dirtyIn()&&!busyIn())return;const url=new URL(a.href);if(url.href===location.href||url.protocol==='javascript:')return;e.preventDefault();if(await mayLeave()){leaving=true;const here=new URL(location.href);if(url.origin===here.origin&&url.pathname===here.pathname&&url.search===here.search)reloadWithoutDraft(url.href);else location.assign(url.href);}},true);
   document.getElementById('admin-retry').onclick=()=>void loadAccess();
-  window.AdminCore={request,feedback,notify,confirm,discard,watch,trackForm,refresh,dirtyIn,busyIn,mayLeave,reloadWithoutDraft,whenSection,can:section=>section==='overview'?sections.size>0:sections.has(permissionKey(section)),loadAccess};
+  window.AdminCore={request,feedback,notify,confirm,discard,watch,trackForm,refresh,dirtyIn,busyIn,mayLeave,reloadWithoutDraft,whenSection,validate:form=>window.AdminValidation?.validate(form)??true,fieldError:(field,text)=>window.AdminValidation?.error(field,text),can:section=>section==='overview'?sections.size>0:sections.has(permissionKey(section)),loadAccess};
   void loadAccess();
 })();

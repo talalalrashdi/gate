@@ -17,6 +17,7 @@ public sealed class AdminChangesStore(IConfiguration configuration)
         public DateTime ChangedAt { get; set; }
         public string ChangedBy { get; set; } = "";
         public string DisplayName { get; set; } = "";
+        public string? WorkStation { get; set; }
         public string ChangeId { get; set; } = "";
     }
     private static CommandDefinition Command(string sp, object args, CancellationToken token) =>

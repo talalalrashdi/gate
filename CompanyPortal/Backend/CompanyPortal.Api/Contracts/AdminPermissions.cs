@@ -7,3 +7,8 @@ public sealed class SaveAdminPermissionsRequest
     [Required,StringLength(200,MinimumLength=1)] public string RoleName {get;init;}="";
     [Required,MaxLength(13)] public string[] Sections {get;init;}=[];
 }
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public sealed class DeleteAdminRoleRequest
+{
+    [Required,StringLength(200,MinimumLength=1)] public string RoleName {get;init;}="";
+}

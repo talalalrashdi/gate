@@ -6,7 +6,11 @@ using CompanyPortal.Api.Data;
 using CompanyPortal.Api.Mail;
 
 var builder = WebApplication.CreateBuilder(args);
+// SQL HOST_NAME() must identify this application host, regardless of a copied connection string.
+if(builder.Configuration.GetConnectionString("CompanyPortal") is {} portalConnection)
+ builder.Configuration["ConnectionStrings:CompanyPortal"]=new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(portalConnection){WorkstationID=Environment.MachineName}.ConnectionString;
 builder.Services.AddCentralErrorLogging();
+builder.Services.AddScoped<CustomPopupsStore>();
 
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>

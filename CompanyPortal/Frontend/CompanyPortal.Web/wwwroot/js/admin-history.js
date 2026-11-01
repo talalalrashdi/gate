@@ -6,7 +6,7 @@
   const make=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
   for(const [value,name] of Object.entries(names)){const o=make('option',name);o.value=value;form.elements.section.append(o);}
   async function details(row){
-    by('details-title').textContent=row.itemTitle||'تفاصيل العنصر '+row.itemId;by('details-meta').textContent=AdminChanges.date(row.changedAt)+' · '+row.displayName+' · '+names[row.section]+' · '+actions[row.action];
+    by('details-title').textContent=row.itemTitle||'تفاصيل العنصر '+row.itemId;by('details-meta').textContent=AdminChanges.date(row.changedAt)+' · '+row.displayName+' · '+names[row.section]+' · '+actions[row.action]+(row.workStation?' · الجهاز: '+row.workStation:'');
     by('diff').replaceChildren();by('details-status').textContent='جارٍ تحميل التفاصيل…';dialog.showModal();const current=++generation;
     try{const r=await core.request('api/admin/changes/'+encodeURIComponent(row.changeId));if(!r.ok)throw new Error();const data=await r.json();if(!dialog.open||current!==generation)return;
       const fields=AdminHistoryDiff.compare(data.oldJson?JSON.parse(data.oldJson):null,data.newJson?JSON.parse(data.newJson):null);

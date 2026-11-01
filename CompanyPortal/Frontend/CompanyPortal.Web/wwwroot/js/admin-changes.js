@@ -34,7 +34,7 @@
     Object.assign(element.dataset,{adminItemSection:section,adminItemType:type,adminItemId:String(id)});
     if(!queued.has(section)){queued.add(section);queueMicrotask(()=>{queued.delete(section);render(section);});}
   }
-  const routes={events:'events','admin-cards':'cards','application-directory':'applications','document-library':'documents','safety-library':'safety','fixed-orders':'fixed-orders','header-content':'header-content',media:'media','admin-images':'images','admin-themes':'themes'};
+  const routes={'custom-popups':'notices',events:'events','admin-cards':'cards','application-directory':'applications','document-library':'documents','safety-library':'safety','fixed-orders':'fixed-orders','header-content':'header-content',media:'media','admin-images':'images','admin-themes':'themes'};
   document.addEventListener('admin:saved',e=>{
     let section=e.detail.header==='decision-notices'?(e.detail.path.match(/decision-notices\/([12])/)[1]==='1'?'notices':'alerts'):routes[e.detail.header];
     if(section==='header-content')section=e.detail.path.includes('important-numbers')?'important-numbers':'institution-status';

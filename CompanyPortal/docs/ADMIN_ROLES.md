@@ -2,6 +2,8 @@
 
 Implemented 1 November 2026. `/admin/permissions` (الأدوار والصلاحيات) is available only to `CompanyPortal.Admin`. It maps existing security roles to portal administration sections. Employee and group memberships stay in the authoritative security database; this page does not assign people to roles.
 
+Migration065 adds role creation and soft deletion for portal-managed roles. See [ROLES_POPUPS_AND_HERO.md](ROLES_POPUPS_AND_HERO.md) for source writers, deployment and workstation/popup changes.
+
 ## Initial roles
 
 | Security role | Administration sections |

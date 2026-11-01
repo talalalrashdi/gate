@@ -141,7 +141,9 @@
       selectTheme(event.detail.layoutKey, event.detail.themeName);
   });
   // Later scenes keep their file in data-src until rotation needs them.
+  let fallbackImagesReady=false;
   function prepareScene(image) {
+    if(!fallbackImagesReady||backdrop?.dataset.managed)return;
     if (image?.dataset.src && !image.getAttribute('src')) image.src = image.dataset.src;
   }
   function showOfficialScene(index) {
@@ -174,7 +176,8 @@
       }, 3000);
     }, 5000);
   }
-  document.addEventListener('companyportal:theme-images', () => {
+  document.addEventListener('companyportal:theme-images', event => {
+    if(!event.detail)fallbackImagesReady=true;
     if (!backdrop?.dataset.managed) showOfficialScene(0);
     syncOfficialPlayback();
   });
@@ -185,6 +188,7 @@
       syncOfficialPlayback();
     });
   }
+  setTimeout(()=>{if(!backdrop?.dataset.managed){fallbackImagesReady=true;showOfficialScene(0);}},1500);
   showOfficialScene(0);
   // Preserve selections saved before descriptive theme keys were introduced.
   const legacyThemeNames = { 1: 'business', 2: 'national-day', 3: 'work', 4: 'official', 5: 'news' };

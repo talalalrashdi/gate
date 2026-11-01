@@ -102,5 +102,15 @@
   "Security.UserProfile_getById",
   "Security.UserRoles_get",
   "Security.User_getByUsername",
-  "Security.User_getPersonalId"
+  "Security.User_getPersonalId",
+  "Portal.ManagedRoles_Get",
+  "Portal.ManagedRoles_Create",
+  "Portal.ManagedRoles_Deactivate",
+  "Security.Role_Create",
+  "Security.Role_Deactivate",
+  "Mng.CustomPopups_GetAll",
+  "Mng.CustomPopups_GetVisible",
+  "Mng.CustomPopups_Save",
+  "Mng.CustomPopups_Delete",
+  "Portal.UserPopupDismissals_Save"
 ]

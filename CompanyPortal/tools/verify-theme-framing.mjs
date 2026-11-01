@@ -4,7 +4,7 @@ import vm from 'node:vm';
 class Element{
  constructor(){this.dataset={};this.attributes=new Set();this.properties=new Map();this.style={setProperty:(k,v)=>this.properties.set(k,v),removeProperty:k=>this.properties.delete(k)};this.classList={toggle(){}};}
  toggleAttribute(k,on){on?this.attributes.add(k):this.attributes.delete(k);}
- remove(){} removeAttribute(){}
+ remove(){} removeAttribute(){} getAttribute(k){return k==='src'?this.url:null;}
  set src(value){this.url=value;this.onload?.();}
 }
 const body=new Element(),backdrop=new Element(),listeners=new Map();let mounted=[];

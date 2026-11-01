@@ -14,18 +14,20 @@
   let writes = Promise.resolve(), imageVersion = 0;
   async function loadImages(theme) {
     const current = ++imageVersion;
-    document.dispatchEvent(new CustomEvent('companyportal:theme-images', {detail:null}));
+    let delivered=false;
     try {
       const response = await request(`api/themes/${theme.themeId}/images`);
       if (!response.ok) return;
       const data = await response.json();
       if (current !== imageVersion || !data.settings || !Array.isArray(data.images) || !data.images.length) return;
       if (!data.images.every(image => Number.isInteger(image.imageId) && image.imageId > 0)) return;
+      delivered=true;
       document.dispatchEvent(new CustomEvent('companyportal:theme-images', {detail:{
         // A smaller display copy (long side 2560 px) replaces oversized originals when one has been made.
         ...data.settings, images:data.images.map(image => ({...image, url:new URL(`api/images/${image.imageId}/${image.hasDisplay === true ? 'display' : 'content'}`,root).href}))
       }}));
     } catch { /* Keep the original layout images if the API is unavailable. */ }
+    finally {if(current===imageVersion&&!delivered)document.dispatchEvent(new CustomEvent('companyportal:theme-images',{detail:null}));}
   }
   const show = text => { status.textContent = text; };
   const valid = theme => Number.isInteger(theme?.themeId) && theme.themeId > 0

@@ -13,8 +13,13 @@ public sealed class AdminPermissionsStore(IConfiguration configuration)
         await using var c=Connection();
         var roles=(await c.QueryAsync<string>(Cmd("Security.Roles_getForAdministration",null,token))).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
         var grants=(await c.QueryAsync<Grant>(Cmd("Portal.AdminSectionRoles_Get",null,token))).ToArray();
-        return new{roles=roles.Select(name=>new{roleName=name,isSuperAdmin=name=="CompanyPortal.Admin",sections=grants.Where(g=>g.Active&&g.RoleName==name).Select(g=>g.SectionKey).ToArray()}),sections=AdminSections.All.Where(s=>s!="permissions").ToArray()};
+        var managed=(await c.QueryAsync<string>(Cmd("Portal.ManagedRoles_Get",null,token))).ToHashSet(StringComparer.Ordinal);
+        return new{roles=roles.Select(name=>new{roleName=name,isSuperAdmin=name=="CompanyPortal.Admin",canDelete=managed.Contains(name)&&name!="CompanyPortal.Admin",sections=grants.Where(g=>g.Active&&g.RoleName==name).Select(g=>g.SectionKey).ToArray()}),sections=AdminSections.All.Where(s=>s!="permissions").ToArray()};
     }
     public async Task SaveAsync(string role,string[] sections,CancellationToken token)
     {await using var c=Connection();await c.ExecuteAsync(Cmd("Portal.AdminSectionRoles_Save",new{RoleName=role,SectionsJson=JsonSerializer.Serialize(sections)},token));}
+    public async Task CreateAsync(string role,string[] sections,CancellationToken token)
+    {await using var c=Connection();await c.ExecuteAsync(Cmd("Portal.ManagedRoles_Create",new{RoleName=role,SectionsJson=JsonSerializer.Serialize(sections)},token));}
+    public async Task DeleteAsync(string role,CancellationToken token)
+    {await using var c=Connection();await c.ExecuteAsync(Cmd("Portal.ManagedRoles_Deactivate",new{RoleName=role},token));}
 }

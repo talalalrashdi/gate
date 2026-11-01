@@ -8,7 +8,7 @@
   document.querySelectorAll('input,select,textarea,button').forEach(e=>e.disabled=true);
   async function apply(section,v){
     if(!v||typeof v!=='object')return;
-    window.CompanyPortalTheme.previewLayout('official','الرسمي');window.CompanyPortalTheme.apply({layoutKey:'official'});
+    window.CompanyPortalTheme.previewLayout('official','الرسمي');window.CompanyPortalTheme.apply({layoutKey:'official'});window.CompanyPortalTheme.setImages(null);
     shell.hidden=false;message.textContent='معاينة القالب الرسمي بالقيم غير المحفوظة — لا تُحفظ بيانات ولا تُسجّل قراءة المحتوى.';
     if(section==='fixed-orders'){
       if(!['contentAfter','contentText'].every(k=>text(v[k]))||v.contentBefor!==null&&!text(v.contentBefor))return;

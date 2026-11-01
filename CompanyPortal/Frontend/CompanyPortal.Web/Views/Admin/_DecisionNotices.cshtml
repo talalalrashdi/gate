@@ -23,5 +23,16 @@
         <button type="submit" class="admin-primary">حفظ فترة القرار</button><button type="button" data-notice-reset>استعادة المدة العامة</button>
       </fieldset></form>
     </div>
+  @if(channel==1){
+    <div class="admin-panel" id="custom-popup-admin"><header class="admin-panel-header"><div><h2>تنويهات مخصصة</h2><p>اكتب النوع والتفاصيل دون إنشاء قرار. تظهر للجميع خلال الفترة؛ إغلاق الموظف يحفظ إخفاءها عنه.</p></div></header>
+    <p id="custom-popup-status" role="status"></p>
+    <form id="custom-popup-form" class="notice-admin-form"><fieldset disabled>
+      <input type="hidden" name="popupId"><label>النوع<input name="popupType" maxlength="100" required></label>
+      <label>التفاصيل<textarea name="details" maxlength="2000" rows="4" required></textarea></label>
+      <label>بداية العرض<input name="startAt" type="datetime-local" required></label><label>نهاية العرض<input name="endAt" type="datetime-local" required></label>
+      <label><input name="isDisplayed" type="checkbox"> إظهار للجميع خلال الفترة المحددة</label>
+      <div><button type="submit" class="admin-primary">حفظ التنويه</button><button type="button" id="custom-popup-cancel">إلغاء / تنويه جديد</button></div>
+    </fieldset></form><div id="custom-popup-list"></div><button type="button" id="custom-popup-retry" hidden>إعادة المحاولة</button></div>
+  }
   </section>
 }

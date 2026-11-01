@@ -6,8 +6,9 @@
   const dialog=section.querySelector('#documents-dialog'),body=section.querySelector('#documents-dialog-body');
   const make=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
   const reads=window.CompanyPortalLibraryReads('documents',endpoint);
+  const lazy=window.CompanyPortalLazy?.gate(section)||{run:f=>f(),clear(){}};
   let tabs=[],selected,controller,generation=0;
-  function clear(){reads.clear();tabs=[];categories.replaceChildren();results.replaceChildren();section.querySelector('#documents-count').textContent='';section.querySelector('#documents-current-title').textContent='الوثائق';dialog.close();body.replaceChildren();}
+  function clear(){lazy.clear();reads.clear();tabs=[];categories.replaceChildren();results.replaceChildren();section.querySelector('#documents-count').textContent='';section.querySelector('#documents-current-title').textContent='الوثائق';dialog.close();body.replaceChildren();}
   function open(doc,tab){
     section.querySelector('#documents-dialog-title').textContent=doc.documentName;
     section.querySelector('#documents-dialog-category').textContent=tab.tabName;
@@ -24,7 +25,8 @@
       if(tab?.documents.some(d=>d.hasRead===false))button.append(make('span','library-item-new library-tab-new','جديد'));
     });
   }
-  function render(){
+  function render(){lazy.run(renderVisible);}
+  function renderVisible(){
     const tab=tabs.find(t=>t.documentTabId===selected)||tabs[0];selected=tab?.documentTabId;
     categories.replaceChildren(...tabs.map(t=>{const b=make('button',null,t.tabName);b.type='button';b.setAttribute('aria-pressed',String(t===tab));b.setAttribute('data-library-tab',t.documentTabId);if(t.documents.some(d=>d.hasRead===false))b.append(make('span','library-item-new library-tab-new','جديد'));b.addEventListener('click',()=>{selected=t.documentTabId;render();categories.querySelector('[aria-pressed="true"]')?.focus();});return b;}));
     section.querySelector('#documents-current-title').textContent=tab?.tabName||'الوثائق';

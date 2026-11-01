@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
-for(const kind of ['forms','correspondence']){
+for(const deferred of [false,true])for(const kind of ['forms','correspondence']){
  const isForms=kind==='forms',idKey=isForms?'formId':'correspondenceId',css=isForms?'portal-form-item':'portal-correspondence-item';
  class Element{
   children=[];dataset={};listeners={};attributes={};_text='';open=false;hidden=false;
@@ -19,8 +19,10 @@ for(const kind of ['forms','correspondence']){
  let data={unreadCount:3,items:[{[idKey]:'1',title:'First',formNumber:'2026/101',senderName:'Sender',purpose:'للعلم',docNo:'2026/1',sentAt:'2026-10-28T06:00:00Z',receivedAt:'2026-10-28T06:00:00Z',isOpened:false,isSamplePreview:true,canOpen:false},{[idKey]:'2',title:'Second',senderName:'Sender',purpose:'للإجراء',docNo:'2026/2',sentAt:'2026-10-28T06:00:00Z',receivedAt:'2026-10-28T06:00:00Z',isOpened:false,isSamplePreview:true,canOpen:false}]};
  const events={},windowEvents={},timers=new Map(),requests=[];let responseStatus=200,nextTimer=0;
  const document={hidden:false,activeElement:null,querySelector:s=>s.startsWith('[data-work-system=')?card:{content:'http://api.test/'},getElementById:()=>null,createElement:()=>new Element(),createTextNode:t=>Object.assign(new Element(),{textContent:t,nodeType:3}),addEventListener:(k,fn)=>events[k]=fn};
- const context=vm.createContext({document,window:{addEventListener:(k,fn)=>windowEvents[k]=fn},location:{href:'http://portal.test/'},URL,Intl,Date,Math,AbortController,AbortSignal,fetch:async(url,opts)=>{requests.push({url,opts});return {status:responseStatus,ok:responseStatus===200,json:async()=>structuredClone(data)};},setTimeout:(fn,ms)=>{const id=++nextTimer;timers.set(id,{fn,ms});return id;},clearTimeout:id=>timers.delete(id)});
+ let ready=!deferred,pending;const lazy={get ready(){return ready;},run(fn){if(ready)fn();else pending=fn;},clear(){pending=null;},activate(){ready=true;const fn=pending;pending=null;fn?.();}};
+ const context=vm.createContext({document,window:{CompanyPortalLazy:{gate:()=>lazy},addEventListener:(k,fn)=>windowEvents[k]=fn},location:{href:'http://portal.test/'},URL,Intl,Date,Math,AbortController,AbortSignal,fetch:async(url,opts)=>{requests.push({url,opts});return {status:responseStatus,ok:responseStatus===200,json:async()=>structuredClone(data)};},setTimeout:(fn,ms)=>{const id=++nextTimer;timers.set(id,{fn,ms});return id;},clearTimeout:id=>timers.delete(id)});
  vm.runInContext(await readFile(new URL('../Frontend/CompanyPortal.Web/wwwroot/js/'+(isForms?'forms':'correspondence')+'-inbox.js',import.meta.url),'utf8'),context);await new Promise(setImmediate);
+ if(deferred){assert.equal(badge.textContent,'3');assert.equal(list.children.length,0,'Offscreen inbox rendered rows');assert.ok(String(requests[0].url).endsWith('/count'),'Offscreen inbox fetched full list');lazy.activate();await new Promise(setImmediate);assert.ok(String(requests.at(-1).url).endsWith('/'+kind),'Visible inbox did not fetch full list');}
  assert.equal(badge.textContent,'3');assert.equal(list.children[0].dataset.state,'unopened');
  if(isForms){assert.equal(list.children[0].querySelector('.portal-form-heading').querySelector('.portal-form-number').textContent,'2026/101');assert.equal(list.children[1].querySelector('.portal-form-heading').querySelector('.portal-form-number'),null,'Missing source number should stay hidden');}
  const choose=purpose=>{const button=filter.children.find(b=>b.dataset.purpose===purpose);assert.ok(button,'Missing purpose filter '+purpose);filter.listeners.click({target:{closest:()=>button}});};
@@ -43,5 +45,5 @@ for(const kind of ['forms','correspondence']){
  data.items.pop();await refresh();assert.equal(list.children.length,2,'Removed purpose did not reset to all');
  responseStatus=403;await refresh();assert.equal(filter.children.length,0,'Authorization loss retained filters');assert.equal(list.children.length,0);responseStatus=200;data.items[0].isOpened=false;data.unreadCount=3;await refresh();assert.equal(badge.textContent,'3','Authorization loss must clear local preview state');
  assert.ok(requests.every(r=>!r.opts.method||r.opts.method==='GET'),'Preview must never write to source');windowEvents.pagehide();
- console.log('PASS '+kind+': '+(isForms?'local preview read, repeat/refresh/source acknowledgement':'SP-owned read state/count, no per-item URL/preview, legacy link flag ignored')+', filters, 403 reset and no writes.');
+ console.log('PASS '+(deferred?'lazy ':'immediate ')+kind+': '+(isForms?'local preview read, repeat/refresh/source acknowledgement':'SP-owned read state/count, no per-item URL/preview, legacy link flag ignored')+', filters, 403 reset and no writes.');
 }

@@ -45,5 +45,5 @@
     catch(error){status.textContent=error.name==='Error'?error.message:'تعذر تأكيد الإرسال. احتفظ بالتفاصيل وأعد المحاولة؛ لن يتكرر الطلب نفسه.';retry.hidden=false;}
     finally{busy=false;form.querySelector('fieldset').disabled=!catalog;tabs.forEach(tab=>tab.disabled=false);}
   });
-  form.addEventListener('input',()=>{fields.details.setCustomValidity('');fields.title.setCustomValidity('');});retry.addEventListener('click',()=>void load());configure();void load();
+  form.addEventListener('input',()=>{fields.details.setCustomValidity('');fields.title.setCustomValidity('');});retry.addEventListener('click',()=>void load());configure();const lazy=window.CompanyPortalLazy?.gate(card);if(lazy)lazy.run(()=>void load());else void load();
 })();

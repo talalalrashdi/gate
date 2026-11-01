@@ -8,8 +8,9 @@
   const make = (tag, text) => { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; return node; };
   let connection, retry, delay = 5000, leaving = false, simulation = null, simulationSequence = 0;
   const simulationEnabled=!!document.getElementById?.('portal-simulation');
+  const lazy=window.CompanyPortalLazy?.gate(card)||{run:f=>f(),clear(){},activate(){}};
   const unavailable = message => {
-    list.replaceChildren(); badge.textContent = '—'; badge.setAttribute('aria-label', 'عدد الرسائل غير المقروءة غير متاح');
+    lazy.clear();list.replaceChildren(); badge.textContent = '—'; badge.setAttribute('aria-label', 'عدد الرسائل غير المقروءة غير متاح');
     status.textContent = message; open.disabled = true;
   };
   const render = data => {
@@ -17,6 +18,8 @@
       || data.items.some(item => typeof item.itemId !== 'string' || !item.itemId || item.itemId.length > 8000
         || typeof item.subject !== 'string' || typeof item.sender !== 'string' || typeof item.isRead !== 'boolean'
         || !Number.isFinite(Date.parse(item.receivedAt)))) throw new Error('Invalid mailbox snapshot');
+    badge.textContent=String(data.unreadCount);badge.setAttribute('aria-label',`${data.unreadCount} رسائل غير مقروءة في صندوق الوارد`);open.disabled=false;
+    lazy.run(()=>{
     const focused = list.contains(document.activeElement) ? document.activeElement?.dataset.mailId : null;
     const fragment = document.createDocumentFragment();
     data.items.forEach(item => {
@@ -43,6 +46,7 @@
     open.disabled = false;
     if (focused) [...list.children].find(node => node.dataset.mailId === focused)?.focus({ preventScroll:true });
     card.dispatchEvent(new CustomEvent('workspace:cards-changed', { bubbles:true }));
+    });
   };
   const reconnect = () => {
     if(simulation||leaving)return;
@@ -61,6 +65,7 @@
     source.onerror = ()=>{if(connection===source)reconnect();};
   }
   function renderSimulation(){
+    lazy.activate();
     if(!simulation?.connected){unavailable('[محاكاة] اتصال البريد منقطع. اختر إعادة الاتصال من المحاكاة.');return;}
     render({unreadCount:simulation.items.filter(i=>!i.isRead).length,items:simulation.items.slice(0,20)});
   }

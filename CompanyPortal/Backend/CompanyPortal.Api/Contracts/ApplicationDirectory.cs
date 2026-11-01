@@ -12,7 +12,7 @@ public sealed record CategoryIdentity(int CategoryId);
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class SaveApplicationDetailsRequest
 {
-    [Required(AllowEmptyStrings=true),StringLength(2000)] public string Description { get; init; } = "";
+    [StringLength(2000)] public string? Description { get; init; }
     [Range(1,int.MaxValue)] public int? CategoryId { get; init; }
 }
 

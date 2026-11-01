@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import {readFile} from 'node:fs/promises';
+const observers=[],events={},homeEvents={},scrolls=[],historyCalls=[];
+const target={dataset:{},contains:e=>e===child},child={dataset:{}};
+const home={addEventListener:(k,f)=>homeEvents[k]=f};
+const context=vm.createContext({IntersectionObserver:class{constructor(fn,opts){this.fn=fn;this.opts=opts;observers.push(this);}observe(el){this.el=el;}disconnect(){this.disconnected=true;}},document:{addEventListener:(k,f)=>events[k]=f,querySelector:s=>s==='#section'?target:s.includes('portal-nav')?home:null},window:{scrollTo:x=>scrolls.push(x)},location:{pathname:'/',search:'?test=1'},history:{replaceState:(...x)=>historyCalls.push(x)},matchMedia:()=>({matches:false})});
+vm.runInContext(await readFile(new URL('../Frontend/CompanyPortal.Web/wwwroot/js/portal-lazy.js',import.meta.url),'utf8'),context);
+const gate=context.window.CompanyPortalLazy.gate(child);let ran=0;
+gate.run(()=>ran=1);gate.run(()=>ran=2);assert.equal(ran,0);assert.equal(gate.ready,false);assert.equal(observers[0].opts.rootMargin,'300px 0px');
+observers[0].fn([{isIntersecting:false}]);assert.equal(ran,0);
+events.click({target:{closest:()=>({getAttribute:()=>'#section'})}});assert.equal(ran,2);assert.equal(gate.ready,true);assert.equal(child.dataset.lazyState,'ready');assert.ok(observers[0].disconnected);
+gate.activate();assert.equal(ran,2);gate.run(()=>ran++);assert.equal(ran,3);
+const cleared=context.window.CompanyPortalLazy.gate({dataset:{}});cleared.run(()=>ran++);cleared.clear();cleared.activate();assert.equal(ran,3);
+const disposed=context.window.CompanyPortalLazy.gate({dataset:{}});disposed.run(()=>ran++);disposed.dispose();assert.ok(observers.at(-1).disconnected);
+let prevented=false;homeEvents.click({button:0,preventDefault:()=>prevented=true});assert.ok(prevented);assert.equal(scrolls[0].top,0);assert.equal(historyCalls[0][2],'/?test=1');
+homeEvents.click({button:0,ctrlKey:true});assert.equal(scrolls.length,1);
+console.log('PASS lazy gates: deferred/latest-only, hash navigation, one-shot, clear/dispose and absolute-top home.');

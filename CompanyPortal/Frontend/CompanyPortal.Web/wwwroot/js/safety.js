@@ -6,13 +6,15 @@
   const icons=section.querySelector('#safety-cover-icons').content.querySelectorAll('svg');
   const make=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
   const reads=window.CompanyPortalLibraryReads('safety',endpoint);
+  const lazy=window.CompanyPortalLazy?.gate(section)||{run:f=>f(),clear(){}};
   let controller,generation=0,trigger;
-  function clear(){reads.clear();sheet.close();frame.removeAttribute('src');link.removeAttribute('href');list.replaceChildren();trigger=null;}
+  function clear(){lazy.clear();reads.clear();sheet.close();frame.removeAttribute('src');link.removeAttribute('href');list.replaceChildren();trigger=null;}
   function open(book,doc,button){
     trigger=button;section.querySelector('#safety-book-title').textContent=book.tabName;
     const url=endpoint('/'+doc.documentId+'/file');link.href=url;frame.src=url;frame.title=book.tabName;sheet.showModal();void reads.open(doc);
   }
-  function render(books){
+  function render(books){lazy.run(()=>renderVisible(books));}
+  function renderVisible(books){
     list.replaceChildren(...books.filter(b=>b.documents.length===1).map((book,index)=>{
       const button=make('button','portal-safety-booklet');button.type='button';button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-controls','safety-book-sheet');
       const cover=make('span','portal-safety-book-cover');cover.setAttribute('data-document-id',book.documents[0].documentId);if(book.documents[0].hasRead===false)cover.append(make('span','library-item-new','جديد'));cover.append(make('span','portal-safety-book-number','كتيب '+String(index+1).padStart(2,'0')),icons[index%icons.length].cloneNode(true),make('strong',null,book.tabName),make('small',null,'دليل مبسّط'));

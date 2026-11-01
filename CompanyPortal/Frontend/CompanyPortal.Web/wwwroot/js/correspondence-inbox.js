@@ -17,12 +17,16 @@
   }
   const endpoint=path=>new URL(path,new URL(base.replace(/\/?$/,'/'),location.href));
   const make=(tag,cls,text)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el;};
-  function clear(){total.textContent='—';updateApp(null);rows=[];realData={items:[],unreadCount:0};fingerprint='';list.replaceChildren();filter.replaceChildren();selectedPurpose='';badge.hidden=false;badge.textContent='—';badge.setAttribute('aria-label','عدد المراسلات غير المفتوحة غير متاح');if(dialog.open)dialog.close();}
+  function clear(){if(lazy.ready)lazy.clear();total.textContent='—';updateApp(null);rows=[];realData={items:[],unreadCount:0};fingerprint='';list.replaceChildren();filter.replaceChildren();selectedPurpose='';badge.hidden=false;badge.textContent='—';badge.setAttribute('aria-label','عدد المراسلات غير المفتوحة غير متاح');if(dialog.open)dialog.close();}
   function schedule(){clearTimeout(timer);if(!document.hidden)timer=setTimeout(()=>void load(),Math.min(300000,60000*2**failures)+Math.random()*5000);}
+  const lazy=window.CompanyPortalLazy?.gate(card)||{ready:true,run:f=>f(),clear(){},activate(){}};
   function render(data){
     // Real read state/count belong exclusively to OfficeFormsdb procedures.
     realData=data;rows=[...simulatedRows,...data.items];unreadCount=data.unreadCount+simulatedRows.filter(row=>!row.isOpened).length;
     total.textContent=String(rows.length);updateApp(data.appUrl);
+    badge.textContent=String(unreadCount);badge.hidden=unreadCount===0;
+    badge.setAttribute('aria-label',unreadCount+' غير مفتوحة');
+    lazy.run(()=>{
     const types=[...new Set(rows.map(r=>r.purpose))].sort((a,b)=>a.localeCompare(b,'ar'));
     if(!types.includes(selectedPurpose))selectedPurpose='';
     const focused=filter.contains(document.activeElement)?document.activeElement.dataset.purpose:null;
@@ -31,6 +35,7 @@
     updateFilter();
     if(focused!==null)[...filter.children].find(button=>button.dataset.purpose===focused)?.focus();
     renderRows();
+    });
   }
   function renderRows(){
     list.replaceChildren();
@@ -54,11 +59,15 @@
   async function load(){
     if(loading||document.hidden)return;loading=true;const mine=++generation;controller=new AbortController();list.setAttribute('aria-busy','true');
     try{
-      const response=await fetch(endpoint('api/correspondence'),{credentials:'include',cache:'no-store',signal:AbortSignal.any([controller.signal,AbortSignal.timeout(20000)])});
+      const response=await fetch(endpoint('api/correspondence'+(lazy.ready?'':'/count')),{credentials:'include',cache:'no-store',signal:AbortSignal.any([controller.signal,AbortSignal.timeout(20000)])});
       if(mine!==generation)return;
       if(response.status===401||response.status===403){seen.clear();freshUntil.clear();baseline=false;clearTimeout(freshTimer);clear();throw new Error('لا تتوفر صلاحية عرض وارد المراسلات لحسابك.');}
       if(!response.ok)throw new Error('تعذر تحميل وارد المراسلات. ستتم إعادة المحاولة تلقائيًا.');
       const data=await response.json();if(mine!==generation)return;
+      if(!lazy.ready){
+        if(!Number.isInteger(data.unreadCount)||data.unreadCount<0)throw new Error('تعذر قراءة عداد الوارد.');
+        badge.textContent=String(data.unreadCount);badge.hidden=data.unreadCount===0;badge.setAttribute('aria-label',data.unreadCount+' مراسلات غير مفتوحة');realData={...realData,unreadCount:data.unreadCount,appUrl:data.appUrl};updateApp(data.appUrl);failures=0;return;
+      }
       if(!Array.isArray(data.items)||!Number.isInteger(data.unreadCount)||data.unreadCount<0||data.items.some(r=>!r||!/^\d+$/.test(r.correspondenceId)||typeof r.title!=='string'||typeof r.docNo!=='string'||typeof r.purpose!=='string'||(r.senderName!=null&&typeof r.senderName!=='string')||typeof r.isOpened!=='boolean'||!Number.isFinite(Date.parse(r.receivedAt))))throw new Error('تعذر قراءة بيانات وارد المراسلات.');
       const now=Date.now();for(const row of data.items){if(row.isOpened)freshUntil.delete(row.correspondenceId);else if(baseline&&!seen.has(row.correspondenceId))freshUntil.set(row.correspondenceId,now+60000);seen.add(row.correspondenceId);}baseline=true;
       const next=JSON.stringify(data);if(next!==fingerprint||failures){render(data);fingerprint=next;}else list.querySelectorAll('time[datetime]').forEach(time=>{const fresh=time.querySelector('.portal-correspondence-new');time.replaceChildren(...(fresh?[fresh,document.createTextNode('\n')]:[]),document.createTextNode(receivedLabel(time.dateTime)));});failures=0;
@@ -66,7 +75,7 @@
     finally{if(mine===generation){loading=false;list.setAttribute('aria-busy','false');schedule();}}
   }
   if(document.getElementById('portal-simulation'))document.addEventListener('portal:simulate',event=>{
-    const detail=event.detail;if(!detail||!['correspondence','reset'].includes(detail.kind))return;
+    const detail=event.detail;if(!detail||!['correspondence','reset'].includes(detail.kind))return;lazy.activate();
     if(detail.kind==='reset'){for(const row of simulatedRows){seen.delete(row.correspondenceId);freshUntil.delete(row.correspondenceId);}simulatedRows=[];}
     else{
       const id='simulation-correspondence-'+detail.id;
@@ -82,5 +91,6 @@
   function suspend(){generation++;controller?.abort();clearTimeout(timer);clearTimeout(freshTimer);loading=false;list.setAttribute('aria-busy','false');clear();}
   document.addEventListener('visibilitychange',()=>{if(document.hidden)suspend();else void load();});
   window.addEventListener('online',()=>void load());window.addEventListener('pagehide',suspend);window.addEventListener('pageshow',e=>{if(e.persisted)void load();});
+  if(!lazy.ready)lazy.run(()=>{++generation;controller?.abort();loading=false;clearTimeout(timer);void load();});
   void load();
 })();

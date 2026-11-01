@@ -15,9 +15,11 @@
     return days===0?'اليوم':days===1?'قبل يوم':days>=2&&days<=6?'قبل '+days+' أيام':new Intl.DateTimeFormat('ar-OM',{dateStyle:'medium',timeZone:'Asia/Muscat'}).format(date);
   }
   let rows=[],category='',controller,generation=0,ready=false,loading=false,timer,searchTimer,fingerprint='',failures=0;
-  function clear(){ready=false;rows=[];realRows=[];fingerprint='';document.dispatchEvent(new CustomEvent('portal:decisions',{detail:{rows:[],loaded:false}}));list.replaceChildren();types.replaceChildren();types.closest('label').hidden=true;}
+  function clear(){lazy.clear();ready=false;rows=[];realRows=[];fingerprint='';document.dispatchEvent(new CustomEvent('portal:decisions',{detail:{rows:[],loaded:false}}));list.replaceChildren();types.replaceChildren();types.closest('label').hidden=true;}
   function schedule(){clearTimeout(timer);if(!document.hidden)timer=setTimeout(()=>void load(),Math.min(300000,60000*2**failures)+Math.random()*5000);}
-  function render(){
+  const lazy=window.CompanyPortalLazy?.gate(card)||{run:f=>f(),clear(){},activate(){}};
+  function render(){lazy.run(renderVisible);}
+  function renderVisible(){
     reset.hidden=!search.value;if(!ready)return;
     list.replaceChildren();
     const terms=normalize(search.value).split(/\s+/).filter(Boolean);
@@ -75,7 +77,7 @@
   reset.addEventListener('click',()=>{search.value='';clearTimeout(searchTimer);render();search.focus();});
   types.addEventListener('change',()=>{category=types.value;render();});
   if(simulationEnabled)document.addEventListener('portal:simulate',event=>{
-    const kind=event.detail?.kind;if(!['decision','notice','alert','reset'].includes(kind))return;
+    const kind=event.detail?.kind;if(!['decision','notice','alert','reset'].includes(kind))return;lazy.activate();
     if(kind==='reset'){simulatedRows=[];document.dispatchEvent(new Event('portal:simulation-reset'));}else{const id='simulation-'+event.detail.id;simulatedRows.unshift({decisionId:id,decisionType:event.detail.decisionType,decisionNumber:new Intl.DateTimeFormat('en-US',{year:'numeric',timeZone:'Asia/Muscat'}).format(new Date())+'/'+event.detail.id,title:event.detail.title,publishedAt:new Date().toISOString(),hasRead:false,isSimulation:true,notices:event.detail.notices??[]});simulatedRows=simulatedRows.slice(0,20);}
     rows=[...simulatedRows,...realRows];ready=true;fingerprint=JSON.stringify(rows);renderTypes();render();document.dispatchEvent(new CustomEvent('portal:decisions',{detail:{rows,loaded:true,origin:'simulation'}}));
     if(kind!=='reset'&&(event.detail.notices??[]).length)document.dispatchEvent(new CustomEvent('portal:simulation-reveal',{detail:{channels:event.detail.notices.map(n=>n.channelId),decisionId:'simulation-'+event.detail.id}}));

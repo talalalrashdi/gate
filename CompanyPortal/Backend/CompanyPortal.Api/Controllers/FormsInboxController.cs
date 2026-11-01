@@ -15,6 +15,9 @@ public sealed class FormsInboxController(FormsInboxStore store,IConfiguration co
             isSamplePreview=r.IsSample&&config.GetValue<bool>("Forms:AllowSamplePreview"),
             canOpen=OpenAddress(r.FormId) is not null}).ToArray(),data.UnreadCount,appUrl=AppAddress()}),token);
 
+    [HttpGet("count")]
+    public Task<IActionResult> Count(CancellationToken token)=>Read(null,data=>Ok(new{data.UnreadCount,appUrl=AppAddress()}),token,true);
+
     [HttpGet("{id:long:min(1)}/open")]
     public Task<IActionResult> Open(long id,CancellationToken token)=>Read(id,data=>
     {
@@ -35,11 +38,11 @@ public sealed class FormsInboxController(FormsInboxStore store,IConfiguration co
         var url=template.Replace("{id}",id.ToString(CultureInfo.InvariantCulture),StringComparison.Ordinal);
         return Uri.TryCreate(url,UriKind.Absolute,out var address)&&address.Scheme is "https" or "http"&&address.UserInfo.Length==0?address.AbsoluteUri:null;
     }
-    private async Task<IActionResult> Read(long? id,Func<FormsInboxStore.Inbox,IActionResult> action,CancellationToken token)
+    private async Task<IActionResult> Read(long? id,Func<FormsInboxStore.Inbox,IActionResult> action,CancellationToken token,bool countOnly=false)
     {
         Response.Headers.CacheControl="private, no-store";
         var name=User.Identity?.Name;if(string.IsNullOrWhiteSpace(name)||name.Length>512)return Unauthorized();
-        try{var data=await store.GetAsync(name,id,token);return data is null?Forbid():action(data);}
+        try{var data=await store.GetAsync(name,id,token,countOnly);return data is null?Forbid():action(data);}
         catch(Exception ex) when(ex is SqlException or InvalidOperationException or System.Data.DataException)
         {logger.LogError(ex,"Forms inbox failed; trace {Trace}",HttpContext.TraceIdentifier);return Problem(statusCode:503,title:"تعذر تحميل وارد الاستمارات. تحقق من اتصال قاعدة البيانات وإجراءات المصدر.");}
     }

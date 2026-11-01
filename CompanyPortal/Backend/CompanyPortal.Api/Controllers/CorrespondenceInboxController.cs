@@ -14,6 +14,9 @@ public sealed class CorrespondenceInboxController(CorrespondenceInboxStore store
             receivedAt=DecisionNoticesStore.Oman(r.ReceivedAt).ToString("O",CultureInfo.InvariantCulture),r.IsOpened,
             isSamplePreview=false,canOpen=false}).ToArray(),data.UnreadCount,appUrl=AppAddress()}),token);
 
+    [HttpGet("count")]
+    public Task<IActionResult> Count(CancellationToken token)=>Read(null,data=>Ok(new{data.UnreadCount,appUrl=AppAddress()}),token,true);
+
     [HttpGet("{id:long:min(1)}/open")]
     public Task<IActionResult> Open(long id,CancellationToken token)=>Read(id,data=>
     {
@@ -25,11 +28,11 @@ public sealed class CorrespondenceInboxController(CorrespondenceInboxStore store
         var value=config["Correspondence:AppUrl"];
         return Uri.TryCreate(value,UriKind.Absolute,out var address)&&address.Scheme is "https" or "http"&&address.UserInfo.Length==0?address.AbsoluteUri:null;
     }
-    private async Task<IActionResult> Read(long? id,Func<CorrespondenceInboxStore.Inbox,IActionResult> action,CancellationToken token)
+    private async Task<IActionResult> Read(long? id,Func<CorrespondenceInboxStore.Inbox,IActionResult> action,CancellationToken token,bool countOnly=false)
     {
         Response.Headers.CacheControl="private, no-store";var name=User.Identity?.Name;
         if(string.IsNullOrWhiteSpace(name)||name.Length>512)return Unauthorized();
-        try{var data=await store.GetAsync(name,id,token);return data is null?Forbid():action(data);}
+        try{var data=await store.GetAsync(name,id,token,countOnly);return data is null?Forbid():action(data);}
         catch(SqlException ex) when(ex.Number==0&&token.IsCancellationRequested&&HttpContext.RequestAborted.IsCancellationRequested)
         {throw new OperationCanceledException("Correspondence request canceled by client.",ex,token);}
         catch(Exception ex) when(ex is SqlException or InvalidOperationException or System.Data.DataException)

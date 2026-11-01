@@ -16,9 +16,13 @@ CentralLog.ApplicationError, DatabaseError and fallback error files already use 
 
 The API explicitly sets the SQL connection's WorkstationID to `Environment.MachineName`. New record defaults use SQL HOST_NAME(), which receives that application-host value. On IIS this is the **API server**, not the employee's workstation. User settings and existing read-tracking records are unchanged. History details display the machine when recorded. Permission changes still have no history entries.
 
+History now uses a semantic table with column headers, including الجهاز in every row. Older rows display غير مسجل when no machine was recorded. Breadcrumb links lead to the portal and administration overview, retaining the existing unsaved-change navigation guard. Role, booklet and document-tab creation use shared modal behavior; cancellation discards only after confirmation. These interface changes require no additional database migration.
+
 ## Custom popups
 
 Under التنويهات, the new تنويهات مخصصة editor accepts a free-text type and details, start/end dates and display flag. Plain text only: no HTML or links are interpreted. The checkbox makes it visible to registered portal users within the chosen period; unchecked saves a hidden draft. Deleting sets Active0. Editing a dismissed popup does not resurrect it; create a new popup for a separate announcement.
+
+The top-of-page إضافة تنويه مخصص button opens a modal; editing a saved popup uses the same modal. Settings and individual-decision period cards share two columns on desktop in both التنويهات and التنبيهات, stacking at narrower widths. The popup list stays below them. Category, important-number, application-card and directive creation also use shared modals, with busy/unsaved guards and validation messages inside. Existing item editors remain unchanged. History details close on a backdrop click; clicks inside the details remain safe.
 
 Mng.CustomPopups stores definitions. Portal.UserPopupDismissals stores one dismissal per UserId/PopupId. Dismissal resolves the employee server-side, is idempotent, persists across reloads and does not hide the popup for other employees. Closing failures stay visible with retry text. These records are independent from decisions and their read/dismiss behavior. Popup administration uses the existing notices permission and records normal business change history; role operations remain unlogged.
 

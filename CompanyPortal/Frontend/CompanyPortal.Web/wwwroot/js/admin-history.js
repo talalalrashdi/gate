@@ -24,12 +24,12 @@
     try{
       const query=new URLSearchParams({page:String(page)});for(const [key,value] of new FormData(form))if(value)query.set(key,value);
       const r=await core.request('api/admin/changes?'+query);if(!r.ok)throw new Error();const data=await r.json();total=data.total;
-      for(const row of data.items){const button=make('button',undefined,'admin-history-row');button.type='button';button.append(make('time',AdminChanges.date(row.changedAt)),make('span',row.displayName),make('span',names[row.section]||row.section),make('span',actions[row.action]||row.action,'admin-badge'),make('strong',row.itemTitle||row.itemType+' #'+row.itemId));button.onclick=()=>void details(row);list.append(button);}
+      for(const row of data.items){const tr=make('tr');for(const text of [AdminChanges.date(row.changedAt),row.displayName,row.workStation||'غير مسجل',names[row.section]||row.section,actions[row.action]||row.action])tr.append(make('td',text));const item=make('td'),button=make('button',row.itemTitle||row.itemType+' #'+row.itemId,'admin-history-item');button.type='button';button.setAttribute('aria-label','تفاصيل: '+button.textContent);button.onclick=()=>void details(row);item.append(button);tr.append(item);list.append(tr);}
       status.textContent=total?'عدد التعديلات: '+total:'لا توجد تعديلات مطابقة.';by('page').textContent='صفحة '+page+' من '+Math.max(1,Math.ceil(total/25));
       by('prev').disabled=page<=1;by('next').disabled=page*25>=total;
     }catch{status.textContent='تعذر تحميل السجل. تحقق من الاتصال وصلاحية المدير العام ثم اضغط بحث.';}finally{busy=false;form.querySelectorAll('button').forEach(b=>b.disabled=false);}
   }
-  by('details-close').onclick=()=>dialog.close();dialog.addEventListener('close',()=>generation++);
+  by('details-close').onclick=()=>dialog.close();dialog.addEventListener('click',e=>{if(e.target!==dialog)return;const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();});dialog.addEventListener('close',()=>generation++);
   form.onsubmit=e=>{e.preventDefault();if(!form.reportValidity())return;page=1;void load();};form.onreset=e=>{e.preventDefault();if(busy)return;for(const name of ['section','person','from','to'])form.elements[name].value='';page=1;void load();};
   by('prev').onclick=()=>{if(!busy&&page>1){page--;void load();}};by('next').onclick=()=>{if(!busy&&page*25<total){page++;void load();}};
   document.addEventListener('admin:access',()=>{if(!core.can('history')){list.replaceChildren();dialog.close();}});core.whenSection('history',()=>void load());

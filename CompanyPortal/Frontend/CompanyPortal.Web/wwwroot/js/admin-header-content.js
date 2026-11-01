@@ -7,7 +7,7 @@ document.querySelectorAll('[data-header-content-editor]').forEach(root => {
   const core=window.AdminCore;
   const request=(path,method='GET',body)=>core.request(endpoint(path),{method,body,header:'header-content'});
   const lock=(element,value)=>element.querySelectorAll('input,textarea,select,button').forEach(e=>e.disabled=value);
-  let loaded=false,busy=false;
+  let loaded=false,busy=false,creationModal;
   function message(text,canRetry=false){core.feedback(status,text);retry.hidden=!canRetry;}
   async function failure(response){if(response.status===400)return'تحقق من الحقول المطلوبة.';if(response.status===403)return'حسابك غير مخوّل لإدارة هذا القسم.';if(response.status===404)return'العنصر غير موجود. أعد التحميل.';return'تعذر الحفظ. حاول مجددًا.';}
   function field(label,value,attrs={}){const wrap=make('label',{className:'hc-field'}),input=make(attrs.multiline?'textarea':'input',{value:value??''});
@@ -20,18 +20,18 @@ document.querySelectorAll('[data-header-content-editor]').forEach(root => {
     const order=make('input',{type:'number',min:0,max:100000,value:item?.sortOrder??(numbers.children.length+1)});order.setAttribute('aria-label','الترتيب');
     const active=make('input',{type:'checkbox',checked:item?.active??true});active.setAttribute('aria-label','ظاهر للمستخدمين');
     const save=make('button',{type:'button',className:'admin-primary',textContent:item?'حفظ':'إضافة'}),remove=make('button',{type:'button',className:'hc-danger',textContent:item?'حذف':'إلغاء'});
-    const cells=[title,number,order,active].map(input=>{const cell=make('span');cell.setAttribute('role','cell');cell.append(input);return cell;});
+    const cells=[title,number,order,active].map(input=>{const cell=make('span');cell.setAttribute('role','cell');if(!item)cell.dataset.label=input.getAttribute('aria-label');cell.append(input);return cell;});
     const actions=make('span',{className:'hc-actions'});actions.setAttribute('role','cell');actions.append(save,remove);row.append(...cells,actions);const tracker=core.trackForm(section,row,{isNew:!item,busy:()=>busy});
     save.addEventListener('click',async()=>{
       if(busy)return;if(!title.value.trim()||!number.value.trim()){message('أدخل الاسم والرقم.');(title.value.trim()?number:title).focus();return;}
       busy=true;lock(row,true);message('جارٍ الحفظ…');
       try{const body={title:title.value.trim(),number:number.value.trim(),sortOrder:Number(order.value)||0,active:active.checked};
         const response=await request(item?'/important-numbers/'+item.id:'/important-numbers',item?'PUT':'POST',body);
-        if(!response.ok){message(await failure(response));return;}const id=item?.id??(await response.json()).id;row.replaceWith(numberRow({...item,...body,id}));message('تم الحفظ. يظهر للمستخدمين عند إعادة تحميل البوابة.');}
+        if(!response.ok){message(await failure(response));return;}const id=item?.id??(await response.json()).id;if(item)row.replaceWith(numberRow({...item,...body,id}));else{numbers.append(numberRow({...body,id}));creationModal?.close();}message('تم الحفظ. يظهر للمستخدمين عند إعادة تحميل البوابة.');}
       catch{message('تعذر الحفظ. حاول مجددًا.');}finally{busy=false;lock(row,false);core.refresh();}
     });
     remove.addEventListener('click',async()=>{
-      if(busy)return;if(!item){if(await core.discard())row.remove();return;}if(!await core.confirm(`حذف «${item.title}»؟`,{title:'حذف الرقم',accept:'حذف',danger:true}))return;
+      if(busy)return;if(!item){await creationModal?.requestClose();return;}if(!await core.confirm(`حذف «${item.title}»؟`,{title:'حذف الرقم',accept:'حذف',danger:true}))return;
       busy=true;remove.disabled=true;message('جارٍ الحذف…');
       try{const response=await request('/important-numbers/'+item.id,'DELETE');if(!response.ok){message(await failure(response));return;}row.remove();message('تم الحذف.');}
       catch{message('تعذر الحذف. حاول مجددًا.');}finally{busy=false;remove.disabled=false;}
@@ -89,7 +89,7 @@ document.querySelectorAll('[data-header-content-editor]').forEach(root => {
       loaded=true;if(add)add.disabled=false;if(announce)message('');
     }catch{message('تعذر تحميل المحتوى.',true);}finally{busy=false;}
   }
-  add?.addEventListener('click',()=>{const row=numberRow(null);numbers.append(row);row.querySelector('input').focus();});
+  add?.addEventListener('click',()=>{if(busy||!loaded||creationModal)return;const row=numberRow(null);creationModal=window.AdminEditorModal.open({title:'إضافة رقم',section,content:row,status,mount:root,busy:()=>busy,onCancel:async()=>await core.discard(),onClosed:()=>{row.remove();creationModal=null;}});row.querySelector('input').focus();});
   retry.addEventListener('click',async()=>{if(!busy&&(!core.dirtyIn(section)||await core.discard()))load();});
   if(add){const numberActions=make('div',{className:'hc-actions'});add.replaceWith(numberActions);numberActions.append(add);
   AdminPreview.button(numberActions,section,()=>({kind:'numbers',rows:[...numbers.querySelectorAll('.hc-number-row')].map(r=>{const a=r.querySelectorAll('input');return{title:a[0].value,number:a[1].value,active:a[3].checked,order:Number(a[2].value)};}).sort((a,b)=>a.order-b.order)}));

@@ -30,7 +30,7 @@
       <div class="admin-sidebar-bottom"><a href="@Url.Content("~/")"><i class="iconsax" icon-name="logout-1" aria-hidden="true"></i> العودة إلى البوابة</a></div>
     </aside>
     <main class="admin-main" id="admin-main">
-      <header class="admin-topbar"><div>البوابة <span aria-hidden="true">/</span> لوحة الإدارة</div><a href="@Url.Content("~/")">عرض البوابة <i class="iconsax" icon-name="logout-1" aria-hidden="true"></i></a></header>
+      <header class="admin-topbar"><nav class="admin-breadcrumbs" aria-label="مسار التنقل"><a href="@Url.Content("~/")">البوابة</a><span aria-hidden="true">/</span><a href="@Url.Content("~/admin")">لوحة الإدارة</a><span id="admin-breadcrumb-section" hidden><span aria-hidden="true">/</span><span id="admin-breadcrumb-current" aria-current="page"></span></span></nav><a href="@Url.Content("~/")">عرض البوابة <i class="iconsax" icon-name="logout-1" aria-hidden="true"></i></a></header>
       <div class="admin-content">
         <div class="admin-page-heading"><div><p class="admin-eyebrow">لوحة الإدارة</p><h1 id="admin-page-title">@(ViewData["AdminSection"] as string == "cards" ? "إدارة البطاقات الأساسية" : "نظرة عامة")</h1><p id="admin-page-description">إدارة محتوى البوابة ومظهرها من مكان واحد.</p></div></div>
         <div class="admin-access-status" hidden><p id="admin-status" role="status" aria-live="polite">جارٍ التحقق من الصلاحية…</p><button type="button" id="admin-retry" hidden>إعادة المحاولة</button></div>
@@ -44,6 +44,7 @@
   <dialog id="admin-content-preview" class="admin-content-preview" aria-label="معاينة قبل الحفظ"><header><strong>معاينة القيم غير المحفوظة</strong><button type="button">إغلاق المعاينة</button></header><iframe title="معاينة محتوى البوابة قبل الحفظ" src="about:blank"></iframe></dialog>
   <div id="admin-toasts" class="admin-toasts" aria-label="رسائل الإدارة"></div>
   <script src="@Url.Content("~/js/admin-core.js")" asp-append-version="true"></script>
+  <script src="@Url.Content("~/js/admin-editor-modal.js")" asp-append-version="true"></script>
   <script src="@Url.Content("~/js/admin-sections.js")" asp-append-version="true"></script>
   <script src="@Url.Content("~/js/admin-navigation.js")" asp-append-version="true"></script>
   <script src="@Url.Content("~/js/admin-changes.js")" asp-append-version="true"></script>

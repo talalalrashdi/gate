@@ -5,7 +5,7 @@
   const retry = document.getElementById('admin-cards-retry');
   const create = document.getElementById('admin-card-create');
   const make = (tag,cls,text) => { const node = document.createElement(tag); if (cls) node.className = cls; if (text) node.textContent = text; return node; };
-  let records = [], apps = [], busy = false, catalogAvailable = false;
+  let records = [], apps = [], busy = false, catalogAvailable = false, creationModal;
   const setStatus = (text,state='ready',canRetry=false) => { core.feedback(status,text,state==='error'); status.parentElement.dataset.state=state; retry.hidden=!canRetry; };
   const core=window.AdminCore;
   // Saves explain 400 themselves (unavailable below), so the generic message is not shown over it.
@@ -69,7 +69,7 @@
       note.textContent=changed?'تغييرات غير محفوظة':!card.active?'مخفية — الإعدادات وترتيب الموظفين محفوظة.':card.isFixed?'ثابتة؛ يُضغط موضعها عند اختلاف البطاقات المتاحة حسب الدور.':'متحركة؛ يحتفظ الموظف بترتيبه المحفوظ.';
     }
     form.addEventListener('input',sync);form.addEventListener('change',sync);form.addEventListener('admin:refresh',sync);
-    if(isNew){const cancel=make('button','admin-card-cancel','إلغاء');cancel.type='button';cancel.addEventListener('click',async()=>{if(!busy&&await core.discard())form.remove();});details.append(cancel);}
+    if(isNew){const cancel=make('button','admin-card-cancel','إلغاء');cancel.type='button';cancel.addEventListener('click',async()=>{if(!busy)await creationModal?.requestClose();});details.append(cancel);}
     form.addEventListener('submit',async event=>{
       event.preventDefault();if(busy)return;
       const selected=values();
@@ -80,7 +80,7 @@
       try{
         const response=await request('api/admin/cards'+(isNew?'':'/'+card.cardId),isNew?'POST':'PUT',selected);
         if(!response.ok){setStatus(unavailable(response),'error',true);return;}
-        if(isNew){card.cardId=(await response.json()).cardId;records.push(card);form.replaceWith(renderCard(Object.assign(card,selected)));}
+        if(isNew){card.cardId=(await response.json()).cardId;records.push(card);root.prepend(renderCard(Object.assign(card,selected)));creationModal?.close();}
         else{Object.assign(card,selected);name.value=card.cardName;form.setAttribute('aria-label','إعدادات '+card.cardName);}
         summaries();setStatus('تم الحفظ. تظهر الإعدادات للموظفين عند إعادة تحميل البوابة؛ صلاحيات التطبيقات لا تتغير.');
       }catch{setStatus('تعذر تأكيد الحفظ. أعد تحميل الصفحة للتحقق قبل إعادة الإنشاء أو الحفظ.','error');}
@@ -100,9 +100,9 @@
     }catch{setStatus('خدمة الإدارة غير متاحة حاليًا.','error',true);}
   }
   create.addEventListener('click',()=>{
-    if(busy||root.querySelector('[data-new-card]'))return;
+    if(busy||!catalogAvailable||creationModal)return;
     const card={cardName:'',displayOrder:records.filter(card=>card.active).length+1,isFixed:false,active:false,audience:'everyone',cardType:'applications',appIds:[],roleNames:[]};
-    const form=renderCard(card,true);form.dataset.newCard='';root.prepend(form);form.querySelector('input[type=text]').focus();
+    const form=renderCard(card,true);form.dataset.newCard='';creationModal=window.AdminEditorModal.open({title:'إضافة بطاقة تطبيقات',section:'cards',content:form,status,mount:root,busy:()=>busy,onCancel:async()=>!form.classList.contains('is-dirty')||await core.discard(),onClosed:()=>{form.remove();creationModal=null;}});form.querySelector('input[type=text]').focus();
   });
   retry.addEventListener('click',async()=>{if(!busy&&(!dirty()||await core.discard('إعادة التحميل ستلغي التغييرات غير المحفوظة. متابعة؟')))load();});
   core.whenSection('cards',()=>{if(!busy&&!records.length)load();});

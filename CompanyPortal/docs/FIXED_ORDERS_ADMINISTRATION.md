@@ -8,7 +8,7 @@ Open **إدارة البوابة → التوجيهات السامية** (`/admi
 2. Enter **العنوان / النص الجديد**. This is `ContentAfter`: both the card title and the green replacement phrase when inserted into the wording.
 3. Enter **النص السابق** (`ContentBefor`, original database spelling), when the wording refers to the previous phrase.
 4. Choose a wording preset, or type surrounding text and use **إدراج النص السابق / إدراج النص الجديد** at the cursor. These buttons insert the exact `ds{0}de` / `ss{1}se` tokens that the existing portal renderer understands. Repeated tokens and before-only wording are supported; plain wording without tokens is also allowed.
-5. Enter the optional primary/secondary dates and the required numeric **نوع التاريخ** (`TimestampType`). Its business meaning is still unconfirmed, so no calendar labels or default value have been invented.
+5. Enter the optional primary/secondary dates and the required numeric **نوع التاريخ** (`TimestampType`). Its business meaning is still unconfirmed, so no calendar labels or default value have been invented. It does not currently change portal date formatting or year grouping. The unsaved-content preview closes on an outside/backdrop click while retaining the editor draft; inside clicks do not close it.
 6. Review the live preview, then **حفظ ونشر التوجيه**. Existing edits use **حفظ التغييرات**.
 
 The primary date alone supplies the displayed year. Undated directives retain the existing fallback. Timestamp2 is saved for future use and does not replace a missing primary date. Dates are date-only, without timezone or calendar conversion.

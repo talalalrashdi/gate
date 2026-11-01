@@ -5,7 +5,7 @@
   const list=document.getElementById('admin-application-details'),categoryList=document.getElementById('admin-application-categories');
   const status=document.getElementById('admin-applications-status'),retry=document.getElementById('admin-applications-retry'),add=document.getElementById('admin-category-add'),search=document.getElementById('admin-application-search');
   const make=(tag,cls,text)=>{const node=document.createElement(tag);if(cls)node.className=cls;if(text)node.textContent=text;return node;};
-  let categories=[],loaded=false,busy=false;
+  let categories=[],loaded=false,busy=false,creationModal;
   const core=window.AdminCore;
   const request=(path,method='GET',body)=>core.request(endpoint(path),{method,body,header:'application-directory',timeout:10000});
   const message=(text,canRetry=false)=>{core.feedback(status,text);retry.hidden=!canRetry;};
@@ -44,10 +44,10 @@
     const values=()=>({categoryName:name.value.trim(),displayOrder:Number(order.value),active:active.checked});
     function sync(){const value=values(),changed=isNew||value.categoryName!==category.categoryName||value.displayOrder!==category.displayOrder||value.active!==category.active;form.classList.toggle('is-dirty',changed);button.disabled=busy||!changed;note.textContent=changed?'تغييرات غير محفوظة':category.active?'متاح لتصنيف التطبيقات.':'التطبيقات التابعة تظهر تحت غير مصنف.';}
     form.addEventListener('input',sync);form.addEventListener('change',sync);form.addEventListener('directory:refresh',sync);
-    if(isNew){const cancel=make('button',null,'إلغاء');cancel.type='button';cancel.addEventListener('click',async()=>{if(!busy&&await core.discard())form.remove();});form.append(cancel);}
+    if(isNew){const cancel=make('button',null,'إلغاء');cancel.type='button';cancel.addEventListener('click',async()=>{if(!busy)await creationModal?.requestClose();});form.append(cancel);}
     form.addEventListener('submit',event=>{event.preventDefault();const value=values();if(!value.categoryName){name.focus();return;}
       save(form,'/categories'+(isNew?'':'/'+category.categoryId),isNew?'POST':'PUT',value,result=>{
-        Object.assign(category,value);if(isNew){category.categoryId=result.categoryId;categories.push(category);form.replaceWith(categoryForm(category));}
+        Object.assign(category,value);if(isNew){category.categoryId=result.categoryId;categories.push(category);categoryList.prepend(categoryForm(category));creationModal?.close();}
         else form.setAttribute('aria-label','تصنيف '+category.categoryName);
         list.querySelectorAll('select').forEach(select=>{const current=select.value;options(select,current||null);});
       });
@@ -81,7 +81,7 @@
   }
   const normalize=value=>value.replace(/[أإآ]/g,'ا').toLowerCase().trim();
   function filter(){const query=normalize(search.value);list.querySelectorAll('form').forEach(form=>{form.hidden=!normalize(form.dataset.appName).includes(query);});}
-  add.addEventListener('click',()=>{if(!busy&&!categoryList.querySelector('[data-new-category]')){const form=categoryForm({categoryName:'',displayOrder:categories.length+1,active:true},true);categoryList.prepend(form);form.querySelector('input').focus();}});
+  add.addEventListener('click',()=>{if(!busy&&loaded&&!creationModal){const form=categoryForm({categoryName:'',displayOrder:categories.length+1,active:true},true);creationModal=window.AdminEditorModal.open({title:'إضافة تصنيف',section:'applications',content:form,status,mount:root,busy:()=>busy,onCancel:async()=>!form.classList.contains('is-dirty')||await core.discard(),onClosed:()=>{form.remove();creationModal=null;}});form.querySelector('input').focus();}});
   retry.addEventListener('click',async()=>{if(!busy&&(!dirty()||await core.discard()))load();});
   search.addEventListener('input',filter);
   core.watch('applications',root,()=>false,()=>busy);

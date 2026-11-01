@@ -4,6 +4,8 @@ Implemented 1 November 2026. `/admin/permissions` (الأدوار والصلاح
 
 Migration065 adds role creation and soft deletion for portal-managed roles. See [ROLES_POPUPS_AND_HERO.md](ROLES_POPUPS_AND_HERO.md) for source writers, deployment and workstation/popup changes.
 
+Role creation opens in a modal; existing-role permission edits remain on the page. Closing, Escape and backdrop clicks use the unsaved-change warning and refuse to close while saving. Successful creation closes the modal and reloads the role catalog.
+
 ## Initial roles
 
 | Security role | Administration sections |

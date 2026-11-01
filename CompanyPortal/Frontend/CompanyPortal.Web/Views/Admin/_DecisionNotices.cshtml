@@ -2,6 +2,8 @@
   var key=channel==1?"notices":"alerts";
   var label=channel==1?"التنويهات":"التنبيهات";
   <section data-admin-panel="@key" data-notice-admin="@channel" hidden>
+    @if(channel==1){<div class="notice-page-actions"><button type="button" id="custom-popup-add" class="admin-primary" disabled>إضافة تنويه مخصص</button></div>}
+    <div class="notice-admin-columns">
     <div class="admin-panel"><header class="admin-panel-header"><div><h2>إعدادات @label</h2><p>تعرض القرارات المصرح بها للموظف ضمن المدة المحددة، وتبقى ظاهرة بعد القراءة حتى نهايتها.</p></div><button type="button" data-notice-reload>تحديث</button></header>
       <p data-notice-message role="status" aria-live="polite">جارٍ تحميل الإعدادات…</p>
       <form data-notice-settings class="notice-admin-form">
@@ -23,15 +25,16 @@
         <button type="submit" class="admin-primary">حفظ فترة القرار</button><button type="button" data-notice-reset>استعادة المدة العامة</button>
       </fieldset></form>
     </div>
+    </div>
   @if(channel==1){
     <div class="admin-panel" id="custom-popup-admin"><header class="admin-panel-header"><div><h2>تنويهات مخصصة</h2><p>اكتب النوع والتفاصيل دون إنشاء قرار. تظهر للجميع خلال الفترة؛ إغلاق الموظف يحفظ إخفاءها عنه.</p></div></header>
     <p id="custom-popup-status" role="status"></p>
-    <form id="custom-popup-form" class="notice-admin-form"><fieldset disabled>
+    <form id="custom-popup-form" class="notice-admin-form" hidden><fieldset disabled>
       <input type="hidden" name="popupId"><label>النوع<input name="popupType" maxlength="100" required></label>
       <label>التفاصيل<textarea name="details" maxlength="2000" rows="4" required></textarea></label>
       <label>بداية العرض<input name="startAt" type="datetime-local" required></label><label>نهاية العرض<input name="endAt" type="datetime-local" required></label>
       <label><input name="isDisplayed" type="checkbox"> إظهار للجميع خلال الفترة المحددة</label>
-      <div><button type="submit" class="admin-primary">حفظ التنويه</button><button type="button" id="custom-popup-cancel">إلغاء / تنويه جديد</button></div>
+      <div><button type="submit" class="admin-primary">حفظ التنويه</button><button type="button" id="custom-popup-cancel">إلغاء</button></div>
     </fieldset></form><div id="custom-popup-list"></div><button type="button" id="custom-popup-retry" hidden>إعادة المحاولة</button></div>
   }
   </section>

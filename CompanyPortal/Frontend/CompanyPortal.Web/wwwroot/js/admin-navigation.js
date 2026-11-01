@@ -38,7 +38,7 @@
     document.querySelectorAll('[data-admin-group]').forEach(g=>{g.hidden=![...g.querySelectorAll('[data-admin-section]')].some(b=>core.can(b.dataset.adminSection));});
     panels.forEach(p=>p.hidden=true);
     buttons.filter(b=>b.closest('.admin-nav')).forEach(b=>{if(b.dataset.adminSection===key)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
-    const heading=document.getElementById('admin-page-title');heading.textContent=titles[key][0];const description=document.getElementById('admin-page-description');description.textContent=titles[key][1];description.hidden=!titles[key][1];
+    const heading=document.getElementById('admin-page-title');heading.textContent=titles[key][0];const crumb=document.getElementById('admin-breadcrumb-current');if(crumb){crumb.textContent=titles[key][0];document.getElementById('admin-breadcrumb-section').hidden=key==='overview';}const description=document.getElementById('admin-page-description');description.textContent=titles[key][1];description.hidden=!titles[key][1];
     if(focus){heading.tabIndex=-1;heading.focus({preventScroll:true});window.scrollTo({top:0,behavior:'instant'});}
     const reveal=()=>{if(current!==key||!core.can(key))return;panels.forEach(p=>p.hidden=p.dataset.adminPanel!==key);document.dispatchEvent(new CustomEvent('admin:section',{detail:{section:key}}));core.refresh();};
     if(window.AdminSections)void window.AdminSections.open(key,reveal);else reveal();

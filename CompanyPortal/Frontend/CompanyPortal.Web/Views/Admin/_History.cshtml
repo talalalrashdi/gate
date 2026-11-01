@@ -5,7 +5,7 @@
     <label>من<input name="from" type="date" min="1753-01-01"></label><label>إلى<input name="to" type="date" min="1753-01-01"></label>
     <button type="submit" class="admin-primary">بحث</button><button type="reset">مسح الفلاتر</button>
   </form>
-  <p id="history-status" role="status"></p><div id="history-list" class="admin-panel"></div>
+  <p id="history-status" role="status"></p><div class="admin-panel admin-history-table-wrap"><table class="admin-history-table"><caption class="admin-visually-hidden">سجل تعديلات إدارة البوابة</caption><thead><tr><th scope="col">التاريخ والوقت</th><th scope="col">الشخص</th><th scope="col">الجهاز</th><th scope="col">القسم</th><th scope="col">الإجراء</th><th scope="col">العنصر والتفاصيل</th></tr></thead><tbody id="history-list"></tbody></table></div>
   <nav class="admin-history-paging" aria-label="صفحات سجل التعديلات"><button type="button" id="history-prev">السابق</button><span id="history-page"></span><button type="button" id="history-next">التالي</button></nav>
   <dialog id="history-details" class="admin-history-dialog" aria-labelledby="history-details-title"><header><div><h2 id="history-details-title">تفاصيل التعديل</h2><p id="history-details-meta"></p></div><button type="button" id="history-details-close" aria-label="إغلاق التفاصيل">×</button></header><p id="history-details-status" role="status"></p><div class="admin-history-diff-head"><strong>قبل التعديل</strong><strong>بعد التعديل</strong></div><div id="history-diff"></div><p class="admin-muted">سجل للقراءة فقط؛ لا يمكن التراجع عن التغييرات من هنا.</p></dialog>
 </section>

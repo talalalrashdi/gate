@@ -13,7 +13,7 @@ document.querySelectorAll('[data-pdf-library-admin]').forEach(root => {
     if(!data.roots?.length)source.append(make('p',null,'لم يُضبط مسار صحيح. أضف مجلدًا مطلقًا في Mstr.Utls تحت Key = docs وstrVal = مسار المجلد، ثم أعد التحميل.'));
     source.append(make('p',null,'يُضاف مسار المجلد الفرعي واسم الملف إلى المسار الأساسي. يجب منح حساب تشغيل API صلاحية القراءة. وجود الملف على القرص وحده لا يسجله في البوابة.'));
   }
-  let catalog,loaded=false,busy=false;
+  let catalog,loaded=false,busy=false,creationModal;
   const dirty=()=>!!root.querySelector('.is-dirty');
   const core=window.AdminCore;
   const request=(path,method='GET',body)=>core.request(endpoint(path),{method,body,header:route,handled:method==='GET'?[]:[400,404]});
@@ -34,7 +34,7 @@ document.querySelectorAll('[data-pdf-library-admin]').forEach(root => {
     picker.open=catalog.documents.filter(d=>d.folderId===Number(folder.value)).length<=50;picker.append(pickerTitle,files);selectionCount.setAttribute('aria-live','polite');f.append(picker,selectionCount);let selected=new Set(catalog.items.filter(i=>i.documentTabId===tab.documentTabId).map(i=>i.documentId));
     const activeLabel=make('label','admin-document-active'),active=make('input');active.type='checkbox';active.checked=tab.active;activeLabel.append(active,make('span',null,'إظهار التبويب'));f.append(activeLabel);
     const save=make('button','admin-primary',isNew?'إنشاء التبويب':'حفظ التغييرات');save.type='submit';f.append(save);
-    if(isNew){const cancel=make('button',null,'إلغاء');cancel.type='button';cancel.addEventListener('click',async()=>{if(!busy&&await core.discard())f.remove();});f.append(cancel);}
+    if(isNew){const cancel=make('button',null,'إلغاء');cancel.type='button';cancel.addEventListener('click',async()=>{if(!busy)await creationModal?.requestClose();});f.append(cancel);}
     const note=make('p','admin-document-note');f.append(note);
     const values=()=>({tabName:name.value.trim(),folderId:Number(folder.value),displayOrder:Number(order.value),active:active.checked,documentIds:[...selected].sort()});
     let original=JSON.stringify(values());
@@ -62,15 +62,15 @@ document.querySelectorAll('[data-pdf-library-admin]').forEach(root => {
       try{
         const response=await request(isNew?'':'/'+tab.documentTabId,isNew?'POST':'PUT',value);
         if(!response.ok){
-          if(response.status===401||response.status===403){loaded=false;list.replaceChildren();catalog=null;source.hidden=true;source.replaceChildren();}
+          if(response.status===401||response.status===403){loaded=false;creationModal?.close();list.replaceChildren();catalog=null;source.hidden=true;source.replaceChildren();}
           message(response.status===400?'تحقق من المجلد والملفات المحددة. يجب أن تكون ملفات PDF متاحة لحسابك.':response.status===401||response.status===403?'ليس لديك صلاحية إدارة الوثائق.':response.status===404?'التبويب لم يعد موجودًا؛ أعد تحميل القائمة.':'تعذر حفظ التبويب. أعد المحاولة.',true);return;
         }
         const result=await response.json();tab.documentTabId=result.documentTabId;Object.assign(tab,value);if(isNew)catalog.tabs.push(tab);
         catalog.items=catalog.items.filter(i=>i.documentTabId!==tab.documentTabId).concat(value.documentIds.map(id=>({documentTabId:tab.documentTabId,documentId:id})));
-        original=JSON.stringify(value);f.classList.remove('is-dirty');f.replaceWith(form(tab));message('تم الحفظ. تظهر التغييرات للموظفين عند إعادة تحميل البوابة.');
+        original=JSON.stringify(value);f.classList.remove('is-dirty');if(isNew){list.prepend(form(tab));creationModal?.close();}else f.replaceWith(form(tab));message('تم الحفظ. تظهر التغييرات للموظفين عند إعادة تحميل البوابة.');
       }catch{message('تعذر تأكيد الحفظ. أعد تحميل القائمة للتحقق قبل إعادة المحاولة.',true);}
       finally{busy=false;lock();}
-    });filesList();sync();window.AdminLists?.compact(f,tab.tabName||(isSafety?'كتيب جديد':'تبويب جديد'),isNew);core.watch(section,f,()=>f.classList.contains('is-dirty'),()=>busy);return f;
+    });filesList();sync();if(!isNew)window.AdminLists?.compact(f,tab.tabName||(isSafety?'كتيب جديد':'تبويب جديد'),false);core.watch(section,f,()=>f.classList.contains('is-dirty'),()=>busy);return f;
   }
   async function load(){
     if(busy)return;busy=true;lock();message('جارٍ تحميل تبويبات الوثائق…');
@@ -81,7 +81,7 @@ document.querySelectorAll('[data-pdf-library-admin]').forEach(root => {
     }catch(e){loaded=false;catalog=null;source.hidden=true;source.replaceChildren();list.replaceChildren();message(e.message==='401'||e.message==='403'?'ليس لديك صلاحية إدارة الوثائق.':'تعذر تحميل الوثائق. تحقق من الاتصال وقاعدة البيانات.',true);}
     finally{busy=false;lock();}
   }
-  add.addEventListener('click',()=>{if(!busy&&!list.querySelector('[data-new-tab]')){const f=form({tabName:'',folderId:0,displayOrder:(catalog.tabs.length+1)*10,active:true},true);list.prepend(f);f.querySelector('input').focus();}});
+  add.addEventListener('click',()=>{if(!busy&&loaded&&!creationModal){const f=form({tabName:'',folderId:0,displayOrder:(catalog.tabs.length+1)*10,active:true},true);creationModal=window.AdminEditorModal.open({title:isSafety?'إضافة كتيب':'إضافة تبويب',section,content:f,mount:root,busy:()=>busy,onCancel:async()=>!f.classList.contains('is-dirty')||await core.discard(),onClosed:()=>{f.remove();creationModal=null;core.refresh();}});f.querySelector('input').focus();}});
   retry.addEventListener('click',async()=>{if(!busy&&(!dirty()||await core.discard()))load();});
   core.watch(section,root,()=>false,()=>busy);
   core.whenSection(section,()=>{if(!loaded&&!busy)load();});
